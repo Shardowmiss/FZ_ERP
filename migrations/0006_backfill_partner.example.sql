@@ -1,0 +1,62 @@
+-- =============================================================================
+-- 服装ERP 多级分销：示例数据回填（PARTNER 关联 + 层级标记）
+-- -----------------------------------------------------------------------------
+-- ⚠️ 本文件为"示例/模板"，请务必结合贵司实际组织关系校准后再执行！
+--   原因：现有 dealer / customer / supplier 是三套独立主数据，系统无法自动判断
+--   哪条 customer 对应哪个 dealer、谁是总部/一级/二级。需要业务侧确认映射规则。
+--   建议做法：先在测试库执行并核对，再上生产。
+-- =============================================================================
+
+-- ---------- A. 标记总部（partner_type='hq', level=0） ----------
+-- 假设总部 dealer 的 code 为 'HQ'（请按实际修改）
+-- UPDATE dealer SET partner_type = 'hq', level = 0, tree_path = '/' || id::text
+--  WHERE code = 'HQ';
+
+-- ---------- B. 标记一级分销商（level=1，parent_id 指向总部） ----------
+-- 假设总部 code='HQ'，一级经销商以 code 前缀 'L1' 标识（请按实际修改）
+-- WITH hq AS (SELECT id AS hq_id FROM dealer WHERE code = 'HQ')
+-- UPDATE dealer d
+--   SET parent_id = hq.hq_id,
+--       level = 1,
+--       partner_type = 'level1',
+--       tree_path = '/' || hq.hq_id::text || '/' || d.id::text
+--   FROM hq
+--  WHERE d.code LIKE 'L1%';
+
+-- ---------- C. 标记二级分销商（level=2，parent_id 指向所属一级） ----------
+-- 二级经销商 code 前缀 'L2'，其所属的上级一级经销商需按业务指定。
+-- 下面示例按"二级 code 末位 = 一级 code 末位"的简单规则，仅作演示，请替换为真实规则。
+-- WITH l1 AS (SELECT id, code FROM dealer WHERE partner_type = 'level1')
+-- UPDATE dealer d
+--   SET parent_id = l1.id,
+--       level = 2,
+--       partner_type = 'level2',
+--       tree_path = '/' || (SELECT parent_id::text FROM dealer WHERE id = l1.id)
+--                  || '/' || l1.id::text || '/' || d.id::text
+--   FROM l1
+--  WHERE d.code LIKE 'L2%'
+--    AND right(d.code, 1) = right(l1.code, 1);
+
+-- ---------- D. 建立 customer.partner_id（分销商的客户身份） ----------
+-- 按"名称一致"把 customer 关联到对应 dealer（请按实际校准，可能需按 code 匹配）。
+-- UPDATE customer c
+--   SET partner_id = d.id
+--   FROM dealer d
+--  WHERE c.name = d.name
+--    AND c.partner_id IS NULL;
+
+-- ---------- E. 建立 supplier.partner_id（分销商的供应商身份） ----------
+-- 分销场景下，每个分销商既是对下级的供应商，也是对上级的客户。
+-- 通常：一级分销商的供应商身份 = 其自身 dealer（上级用它对其销售）；
+--       总部作为卖方，也需要一条 supplier 主数据（partner_id 指向总部 dealer）。
+-- 示例：把总部建为 supplier（若尚不存在），并把一级经销商也建为 supplier。
+-- INSERT INTO supplier (id, code, name, status, partner_id)
+-- SELECT gen_random_uuid(), 'SUP-' || d.code, d.name, 'active', d.id
+--   FROM dealer d
+--  WHERE d.partner_type IN ('hq', 'level1')
+--    AND NOT EXISTS (SELECT 1 FROM supplier s WHERE s.partner_id = d.id);
+
+-- ---------- F. 校验 ----------
+-- SELECT id, code, name, partner_type, level, parent_id, tree_path FROM dealer ORDER BY level, code;
+-- SELECT count(*) AS customers_linked FROM customer WHERE partner_id IS NOT NULL;
+-- SELECT count(*) AS suppliers_linked FROM supplier WHERE partner_id IS NOT NULL;

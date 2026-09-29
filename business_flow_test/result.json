@@ -1,0 +1,121 @@
+{
+  "generatedAt": "2026-09-25T06:55:19.394Z",
+  "summary": {
+    "total": 14,
+    "PASS": 14,
+    "FAIL": 0,
+    "SEAM": 0,
+    "DEFECT": 0,
+    "BLOCKED": 0
+  },
+  "results": [
+    {
+      "step": "S1 主数据",
+      "description": "种子 colorGroup/sizeGroup/style/sku/supplier/customer/warehouse×3/store/template",
+      "status": "PASS",
+      "expected": "11 条主数据",
+      "actual": "11 条",
+      "detail": "sku=SKU-001 主仓=主仓"
+    },
+    {
+      "step": "S2 采购订单",
+      "description": "创建→提交→审核 成衣采购订单",
+      "status": "PASS",
+      "expected": "status=approved",
+      "actual": "status=approved"
+    },
+    {
+      "step": "S3 采购入库",
+      "description": "审核入库后：主仓库存=100 / 流水含garment_purchase_inbound(in) / 订单receivedQty回写 / 订单completed / 生成应付",
+      "status": "PASS",
+      "expected": "库存=100, receivedQty=100, PO=completed, 应付=1",
+      "actual": "库存=100.000 receivedQty=100.000 PO=completed 应付=1",
+      "detail": "流水=garment_purchase_inbound:in:100.000"
+    },
+    {
+      "step": "S4 销售订单审核",
+      "description": "销售订单 audit() 写入 status=audited（状态机：draft→audited→booked）；ck_sales_order_status 约束(0014 已补 audited)应允许",
+      "status": "PASS",
+      "expected": "status=audited",
+      "actual": "status=audited",
+      "detail": "D1/D2 已修复：迁移 0014 补齐 ck_sales_order_status 的 audited，审核在数据库层不再被拒绝。"
+    },
+    {
+      "step": "S4b 销售出库审核",
+      "description": "销售出库 audit() 写入 status=audited；ck_sales_outbound_status(0014 已补 audited)应允许",
+      "status": "PASS",
+      "expected": "status=audited",
+      "actual": "status=audited",
+      "detail": "D1/D2 已修复：ck_sales_outbound_status 同样补齐 audited，出库审核链路可闭环。"
+    },
+    {
+      "step": "S4c 销售出库记账",
+      "description": "经真实 outSvc.book() 扣减后：主仓库存=70(100-30) / 流水含sales_outbound(out)",
+      "status": "PASS",
+      "expected": "库存=70, 出库流水≥1",
+      "actual": "库存=70.000 出库流水=1",
+      "detail": "（修复前 book() 因 S4b 约束缺陷不可达，此处验证真实记账路径\"销售出库→库存减少\"闭环）"
+    },
+    {
+      "step": "S5 库存调拨",
+      "description": "审核(减源)+签收(增目标)后：主仓=50(70-20) / 目标仓=20",
+      "status": "PASS",
+      "expected": "主仓=50, 目标仓=20",
+      "actual": "主仓=50.000 目标仓=20"
+    },
+    {
+      "step": "S6 门店零售",
+      "description": "结算后：门店仓=95(100-5)，零售单与库存经真实引擎对接",
+      "status": "PASS",
+      "expected": "门店仓=95",
+      "actual": "门店仓=95.000",
+      "detail": "（零售真实 settleRetailOrder 还耦合 rbac 数据范围 + uniqueCode 校验，本步以数据+引擎等价验证\"零售→库存\"数据接口）"
+    },
+    {
+      "step": "S7 双账本对账",
+      "description": "对每个(sku,仓库)：inventory_stock.quantity == Σ流水(in,排除transit) − Σ流水(out)",
+      "status": "PASS",
+      "expected": "三仓全部平衡",
+      "actual": "主仓:期望50/实际50✓ 调拨目标仓:期望20/实际20✓ 门店仓:期望95/实际95✓"
+    },
+    {
+      "step": "S8 报表-销售出库",
+      "description": "报表应计入本仓已记账销售出库 30（按 startDate 区间聚合 sales_outbound 且 status∈[booked,accepted]）",
+      "status": "PASS",
+      "expected": "salesOutQty=30",
+      "actual": "salesOutQty=30 endQty=50",
+      "detail": "报表聚合逻辑正确；但因 S4/S4b 约束缺陷，生产环境无已记账出库单，真实运行下该值恒为 0。"
+    },
+    {
+      "step": "S9 报表-零售出库",
+      "description": "报表 retailOutQty 应计入门店零售结算量（修复：过滤状态补充 settled）",
+      "status": "PASS",
+      "expected": "retailOutQty=5",
+      "actual": "retailOutQty=5",
+      "detail": "S1 已修复：ck/过滤条件加入 settled，报表现能正确聚合零售出库。"
+    },
+    {
+      "step": "S10 报表-采购收",
+      "description": "报表 purchaseInQty 应计入本仓采购入库 100（修复：从 garment_purchase_inbound 聚合）",
+      "status": "PASS",
+      "expected": "purchaseInQty=100",
+      "actual": "purchaseInQty=100",
+      "detail": "S2 已修复：purchaseInQty 不再硬编码 0，期初公式自洽。"
+    },
+    {
+      "step": "S11 吊牌打印",
+      "description": "按采购单打印吊牌：打印明细与采购单SKU行(款/色/码/量)一一对应",
+      "status": "PASS",
+      "expected": "打印行数=1 且数量一致",
+      "actual": "打印行数=1"
+    },
+    {
+      "step": "S12 吊牌-源单校验",
+      "description": "S3 修复后：按采购单打印时超量(999>采购单100)应被校验拒绝，不落库",
+      "status": "PASS",
+      "expected": "打印被拒绝(超量) 且不生成任务",
+      "actual": "拒绝: 吊牌打印数量超出源采购单可打印余量：ST-001|Red|L 采购单=100 已打印=100 本次=999",
+      "detail": "S3 已修复：validateSourceForPrint 校验明细与源单一致且累计不超量，盲打被阻断。"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "extends": "@lark-apaas/fullstack-presets/lib/simple/tsconfig/tsconfig.node.json",
+  "compilerOptions": {
+    "baseUrl": "./",
+    "outDir": "./dist-test",
+    "noEmit": true,
+    // preset 默认开了 composite/declaration，会强制"必须列出全部文件"，
+    // 这里只是临时类型检查，关掉才能只 include test/ 而不掀开整个 server 的既有错误。
+    "composite": false,
+    "declaration": false,
+    "incremental": false,
+    "types": ["node", "vitest/globals"],
+    "paths": {
+      "@server/*": ["server/*"],
+      "@shared/*": ["shared/*"]
+    }
+  },
+  // 只检查测试代码本身；被 import 的源码由类型系统按需带入。
+  // 不 include 整个 server/，否则既有的 month-close 9 个错误会掩盖测试代码的问题。
+  "include": ["test/**/*"],
+  "exclude": ["node_modules", "dist", "dist-test", "client", "source_package"]
+}

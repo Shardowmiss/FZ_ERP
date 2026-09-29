@@ -1,0 +1,9068 @@
+{
+  "_meta": {
+    "note": "ERP 数据字典单一事实源。人工校正：把字段 cn 改准并把 src 改为 confirmed。",
+    "generated_at": "2026-09-28T17:59:07"
+  },
+  "tables": {
+    "allocation_item": {
+      "cn": "调拨明细",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "allocation_id": {
+          "cn": "调拨ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "pre_order_id": {
+          "cn": "预订单ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "submitter_type": {
+          "cn": "提交人类型",
+          "src": "推断",
+          "desc": ""
+        },
+        "dealer_id": {
+          "cn": "经销商ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "dealer_name": {
+          "cn": "经销商名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "store_id": {
+          "cn": "门店ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "store_name": {
+          "cn": "门店名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_id": {
+          "cn": "商品(SKU)ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_code": {
+          "cn": "商品(SKU)编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "color": {
+          "cn": "颜色",
+          "src": "推断",
+          "desc": ""
+        },
+        "size": {
+          "cn": "尺寸",
+          "src": "推断",
+          "desc": ""
+        },
+        "pre_qty": {
+          "cn": "预数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "allocated_qty": {
+          "cn": "已分配数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "generated_doc_type": {
+          "cn": "单据类型",
+          "src": "推断",
+          "desc": ""
+        },
+        "generated_doc_id": {
+          "cn": "单据ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "generated_doc_no": {
+          "cn": "单据编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "allocation_order": {
+      "cn": "调拨订单",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "allocation_no": {
+          "cn": "调拨编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "trade_show_id": {
+          "cn": "贸易展会ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "trade_show_name": {
+          "cn": "贸易展会名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_id": {
+          "cn": "款式ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_no": {
+          "cn": "款式编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_name": {
+          "cn": "款式名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "total_arrived_qty": {
+          "cn": "合计数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "total_allocated_qty": {
+          "cn": "合计已分配数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "bom": {
+      "cn": "物料清单",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_id": {
+          "cn": "款式ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_no": {
+          "cn": "款式编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "version": {
+          "cn": "版本",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "bom_item": {
+      "cn": "物料清单明细",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "bom_id": {
+          "cn": "物料清单ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "material_id": {
+          "cn": "物料ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "material_code": {
+          "cn": "物料编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "material_name": {
+          "cn": "物料名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "unit": {
+          "cn": "单位",
+          "src": "推断",
+          "desc": ""
+        },
+        "usage_per_piece": {
+          "cn": "单件用量",
+          "src": "推断",
+          "desc": ""
+        },
+        "loss_rate": {
+          "cn": "亏损比率",
+          "src": "推断",
+          "desc": ""
+        },
+        "bom_type": {
+          "cn": "物料清单类型",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "code_mapping_config": {
+      "cn": "编码配置",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "config_key": {
+          "cn": "配置键",
+          "src": "推断",
+          "desc": ""
+        },
+        "config_data": {
+          "cn": "配置",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "code_rule": {
+      "cn": "编码规则",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "name": {
+          "cn": "名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "segments": {
+          "cn": "段",
+          "src": "推断",
+          "desc": ""
+        },
+        "is_default": {
+          "cn": "是否默认",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "color": {
+      "cn": "颜色",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "code": {
+          "cn": "编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "name": {
+          "cn": "名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "hex": {
+          "cn": "十六进制",
+          "src": "推断",
+          "desc": ""
+        },
+        "sort_order": {
+          "cn": "排序排序序号",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "color_group": {
+      "cn": "颜色",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "code": {
+          "cn": "编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "name": {
+          "cn": "名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "colors": {
+          "cn": "颜色",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_deleted_at": {
+          "cn": "是否删除时间",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "consistency_check_log": {
+      "cn": "一致性校验日志",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "run_id": {
+          "cn": "运行ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "_run_at": {
+          "cn": "运行时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "domain": {
+          "cn": "业务域",
+          "src": "推断",
+          "desc": ""
+        },
+        "check_key": {
+          "cn": "校验键",
+          "src": "推断",
+          "desc": ""
+        },
+        "label": {
+          "cn": "标签",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "source_count": {
+          "cn": "来源数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "dependent_count": {
+          "cn": "依赖数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "mismatch_count": {
+          "cn": "不匹配数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "samples": {
+          "cn": "样本",
+          "src": "推断",
+          "desc": ""
+        },
+        "source_hash": {
+          "cn": "来源哈希",
+          "src": "推断",
+          "desc": ""
+        },
+        "consumer_hash": {
+          "cn": "哈希",
+          "src": "推断",
+          "desc": ""
+        },
+        "detail": {
+          "cn": "明细",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "coupon": {
+      "cn": "优惠券",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "code": {
+          "cn": "编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "name": {
+          "cn": "名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "type": {
+          "cn": "类型",
+          "src": "推断",
+          "desc": ""
+        },
+        "value": {
+          "cn": "值",
+          "src": "推断",
+          "desc": ""
+        },
+        "discount_rate": {
+          "cn": "折扣比率",
+          "src": "推断",
+          "desc": ""
+        },
+        "min_spend": {
+          "cn": "最小",
+          "src": "推断",
+          "desc": ""
+        },
+        "begin_date": {
+          "cn": "开始时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "end_date": {
+          "cn": "结束时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "total_qty": {
+          "cn": "合计数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "used_qty": {
+          "cn": "已用数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "customer": {
+      "cn": "客户",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "code": {
+          "cn": "编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "name": {
+          "cn": "名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "contact_person": {
+          "cn": "联系人",
+          "src": "推断",
+          "desc": ""
+        },
+        "phone": {
+          "cn": "电话",
+          "src": "推断",
+          "desc": ""
+        },
+        "address": {
+          "cn": "地址",
+          "src": "推断",
+          "desc": ""
+        },
+        "credit_period": {
+          "cn": "信用账期",
+          "src": "推断",
+          "desc": ""
+        },
+        "level": {
+          "cn": "级别",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        },
+        "partner_id": {
+          "cn": "关联分销节点 dealer.id；NULL 表示普通客户（非分销商）",
+          "src": "confirmed",
+          "desc": ""
+        },
+        "_deleted_at": {
+          "cn": "是否删除时间",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "dealer": {
+      "cn": "经销商",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "code": {
+          "cn": "编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "name": {
+          "cn": "名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "contact_person": {
+          "cn": "联系人",
+          "src": "推断",
+          "desc": ""
+        },
+        "phone": {
+          "cn": "电话",
+          "src": "推断",
+          "desc": ""
+        },
+        "address": {
+          "cn": "地址",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        },
+        "parent_id": {
+          "cn": "上级分销节点（dealer.id）；总部为 NULL",
+          "src": "confirmed",
+          "desc": ""
+        },
+        "level": {
+          "cn": "分销层级，0=总部，1=一级，2=二级……",
+          "src": "confirmed",
+          "desc": ""
+        },
+        "tree_path": {
+          "cn": "物化路径，如 /hq-id/l1-id/l2-id，便于子树查询",
+          "src": "confirmed",
+          "desc": ""
+        },
+        "partner_type": {
+          "cn": "节点类型：hq=总部，level1=一级分销商，level2=二级分销商……",
+          "src": "confirmed",
+          "desc": ""
+        }
+      }
+    },
+    "doc_unique_code": {
+      "cn": "单据唯一编码",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "doc_type": {
+          "cn": "单据类型",
+          "src": "推断",
+          "desc": ""
+        },
+        "doc_id": {
+          "cn": "单据ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "doc_item_id": {
+          "cn": "单据明细ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "unique_code": {
+          "cn": "唯一编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_id": {
+          "cn": "商品(SKU)ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_no": {
+          "cn": "款式编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "color": {
+          "cn": "颜色",
+          "src": "推断",
+          "desc": ""
+        },
+        "size": {
+          "cn": "尺寸",
+          "src": "推断",
+          "desc": ""
+        },
+        "warehouse_id": {
+          "cn": "仓库ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "scan_type": {
+          "cn": "扫描类型",
+          "src": "推断",
+          "desc": ""
+        },
+        "scan_at": {
+          "cn": "扫描时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        },
+        "operator_id": {
+          "cn": "操作人ID",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "doc_unique_code_archive": {
+      "cn": "单据唯一编码",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "doc_type": {
+          "cn": "单据类型",
+          "src": "推断",
+          "desc": ""
+        },
+        "doc_id": {
+          "cn": "单据ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "doc_item_id": {
+          "cn": "单据明细ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "unique_code": {
+          "cn": "唯一编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_id": {
+          "cn": "商品(SKU)ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_no": {
+          "cn": "款式编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "color": {
+          "cn": "颜色",
+          "src": "推断",
+          "desc": ""
+        },
+        "size": {
+          "cn": "尺寸",
+          "src": "推断",
+          "desc": ""
+        },
+        "warehouse_id": {
+          "cn": "仓库ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "scan_type": {
+          "cn": "扫描类型",
+          "src": "推断",
+          "desc": ""
+        },
+        "operator_id": {
+          "cn": "操作人ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "scan_at": {
+          "cn": "扫描时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "archived_at": {
+          "cn": "已归档时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "finance_payment": {
+      "cn": "财务支付",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "payment_no": {
+          "cn": "支付编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "payment_date": {
+          "cn": "支付时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "supplier_id": {
+          "cn": "供应商ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "supplier_name": {
+          "cn": "供应商名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "amount": {
+          "cn": "金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "payment_method": {
+          "cn": "支付方式",
+          "src": "推断",
+          "desc": ""
+        },
+        "handler": {
+          "cn": "经办人",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "finance_payment_writeoff": {
+      "cn": "财务支付核销",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "payment_id": {
+          "cn": "支付ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "payable_id": {
+          "cn": "应付ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "payable_no": {
+          "cn": "应付编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "writeoff_amount": {
+          "cn": "核销金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "finance_receipt": {
+      "cn": "财务收货小票",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "receipt_no": {
+          "cn": "收货小票编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "receipt_date": {
+          "cn": "收货小票时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "customer_id": {
+          "cn": "客户ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "customer_name": {
+          "cn": "客户名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "amount": {
+          "cn": "金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "payment_method": {
+          "cn": "支付方式",
+          "src": "推断",
+          "desc": ""
+        },
+        "handler": {
+          "cn": "经办人",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "finance_receipt_writeoff": {
+      "cn": "财务收货小票核销",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "receipt_id": {
+          "cn": "收货小票ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "receivable_id": {
+          "cn": "应收ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "receivable_no": {
+          "cn": "应收编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "writeoff_amount": {
+          "cn": "核销金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "garment_purchase_inbound": {
+      "cn": "成衣采购入库",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "inbound_no": {
+          "cn": "入库编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "order_id": {
+          "cn": "订单ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "order_no": {
+          "cn": "订单编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "supplier_id": {
+          "cn": "供应商ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "supplier_name": {
+          "cn": "供应商名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "warehouse_id": {
+          "cn": "仓库ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "warehouse_name": {
+          "cn": "仓库名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "inbound_date": {
+          "cn": "入库时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "total_amount": {
+          "cn": "合计金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "total_qty": {
+          "cn": "合计数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "garment_purchase_inbound_sku": {
+      "cn": "成衣采购入库商品(SKU)",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "inbound_id": {
+          "cn": "入库ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "order_sku_id": {
+          "cn": "订单商品(SKU)ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_id": {
+          "cn": "款式ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_no": {
+          "cn": "款式编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_id": {
+          "cn": "商品(SKU)ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "color": {
+          "cn": "颜色",
+          "src": "推断",
+          "desc": ""
+        },
+        "size": {
+          "cn": "尺寸",
+          "src": "推断",
+          "desc": ""
+        },
+        "quantity": {
+          "cn": "数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "price": {
+          "cn": "价格",
+          "src": "推断",
+          "desc": ""
+        },
+        "amount": {
+          "cn": "金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "batch_no": {
+          "cn": "批次编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "garment_purchase_order": {
+      "cn": "成衣采购订单",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "order_no": {
+          "cn": "订单编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "supplier_id": {
+          "cn": "供应商ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "supplier_name": {
+          "cn": "供应商名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "order_date": {
+          "cn": "订单时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "expect_date": {
+          "cn": "时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "brand": {
+          "cn": "成衣采购订单品牌：自由文本标签（下单时快照，非主数据外键）。改名品牌主数据不影响历史单据。",
+          "src": "confirmed",
+          "desc": ""
+        },
+        "buyer": {
+          "cn": "采购员",
+          "src": "推断",
+          "desc": ""
+        },
+        "total_amount": {
+          "cn": "合计金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "total_qty": {
+          "cn": "合计数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        },
+        "source_doc_id": {
+          "cn": "上游单据ID（销售单/销售退货单）",
+          "src": "confirmed",
+          "desc": ""
+        },
+        "source_doc_type": {
+          "cn": "上游单据类型：SALES_ORDER / SALES_RETURN",
+          "src": "confirmed",
+          "desc": ""
+        },
+        "downstream_org_id": {
+          "cn": "下游分销节点 dealer.id（该采购单归属的分销商）",
+          "src": "confirmed",
+          "desc": ""
+        }
+      }
+    },
+    "garment_purchase_order_sku": {
+      "cn": "成衣采购订单商品(SKU)",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "order_id": {
+          "cn": "订单ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_id": {
+          "cn": "款式ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_no": {
+          "cn": "款式编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_id": {
+          "cn": "商品(SKU)ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "color": {
+          "cn": "颜色",
+          "src": "推断",
+          "desc": ""
+        },
+        "size": {
+          "cn": "尺寸",
+          "src": "推断",
+          "desc": ""
+        },
+        "quantity": {
+          "cn": "数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "price": {
+          "cn": "价格",
+          "src": "推断",
+          "desc": ""
+        },
+        "amount": {
+          "cn": "金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "received_qty": {
+          "cn": "已收数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "garment_purchase_return": {
+      "cn": "成衣采购退货",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "return_no": {
+          "cn": "退货编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "inbound_id": {
+          "cn": "入库ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "inbound_no": {
+          "cn": "入库编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "supplier_id": {
+          "cn": "供应商ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "supplier_name": {
+          "cn": "供应商名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "warehouse_id": {
+          "cn": "仓库ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "warehouse_name": {
+          "cn": "仓库名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "return_date": {
+          "cn": "退货时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "total_amount": {
+          "cn": "合计金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "total_qty": {
+          "cn": "合计数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        },
+        "source_doc_id": {
+          "cn": "上游单据ID（销售退货单）",
+          "src": "confirmed",
+          "desc": ""
+        },
+        "source_doc_type": {
+          "cn": "上游单据类型：SALES_RETURN",
+          "src": "confirmed",
+          "desc": ""
+        },
+        "downstream_org_id": {
+          "cn": "下游分销节点 dealer.id",
+          "src": "confirmed",
+          "desc": ""
+        }
+      }
+    },
+    "garment_purchase_return_sku": {
+      "cn": "成衣采购退货商品(SKU)",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "return_id": {
+          "cn": "退货ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "inbound_sku_id": {
+          "cn": "入库商品(SKU)ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_id": {
+          "cn": "款式ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_no": {
+          "cn": "款式编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_id": {
+          "cn": "商品(SKU)ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "color": {
+          "cn": "颜色",
+          "src": "推断",
+          "desc": ""
+        },
+        "size": {
+          "cn": "尺寸",
+          "src": "推断",
+          "desc": ""
+        },
+        "quantity": {
+          "cn": "数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "price": {
+          "cn": "价格",
+          "src": "推断",
+          "desc": ""
+        },
+        "amount": {
+          "cn": "金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "batch_no": {
+          "cn": "批次编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "hangtag_print_item": {
+      "cn": "吊牌明细",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "task_id": {
+          "cn": "任务ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_no": {
+          "cn": "款式编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_name": {
+          "cn": "款式名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "color": {
+          "cn": "颜色",
+          "src": "推断",
+          "desc": ""
+        },
+        "size": {
+          "cn": "尺寸",
+          "src": "推断",
+          "desc": ""
+        },
+        "quantity": {
+          "cn": "数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "unique_code_start": {
+          "cn": "唯一编码开始",
+          "src": "推断",
+          "desc": ""
+        },
+        "unique_code_end": {
+          "cn": "唯一编码结束",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_id": {
+          "cn": "商品(SKU)ID",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "hangtag_print_task": {
+      "cn": "吊牌任务",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "task_no": {
+          "cn": "任务编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "template_id": {
+          "cn": "模板ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "template_name": {
+          "cn": "模板名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "source_type": {
+          "cn": "来源类型",
+          "src": "推断",
+          "desc": ""
+        },
+        "source_ref": {
+          "cn": "来源引用",
+          "src": "推断",
+          "desc": ""
+        },
+        "include_unique_code": {
+          "cn": "唯一编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "print_date": {
+          "cn": "时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "total_qty": {
+          "cn": "合计数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "unique_code_start": {
+          "cn": "唯一编码开始",
+          "src": "推断",
+          "desc": ""
+        },
+        "unique_code_end": {
+          "cn": "唯一编码结束",
+          "src": "推断",
+          "desc": ""
+        },
+        "content_snapshot": {
+          "cn": "内容快照",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "hangtag_template": {
+      "cn": "吊牌模板",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "code": {
+          "cn": "编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "name": {
+          "cn": "名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "content_config": {
+          "cn": "内容配置",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_config": {
+          "cn": "款式配置",
+          "src": "推断",
+          "desc": ""
+        },
+        "is_default": {
+          "cn": "是否默认",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "inventory_batch": {
+      "cn": "库存批次",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_id": {
+          "cn": "商品(SKU)ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_code": {
+          "cn": "商品(SKU)编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_no": {
+          "cn": "款式编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "color": {
+          "cn": "颜色",
+          "src": "推断",
+          "desc": ""
+        },
+        "size": {
+          "cn": "尺寸",
+          "src": "推断",
+          "desc": ""
+        },
+        "warehouse_id": {
+          "cn": "仓库ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "warehouse_name": {
+          "cn": "仓库名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "batch_no": {
+          "cn": "批次编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "quantity": {
+          "cn": "数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "production_date": {
+          "cn": "生产时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "expiry_date": {
+          "cn": "时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "inventory_flow": {
+      "cn": "库存流水",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "flow_type": {
+          "cn": "流水类型",
+          "src": "推断",
+          "desc": ""
+        },
+        "biz_no": {
+          "cn": "业务编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "direction": {
+          "cn": "方向",
+          "src": "推断",
+          "desc": ""
+        },
+        "item_type": {
+          "cn": "明细类型",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_id": {
+          "cn": "商品(SKU)ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "material_id": {
+          "cn": "物料ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_no": {
+          "cn": "款式编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "color": {
+          "cn": "颜色",
+          "src": "推断",
+          "desc": ""
+        },
+        "size": {
+          "cn": "尺寸",
+          "src": "推断",
+          "desc": ""
+        },
+        "material_code": {
+          "cn": "物料编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "material_name": {
+          "cn": "物料名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "warehouse_id": {
+          "cn": "仓库ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "warehouse_name": {
+          "cn": "仓库名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "quantity": {
+          "cn": "数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "batch_no": {
+          "cn": "批次编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "unit_price": {
+          "cn": "单价",
+          "src": "推断",
+          "desc": ""
+        },
+        "operator": {
+          "cn": "操作人",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "inventory_stock": {
+      "cn": "库存",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_id": {
+          "cn": "商品(SKU)ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_code": {
+          "cn": "商品(SKU)编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_no": {
+          "cn": "款式编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "color": {
+          "cn": "颜色",
+          "src": "推断",
+          "desc": ""
+        },
+        "size": {
+          "cn": "尺寸",
+          "src": "推断",
+          "desc": ""
+        },
+        "warehouse_id": {
+          "cn": "仓库ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "warehouse_name": {
+          "cn": "仓库名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "quantity": {
+          "cn": "数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "in_transit_qty": {
+          "cn": "在途数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "inventory_stocktake": {
+      "cn": "库存盘点",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "stocktake_no": {
+          "cn": "盘点编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "warehouse_id": {
+          "cn": "仓库ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "warehouse_name": {
+          "cn": "仓库名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "stocktake_date": {
+          "cn": "盘点时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "item_type": {
+          "cn": "明细类型",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "inventory_stocktake_item": {
+      "cn": "库存盘点明细",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "stocktake_id": {
+          "cn": "盘点ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_id": {
+          "cn": "商品(SKU)ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "material_id": {
+          "cn": "物料ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "item_code": {
+          "cn": "明细编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "item_name": {
+          "cn": "明细名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "color": {
+          "cn": "颜色",
+          "src": "推断",
+          "desc": ""
+        },
+        "size": {
+          "cn": "尺寸",
+          "src": "推断",
+          "desc": ""
+        },
+        "book_qty": {
+          "cn": "账面数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "actual_qty": {
+          "cn": "实际数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "diff_qty": {
+          "cn": "差异数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "inventory_transfer": {
+      "cn": "库存调拨",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "transfer_no": {
+          "cn": "调拨编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "from_warehouse_id": {
+          "cn": "起始仓库ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "from_warehouse_name": {
+          "cn": "起始仓库名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "to_warehouse_id": {
+          "cn": "至仓库ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "to_warehouse_name": {
+          "cn": "至仓库名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "transfer_date": {
+          "cn": "调拨时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "item_type": {
+          "cn": "明细类型",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        },
+        "from_store_id": {
+          "cn": "起始门店ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "from_store_name": {
+          "cn": "起始门店名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "to_store_id": {
+          "cn": "至门店ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "to_store_name": {
+          "cn": "至门店名称",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "inventory_transfer_item": {
+      "cn": "库存调拨明细",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "transfer_id": {
+          "cn": "调拨ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_id": {
+          "cn": "商品(SKU)ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "material_id": {
+          "cn": "物料ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "item_code": {
+          "cn": "明细编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "item_name": {
+          "cn": "明细名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "color": {
+          "cn": "颜色",
+          "src": "推断",
+          "desc": ""
+        },
+        "size": {
+          "cn": "尺寸",
+          "src": "推断",
+          "desc": ""
+        },
+        "quantity": {
+          "cn": "数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "material": {
+      "cn": "物料",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "code": {
+          "cn": "编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "name": {
+          "cn": "名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "spec": {
+          "cn": "规格",
+          "src": "推断",
+          "desc": ""
+        },
+        "unit": {
+          "cn": "单位",
+          "src": "推断",
+          "desc": ""
+        },
+        "default_supplier_id": {
+          "cn": "默认供应商ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "std_price": {
+          "cn": "标准单价",
+          "src": "推断",
+          "desc": ""
+        },
+        "category": {
+          "cn": "分类",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        },
+        "safety_stock_pct": {
+          "cn": "库存",
+          "src": "推断",
+          "desc": ""
+        },
+        "moq": {
+          "cn": "最小起订量",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "material_purchase_inbound": {
+      "cn": "物料采购入库",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "inbound_no": {
+          "cn": "入库编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "order_id": {
+          "cn": "订单ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "order_no": {
+          "cn": "订单编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "supplier_id": {
+          "cn": "供应商ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "supplier_name": {
+          "cn": "供应商名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "warehouse_id": {
+          "cn": "仓库ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "warehouse_name": {
+          "cn": "仓库名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "inbound_date": {
+          "cn": "入库时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "total_amount": {
+          "cn": "合计金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "material_purchase_inbound_item": {
+      "cn": "物料采购入库明细",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "inbound_id": {
+          "cn": "入库ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "order_item_id": {
+          "cn": "订单明细ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "material_id": {
+          "cn": "物料ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "material_code": {
+          "cn": "物料编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "material_name": {
+          "cn": "物料名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "unit": {
+          "cn": "单位",
+          "src": "推断",
+          "desc": ""
+        },
+        "quantity": {
+          "cn": "数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "price": {
+          "cn": "价格",
+          "src": "推断",
+          "desc": ""
+        },
+        "amount": {
+          "cn": "金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "batch_no": {
+          "cn": "批次编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "material_purchase_order": {
+      "cn": "物料采购订单",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "order_no": {
+          "cn": "订单编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "supplier_id": {
+          "cn": "供应商ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "supplier_name": {
+          "cn": "供应商名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "order_date": {
+          "cn": "订单时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "expect_date": {
+          "cn": "时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "total_amount": {
+          "cn": "合计金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "material_purchase_order_item": {
+      "cn": "物料采购订单明细",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "order_id": {
+          "cn": "订单ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "material_id": {
+          "cn": "物料ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "material_code": {
+          "cn": "物料编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "material_name": {
+          "cn": "物料名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "unit": {
+          "cn": "单位",
+          "src": "推断",
+          "desc": ""
+        },
+        "quantity": {
+          "cn": "数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "price": {
+          "cn": "价格",
+          "src": "推断",
+          "desc": ""
+        },
+        "amount": {
+          "cn": "金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "received_qty": {
+          "cn": "已收数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "material_stock": {
+      "cn": "物料库存",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "material_id": {
+          "cn": "物料ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "material_code": {
+          "cn": "物料编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "material_name": {
+          "cn": "物料名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "warehouse_id": {
+          "cn": "仓库ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "warehouse_name": {
+          "cn": "仓库名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "quantity": {
+          "cn": "数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "member": {
+      "cn": "会员",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "member_no": {
+          "cn": "会员编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "name": {
+          "cn": "名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "phone": {
+          "cn": "电话",
+          "src": "推断",
+          "desc": ""
+        },
+        "gender": {
+          "cn": "性别",
+          "src": "推断",
+          "desc": ""
+        },
+        "birthday": {
+          "cn": "生日",
+          "src": "推断",
+          "desc": ""
+        },
+        "level": {
+          "cn": "级别",
+          "src": "推断",
+          "desc": ""
+        },
+        "tag_ids": {
+          "cn": "标签ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "total_spent": {
+          "cn": "合计消费",
+          "src": "推断",
+          "desc": ""
+        },
+        "order_count": {
+          "cn": "订单数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "points": {
+          "cn": "积分",
+          "src": "推断",
+          "desc": ""
+        },
+        "last_purchase_date": {
+          "cn": "采购时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        },
+        "stored_value": {
+          "cn": "值",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "member_point": {
+      "cn": "会员积分",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "member_id": {
+          "cn": "会员ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "change_type": {
+          "cn": "变更类型",
+          "src": "推断",
+          "desc": ""
+        },
+        "change_value": {
+          "cn": "变更值",
+          "src": "推断",
+          "desc": ""
+        },
+        "balance": {
+          "cn": "余额",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "member_tag": {
+      "cn": "会员标签",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "name": {
+          "cn": "名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "month_close": {
+      "cn": "月结",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "month": {
+          "cn": "月份",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "closed_by": {
+          "cn": "已关闭人",
+          "src": "推断",
+          "desc": ""
+        },
+        "closed_at": {
+          "cn": "已关闭时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "opening_qty": {
+          "cn": "期初数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "opening_amount": {
+          "cn": "期初金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "inbound_qty": {
+          "cn": "入库数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "inbound_amount": {
+          "cn": "入库金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "outbound_qty": {
+          "cn": "出库数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "outbound_amount": {
+          "cn": "出库金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "closing_qty": {
+          "cn": "期末数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "closing_amount": {
+          "cn": "期末金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "month_close_detail": {
+      "cn": "月份关闭明细",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "close_id": {
+          "cn": "关闭ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "dimension_type": {
+          "cn": "维度类型",
+          "src": "推断",
+          "desc": ""
+        },
+        "brand": {
+          "cn": "月结明细品牌维度：期结当时的品牌快照（冻结口径）。改名品牌主数据不影响历史月结。",
+          "src": "confirmed",
+          "desc": ""
+        },
+        "warehouse_id": {
+          "cn": "仓库ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "warehouse_name": {
+          "cn": "仓库名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "flow_type": {
+          "cn": "流水类型",
+          "src": "推断",
+          "desc": ""
+        },
+        "qty": {
+          "cn": "数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "amount": {
+          "cn": "金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "month_close_log": {
+      "cn": "月份关闭日志",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "month": {
+          "cn": "月份",
+          "src": "推断",
+          "desc": ""
+        },
+        "action": {
+          "cn": "操作",
+          "src": "推断",
+          "desc": ""
+        },
+        "operator": {
+          "cn": "操作人",
+          "src": "推断",
+          "desc": ""
+        },
+        "operated_at": {
+          "cn": "时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "omni_order": {
+      "cn": "全渠道订单",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "order_no": {
+          "cn": "订单编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "channel_id": {
+          "cn": "渠道ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "channel_name": {
+          "cn": "渠道名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "external_no": {
+          "cn": "外部编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "customer_name": {
+          "cn": "客户名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "contact_phone": {
+          "cn": "联系人电话",
+          "src": "推断",
+          "desc": ""
+        },
+        "address": {
+          "cn": "地址",
+          "src": "推断",
+          "desc": ""
+        },
+        "total_amount": {
+          "cn": "合计金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "item_count": {
+          "cn": "明细数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "ship_status": {
+          "cn": "发货状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "omni_order_item": {
+      "cn": "全渠道订单明细",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "omni_order_id": {
+          "cn": "全渠道订单ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_id": {
+          "cn": "商品(SKU)ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_code": {
+          "cn": "商品(SKU)编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_no": {
+          "cn": "款式编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "color": {
+          "cn": "颜色",
+          "src": "推断",
+          "desc": ""
+        },
+        "size": {
+          "cn": "尺寸",
+          "src": "推断",
+          "desc": ""
+        },
+        "quantity": {
+          "cn": "数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "price": {
+          "cn": "价格",
+          "src": "推断",
+          "desc": ""
+        },
+        "amount": {
+          "cn": "金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "allocated_qty": {
+          "cn": "已分配数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "shortage_qty": {
+          "cn": "缺货数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "payable": {
+      "cn": "应付",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "payable_no": {
+          "cn": "应付编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "supplier_id": {
+          "cn": "供应商ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "supplier_name": {
+          "cn": "供应商名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "biz_type": {
+          "cn": "业务类型",
+          "src": "推断",
+          "desc": ""
+        },
+        "biz_no": {
+          "cn": "业务编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "amount": {
+          "cn": "金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "paid_amount": {
+          "cn": "已付金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "balance": {
+          "cn": "余额",
+          "src": "推断",
+          "desc": ""
+        },
+        "due_date": {
+          "cn": "时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "payable_payment": {
+      "cn": "应付支付",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "payable_id": {
+          "cn": "应付ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "payment_date": {
+          "cn": "支付时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "amount": {
+          "cn": "金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "payment_method": {
+          "cn": "支付方式",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "pos_daily_settle": {
+      "cn": "POS结算",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "settle_no": {
+          "cn": "结算编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "store_code": {
+          "cn": "门店编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "store_id": {
+          "cn": "门店ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "store_name": {
+          "cn": "门店名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "settle_date": {
+          "cn": "结算时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "session_id": {
+          "cn": "会话ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "cashier_name": {
+          "cn": "收银员名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "cash_amount": {
+          "cn": "现金金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "card_amount": {
+          "cn": "卡金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "wechat_amount": {
+          "cn": "微信金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "alipay_amount": {
+          "cn": "支付宝金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "other_amount": {
+          "cn": "其他金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "total_amount": {
+          "cn": "合计金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "deposit_amount": {
+          "cn": "订金金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "diff_amount": {
+          "cn": "差异金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "pos_idempotency": {
+      "cn": "POS",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "key": {
+          "cn": "键",
+          "src": "推断",
+          "desc": ""
+        },
+        "biz_type": {
+          "cn": "业务类型",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "result": {
+          "cn": "结果",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "pos_receive_log": {
+      "cn": "POS收货日志",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "biz_type": {
+          "cn": "业务类型",
+          "src": "推断",
+          "desc": ""
+        },
+        "pos_doc_no": {
+          "cn": "POS单据编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "erp_no": {
+          "cn": "ERP编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "payload": {
+          "cn": "负载",
+          "src": "推断",
+          "desc": ""
+        },
+        "error_message": {
+          "cn": "错误消息",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "pos_requisition": {
+      "cn": "POS领料申请",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "req_no": {
+          "cn": "申请编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "store_code": {
+          "cn": "门店编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "store_id": {
+          "cn": "门店ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "store_name": {
+          "cn": "门店名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "req_date": {
+          "cn": "申请时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "pos_requisition_item": {
+      "cn": "POS领料申请明细",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "requisition_id": {
+          "cn": "领料申请ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_code": {
+          "cn": "商品(SKU)编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_no": {
+          "cn": "款式编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "color": {
+          "cn": "颜色",
+          "src": "推断",
+          "desc": ""
+        },
+        "size": {
+          "cn": "尺寸",
+          "src": "推断",
+          "desc": ""
+        },
+        "qty": {
+          "cn": "数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "pos_return": {
+      "cn": "POS退货",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "return_no": {
+          "cn": "退货编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "pos_order_no": {
+          "cn": "POS订单编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "store_code": {
+          "cn": "门店编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "store_id": {
+          "cn": "门店ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "store_name": {
+          "cn": "门店名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "return_date": {
+          "cn": "退货时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "total_amount": {
+          "cn": "合计金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "reason": {
+          "cn": "原因",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "pos_return_item": {
+      "cn": "POS退货明细",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "return_id": {
+          "cn": "退货ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_code": {
+          "cn": "商品(SKU)编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_no": {
+          "cn": "款式编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "color": {
+          "cn": "颜色",
+          "src": "推断",
+          "desc": ""
+        },
+        "size": {
+          "cn": "尺寸",
+          "src": "推断",
+          "desc": ""
+        },
+        "quantity": {
+          "cn": "数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "price": {
+          "cn": "价格",
+          "src": "推断",
+          "desc": ""
+        },
+        "amount": {
+          "cn": "金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "batch_no": {
+          "cn": "批次编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "pos_session": {
+      "cn": "POS会话",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "store_id": {
+          "cn": "门店ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "store_name": {
+          "cn": "门店名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "cashier_id": {
+          "cn": "收银员ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "cashier_name": {
+          "cn": "收银员名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "open_time": {
+          "cn": "开启时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "close_time": {
+          "cn": "关闭时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "open_amount": {
+          "cn": "开启金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "close_amount": {
+          "cn": "关闭金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "expected_amount": {
+          "cn": "预期金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "difference": {
+          "cn": "差额",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "pos_store_map": {
+      "cn": "POS门店",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "store_code": {
+          "cn": "门店编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "store_id": {
+          "cn": "门店ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "store_name": {
+          "cn": "门店名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "pre_order": {
+      "cn": "预订单",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "pre_order_no": {
+          "cn": "预订单编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "trade_show_id": {
+          "cn": "贸易展会ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "trade_show_name": {
+          "cn": "贸易展会名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "submitter_type": {
+          "cn": "提交人类型",
+          "src": "推断",
+          "desc": ""
+        },
+        "dealer_id": {
+          "cn": "经销商ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "dealer_name": {
+          "cn": "经销商名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "store_id": {
+          "cn": "门店ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "store_name": {
+          "cn": "门店名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_id": {
+          "cn": "款式ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_no": {
+          "cn": "款式编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_name": {
+          "cn": "款式名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "total_qty": {
+          "cn": "合计数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "submit_date": {
+          "cn": "时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "confirm_date": {
+          "cn": "确认时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "pre_order_item": {
+      "cn": "预订单明细",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "pre_order_id": {
+          "cn": "预订单ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_id": {
+          "cn": "商品(SKU)ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_code": {
+          "cn": "商品(SKU)编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "color": {
+          "cn": "颜色",
+          "src": "推断",
+          "desc": ""
+        },
+        "size": {
+          "cn": "尺寸",
+          "src": "推断",
+          "desc": ""
+        },
+        "qty": {
+          "cn": "数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "price_list": {
+      "cn": "价格清单",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "code": {
+          "cn": "编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "name": {
+          "cn": "名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "type": {
+          "cn": "类型",
+          "src": "推断",
+          "desc": ""
+        },
+        "scope_id": {
+          "cn": "范围ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "priority": {
+          "cn": "优先级",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "effective_from": {
+          "cn": "生效起始",
+          "src": "推断",
+          "desc": ""
+        },
+        "effective_to": {
+          "cn": "生效至",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "price_list_item": {
+      "cn": "价格清单明细",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "price_list_id": {
+          "cn": "价格清单ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_no": {
+          "cn": "款式编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_id": {
+          "cn": "商品(SKU)ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_code": {
+          "cn": "商品(SKU)编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "tag_price": {
+          "cn": "吊牌价",
+          "src": "推断",
+          "desc": ""
+        },
+        "price": {
+          "cn": "价格",
+          "src": "推断",
+          "desc": ""
+        },
+        "discount_rate": {
+          "cn": "折扣比率",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "production_finish_receipt": {
+      "cn": "生产完成收货小票",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "receipt_no": {
+          "cn": "收货小票编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "work_order_id": {
+          "cn": "订单ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "work_order_no": {
+          "cn": "订单编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "warehouse_id": {
+          "cn": "仓库ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "receipt_date": {
+          "cn": "收货小票时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "finished_qty": {
+          "cn": "已完成数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "defective_qty": {
+          "cn": "次品数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "production_finish_receipt_item": {
+      "cn": "生产完成收货小票明细",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "receipt_id": {
+          "cn": "收货小票ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_id": {
+          "cn": "商品(SKU)ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_code": {
+          "cn": "商品(SKU)编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "color": {
+          "cn": "颜色",
+          "src": "推断",
+          "desc": ""
+        },
+        "size": {
+          "cn": "尺寸",
+          "src": "推断",
+          "desc": ""
+        },
+        "qty": {
+          "cn": "数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "production_material_issue": {
+      "cn": "生产物料发放",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "issue_no": {
+          "cn": "发放编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "work_order_id": {
+          "cn": "订单ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "work_order_no": {
+          "cn": "订单编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "warehouse_id": {
+          "cn": "仓库ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "issue_date": {
+          "cn": "发放时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "receiver": {
+          "cn": "接收人",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "production_material_issue_item": {
+      "cn": "生产物料发放明细",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "issue_id": {
+          "cn": "发放ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "material_id": {
+          "cn": "物料ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "material_code": {
+          "cn": "物料编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "material_name": {
+          "cn": "物料名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "spec": {
+          "cn": "规格",
+          "src": "推断",
+          "desc": ""
+        },
+        "unit": {
+          "cn": "单位",
+          "src": "推断",
+          "desc": ""
+        },
+        "plan_qty": {
+          "cn": "计划数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "actual_qty": {
+          "cn": "实际数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "production_work_order": {
+      "cn": "生产订单",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "order_no": {
+          "cn": "订单编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_id": {
+          "cn": "款式ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_no": {
+          "cn": "款式编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "quantity": {
+          "cn": "数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "supplier_id": {
+          "cn": "供应商ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "factory_name": {
+          "cn": "工厂名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "plan_start_date": {
+          "cn": "计划开始时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "plan_finish_date": {
+          "cn": "计划完成时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "actual_start_date": {
+          "cn": "实际开始时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "actual_finish_date": {
+          "cn": "实际完成时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "promotion": {
+      "cn": "促销",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "code": {
+          "cn": "编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "name": {
+          "cn": "名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "type": {
+          "cn": "类型",
+          "src": "推断",
+          "desc": ""
+        },
+        "threshold": {
+          "cn": "阈值",
+          "src": "推断",
+          "desc": ""
+        },
+        "reduce_amount": {
+          "cn": "减免金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "discount_rate": {
+          "cn": "折扣比率",
+          "src": "推断",
+          "desc": ""
+        },
+        "begin_date": {
+          "cn": "开始时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "end_date": {
+          "cn": "结束时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "store_ids": {
+          "cn": "门店ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "priority": {
+          "cn": "优先级",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "purchase_inbound": {
+      "cn": "采购入库",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "inbound_no": {
+          "cn": "入库编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "order_id": {
+          "cn": "订单ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "order_no": {
+          "cn": "订单编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "supplier_id": {
+          "cn": "供应商ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "supplier_name": {
+          "cn": "供应商名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "warehouse_id": {
+          "cn": "仓库ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "warehouse_name": {
+          "cn": "仓库名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "inbound_date": {
+          "cn": "入库时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "total_amount": {
+          "cn": "合计金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_deleted_at": {
+          "cn": "是否删除时间",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "purchase_inbound_item": {
+      "cn": "采购入库明细",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "inbound_id": {
+          "cn": "入库ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "order_item_id": {
+          "cn": "订单明细ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "material_id": {
+          "cn": "物料ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "material_code": {
+          "cn": "物料编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "material_name": {
+          "cn": "物料名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "unit": {
+          "cn": "单位",
+          "src": "推断",
+          "desc": ""
+        },
+        "quantity": {
+          "cn": "数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "price": {
+          "cn": "价格",
+          "src": "推断",
+          "desc": ""
+        },
+        "amount": {
+          "cn": "金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "batch_no": {
+          "cn": "批次编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "purchase_order": {
+      "cn": "采购订单",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "order_no": {
+          "cn": "订单编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "supplier_id": {
+          "cn": "供应商ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "supplier_name": {
+          "cn": "供应商名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "order_date": {
+          "cn": "订单时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "expect_date": {
+          "cn": "时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "total_amount": {
+          "cn": "合计金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_deleted_at": {
+          "cn": "是否删除时间",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "purchase_order_item": {
+      "cn": "采购订单明细",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "order_id": {
+          "cn": "订单ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "material_id": {
+          "cn": "物料ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "material_code": {
+          "cn": "物料编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "material_name": {
+          "cn": "物料名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "unit": {
+          "cn": "单位",
+          "src": "推断",
+          "desc": ""
+        },
+        "quantity": {
+          "cn": "数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "price": {
+          "cn": "价格",
+          "src": "推断",
+          "desc": ""
+        },
+        "amount": {
+          "cn": "金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "received_qty": {
+          "cn": "已收数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "purchase_reconciliation": {
+      "cn": "采购",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "recon_no": {
+          "cn": "对账编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "supplier_id": {
+          "cn": "供应商ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "supplier_name": {
+          "cn": "供应商名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "start_date": {
+          "cn": "开始时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "end_date": {
+          "cn": "结束时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "inbound_amount": {
+          "cn": "入库金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "return_amount": {
+          "cn": "退货金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "total_amount": {
+          "cn": "合计金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "purchase_return": {
+      "cn": "采购退货",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "return_no": {
+          "cn": "退货编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "inbound_id": {
+          "cn": "入库ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "inbound_no": {
+          "cn": "入库编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "supplier_id": {
+          "cn": "供应商ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "supplier_name": {
+          "cn": "供应商名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "warehouse_id": {
+          "cn": "仓库ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "warehouse_name": {
+          "cn": "仓库名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "return_date": {
+          "cn": "退货时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "total_amount": {
+          "cn": "合计金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "purchase_return_item": {
+      "cn": "采购退货明细",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "return_id": {
+          "cn": "退货ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "material_id": {
+          "cn": "物料ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "material_code": {
+          "cn": "物料编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "material_name": {
+          "cn": "物料名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "unit": {
+          "cn": "单位",
+          "src": "推断",
+          "desc": ""
+        },
+        "quantity": {
+          "cn": "数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "price": {
+          "cn": "价格",
+          "src": "推断",
+          "desc": ""
+        },
+        "amount": {
+          "cn": "金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "batch_no": {
+          "cn": "批次编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "rbac_permission": {
+      "cn": "权限",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "code": {
+          "cn": "编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "name": {
+          "cn": "名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "type": {
+          "cn": "类型",
+          "src": "推断",
+          "desc": ""
+        },
+        "parent_id": {
+          "cn": "上级ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "sort_order": {
+          "cn": "排序排序序号",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "rbac_role": {
+      "cn": "权限角色",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "code": {
+          "cn": "编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "name": {
+          "cn": "名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "description": {
+          "cn": "描述",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "rbac_role_permission": {
+      "cn": "权限角色权限",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "role_id": {
+          "cn": "角色ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "permission_id": {
+          "cn": "权限ID",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "rbac_user": {
+      "cn": "权限用户",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "username": {
+          "cn": "用户名",
+          "src": "推断",
+          "desc": ""
+        },
+        "name": {
+          "cn": "名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "password_hash": {
+          "cn": "密码哈希",
+          "src": "推断",
+          "desc": ""
+        },
+        "phone": {
+          "cn": "电话",
+          "src": "推断",
+          "desc": ""
+        },
+        "department": {
+          "cn": "部门",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "rbac_user_partner": {
+      "cn": "权限用户合作伙伴",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "user_id": {
+          "cn": "用户ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "partner_id": {
+          "cn": "合作伙伴ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "role": {
+          "cn": "角色",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "rbac_user_role": {
+      "cn": "权限用户角色",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "user_id": {
+          "cn": "用户ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "role_id": {
+          "cn": "角色ID",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "rbac_user_store": {
+      "cn": "权限用户门店",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "user_id": {
+          "cn": "用户ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "store_id": {
+          "cn": "门店ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "rbac_user_token": {
+      "cn": "权限用户令牌",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "token": {
+          "cn": "令牌",
+          "src": "推断",
+          "desc": ""
+        },
+        "user_id": {
+          "cn": "用户ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "expires_at": {
+          "cn": "时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "receivable": {
+      "cn": "应收",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "receivable_no": {
+          "cn": "应收编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "customer_id": {
+          "cn": "客户ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "customer_name": {
+          "cn": "客户名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "biz_type": {
+          "cn": "业务类型",
+          "src": "推断",
+          "desc": ""
+        },
+        "biz_no": {
+          "cn": "业务编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "amount": {
+          "cn": "金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "received_amount": {
+          "cn": "已收金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "balance": {
+          "cn": "余额",
+          "src": "推断",
+          "desc": ""
+        },
+        "due_date": {
+          "cn": "时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "receivable_payment": {
+      "cn": "应收支付",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "receivable_id": {
+          "cn": "应收ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "payment_date": {
+          "cn": "支付时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "amount": {
+          "cn": "金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "payment_method": {
+          "cn": "支付方式",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "replenish_plan": {
+      "cn": "补货计划",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "plan_no": {
+          "cn": "计划编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "template_id": {
+          "cn": "模板ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "store_id": {
+          "cn": "门店ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "store_type": {
+          "cn": "门店类型",
+          "src": "推断",
+          "desc": ""
+        },
+        "store_name": {
+          "cn": "门店名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "doc_type": {
+          "cn": "单据类型",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "calc_snapshot": {
+          "cn": "快照",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_deleted_at": {
+          "cn": "是否删除时间",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "replenish_plan_item": {
+      "cn": "补货计划明细",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "plan_id": {
+          "cn": "计划ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_id": {
+          "cn": "商品(SKU)ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_code": {
+          "cn": "商品(SKU)编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_no": {
+          "cn": "款式编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "color": {
+          "cn": "颜色",
+          "src": "推断",
+          "desc": ""
+        },
+        "size": {
+          "cn": "尺寸",
+          "src": "推断",
+          "desc": ""
+        },
+        "recent_sales_qty": {
+          "cn": "销售数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "daily_avg": {
+          "cn": "平均",
+          "src": "推断",
+          "desc": ""
+        },
+        "current_stock": {
+          "cn": "当前库存",
+          "src": "推断",
+          "desc": ""
+        },
+        "in_transit_qty": {
+          "cn": "在途数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "safety_stock": {
+          "cn": "库存",
+          "src": "推断",
+          "desc": ""
+        },
+        "suggested_raw": {
+          "cn": "建议原始",
+          "src": "推断",
+          "desc": ""
+        },
+        "suggested_qty": {
+          "cn": "建议数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "generated_doc_id": {
+          "cn": "单据ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "generated_doc_no": {
+          "cn": "单据编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "replenish_template": {
+      "cn": "补货模板",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "name": {
+          "cn": "名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "code": {
+          "cn": "编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "scope_type": {
+          "cn": "范围类型",
+          "src": "推断",
+          "desc": ""
+        },
+        "store_filter": {
+          "cn": "门店筛选",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_filter": {
+          "cn": "商品(SKU)筛选",
+          "src": "推断",
+          "desc": ""
+        },
+        "param_n": {
+          "cn": "参数",
+          "src": "推断",
+          "desc": ""
+        },
+        "expected_days": {
+          "cn": "预期日",
+          "src": "推断",
+          "desc": ""
+        },
+        "lead_time_days": {
+          "cn": "时间日",
+          "src": "推断",
+          "desc": ""
+        },
+        "safety_days": {
+          "cn": "日",
+          "src": "推断",
+          "desc": ""
+        },
+        "case_qty": {
+          "cn": "箱数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "source_warehouse_rule": {
+          "cn": "来源仓库规则",
+          "src": "推断",
+          "desc": ""
+        },
+        "fixed_warehouse_id": {
+          "cn": "仓库ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "enabled": {
+          "cn": "是否启用",
+          "src": "推断",
+          "desc": ""
+        },
+        "cron": {
+          "cn": "定时",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_deleted_at": {
+          "cn": "是否删除时间",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "retail_order": {
+      "cn": "零售订单",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "retail_no": {
+          "cn": "零售编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "store_id": {
+          "cn": "门店ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "store_name": {
+          "cn": "门店名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "sale_date": {
+          "cn": "销售时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "cashier_name": {
+          "cn": "收银员名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "member_id": {
+          "cn": "会员ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "source": {
+          "cn": "来源",
+          "src": "推断",
+          "desc": ""
+        },
+        "total_amount": {
+          "cn": "合计金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "discount_amount": {
+          "cn": "折扣金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "receivable_amount": {
+          "cn": "应收金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "received_amount": {
+          "cn": "已收金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "change_amount": {
+          "cn": "变更金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "pay_methods": {
+          "cn": "支付方式",
+          "src": "推断",
+          "desc": ""
+        },
+        "item_count": {
+          "cn": "明细数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        },
+        "pos_session_id": {
+          "cn": "POS会话ID",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "retail_order_item": {
+      "cn": "零售订单明细",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "retail_id": {
+          "cn": "零售ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_id": {
+          "cn": "商品(SKU)ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_code": {
+          "cn": "商品(SKU)编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_no": {
+          "cn": "款式编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "color": {
+          "cn": "颜色",
+          "src": "推断",
+          "desc": ""
+        },
+        "size": {
+          "cn": "尺寸",
+          "src": "推断",
+          "desc": ""
+        },
+        "quantity": {
+          "cn": "数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "tag_price": {
+          "cn": "吊牌价",
+          "src": "推断",
+          "desc": ""
+        },
+        "deal_price": {
+          "cn": "成交单价",
+          "src": "推断",
+          "desc": ""
+        },
+        "discount_rate": {
+          "cn": "折扣比率",
+          "src": "推断",
+          "desc": ""
+        },
+        "line_amount": {
+          "cn": "明细行金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "retail_return": {
+      "cn": "零售退货",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "return_no": {
+          "cn": "退货编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "original_retail_id": {
+          "cn": "零售ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "original_retail_no": {
+          "cn": "零售编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "store_id": {
+          "cn": "门店ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "store_name": {
+          "cn": "门店名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "return_date": {
+          "cn": "退货时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "total_amount": {
+          "cn": "合计金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "refund_methods": {
+          "cn": "退款方式",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "sales_channel": {
+      "cn": "销售渠道",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "channel_code": {
+          "cn": "渠道编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "name": {
+          "cn": "名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "platform": {
+          "cn": "平台",
+          "src": "推断",
+          "desc": ""
+        },
+        "api_config": {
+          "cn": "接口配置",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "sales_order": {
+      "cn": "销售订单",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "order_no": {
+          "cn": "订单编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "customer_id": {
+          "cn": "客户ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "customer_name": {
+          "cn": "客户名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "order_date": {
+          "cn": "订单时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "delivery_date": {
+          "cn": "配送时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "total_amount": {
+          "cn": "合计金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        },
+        "mirror_status": {
+          "cn": "分销镜像结果：skipped=非分销客户/顶层不镜像；success=已生成下游采购单；failed=镜像异常",
+          "src": "confirmed",
+          "desc": ""
+        },
+        "mirror_error": {
+          "cn": "镜像失败时的错误明细",
+          "src": "confirmed",
+          "desc": ""
+        },
+        "mirror_order_id": {
+          "cn": "镜像生成的下游成衣采购单 id（便于门户跳转与对账）",
+          "src": "confirmed",
+          "desc": ""
+        },
+        "_deleted_at": {
+          "cn": "是否删除时间",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "sales_order_item": {
+      "cn": "销售订单明细",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "order_id": {
+          "cn": "订单ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_id": {
+          "cn": "商品(SKU)ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_code": {
+          "cn": "商品(SKU)编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_no": {
+          "cn": "款式编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "color": {
+          "cn": "颜色",
+          "src": "推断",
+          "desc": ""
+        },
+        "size": {
+          "cn": "尺寸",
+          "src": "推断",
+          "desc": ""
+        },
+        "quantity": {
+          "cn": "数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "price": {
+          "cn": "价格",
+          "src": "推断",
+          "desc": ""
+        },
+        "amount": {
+          "cn": "金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "delivered_qty": {
+          "cn": "已交付数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "sales_outbound": {
+      "cn": "销售出库",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "outbound_no": {
+          "cn": "出库编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "order_id": {
+          "cn": "订单ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "order_no": {
+          "cn": "订单编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "customer_id": {
+          "cn": "客户ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "customer_name": {
+          "cn": "客户名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "warehouse_id": {
+          "cn": "仓库ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "warehouse_name": {
+          "cn": "仓库名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "outbound_date": {
+          "cn": "出库时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "total_amount": {
+          "cn": "合计金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "cost_amount": {
+          "cn": "成本金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_deleted_at": {
+          "cn": "是否删除时间",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "sales_outbound_item": {
+      "cn": "销售出库明细",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "outbound_id": {
+          "cn": "出库ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "order_item_id": {
+          "cn": "订单明细ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_id": {
+          "cn": "商品(SKU)ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_code": {
+          "cn": "商品(SKU)编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_no": {
+          "cn": "款式编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "color": {
+          "cn": "颜色",
+          "src": "推断",
+          "desc": ""
+        },
+        "size": {
+          "cn": "尺寸",
+          "src": "推断",
+          "desc": ""
+        },
+        "quantity": {
+          "cn": "数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "price": {
+          "cn": "价格",
+          "src": "推断",
+          "desc": ""
+        },
+        "cost_price": {
+          "cn": "成本价",
+          "src": "推断",
+          "desc": ""
+        },
+        "amount": {
+          "cn": "金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "cost_amount": {
+          "cn": "成本金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "batch_no": {
+          "cn": "批次编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "sales_reconciliation": {
+      "cn": "销售",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "recon_no": {
+          "cn": "对账编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "customer_id": {
+          "cn": "客户ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "customer_name": {
+          "cn": "客户名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "start_date": {
+          "cn": "开始时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "end_date": {
+          "cn": "结束时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "outbound_amount": {
+          "cn": "出库金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "return_amount": {
+          "cn": "退货金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "total_amount": {
+          "cn": "合计金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "sales_return": {
+      "cn": "销售退货",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "return_no": {
+          "cn": "退货编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "outbound_id": {
+          "cn": "出库ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "outbound_no": {
+          "cn": "出库编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "customer_id": {
+          "cn": "客户ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "customer_name": {
+          "cn": "客户名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "warehouse_id": {
+          "cn": "仓库ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "warehouse_name": {
+          "cn": "仓库名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "return_date": {
+          "cn": "退货时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "total_amount": {
+          "cn": "合计金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        },
+        "mirror_status": {
+          "cn": "分销镜像结果：skipped=无可镜像下游；success=已生成下游采购退货单；failed=镜像异常",
+          "src": "confirmed",
+          "desc": ""
+        },
+        "mirror_error": {
+          "cn": "镜像失败时的错误明细",
+          "src": "confirmed",
+          "desc": ""
+        },
+        "mirror_return_id": {
+          "cn": "镜像生成的下游成衣采购退货单 id",
+          "src": "confirmed",
+          "desc": ""
+        },
+        "_deleted_at": {
+          "cn": "是否删除时间",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "sales_return_item": {
+      "cn": "销售退货明细",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "return_id": {
+          "cn": "退货ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_id": {
+          "cn": "商品(SKU)ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_code": {
+          "cn": "商品(SKU)编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_no": {
+          "cn": "款式编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "color": {
+          "cn": "颜色",
+          "src": "推断",
+          "desc": ""
+        },
+        "size": {
+          "cn": "尺寸",
+          "src": "推断",
+          "desc": ""
+        },
+        "quantity": {
+          "cn": "数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "price": {
+          "cn": "价格",
+          "src": "推断",
+          "desc": ""
+        },
+        "amount": {
+          "cn": "金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "batch_no": {
+          "cn": "批次编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "size_group": {
+      "cn": "尺寸",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "code": {
+          "cn": "编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "name": {
+          "cn": "名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "sizes": {
+          "cn": "尺寸",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_deleted_at": {
+          "cn": "是否删除时间",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "sku": {
+      "cn": "商品(SKU)",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_code": {
+          "cn": "商品(SKU)编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_id": {
+          "cn": "款式ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_no": {
+          "cn": "款式编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "color": {
+          "cn": "颜色",
+          "src": "推断",
+          "desc": ""
+        },
+        "size": {
+          "cn": "尺寸",
+          "src": "推断",
+          "desc": ""
+        },
+        "barcode": {
+          "cn": "条码",
+          "src": "推断",
+          "desc": ""
+        },
+        "cost_price": {
+          "cn": "成本价",
+          "src": "推断",
+          "desc": ""
+        },
+        "tag_price": {
+          "cn": "吊牌价",
+          "src": "推断",
+          "desc": ""
+        },
+        "supply_price": {
+          "cn": "供货价",
+          "src": "推断",
+          "desc": ""
+        },
+        "safety_stock_min": {
+          "cn": "库存最小",
+          "src": "推断",
+          "desc": ""
+        },
+        "safety_stock_max": {
+          "cn": "库存最大",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "store": {
+      "cn": "门店",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "code": {
+          "cn": "编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "name": {
+          "cn": "名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "store_type": {
+          "cn": "门店类型",
+          "src": "推断",
+          "desc": ""
+        },
+        "dealer_id": {
+          "cn": "经销商ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "warehouse_id": {
+          "cn": "仓库ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "contact_person": {
+          "cn": "联系人",
+          "src": "推断",
+          "desc": ""
+        },
+        "phone": {
+          "cn": "电话",
+          "src": "推断",
+          "desc": ""
+        },
+        "address": {
+          "cn": "地址",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "style": {
+      "cn": "款式",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_no": {
+          "cn": "款式编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "name": {
+          "cn": "名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "category": {
+          "cn": "分类",
+          "src": "推断",
+          "desc": ""
+        },
+        "season": {
+          "cn": "季节",
+          "src": "推断",
+          "desc": ""
+        },
+        "wave": {
+          "cn": "波次",
+          "src": "推断",
+          "desc": ""
+        },
+        "tag_price": {
+          "cn": "吊牌价",
+          "src": "推断",
+          "desc": ""
+        },
+        "cost_price": {
+          "cn": "成本价",
+          "src": "推断",
+          "desc": ""
+        },
+        "supply_price": {
+          "cn": "供货价",
+          "src": "推断",
+          "desc": ""
+        },
+        "color_group_id": {
+          "cn": "颜色ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "size_group_id": {
+          "cn": "尺寸ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "year": {
+          "cn": "年份",
+          "src": "推断",
+          "desc": ""
+        },
+        "fit": {
+          "cn": "版型",
+          "src": "推断",
+          "desc": ""
+        },
+        "sub_category": {
+          "cn": "子分类",
+          "src": "推断",
+          "desc": ""
+        },
+        "lifecycle_status": {
+          "cn": "生命周期状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "attributes": {
+          "cn": "属性",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        },
+        "brand": {
+          "cn": "品牌",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "style_attr_def": {
+      "cn": "款式属性定义",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "attr_code": {
+          "cn": "属性编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "attr_name": {
+          "cn": "属性名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "sort_order": {
+          "cn": "排序排序序号",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "style_attr_value": {
+      "cn": "款式属性值",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "attr_def_id": {
+          "cn": "属性定义ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "value_code": {
+          "cn": "值编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "value_name": {
+          "cn": "值名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "sort_order": {
+          "cn": "排序排序序号",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "style_attribute": {
+      "cn": "款式属性",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "attr_type": {
+          "cn": "属性类型",
+          "src": "推断",
+          "desc": ""
+        },
+        "attr_code": {
+          "cn": "属性编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "attr_name": {
+          "cn": "属性名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "sort_order": {
+          "cn": "排序排序序号",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "parent_code": {
+          "cn": "上级编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "subcontract_fee": {
+      "cn": "外发加工费用",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "order_id": {
+          "cn": "订单ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "supplier_id": {
+          "cn": "供应商ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "supplier_name": {
+          "cn": "供应商名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "fee_type": {
+          "cn": "费用类型",
+          "src": "推断",
+          "desc": ""
+        },
+        "quantity": {
+          "cn": "数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "unit_price": {
+          "cn": "单价",
+          "src": "推断",
+          "desc": ""
+        },
+        "amount": {
+          "cn": "金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "subcontract_issue": {
+      "cn": "外发加工发放",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "issue_no": {
+          "cn": "发放编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "order_id": {
+          "cn": "订单ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "supplier_id": {
+          "cn": "供应商ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "supplier_name": {
+          "cn": "供应商名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "warehouse_id": {
+          "cn": "仓库ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "warehouse_name": {
+          "cn": "仓库名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "issue_date": {
+          "cn": "发放时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "subcontract_issue_item": {
+      "cn": "外发加工发放明细",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "issue_id": {
+          "cn": "发放ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "material_id": {
+          "cn": "物料ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "material_code": {
+          "cn": "物料编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "material_name": {
+          "cn": "物料名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "unit": {
+          "cn": "单位",
+          "src": "推断",
+          "desc": ""
+        },
+        "quantity": {
+          "cn": "数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "subcontract_order": {
+      "cn": "外发加工订单",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "order_no": {
+          "cn": "订单编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "supplier_id": {
+          "cn": "供应商ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "supplier_name": {
+          "cn": "供应商名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "order_date": {
+          "cn": "订单时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "delivery_date": {
+          "cn": "配送时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "total_quantity": {
+          "cn": "合计数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "total_amount": {
+          "cn": "合计金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "subcontract_order_item": {
+      "cn": "外发加工订单明细",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "order_id": {
+          "cn": "订单ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_id": {
+          "cn": "商品(SKU)ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_code": {
+          "cn": "商品(SKU)编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_no": {
+          "cn": "款式编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "color": {
+          "cn": "颜色",
+          "src": "推断",
+          "desc": ""
+        },
+        "size": {
+          "cn": "尺寸",
+          "src": "推断",
+          "desc": ""
+        },
+        "quantity": {
+          "cn": "数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "unit_price": {
+          "cn": "单价",
+          "src": "推断",
+          "desc": ""
+        },
+        "amount": {
+          "cn": "金额",
+          "src": "推断",
+          "desc": ""
+        },
+        "received_qty": {
+          "cn": "已收数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "subcontract_receipt": {
+      "cn": "外发加工收货小票",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "receipt_no": {
+          "cn": "收货小票编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "order_id": {
+          "cn": "订单ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "supplier_id": {
+          "cn": "供应商ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "supplier_name": {
+          "cn": "供应商名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "warehouse_id": {
+          "cn": "仓库ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "warehouse_name": {
+          "cn": "仓库名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "receipt_date": {
+          "cn": "收货小票时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "subcontract_receipt_item": {
+      "cn": "外发加工收货小票明细",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "receipt_id": {
+          "cn": "收货小票ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_id": {
+          "cn": "商品(SKU)ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_code": {
+          "cn": "商品(SKU)编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_no": {
+          "cn": "款式编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "color": {
+          "cn": "颜色",
+          "src": "推断",
+          "desc": ""
+        },
+        "size": {
+          "cn": "尺寸",
+          "src": "推断",
+          "desc": ""
+        },
+        "quantity": {
+          "cn": "数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "qualified_qty": {
+          "cn": "合格数量",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "supplier": {
+      "cn": "供应商",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "code": {
+          "cn": "编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "name": {
+          "cn": "名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "contact_person": {
+          "cn": "联系人",
+          "src": "推断",
+          "desc": ""
+        },
+        "phone": {
+          "cn": "电话",
+          "src": "推断",
+          "desc": ""
+        },
+        "address": {
+          "cn": "地址",
+          "src": "推断",
+          "desc": ""
+        },
+        "supply_category": {
+          "cn": "供应分类",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        },
+        "partner_id": {
+          "cn": "关联分销节点 dealer.id；NULL 表示普通供应商（非分销商）",
+          "src": "confirmed",
+          "desc": ""
+        },
+        "_deleted_at": {
+          "cn": "是否删除时间",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "system_config": {
+      "cn": "系统配置",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "config_key": {
+          "cn": "配置键",
+          "src": "推断",
+          "desc": ""
+        },
+        "config_value": {
+          "cn": "配置值",
+          "src": "推断",
+          "desc": ""
+        },
+        "description": {
+          "cn": "描述",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "system_operation_log": {
+      "cn": "系统操作日志",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "operation_time": {
+          "cn": "操作时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "user_id": {
+          "cn": "用户ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "user_name": {
+          "cn": "用户名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "module": {
+          "cn": "模块",
+          "src": "推断",
+          "desc": ""
+        },
+        "operation_type": {
+          "cn": "操作类型",
+          "src": "推断",
+          "desc": ""
+        },
+        "object_id": {
+          "cn": "对象ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "object_name": {
+          "cn": "对象名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "summary": {
+          "cn": "摘要",
+          "src": "推断",
+          "desc": ""
+        },
+        "ip": {
+          "cn": "IP地址",
+          "src": "推断",
+          "desc": ""
+        },
+        "user_agent": {
+          "cn": "用户代理商",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "trade_show": {
+      "cn": "展会",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "show_no": {
+          "cn": "展会编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "name": {
+          "cn": "名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "year": {
+          "cn": "年份",
+          "src": "推断",
+          "desc": ""
+        },
+        "season": {
+          "cn": "季节",
+          "src": "推断",
+          "desc": ""
+        },
+        "start_date": {
+          "cn": "开始时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "end_date": {
+          "cn": "结束时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "unique_code_stock": {
+      "cn": "唯一编码库存",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "unique_code": {
+          "cn": "唯一编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "numeric_value": {
+          "cn": "值",
+          "src": "推断",
+          "desc": ""
+        },
+        "sku_id": {
+          "cn": "商品(SKU)ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "style_no": {
+          "cn": "款式编号",
+          "src": "推断",
+          "desc": ""
+        },
+        "color": {
+          "cn": "颜色",
+          "src": "推断",
+          "desc": ""
+        },
+        "size": {
+          "cn": "尺寸",
+          "src": "推断",
+          "desc": ""
+        },
+        "warehouse_id": {
+          "cn": "仓库ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "inbound_doc_type": {
+          "cn": "入库单据类型",
+          "src": "推断",
+          "desc": ""
+        },
+        "inbound_doc_id": {
+          "cn": "入库单据ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "inbound_at": {
+          "cn": "入库时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "outbound_doc_type": {
+          "cn": "出库单据类型",
+          "src": "推断",
+          "desc": ""
+        },
+        "outbound_doc_id": {
+          "cn": "出库单据ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "outbound_at": {
+          "cn": "出库时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    },
+    "warehouse": {
+      "cn": "仓库",
+      "src": "推断",
+      "desc": "",
+      "columns": {
+        "id": {
+          "cn": "ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "code": {
+          "cn": "编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "name": {
+          "cn": "名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "type": {
+          "cn": "类型",
+          "src": "推断",
+          "desc": ""
+        },
+        "address": {
+          "cn": "地址",
+          "src": "推断",
+          "desc": ""
+        },
+        "remark": {
+          "cn": "备注",
+          "src": "推断",
+          "desc": ""
+        },
+        "status": {
+          "cn": "状态",
+          "src": "推断",
+          "desc": ""
+        },
+        "dealer_id": {
+          "cn": "经销商ID",
+          "src": "推断",
+          "desc": ""
+        },
+        "store_type": {
+          "cn": "门店类型",
+          "src": "推断",
+          "desc": ""
+        },
+        "store_code": {
+          "cn": "门店编码",
+          "src": "推断",
+          "desc": ""
+        },
+        "store_name": {
+          "cn": "门店名称",
+          "src": "推断",
+          "desc": ""
+        },
+        "store_address": {
+          "cn": "门店地址",
+          "src": "推断",
+          "desc": ""
+        },
+        "store_manager": {
+          "cn": "门店",
+          "src": "推断",
+          "desc": ""
+        },
+        "store_phone": {
+          "cn": "门店电话",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_at": {
+          "cn": "创建时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_created_by": {
+          "cn": "创建人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_at": {
+          "cn": "更新时间",
+          "src": "推断",
+          "desc": ""
+        },
+        "_updated_by": {
+          "cn": "更新人",
+          "src": "推断",
+          "desc": ""
+        },
+        "_deleted_at": {
+          "cn": "是否删除时间",
+          "src": "推断",
+          "desc": ""
+        }
+      }
+    }
+  }
+}

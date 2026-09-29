@@ -1,0 +1,149 @@
+@import '@lark-apaas/client-toolkit/lib/index.css';
+@import "tw-animate-css";
+@import "./tailwind-theme.css";
+@import "./typography.css";
+
+@config "../../tailwind.config.ts";
+
+/* 全局业务表格样式：网格线 + 斑马纹 + 悬停高亮
+   作用范围：main 主内容区、弹窗内、卡片内的所有 table
+*/
+main table,
+dialog table,
+[role="dialog"] table,
+.card-content table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+main table th,
+dialog table th,
+[role="dialog"] table th,
+.card-content table th {
+  background-color: #f3f4f6;
+  font-weight: 500;
+  text-align: left;
+  padding: 0.5rem;
+  height: 2.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  border-right: 1px solid #e5e7eb;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+main table th:last-child,
+dialog table th:last-child,
+[role="dialog"] table th:last-child,
+.card-content table th:last-child {
+  border-right: none;
+}
+
+main table td,
+dialog table td,
+[role="dialog"] table td,
+.card-content table td {
+  padding: 0.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  border-right: 1px solid #e5e7eb;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+main table td:last-child,
+dialog table td:last-child,
+[role="dialog"] table td:last-child,
+.card-content table td:last-child {
+  border-right: none;
+}
+
+main table tbody tr:nth-child(even),
+dialog table tbody tr:nth-child(even),
+[role="dialog"] table tbody tr:nth-child(even),
+.card-content table tbody tr:nth-child(even) {
+  background-color: #f9fafb;
+}
+
+main table tbody tr:hover,
+dialog table tbody tr:hover,
+[role="dialog"] table tbody tr:hover,
+.card-content table tbody tr:hover {
+  background-color: #eff6ff;
+}
+
+main table tbody tr.row-selected,
+dialog table tbody tr.row-selected,
+[role="dialog"] table tbody tr.row-selected,
+.card-content table tbody tr.row-selected {
+  background-color: #dbeafe !important;
+}
+
+/* biz-table 显式类（兼容需要手动标记的场景） */
+table.biz-table,
+.biz-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+table.biz-table th,
+.biz-table table th {
+  background-color: #f3f4f6;
+  font-weight: 500;
+  text-align: left;
+  padding: 0.5rem;
+  height: 2.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  border-right: 1px solid #e5e7eb;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+table.biz-table th:last-child,
+.biz-table table th:last-child {
+  border-right: none;
+}
+
+table.biz-table td,
+.biz-table table td {
+  padding: 0.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  border-right: 1px solid #e5e7eb;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+table.biz-table td:last-child,
+.biz-table table td:last-child {
+  border-right: none;
+}
+
+table.biz-table tbody tr:nth-child(even),
+.biz-table table tbody tr:nth-child(even) {
+  background-color: #f9fafb;
+}
+
+table.biz-table tbody tr:hover,
+.biz-table table tbody tr:hover {
+  background-color: #eff6ff;
+}
+
+table.biz-table tbody tr.row-selected,
+.biz-table table tbody tr.row-selected {
+  background-color: #dbeafe !important;
+}
+
+@media print {
+  main table th,
+  dialog table th {
+    background-color: #f3f4f6 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  main table tbody tr:nth-child(even),
+  dialog table tbody tr:nth-child(even) {
+    background-color: #f9fafb !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
