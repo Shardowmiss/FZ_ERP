@@ -1,0 +1,27 @@
+@import '@lark-apaas/client-toolkit/lib/index.css';
+@import "tw-animate-css";
+@import "./tailwind-theme.css";
+@import "./typography.css";
+
+@config "../../tailwind.config.ts";
+
+/* P2-6：触屏适配 —— 触摸屏 POS 设备下保证最小点击热区，减少误触 */
+@media (pointer: coarse) {
+  /* 常规按钮：保证至少 40px 高，便于手指点按 */
+  button:not(table button),
+  input[type="button"],
+  input[type="submit"] {
+    min-height: 40px;
+  }
+
+  /* 表格内的数量加减等小按钮：适度放大，避免点错相邻格子 */
+  table button {
+    min-height: 32px;
+    min-width: 32px;
+  }
+
+  /* 去掉移动端点击高亮，避免闪蓝块 */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+}

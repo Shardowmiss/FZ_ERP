@@ -1,0 +1,95 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Production builds
+dist/
+*/dist/
+build/
+*/build/
+
+# Environment files
+.env.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+/logs/
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary folders
+tmp/
+temp/
+.playwright-cli/
+
+# Lock files (keep package-lock.json for consistent installs)
+yarn.lock
+pnpm-lock.yaml
+
+# Cache files
+.eslintcache
+*.tsbuildinfo
+
+# swc wasm
+.swc
+
+# Agent files
+.agent/
+.npm_cache
+
+# ---- 部署 / 数据 / 敏感信息（本地部署加固补充） ----
+# 环境配置：含 DB 连接串与令牌，严禁入库；仅保留 .env.example 作为模板
+.env
+.env.*
+!.env.example
+
+# PostgreSQL 实体数据目录（pos_db 真实数据，非源码，体积巨大）
+.pgdata/
+.pgdata
+
+# WorkBuddy 项目数据（非源码）
+.workbuddy/
+
+# 运行日志
+logs/
+*.log
+
+# 源码导出 ZIP 产物（导出脚本产物，非仓库内容）
+*.zip
+
+# 缓存
+.cache/
+
+# lark-apaas IDE 工程元数据（非源码）
+.spark/
+.spark_project
+
+# 测试构建产物
+dist-test/
