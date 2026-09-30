@@ -187,6 +187,7 @@ export class ReportController {
     @Query('brand') brand: string,
     @Query('page') page: string = '1',
     @Query('pageSize') pageSize: string = '20',
+    @Query('all') all: string,
   ): Promise<StockMovementReportResponse> {
     return this.reportService.getStockMovementReport({
       startDate,
@@ -196,6 +197,7 @@ export class ReportController {
       brand,
       page: parseInt(page, 10),
       pageSize: parseInt(pageSize, 10),
+      allowFullRange: all === 'true' || all === '1',
     });
   }
 

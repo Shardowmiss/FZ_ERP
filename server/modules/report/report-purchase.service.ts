@@ -3,6 +3,7 @@ import { DRIZZLE_DATABASE, type PostgresJsDatabase } from '@lark-apaas/fullstack
 import { and, desc, eq, gte, ilike, inArray, lt, or, sql, sum } from 'drizzle-orm';
 import { escapeLike } from '@server/common/utils/escape-like';
 import { resolveReportWindow } from '@server/common/report-window';
+import { auditQueryPlan } from '@server/common/query-audit';
 import { buildAggregationScope } from '@server/common/data-scope/aggregation-scope';
 import { purchaseInbound, purchaseInboundItem } from '@server/database/schema';
 import type {
@@ -77,6 +78,9 @@ export class ReportPurchaseService {
       .from(purchaseInboundItem)
       .innerJoin(purchaseInbound, eq(purchaseInboundItem.inboundId, purchaseInbound.id))
       .where(whereClause);
+
+    // P1-c⑤ 查询审计（仅 QUERY_AUDIT=1 时生效，默认 no-op）
+    await auditQueryPlan(this.db, baseQuery, 'purchase-report', this.logger);
 
     const totalResult: { count: number }[] = await this.db
       .select({ count: sql<number>`count(*)` })

@@ -2,6 +2,8 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { DRIZZLE_DATABASE, type PostgresJsDatabase } from '@lark-apaas/fullstack-nestjs-core';
 import { and, desc, eq, gte, ilike, inArray, lt, or, sql, sum } from 'drizzle-orm';
 import { escapeLike } from '@server/common/utils/escape-like';
+import { resolveReportWindow } from '@server/common/report-window';
+import { auditQueryPlan } from '@server/common/query-audit';
 import { buildAggregationScope } from '@server/common/data-scope/aggregation-scope';
 import {
   inventoryStock,
@@ -34,7 +36,7 @@ export class ReportStockMovementService {
   async getStockMovementReport(
     params: StockMovementQueryParams,
   ): Promise<StockMovementReportResult> {
-    const { startDate, endDate, warehouseId, keyword, brand, page, pageSize } = params;
+    const { startDate, endDate, warehouseId, keyword, brand, page, pageSize, allowFullRange } = params;
 
     // 构建库存基础查询（含 style/sku 关联）
     const stockConditions: ReturnType<typeof and>[] = [];
@@ -72,6 +74,9 @@ export class ReportStockMovementService {
       .leftJoin(style, eq(sku.styleId, style.id))
       .where(stockWhere);
 
+    // P1-c⑤ 查询审计（仅 QUERY_AUDIT=1 时生效，默认 no-op）
+    await auditQueryPlan(this.db, baseQuery, 'stock-movement-report', this.logger);
+
     const totalResult: { count: number }[] = await this.db
       .select({ count: sql<number>`count(*)` })
       .from(baseQuery.as('base'));
@@ -97,14 +102,21 @@ export class ReportStockMovementService {
       endAmount: 0,
     };
 
-    if (keys.length > 0 && startDate) {
+    // P1-c④ 强制时间窗收口：与报表套件其余接口保持一致（显式传参等价 / 缺省注入默认窗口 / 全量须显式 allowFullRange）
+    const win = resolveReportWindow(
+      { startDate, endDate, allowFullRange },
+      this.logger,
+    );
+
+    if (keys.length > 0) {
       const skuIds: string[] = keys.map((k: { skuId: string; warehouseId: string }) => k.skuId);
       const warehouseIds: string[] = keys.map(
         (k: { skuId: string; warehouseId: string }) => k.warehouseId,
       );
 
-      const dateStart: string = startDate;
-      const dateEnd: string = endDate ?? new Date().toISOString().split('T')[0];
+      // win 为 undefined 表示显式全量（allowFullRange=true）：无日期边界，聚合全部历史
+      const dateStart: string = win ? win.start : '1970-01-01';
+      const dateEnd: string = win ? win.endExclusive : '9999-12-31';
 
       const salesRows = await this.db
         .select({

@@ -46,6 +46,8 @@ export interface StockMovementQueryParams {
   brand?: string;
   page: number;
   pageSize: number;
+  /** 显式豁免时间窗（全量扫描）。默认 false。 */
+  allowFullRange?: boolean;
 }
 
 export interface RetailSummaryParams {
