@@ -309,6 +309,7 @@ export class RbacService {
    */
   private static readonly PERMISSION_CATALOG: { code: string; name: string }[] = [
     { code: 'dashboard', name: '仪表盘' },
+    { code: 'dashboard:view', name: '仪表盘-查看' },
     { code: 'base:style', name: '基础-款式' },
     { code: 'base:sku', name: '基础-SKU' },
     { code: 'base:material', name: '基础-物料' },
@@ -344,6 +345,7 @@ export class RbacService {
     { code: 'inventory:stocktake', name: '库存-盘点' },
     { code: 'inventory:replenish-plan', name: '库存-补货计划' },
     { code: 'inventory:replenish-template', name: '库存-补货模板' },
+    { code: 'inventory:warning', name: '库存-预警' },
     { code: 'pos:receiver:manage', name: 'POS接收-补偿管理' },
     { code: 'finance:receivable', name: '财务-应收' },
     { code: 'finance:payable', name: '财务-应付' },
