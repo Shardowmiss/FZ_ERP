@@ -35,3 +35,10 @@ cd FZ_ERP && git checkout dev
 - 同一账号登录 → 云端记忆、资料库、发布应用自动共享
 - 代码冲突用 Git 解决；非代码资产放资料库
 - 数据库/存储用 cloud-service，两端连同一后端，消除环境差
+
+## 安全规范（硬约束）：禁止向 Git 提交密钥 / 凭证
+**任何私有密钥、密码、令牌、访问凭证都不得进入 Git 仓库。** 已通过 `.gitignore` 全量排除（见仓库根）。
+- ❌ 禁止提交：`service_role` 私钥、数据库密码、连接串（含密码）、PAT、SSH 私钥、`.env`（非 example）、`*.genie`、`credentials*`、`*secret*`、`config.local.js` 等
+- ✅ 允许提交：`*.example` 占位模板（不含真实值）；以及 **`publishableKey`（前缀 `wbpk_`，公开客户端密钥）**——它等价于 Supabase anon key / Stripe publishable key，按设计就是要发到浏览器的**非私密**凭证，可安全提交
+- 真实密钥如需在本地使用，放 `config.local.js`（已被 `.gitignore` 忽略），并在 `config.example.js` 留占位模板
+- 提交前自查：`git status` 中若出现 `.env` / `*.key` / `*secret*` / `*.genie` 等，立即停止提交并核实

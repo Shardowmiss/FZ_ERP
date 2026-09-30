@@ -22,10 +22,28 @@ env/
 *.egg-info/
 .pytest_cache/
 
-# ===== Env / Secrets（保留示例模板） =====
+# ===== 密钥 / 凭证（严禁提交到 Git） =====
+# 私有密钥、密码、令牌、访问凭证一律忽略；仅保留 .example 模板
 .env
 .env.*
 !.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
+*.genie
+credentials*
+*secret*
+*service_role*
+service-role*
+*.token
+*.cred
+config.local.js
+*.local.js
 
 # ===== WorkBuddy session data（不提交） =====
 .workbuddy/
