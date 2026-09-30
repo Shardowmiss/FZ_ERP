@@ -30,6 +30,8 @@ export interface ErrInfo {
   status?: number;
   /** 服务端业务错误码 */
   code?: string;
+  /** 请求追踪 ID（与 X-Request-Id 一致） */
+  requestId?: string;
   /** 服务端返回的原始 message */
   serverMessage?: string;
   /** 面向用户的可读提示 */
@@ -42,7 +44,7 @@ export interface ErrInfo {
 interface AxiosLikeError {
   response?: {
     status?: number;
-    data?: { error?: { code?: string; message?: string }; message?: string };
+    data?: { error?: { code?: string; message?: string; requestId?: string }; message?: string };
   };
   request?: unknown;
   code?: string;
@@ -65,6 +67,7 @@ export function parseErr(e: unknown): ErrInfo {
   const serverMessage = pickServerMessage(err);
   const status = err.response?.status;
   const code = err.response?.data?.error?.code;
+  const requestId = err.response?.data?.error?.requestId;
   const method = err.config?.method?.toUpperCase();
   const url = err.config?.url;
 
@@ -75,6 +78,7 @@ export function parseErr(e: unknown): ErrInfo {
         kind: 'unauthorized',
         status,
         code,
+        requestId,
         serverMessage,
         message: '登录状态已失效，请重新登录后再操作（401）',
         method,
@@ -86,6 +90,7 @@ export function parseErr(e: unknown): ErrInfo {
         kind: 'forbidden',
         status,
         code,
+        requestId,
         serverMessage,
         message: serverMessage
           ? `没有操作权限（403）：${serverMessage}`
@@ -99,6 +104,7 @@ export function parseErr(e: unknown): ErrInfo {
         kind: 'notfound',
         status,
         code,
+        requestId,
         serverMessage,
         message: serverMessage
           ? `数据不存在（404）：${serverMessage}`
@@ -112,6 +118,7 @@ export function parseErr(e: unknown): ErrInfo {
         kind: 'server',
         status,
         code,
+        requestId,
         serverMessage,
         message: serverMessage
           ? `服务异常（${status}）：${serverMessage}`
@@ -125,6 +132,7 @@ export function parseErr(e: unknown): ErrInfo {
       kind: 'business',
       status,
       code,
+      requestId,
       serverMessage,
       message: serverMessage || `操作未通过校验（${status}）`,
       method,
@@ -165,6 +173,7 @@ export function errDetail(e: unknown): string {
     `错误类型: ${i.kind}`,
     i.status ? `HTTP 状态: ${i.status}` : null,
     i.code ? `错误码: ${i.code}` : null,
+    i.requestId ? `请求ID: ${i.requestId}` : null,
     i.method || i.url ? `请求: ${i.method ?? ''} ${i.url ?? ''}` : null,
     i.serverMessage ? `服务端信息: ${i.serverMessage}` : null,
     `提示: ${i.message}`,

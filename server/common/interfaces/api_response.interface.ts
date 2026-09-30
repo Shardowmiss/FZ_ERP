@@ -6,6 +6,8 @@ export interface ApiErrorResponse {
     code: string;
     /** 错误消息 */
     message: string;
+    /** 请求追踪 ID（与响应头 X-Request-Id 一致，便于日志关联与上报） */
+    requestId?: string;
     /** 错误详情 */
     details?: string;
     /** 字段验证错误 */

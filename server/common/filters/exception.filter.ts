@@ -51,6 +51,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
           message: exception.message,
           details: exception.details,
           fieldErrors: exception.fieldErrors,
+          requestId: requestId ?? undefined,
           timestamp: Date.now(),
         },
       };
@@ -88,6 +89,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
           message,
           details: resObj ? JSON.stringify(resObj) : undefined,
           fieldErrors,
+          requestId: requestId ?? undefined,
           timestamp: Date.now(),
         },
       };
@@ -110,10 +112,11 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         });
         errorResponse = {
           error: {
-            code: dbErr.code,
-            message: dbErr.message,
-            details: dbErr.details,
-            timestamp: Date.now(),
+          code: dbErr.code,
+          message: dbErr.message,
+          details: dbErr.details,
+          requestId: requestId ?? undefined,
+          timestamp: Date.now(),
           },
         };
       } else if (typeof exception === 'object' && exception !== null && dbErrorSqlState(exception) === '22P02') {
