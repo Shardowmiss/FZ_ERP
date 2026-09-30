@@ -349,6 +349,24 @@ CREATE TABLE IF NOT EXISTS pos_operation_log (
   _updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
   _updated_by user_profile DEFAULT NULL
 );
+
+-- S1 资金护栏测试所需：ErpIntegrationService.syncDownstream() 收尾会写同步日志
+-- （erp-integration.service.ts:390），缺表会让会员下行的回归用例直接报 relation missing。
+CREATE TABLE IF NOT EXISTS pos_sync_log (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  direction varchar(10) NOT NULL,
+  data_type varchar(50) NOT NULL,
+  doc_no varchar(100),
+  status varchar(20) NOT NULL,
+  response text,
+  payload jsonb,
+  retry_count integer NOT NULL DEFAULT 0,
+  duration_ms integer,
+  _created_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  _created_by user_profile DEFAULT NULL,
+  _updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  _updated_by user_profile DEFAULT NULL
+);
 `;
 
 export interface TestDb {

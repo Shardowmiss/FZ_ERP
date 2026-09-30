@@ -310,14 +310,21 @@ export class ErpIntegrationService {
                   .values(batch)
                   .onConflictDoUpdate({
                     target: posMember.memberNo,
+                    // S1 止血（资金安全）：此处**故意不覆盖** points / stored_value，只同步档案字段。
+                    // 原因：
+                    //  ① POS 侧积分由 sales/returns/omnichannel 各自本地累加，是营运余额；
+                    //  ② ERP `member` 表根本没有 storedValue 字段，RealErpAdapter 取数恒为 0
+                    //     （real-erp.adapter.ts:229 注释、:257 `storedValue: 0`），
+                    //     一旦覆盖会把会员**储值余额清零**——这是资损，不是数据偏差；
+                    //  ③ ERP 的 `points` 是旧快照，覆盖会抹掉门店已累积的积分。
+                    // INSERT 分支仍写入二者（让新会员拿到 ERP 初始值），
+                    // 仅「已存在会员」的冲突更新不再覆写。最终单轨收口见 S3。
                     set: {
                       name: sql`excluded.name`,
                       phone: sql`excluded.phone`,
                       gender: sql`excluded.gender`,
                       birthday: sql`excluded.birthday`,
                       level: sql`excluded.level`,
-                      points: sql`excluded.points`,
-                      storedValue: sql`excluded.stored_value`,
                       erpSyncAt: sql`excluded.erp_sync_at`,
                     },
                   });
