@@ -7,6 +7,7 @@ import {
   BadRequestException,
   ConflictException,
 } from '@nestjs/common';
+import { CACHE_MANAGER, type Cache } from '@nestjs/cache-manager';
 import { DRIZZLE_DATABASE, type PostgresJsDatabase } from '@lark-apaas/fullstack-nestjs-core';
 import {
   rbacUser,
@@ -23,6 +24,7 @@ import { eq, and, count, desc, or, ilike, inArray, asc, isNull, lt, sql } from '
 import type { SQL } from 'drizzle-orm';
 import type { PgColumn } from 'drizzle-orm/pg-core';
 import { escapeLike } from '@server/common/utils/escape-like';
+import { TTL, cached, invalidate } from '@server/common/cache';
 import type { DealerScope } from '@server/common/context/request-context';
 import * as crypto from 'crypto';
 import * as bcrypt from 'bcryptjs';
@@ -44,7 +46,10 @@ const TOKEN_TTL_MS = 12 * 60 * 60 * 1000; // 12 hours
 export class RbacService {
   private readonly logger = new Logger(RbacService.name);
 
-  constructor(@Inject(DRIZZLE_DATABASE) private readonly db: PostgresJsDatabase) {}
+  constructor(
+    @Inject(DRIZZLE_DATABASE) private readonly db: PostgresJsDatabase,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+  ) {}
 
   // ─── Password helpers ────────────────────────────────────────────────
 
@@ -459,6 +464,14 @@ export class RbacService {
         );
       }
     }
+
+    // P1-c① 扩展：目录/角色权限可能随启动自愈变更，失效相关缓存避免脏读
+    await invalidate(
+      this.cacheManager,
+      RbacService.PERM_TREE_KEY,
+      RbacService.MENU_TREE_KEY,
+    );
+
     this.logger.log(
       `ensureRbacCatalog done: ${allPerms.length} permission codes, granted ${toAdd.length} new to super_admin`,
     );
@@ -1106,40 +1119,69 @@ export class RbacService {
 
   // ─── Permission methods ─────────────────────────────────────────────
 
+  /** 全局权限目录缓存键（权限目录是全局数据，不带经销商作用域） */
+  private static readonly PERM_TREE_KEY = 'rbac:perm-tree';
+  private static readonly MENU_TREE_KEY = 'rbac:menu-tree';
+
   async getPermissionTree(): Promise<RbacPermission[]> {
-    const rows = await this.db
-      .select()
-      .from(rbacPermission)
-      .orderBy(asc(rbacPermission.sortOrder));
-    const perms = rows.map((row) => this.mapPermissionRow(row));
-    return this.buildTree(perms);
+    return cached<RbacPermission[]>(
+      this.cacheManager,
+      RbacService.PERM_TREE_KEY,
+      TTL.reference,
+      async () => {
+        const rows = await this.db
+          .select()
+          .from(rbacPermission)
+          .orderBy(asc(rbacPermission.sortOrder));
+        const perms = rows.map((row) => this.mapPermissionRow(row));
+        return this.buildTree(perms);
+      },
+    );
   }
 
   async getMenuTree(): Promise<RbacPermission[]> {
-    const rows = await this.db
-      .select()
-      .from(rbacPermission)
-      .where(eq(rbacPermission.type, 'menu'))
-      .orderBy(asc(rbacPermission.sortOrder));
-    const perms = rows.map((row) => this.mapPermissionRow(row));
-    return this.buildTree(perms);
+    return cached<RbacPermission[]>(
+      this.cacheManager,
+      RbacService.MENU_TREE_KEY,
+      TTL.reference,
+      async () => {
+        const rows = await this.db
+          .select()
+          .from(rbacPermission)
+          .where(eq(rbacPermission.type, 'menu'))
+          .orderBy(asc(rbacPermission.sortOrder));
+        const perms = rows.map((row) => this.mapPermissionRow(row));
+        return this.buildTree(perms);
+      },
+    );
   }
 
   // ─── Role-Permission methods ────────────────────────────────────────
 
-  async getRolePermissions(roleId: string): Promise<string[]> {
-    // Verify role exists
-    const roles = await this.db
-      .select({ id: rbacRole.id })
-      .from(rbacRole)
-      .where(eq(rbacRole.id, roleId));
-    if (roles.length === 0) throw new NotFoundException('角色不存在');
+  private static rolePermsKey(roleId: string): string {
+    return `rbac:role-perms:${roleId}`;
+  }
 
-    const rows = await this.db
-      .select({ permissionId: rbacRolePermission.permissionId })
-      .from(rbacRolePermission)
-      .where(eq(rbacRolePermission.roleId, roleId));
-    return rows.map((r) => r.permissionId);
+  async getRolePermissions(roleId: string): Promise<string[]> {
+    return cached<string[]>(
+      this.cacheManager,
+      RbacService.rolePermsKey(roleId),
+      TTL.reference,
+      async () => {
+        // Verify role exists
+        const roles = await this.db
+          .select({ id: rbacRole.id })
+          .from(rbacRole)
+          .where(eq(rbacRole.id, roleId));
+        if (roles.length === 0) throw new NotFoundException('角色不存在');
+
+        const rows = await this.db
+          .select({ permissionId: rbacRolePermission.permissionId })
+          .from(rbacRolePermission)
+          .where(eq(rbacRolePermission.roleId, roleId));
+        return rows.map((r) => r.permissionId);
+      },
+    );
   }
 
   async assignRolePermissions(
@@ -1179,6 +1221,9 @@ export class RbacService {
         await tx.insert(rbacRolePermission).values(values);
       }
     });
+
+    // P1-c① 扩展：角色→权限映射已变更，主动失效该角色权限缓存
+    await invalidate(this.cacheManager, RbacService.rolePermsKey(roleId));
   }
 
   // ─── User-Role methods ──────────────────────────────────────────────
