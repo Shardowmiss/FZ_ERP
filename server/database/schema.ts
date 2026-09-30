@@ -21,7 +21,9 @@ export const customTimestamptz = customType<{
     if (value instanceof Date) return value.toISOString();
     throw new Error('Invalid timestamp value');
   },
-  fromDriver(value: string | Date): Date {
+  // 本地环境（手写 DDL + 种子）下 _created_at 等可能为 NULL，需放行 NULL。
+  fromDriver(value: string | Date | null): Date | null {
+    if (value == null) return null;
     if (value instanceof Date) return value;
     return new Date(value);
   },
@@ -34,10 +36,13 @@ export const userProfile = customType<{
   dataType() {
     return 'user_profile';
   },
-  toDriver(value: string) {
+  // 本地环境（手写 DDL + 种子）下 _created_by/_updated_by 为 NULL，需放行。
+  toDriver(value: string | null) {
+    if (value == null) return null as any;
     return sql`ROW(${value})::user_profile`;
   },
-  fromDriver(value: string) {
+  fromDriver(value: string | null): string {
+    if (value == null) return '';
     const [userId] = value.slice(1, -1).split(',');
     return userId.trim();
   },
@@ -1120,6 +1125,8 @@ export const posEmployee = pgTable("pos_employee", {
   role: varchar("role", { length: 20 }).notNull().default('sales'),
   storeId: varchar("store_id", { length: 50 }),
   status: varchar("status", { length: 20 }).notNull().default('active'),
+  // 个人语种偏好（支持 zh-CN / en；由前端语种切换器写入，落库实现「个人独立配置」）。
+  language: varchar("language", { length: 10 }).notNull().default('zh-CN'),
   // A-4：登录凭证（scrypt 派生，格式 `scrypt$<saltHex>$<hashHex>`）。
   // 为空表示该员工尚未开通登录，鉴权会拒绝其登录但不会泄露该字段。
   passwordHash: varchar("password_hash", { length: 200 }),

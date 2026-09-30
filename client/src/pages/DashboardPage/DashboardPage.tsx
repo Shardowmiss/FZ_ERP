@@ -6,7 +6,15 @@ import {
 import ReactECharts from 'echarts-for-react';
 import type { EChartsOption } from 'echarts';
 import { logger } from '@lark-apaas/client-toolkit/logger';
+import AsyncState from '@client/src/components/AsyncState';
+import { errMsg } from '@client/src/lib/errMsg';
 import * as dashboardApi from '@client/src/api/dashboard';
+import {
+  CHART_BRAND,
+  CHART_AXIS_LABEL,
+  CHART_AXIS_LINE,
+  CHART_PALETTE,
+} from '@client/src/lib/chart-colors';
 import type {
   TodayKpi,
   SalesTrendPoint,
@@ -46,7 +54,7 @@ function buildDateRange(period: Period): { startDate: string; endDate: string; g
   return { startDate, endDate, granularity };
 }
 
-const PIE_COLORS = ['#C4532F', '#2E4A5E', '#B8A07E', '#3A7D5A', '#C08A2D'];
+const PIE_COLORS = CHART_PALETTE;
 
 export default function DashboardPage() {
   const [period, setPeriod] = useState<Period>('today');
@@ -56,10 +64,15 @@ export default function DashboardPage() {
   const [employees, setEmployees] = useState<EmployeeRankingItem[]>([]);
   const [categories, setCategories] = useState<CategorySalesItem[]>([]);
   const [loading, setLoading] = useState(true);
+  /** 看板数据加载失败原因；此前 catch 只写日志，失败后 KPI 全渲染成 0，
+   *  看起来像「今天没生意」而不是「接口挂了」，是极易误判的静默失败 */
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     const { startDate, endDate, granularity } = buildDateRange(period);
     setLoading(true);
+    setLoadError(null);
 
     const fetchAll = async (): Promise<void> => {
       try {
@@ -77,13 +90,14 @@ export default function DashboardPage() {
         setCategories(catRes.slice(0, 5));
       } catch (error) {
         logger.error('Dashboard fetch failed', error as Error);
+        setLoadError(errMsg(error, '看板数据加载失败，请检查网络后重试'));
       } finally {
         setLoading(false);
       }
     };
 
     void fetchAll();
-  }, [period]);
+  }, [period, reloadKey]);
 
   const kpiCards = useMemo(() => {
     const growth = kpi?.comparedYesterday?.growthRate ?? 0;
@@ -106,23 +120,23 @@ export default function DashboardPage() {
       type: 'category',
       data: trend.map((t: SalesTrendPoint) => t.period),
       boundaryGap: false,
-      axisLabel: { color: '#5A6A78' },
-      axisLine: { lineStyle: { color: '#E8E4DA' } },
+      axisLabel: { color: CHART_AXIS_LABEL },
+      axisLine: { lineStyle: { color: CHART_AXIS_LINE } },
       axisTick: { show: false },
     },
     yAxis: {
       type: 'value',
-      axisLabel: { color: '#5A6A78' },
-      splitLine: { lineStyle: { color: '#E8E4DA', type: 'dashed' } },
+      axisLabel: { color: CHART_AXIS_LABEL },
+      splitLine: { lineStyle: { color: CHART_AXIS_LINE, type: 'dashed' } },
     },
     series: [
       {
         type: 'line',
         smooth: true,
         data: trend.map((t: SalesTrendPoint) => t.sales),
-        areaStyle: { color: '#C4532F', opacity: 0.15 },
-        lineStyle: { color: '#C4532F', width: 2 },
-        itemStyle: { color: '#C4532F' },
+        areaStyle: { color: CHART_BRAND, opacity: 0.15 },
+        lineStyle: { color: CHART_BRAND, width: 2 },
+        itemStyle: { color: CHART_BRAND },
         symbol: 'circle',
         symbolSize: 6,
       },
@@ -135,7 +149,7 @@ export default function DashboardPage() {
     legend: {
       type: 'scroll',
       bottom: 0,
-      textStyle: { color: '#5A6A78' },
+      textStyle: { color: CHART_AXIS_LABEL },
     },
     color: PIE_COLORS,
     series: [
@@ -179,6 +193,22 @@ export default function DashboardPage() {
         </header>
         <div className="flex-1 flex items-center justify-center">
           <div className="text-sm text-pos-ink-3">加载中...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="h-full flex flex-col bg-pos-paper">
+        <header className="px-5 py-4 bg-white border-b border-pos-line flex items-center justify-between flex-shrink-0">
+          <div>
+            <h1 className="text-lg font-semibold text-pos-ink">店长看板</h1>
+            <p className="text-xs text-pos-ink-3 mt-0.5">决策 / 店长看板</p>
+          </div>
+        </header>
+        <div className="flex-1 flex items-center justify-center">
+          <AsyncState error={loadError} onRetry={() => setReloadKey((k) => k + 1)} />
         </div>
       </div>
     );
@@ -270,7 +300,7 @@ export default function DashboardPage() {
                 <Shirt size={16} className="text-pos-accent" />
                 畅销款 TOP5
               </h3>
-              <button className="text-xs text-pos-accent hover:text-[#A8401F] flex items-center gap-0.5">
+              <button className="text-xs text-pos-accent hover:text-pos-accent-hover flex items-center gap-0.5">
                 全部 <ChevronRight size={12} />
               </button>
             </div>
@@ -311,7 +341,7 @@ export default function DashboardPage() {
                 <Award size={16} className="text-pos-accent" />
                 导购业绩排行
               </h3>
-              <button className="text-xs text-pos-accent hover:text-[#A8401F] flex items-center gap-0.5">
+              <button className="text-xs text-pos-accent hover:text-pos-accent-hover flex items-center gap-0.5">
                 全部 <ChevronRight size={12} />
               </button>
             </div>

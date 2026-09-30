@@ -12,6 +12,8 @@ import UpstreamTable from './UpstreamTable';
 import SyncLogTable from './SyncLogTable';
 import ApiListTable from './ApiListTable';
 import OfflineQueuePanel from './OfflineQueuePanel';
+import AsyncState from '@client/src/components/AsyncState';
+import { errMsg } from '@client/src/lib/errMsg';
 import { STORE_ID } from '@client/src/lib/store';
 
 const tabs = [
@@ -34,6 +36,8 @@ export default function ErpSyncPage() {
   const [upSyncingTypes, setUpSyncingTypes] = useState<Set<string>>(new Set());
   const [retrying, setRetrying] = useState(false);
   const [togglingConn, setTogglingConn] = useState(false);
+  /** 整页加载失败原因；此前各 loader 静默吞异常，失败时界面落到空态，用户无法区分「没数据」与「加载失败」 */
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const loadStatus = useCallback(async () => {
     try {
@@ -41,6 +45,7 @@ export default function ErpSyncPage() {
       setStatus(data);
     } catch (err) {
       logger.error('loadStatus error', err as Error);
+      throw err;
     }
   }, []);
 
@@ -50,6 +55,7 @@ export default function ErpSyncPage() {
       setDownList(data);
     } catch (err) {
       logger.error('loadDownstream error', err as Error);
+      throw err;
     }
   }, []);
 
@@ -59,6 +65,7 @@ export default function ErpSyncPage() {
       setUpList(data);
     } catch (err) {
       logger.error('loadUpstream error', err as Error);
+      throw err;
     }
   }, []);
 
@@ -69,12 +76,23 @@ export default function ErpSyncPage() {
       setLogs(data.items);
     } catch (err) {
       logger.error('loadLogs error', err as Error);
+      throw err;
     }
   }, [logDirection]);
 
   const loadAll = useCallback(async () => {
     setLoading(true);
-    await Promise.all([loadStatus(), loadDownstream(), loadUpstream(), loadLogs()]);
+    setLoadError(null);
+    // 用 allSettled 而非 all：任一项失败不应阻断其他面板渲染，
+    // 但要汇总出一条可见的失败原因，避免整页静默空态。
+    const results = await Promise.allSettled([
+      loadStatus(), loadDownstream(), loadUpstream(), loadLogs(),
+    ]);
+    const firstFailed = results.find((r) => r.status === 'rejected');
+    if (firstFailed) {
+      const reason = (firstFailed as PromiseRejectedResult).reason;
+      setLoadError(errMsg(reason, '同步数据加载失败，请检查网络或联系管理员'));
+    }
     setLoading(false);
   }, [loadStatus, loadDownstream, loadUpstream, loadLogs]);
 
@@ -253,7 +271,7 @@ export default function ErpSyncPage() {
                   <button
                     onClick={handleRetryAll}
                     disabled={retrying || offline}
-                    className="px-3 py-2 bg-pos-accent text-white rounded-lg text-sm hover:bg-[#A8401F] transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-3 py-2 bg-pos-accent text-white rounded-lg text-sm hover:bg-pos-accent-hover transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <RotateCcw size={14} className={retrying ? 'animate-spin' : ''} />
                     一键补传
@@ -286,6 +304,10 @@ export default function ErpSyncPage() {
                 </div>
               </div>
             )}
+          </div>
+        ) : loadError ? (
+          <div className="rounded-xl shadow-sm p-5 border border-pos-line bg-white">
+            <AsyncState error={loadError} onRetry={() => void loadAll()} />
           </div>
         ) : (
           <div className="rounded-xl shadow-sm p-5 border border-pos-line bg-white">
@@ -333,18 +355,22 @@ export default function ErpSyncPage() {
                     syncing={syncingTypes.has(item.dataType)}
                   />
                 ))}
-                {loading && downList.length === 0 && (
-                  <div className="col-span-full text-center py-16 text-pos-ink-3 text-sm">加载中...</div>
-                )}
-                {!loading && downList.length === 0 && (
-                  <div className="col-span-full text-center py-16 text-pos-ink-3 text-sm">暂无下行数据</div>
-                )}
+                <AsyncState
+                  loading={loading && downList.length === 0}
+                  empty={!loading && downList.length === 0}
+                  error={loadError}
+                  onRetry={() => void loadAll()}
+                  emptyText="暂无下行数据"
+                  className="col-span-full py-16 text-center text-pos-ink-3 text-sm"
+                />
               </div>
             )}
             {activeTab === 'up' && (
               <UpstreamTable
                 items={upList}
                 loading={loading}
+                error={loadError}
+                onRetry={() => void loadAll()}
                 syncingTypes={upSyncingTypes}
                 onSync={handleUpSync}
               />
@@ -354,9 +380,10 @@ export default function ErpSyncPage() {
               <SyncLogTable
                 logs={logs}
                 loading={loading}
+                error={loadError}
                 direction={logDirection}
                 onDirectionChange={setLogDirection}
-                onRefresh={() => void loadLogs()}
+                onRefresh={() => void loadAll()}
               />
             )}
             {activeTab === 'api' && <ApiListTable />}

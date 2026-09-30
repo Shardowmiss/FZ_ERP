@@ -2,9 +2,12 @@ import {
   Controller,
   UseGuards,
   Get,
+  Patch,
   Query,
+  Body,
   Req,
 } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import type { Request } from 'express';
 import { NeedLogin } from '@lark-apaas/fullstack-nestjs-core';
 import { AuthGuard, Roles } from '../auth/auth.guard';
@@ -52,6 +55,33 @@ export class SettingsController {
       status,
       keyword,
     });
+  }
+
+  /** 当前登录员工档案（含已保存语种），前端初始化语言用，任何登录角色可读。 */
+  @Get('employees/me')
+  async getMe(@Req() req: Request): Promise<Employee | null> {
+    const principal = principalFromReq(req);
+    if (!principal?.employeeId) return null;
+    return this.settingsService.getCurrentEmployee(principal.employeeId);
+  }
+
+  /** 当前登录员工更新自己的语种偏好（个人独立配置）。 */
+  @Patch('employees/me/language')
+  async updateMyLanguage(
+    @Req() req: Request,
+    @Body() body?: { language?: string },
+  ): Promise<{ language: string }> {
+    const principal = principalFromReq(req);
+    if (!principal?.employeeId) {
+      throw new BadRequestException('无法确定当前员工');
+    }
+    if (!body?.language) {
+      throw new BadRequestException('缺少 language 参数');
+    }
+    return this.settingsService.updateCurrentEmployeeLanguage(
+      principal.employeeId,
+      body.language,
+    );
   }
 
   @Get('payment-methods')

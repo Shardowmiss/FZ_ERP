@@ -1,11 +1,2 @@
-"use client"
-
-import * as AspectRatioPrimitive from "@radix-ui/react-aspect-ratio"
-
-function AspectRatio({
-  ...props
-}: React.ComponentProps<typeof AspectRatioPrimitive.Root>) {
-  return <AspectRatioPrimitive.Root data-slot="aspect-ratio" {...props} />
-}
-
-export { AspectRatio }
+// A.1 共享 UI 组件：本文件为薄壳（re-export shim），实际实现见 @shared/ui/aspect-ratio
+export * from '@shared/ui/aspect-ratio';

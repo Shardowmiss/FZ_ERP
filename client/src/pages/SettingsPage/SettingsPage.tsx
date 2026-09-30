@@ -3,10 +3,14 @@ import {
   Store, Users, CreditCard, Coins, Receipt, FileClock,
   ChevronRight, Save, MapPin, Phone, User, CalendarDays,
   Plus, X, Search, Loader2, Printer, Wifi, WifiOff, RefreshCw,
-  HardDriveUpload, CheckCircle2, AlertTriangle,
+  HardDriveUpload, CheckCircle2, AlertTriangle, Globe,
 } from 'lucide-react';
 import { logger } from '@lark-apaas/client-toolkit/logger';
 import { toast } from 'sonner';
+import AsyncState from '@client/src/components/AsyncState';
+import { errMsg } from '@client/src/lib/errMsg';
+import { useT } from '@client/src/i18n';
+import LanguageSwitcher from '@client/src/components/LanguageSwitcher';
 import {
   getStoreInfo, getEmployees, getPaymentMethods,
   getPointsRules, getOpLogs,
@@ -24,13 +28,14 @@ import type {
 } from '@shared/api.interface';
 
 const CATEGORIES = [
-  { key: 'store', label: '门店档案', icon: Store },
-  { key: 'staff', label: '员工管理', icon: Users },
-  { key: 'payment', label: '支付方式', icon: CreditCard },
-  { key: 'points', label: '积分规则', icon: Coins },
-  { key: 'receipt', label: '小票设置', icon: Receipt },
-  { key: 'offline', label: '离线模拟', icon: WifiOff },
-  { key: 'logs', label: '操作日志', icon: FileClock },
+  { key: 'store', labelKey: 'settings.store', icon: Store },
+  { key: 'staff', labelKey: 'settings.staff', icon: Users },
+  { key: 'payment', labelKey: 'settings.payment', icon: CreditCard },
+  { key: 'points', labelKey: 'settings.points', icon: Coins },
+  { key: 'receipt', labelKey: 'settings.receipt', icon: Receipt },
+  { key: 'offline', labelKey: 'settings.offline', icon: WifiOff },
+  { key: 'logs', labelKey: 'settings.logs', icon: FileClock },
+  { key: 'language', labelKey: 'settings.language', icon: Globe },
 ] as const;
 
 type CategoryKey = typeof CATEGORIES[number]['key'];
@@ -81,14 +86,19 @@ function SaveBtn({ onClick, saving, label = '保存' }: {
   onClick: () => void; saving: boolean; label?: string;
 }) {
   return <button onClick={onClick} disabled={saving}
-    className="h-9 px-4 bg-pos-accent text-white rounded-lg text-sm font-medium hover:bg-[#A8401F] transition-colors flex items-center gap-1.5 disabled:opacity-60">
+    className="h-9 px-4 bg-pos-accent text-white rounded-lg text-sm font-medium hover:bg-pos-accent-hover transition-colors flex items-center gap-1.5 disabled:opacity-60">
     <Save size={14} />{saving ? '保存中...' : label}
   </button>;
 }
 
 export default function SettingsPage() {
   const [active, setActive] = useState<CategoryKey>('store');
+  const t = useT();
   const [loading, setLoading] = useState<Partial<Record<CategoryKey, boolean>>>({});
+  /** 各分区加载失败原因；此前只弹一闪而过的 toast，区块落到「暂无xx」空态，既看不到原因也没有重试入口 */
+  const [errors, setErrors] = useState<Partial<Record<CategoryKey, string>>>({});
+  /** 各分区重载计数 +1 即触发重新拉取，供错误态「重试」使用 */
+  const [reloadKeys, setReloadKeys] = useState<Partial<Record<CategoryKey, number>>>({});
   const [saving, setSaving] = useState(false);
   const [store, setStore] = useState<StoreT | null>(null);
   const [storeForm, setStoreForm] = useState({ name: '', code: '', address: '', phone: '', manager: '', openDate: '' });
@@ -107,6 +117,9 @@ export default function SettingsPage() {
 
   const ok = (m: string) => toast.success(m);
   const err = (m: string) => toast.error(m);
+  const setErr = (k: CategoryKey, m: string | null) =>
+    setErrors((p) => { const n = { ...p }; if (m) n[k] = m; else delete n[k]; return n; });
+  const retry = (k: CategoryKey) => setReloadKeys((p) => ({ ...p, [k]: (p[k] ?? 0) + 1 }));
 
   // 载入本地已保存的设置（服务端设置接口目前为只读，本地覆盖优先）
   useEffect(() => {
@@ -118,52 +131,52 @@ export default function SettingsPage() {
 
   useEffect(() => {
     (async () => {
-      try { setLoading((l) => ({ ...l, store: true }));
+      try { setErr('store', null); setLoading((l) => ({ ...l, store: true }));
         const d = await getStoreInfo(); setStore(d);
         setStoreForm({ name: d.name || '', code: d.code || '', address: d.address || '', phone: d.phone || '', manager: '', openDate: d.createdAt?.slice(0, 10) || '' });
-      } catch (e) { logger.error('loadStore failed', e as Error); err('加载门店信息失败'); }
+      } catch (e) { logger.error('loadStore failed', e as Error); setErr('store', errMsg(e, '加载门店信息失败')); }
       finally { setLoading((l) => ({ ...l, store: false })); }
     })();
-  }, []);
+  }, [reloadKeys.store]);
 
   useEffect(() => {
     (async () => {
-      try { setLoading((l) => ({ ...l, staff: true }));
+      try { setErr('staff', null); setLoading((l) => ({ ...l, staff: true }));
         const d = await getEmployees({ page: empPage, pageSize: 10, keyword: empKw });
         setEmployees(applyEmployeeOverrides(d.items)); setEmpTotal(d.total);
-      } catch (e) { logger.error('loadEmployees failed', e as Error); err('加载员工列表失败'); }
+      } catch (e) { logger.error('loadEmployees failed', e as Error); setErr('staff', errMsg(e, '加载员工列表失败')); }
       finally { setLoading((l) => ({ ...l, staff: false })); }
     })();
-  }, [empPage, empKw]);
+  }, [empPage, empKw, reloadKeys.staff]);
 
   useEffect(() => {
     (async () => {
-      try { setLoading((l) => ({ ...l, payment: true }));
+      try { setErr('payment', null); setLoading((l) => ({ ...l, payment: true }));
         const d = await getPaymentMethods(); setPayments(applyPaymentOverrides(d));
-      } catch (e) { logger.error('loadPayments failed', e as Error); err('加载支付方式失败'); }
+      } catch (e) { logger.error('loadPayments failed', e as Error); setErr('payment', errMsg(e, '加载支付方式失败')); }
       finally { setLoading((l) => ({ ...l, payment: false })); }
     })();
-  }, []);
+  }, [reloadKeys.payment]);
 
   useEffect(() => {
     (async () => {
-      try { setLoading((l) => ({ ...l, points: true }));
+      try { setErr('points', null); setLoading((l) => ({ ...l, points: true }));
         const d = await getPointsRules();
         if (d.length > 0) { const m = d.find((r) => r.enabled) || d[0]; setPointForm((f) => ({ ...f, pointsPerYuan: m.pointsPerYuan })); }
-      } catch (e) { logger.error('loadPoints failed', e as Error); err('加载积分规则失败'); }
+      } catch (e) { logger.error('loadPoints failed', e as Error); setErr('points', errMsg(e, '加载积分规则失败')); }
       finally { setLoading((l) => ({ ...l, points: false })); }
     })();
-  }, []);
+  }, [reloadKeys.points]);
 
   useEffect(() => {
     (async () => {
-      try { setLoading((l) => ({ ...l, logs: true }));
+      try { setErr('logs', null); setLoading((l) => ({ ...l, logs: true }));
         const d = await getOpLogs({ page: logsPage, pageSize: 10 });
         setLogs(d.items); setLogsTotal(d.total);
-      } catch (e) { logger.error('loadLogs failed', e as Error); err('加载操作日志失败'); }
+      } catch (e) { logger.error('loadLogs failed', e as Error); setErr('logs', errMsg(e, '加载操作日志失败')); }
       finally { setLoading((l) => ({ ...l, logs: false })); }
     })();
-  }, [logsPage]);
+  }, [logsPage, reloadKeys.logs]);
 
   // U-修复：原先 doSave 只是 setTimeout 后弹「保存成功」，刷新即丢失，属于假保存。
   // 现在按分区真实落盘（localStorage），服务端补上设置表后可平滑替换为接口写入。
@@ -182,7 +195,7 @@ export default function SettingsPage() {
       }
     } catch (e) {
       logger.error('save settings failed', e as Error);
-      err('保存失败，请重试');
+      err(errMsg(e, '保存失败，请重试'));
     } finally {
       setSaving(false);
     }
@@ -215,6 +228,7 @@ export default function SettingsPage() {
 
   // ===== render =====
   const renderStore = () => {
+    if (errors.store) return <AsyncState error={errors.store} onRetry={() => retry('store')} />;
     if (loading.store) return <LoadingRow />;
     if (!store) return <EmptyRow text="暂无门店信息" />;
     return <div className="space-y-4">
@@ -238,11 +252,12 @@ export default function SettingsPage() {
   };
 
   const renderStaff = () => {
+    if (errors.staff) return <AsyncState error={errors.staff} onRetry={() => retry('staff')} />;
     if (loading.staff && employees.length === 0) return <LoadingRow />;
     return <div className="space-y-4">
       <SectionTitle title="员工管理" desc="门店员工信息与权限配置"
         extra={<button onClick={() => setShowAddEmp(true)}
-          className="h-8 px-3 bg-pos-accent text-white rounded-lg text-sm font-medium hover:bg-[#A8401F] transition-colors flex items-center gap-1.5">
+          className="h-8 px-3 bg-pos-accent text-white rounded-lg text-sm font-medium hover:bg-pos-accent-hover transition-colors flex items-center gap-1.5">
           <Plus size={14} />新增员工</button>} />
       <div className="relative max-w-xs">
         <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-pos-ink-3" />
@@ -269,7 +284,7 @@ export default function SettingsPage() {
                 <td className="px-4 py-2.5 text-pos-ink-2">—</td>
                  <td className="px-4 py-2.5 text-center"><span className={`text-xs px-2 py-0.5 rounded-md font-medium ${act ? 'bg-pos-ok-bg text-pos-ok' : 'bg-pos-paper text-pos-ink-3'}`}>{act ? '在职' : '停用'}</span></td>
                 <td className="px-4 py-2.5 text-center">
-                  <button onClick={() => toggleEmpStatus(e.id)} className="text-xs text-pos-accent hover:text-[#A8401F]">{act ? '停用' : '启用'}</button>
+                  <button onClick={() => toggleEmpStatus(e.id)} className="text-xs text-pos-accent hover:text-pos-accent-hover">{act ? '停用' : '启用'}</button>
                 </td>
               </tr>); })}
         </tbody></table>
@@ -279,6 +294,7 @@ export default function SettingsPage() {
   };
 
   const renderPayment = () => {
+    if (errors.payment) return <AsyncState error={errors.payment} onRetry={() => retry('payment')} />;
     if (loading.payment && payments.length === 0) return <LoadingRow />;
     return <div className="space-y-4">
       <SectionTitle title="支付方式" desc="配置门店支持的支付渠道" />
@@ -302,6 +318,7 @@ export default function SettingsPage() {
   };
 
   const renderPoints = () => {
+    if (errors.points) return <AsyncState error={errors.points} onRetry={() => retry('points')} />;
     if (loading.points) return <LoadingRow />;
     return <div className="space-y-4">
       <SectionTitle title="积分规则" desc="会员积分获取与使用规则配置" />
@@ -478,7 +495,7 @@ export default function SettingsPage() {
         <button
           onClick={() => void syncNow()}
           disabled={isSyncing || isOfflineMode}
-          className="h-9 px-4 bg-pos-accent text-white rounded-lg text-sm font-medium hover:bg-[#A8401F] transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="h-9 px-4 bg-pos-accent text-white rounded-lg text-sm font-medium hover:bg-pos-accent-hover transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <RefreshCw size={14} className={isSyncing ? 'animate-spin' : ''} />
           一键同步
@@ -488,34 +505,45 @@ export default function SettingsPage() {
   };
 
   const renderLogs = () => {
+    if (errors.logs) return <AsyncState error={errors.logs} onRetry={() => retry('logs')} />;
     if (loading.logs && logs.length === 0) return <LoadingRow />;
     return <div className="space-y-4">
       <SectionTitle title="操作日志" desc="系统操作记录与审计追踪" />
        <div className="border border-pos-line rounded-lg overflow-hidden">
-         <table className="w-full text-sm"><thead className="bg-pos-paper"><tr>
-           <th className="text-left font-semibold text-pos-ink px-4 py-2.5">时间</th>
-           <th className="text-left font-semibold text-pos-ink px-4 py-2.5">操作人</th>
-           <th className="text-left font-semibold text-pos-ink px-4 py-2.5">操作类型</th>
-           <th className="text-left font-semibold text-pos-ink px-4 py-2.5">操作内容</th>
-           <th className="text-left font-semibold text-pos-ink px-4 py-2.5">模块</th>
-         </tr></thead><tbody>
-           {logs.length === 0 ? <tr><td colSpan={5}><EmptyRow text="暂无操作日志" /></td></tr> :
-             logs.map((log) => <tr key={log.id} className="border-b border-pos-line-soft last:border-0 hover:bg-pos-accent-light/50">
-              <td className="px-4 py-2.5 text-pos-ink-3 font-mono text-xs">{log.createdAt?.replace('T', ' ').slice(0, 16)}</td>
-              <td className="px-4 py-2.5 text-pos-ink">{log.employeeName || '系统'}</td>
-               <td className="px-4 py-2.5"><span className="text-xs px-2 py-0.5 rounded bg-pos-info-bg text-pos-info font-medium">{log.action}</span></td>
-              <td className="px-4 py-2.5 text-pos-ink-2">{log.content || `${log.module}${log.targetNo ? ' / ' + log.targetNo : ''}`}</td>
-              <td className="px-4 py-2.5 text-pos-ink-3 text-xs">{log.module}</td>
-            </tr>)}</tbody></table>
+        <table className="w-full text-sm"><thead className="bg-pos-paper"><tr>
+          <th className="text-left font-semibold text-pos-ink px-4 py-2.5">时间</th>
+          <th className="text-left font-semibold text-pos-ink px-4 py-2.5">操作人</th>
+          <th className="text-left font-semibold text-pos-ink px-4 py-2.5">操作类型</th>
+          <th className="text-left font-semibold text-pos-ink px-4 py-2.5">操作内容</th>
+          <th className="text-left font-semibold text-pos-ink px-4 py-2.5">模块</th>
+        </tr></thead><tbody>
+          {logs.length === 0 ? <tr><td colSpan={5}><EmptyRow text="暂无操作日志" /></td></tr> :
+            logs.map((log) => <tr key={log.id} className="border-b border-pos-line-soft last:border-0 hover:bg-pos-accent-light/50">
+             <td className="px-4 py-2.5 text-pos-ink-3 font-mono text-xs">{log.createdAt?.replace('T', ' ').slice(0, 16)}</td>
+             <td className="px-4 py-2.5 text-pos-ink">{log.employeeName || '系统'}</td>
+              <td className="px-4 py-2.5"><span className="text-xs px-2 py-0.5 rounded bg-pos-info-bg text-pos-info font-medium">{log.action}</span></td>
+             <td className="px-4 py-2.5 text-pos-ink-2">{log.content || `${log.module}${log.targetNo ? ' / ' + log.targetNo : ''}`}</td>
+             <td className="px-4 py-2.5 text-pos-ink-3 text-xs">{log.module}</td>
+           </tr>)}</tbody></table>
+     </div>
+     <Pagination page={logsPage} total={logsTotal} pageSize={10} onChange={setLogsPage} />
+   </div>;
+ };
+
+  const renderLanguage = () => (
+    <div className="space-y-4">
+      <SectionTitle title={t('settings.language')} desc={t('language.current')} />
+      <div className="border border-pos-line rounded-lg p-4 flex items-center justify-between">
+        <span className="text-sm text-pos-ink-2">{t('language.label')}</span>
+        <LanguageSwitcher syncFromBackend />
       </div>
-      <Pagination page={logsPage} total={logsTotal} pageSize={10} onChange={setLogsPage} />
-    </div>;
-  };
+    </div>
+  );
 
   return <div className="h-full flex flex-col bg-pos-paper">
     <header className="px-5 py-4 bg-white border-b border-pos-line flex items-center justify-between flex-shrink-0">
-      <div><h1 className="text-lg font-semibold text-pos-ink">系统设置</h1>
-        <p className="text-xs text-pos-ink-3 mt-0.5">系统 / 系统设置</p></div>
+      <div><h1 className="text-lg font-semibold text-pos-ink">{t('settings.title')}</h1>
+        <p className="text-xs text-pos-ink-3 mt-0.5">{t('settings.breadcrumb')}</p></div>
     </header>
     <div className="flex-1 flex overflow-hidden">
       <div className="w-52 bg-white border-r border-pos-line flex-shrink-0 py-2">
@@ -525,7 +553,7 @@ export default function SettingsPage() {
               active === cat.key ? 'bg-pos-accent-light text-pos-accent font-medium border-r-2 border-pos-accent'
                 : 'text-pos-ink-2 hover:bg-pos-paper hover:text-pos-ink'
             }`}>
-            <Icon size={16} /><span>{cat.label}</span>
+            <Icon size={16} /><span>{t(cat.labelKey)}</span>
             <ChevronRight size={14} className="ml-auto opacity-50" />
           </button>); })}
       </div>
@@ -538,6 +566,7 @@ export default function SettingsPage() {
           {active === 'receipt' && renderReceipt()}
           {active === 'offline' && renderOffline()}
           {active === 'logs' && renderLogs()}
+          {active === 'language' && renderLanguage()}
         </div>
       </div>
     </div>
@@ -561,7 +590,7 @@ export default function SettingsPage() {
           <button onClick={() => setShowAddEmp(false)}
             className="h-8 px-3 border border-pos-line rounded-lg text-sm text-pos-ink-2 hover:bg-pos-paper">取消</button>
           <button onClick={addEmployee}
-            className="h-8 px-3 bg-pos-accent text-white rounded-lg text-sm font-medium hover:bg-[#A8401F]">确定</button>
+            className="h-8 px-3 bg-pos-accent text-white rounded-lg text-sm font-medium hover:bg-pos-accent-hover">确定</button>
         </div>
       </div>
     </div>}

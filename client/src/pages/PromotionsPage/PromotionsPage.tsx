@@ -4,6 +4,8 @@ import {
   Calendar, Clock, Plus, X, Loader2,
 } from 'lucide-react';
 import { logger } from '@lark-apaas/client-toolkit/logger';
+import AsyncState from '@client/src/components/AsyncState';
+import { errMsg } from '@client/src/lib/errMsg';
 import { getPromotions, getPromotionById } from '@client/src/api/promotions';
 import type { Promotion } from '@shared/api.interface';
 
@@ -64,36 +66,47 @@ export default function PromotionsPage() {
   const [searchValue, setSearchValue] = useState('');
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [loading, setLoading] = useState(true);
+  /** 列表加载失败原因；此前失败会 setPromotions([])，界面显示「暂无促销活动」，与真的没数据无法区分 */
+  const [listError, setListError] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
   const [detailId, setDetailId] = useState<string | null>(null);
   const [detail, setDetail] = useState<Promotion | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  /** 详情加载失败原因；此前固定显示「加载失败」，不含任何可诊断信息 */
+  const [detailError, setDetailError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     async function load(): Promise<void> {
       setLoading(true);
+      setListError(null);
       try {
         const res = await getPromotions({ status: activeTab, page: 1, pageSize: 50 });
         if (!cancelled) setPromotions(res.items || []);
       } catch (err) {
         logger.error('load promotions failed', err as Error);
-        if (!cancelled) setPromotions([]);
+        if (!cancelled) {
+          setPromotions([]);
+          setListError(errMsg(err, '促销活动加载失败，请检查网络后重试'));
+        }
       } finally { if (!cancelled) setLoading(false); }
     }
     void load();
     return () => { cancelled = true; };
-  }, [activeTab]);
+  }, [activeTab, reloadKey]);
 
   useEffect(() => {
     if (!detailId) { setDetail(null); return; }
     let cancelled = false;
     async function load(): Promise<void> {
       setDetailLoading(true);
+      setDetailError(null);
       try {
         const data = await getPromotionById(detailId);
         if (!cancelled) setDetail(data);
       } catch (err) {
         logger.error('load promotion detail failed', err as Error);
+        if (!cancelled) setDetailError(errMsg(err, '促销详情加载失败'));
       } finally { if (!cancelled) setDetailLoading(false); }
     }
     void load();
@@ -111,7 +124,7 @@ export default function PromotionsPage() {
           <h1 className="text-lg font-semibold text-pos-ink">促销管理</h1>
           <p className="text-xs text-pos-ink-3 mt-0.5">运营 / 促销管理</p>
         </div>
-        <button className="h-9 px-4 bg-pos-accent text-white rounded-lg text-sm font-medium hover:bg-[#A8401F] transition-colors flex items-center gap-1.5">
+        <button className="h-9 px-4 bg-pos-accent text-white rounded-lg text-sm font-medium hover:bg-pos-accent-hover transition-colors flex items-center gap-1.5">
           <Plus size={16} /> 新建促销
         </button>
       </header>
@@ -141,7 +154,9 @@ export default function PromotionsPage() {
       </div>
 
       <div className="flex-1 overflow-y-auto p-4">
-        {loading ? (
+        {listError ? (
+          <AsyncState error={listError} onRetry={() => setReloadKey((k) => k + 1)} />
+        ) : loading ? (
           <div className="flex flex-col items-center justify-center py-20 text-pos-ink-3">
             <Loader2 size={32} className="animate-spin mb-3" />
             <p className="text-sm">加载中...</p>
@@ -179,7 +194,7 @@ export default function PromotionsPage() {
                 </div>
                 <div className="mt-3 pt-3 border-t border-pos-line-soft flex items-center justify-between">
                   <button onClick={() => setDetailId(promo.id)}
-                    className="text-xs text-pos-accent hover:text-[#A8401F] transition-colors">查看详情</button>
+                    className="text-xs text-pos-accent hover:text-pos-accent-hover transition-colors">查看详情</button>
                   {promo.status === 'active' && (
                     <button className="text-xs text-pos-ink-3 hover:text-pos-danger transition-colors">终止活动</button>
                   )}
@@ -209,7 +224,9 @@ export default function PromotionsPage() {
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-5">
-              {detailLoading && !detail ? (
+              {detailError ? (
+                <AsyncState error={detailError} compact />
+              ) : detailLoading && !detail ? (
                 <div className="flex items-center justify-center py-10">
                   <Loader2 size={24} className="animate-spin text-pos-accent" />
                 </div>

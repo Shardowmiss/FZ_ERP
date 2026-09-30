@@ -2,6 +2,7 @@ import React from 'react';
 import { Route, Routes, Navigate } from 'react-router-dom';
 import { OfflineProvider } from './contexts/OfflineContext';
 import { AuthProvider } from './contexts/AuthContext';
+import { LanguageProvider } from './i18n';
 import RequireAuth from './components/RequireAuth';
 import Layout from './components/Layout';
 import NotFound from './pages/NotFound/NotFound';
@@ -20,7 +21,8 @@ import { STORE_ID } from './lib/store';
 
 const RoutesComponent = () => {
   return (
-    <AuthProvider>
+    <LanguageProvider>
+      <AuthProvider>
       <Routes>
         {/* 登录页不受守卫限制 */}
         <Route path="/login" element={<LoginPage />} />
@@ -51,7 +53,8 @@ const RoutesComponent = () => {
 
         <Route path="*" element={<NotFound />} />
       </Routes>
-    </AuthProvider>
+      </AuthProvider>
+    </LanguageProvider>
   );
 };
 

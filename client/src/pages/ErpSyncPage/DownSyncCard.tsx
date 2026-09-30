@@ -58,7 +58,7 @@ export default function DownSyncCard({ item, onSync, syncing }: DownSyncCardProp
         <button
           onClick={() => onSync(item.dataType)}
           disabled={syncing}
-          className="text-xs text-pos-accent hover:text-[#A8401F] flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="text-xs text-pos-accent hover:text-pos-accent-hover flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <RefreshCw size={10} className={syncing ? 'animate-spin' : ''} />
           立即同步

@@ -79,11 +79,11 @@ export default function OfflineBanner({
     );
   }
 
-  // 3. 离线状态（橙色横幅）
+  // 3. 离线状态（主色浅底横幅）
   if (offline) {
     return (
       <div
-        className={`flex items-center justify-between px-4 bg-gradient-to-r from-[#FFF1E6] to-[#FFE4D0] text-pos-accent border-b border-[#F6D4B8] ${
+        className={`flex items-center justify-between px-4 bg-gradient-to-r from-pos-accent-light to-pos-accent-tint text-pos-accent border-b border-pos-accent-border ${
           compact ? 'h-8 text-xs' : 'h-10 text-sm'
         }`}
       >
@@ -108,7 +108,7 @@ export default function OfflineBanner({
               compact ? 'h-6 text-xs' : 'h-7 text-xs'
             } ${
               isOnline
-                ? 'bg-pos-accent text-white hover:bg-[#A8401F]'
+                ? 'bg-pos-accent text-white hover:bg-pos-accent-hover'
                 : 'bg-pos-accent/20 text-pos-accent/60 cursor-not-allowed'
             }`}
           >

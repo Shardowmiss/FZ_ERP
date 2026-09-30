@@ -12,6 +12,8 @@ import { showConfirm } from '@lark-apaas/client-toolkit';
 import { useOffline } from '@client/src/contexts/OfflineContext';
 import { useAuth } from '@client/src/contexts/AuthContext';
 import { printHtmlDocument, downloadTextFile } from '@client/src/lib/print';
+import AsyncState from '@client/src/components/AsyncState';
+import { errMsg } from '@client/src/lib/errMsg';
 import OfflineBanner from '@client/src/components/ui/offline-banner';
 
 import { STORE_ID, STORE_NAME } from '@client/src/lib/store';
@@ -50,6 +52,10 @@ export default function ShiftPage() {
   const [zDate, setZDate] = useState(() => { const d = new Date(); d.setDate(d.getDate() - 1); return d.toISOString().slice(0, 10); });
   const [eodList, setEodList] = useState<Eod[]>([]);
   const [loadingEod, setLoadingEod] = useState(true);
+  /** 三个区块各自的加载失败原因；此前只弹一闪而过的 toast，页面停留在空态且无重试入口 */
+  const [errCurrent, setErrCurrent] = useState<string | null>(null);
+  const [errHistory, setErrHistory] = useState<string | null>(null);
+  const [errEod, setErrEod] = useState<string | null>(null);
 
   const offline = useOffline();
   const isOffline = offline.effectivelyOffline;
@@ -57,29 +63,38 @@ export default function ShiftPage() {
 
   const fetchCurrent = async () => {
     setLoadingCurrent(true);
+    setErrCurrent(null);
     try {
       const data = await shiftApi.getCurrentShift(STORE_ID);
       setCurrentShift(data);
       // U-修复：此前用 cashExpected 预填「实点现金」，收银员不数钱直接交班
       // 也能得到 0 长短款，盘点机制形同虚设。这里保持为空，强制人工清点。
-    } catch (err) { logger.error('fetchCurrent failed', err as Error); toast.error('加载当前班次失败'); }
-    finally { setLoadingCurrent(false); }
+    } catch (err) {
+      logger.error('fetchCurrent failed', err as Error);
+      setErrCurrent(errMsg(err, '加载当前班次失败'));
+    } finally { setLoadingCurrent(false); }
   };
   const fetchHistory = async () => {
     setLoadingHistory(true);
+    setErrHistory(null);
     try {
       const data = await shiftApi.getShiftHistory({ storeId: STORE_ID, page: 1, pageSize: 20 });
       setHistoryList(data.items);
-    } catch (err) { logger.error('fetchHistory failed', err as Error); toast.error('加载历史班次失败'); }
-    finally { setLoadingHistory(false); }
+    } catch (err) {
+      logger.error('fetchHistory failed', err as Error);
+      setErrHistory(errMsg(err, '加载历史班次失败'));
+    } finally { setLoadingHistory(false); }
   };
   const fetchEod = async () => {
     setLoadingEod(true);
+    setErrEod(null);
     try {
       const data = await shiftApi.getEodList({ storeId: STORE_ID, startDate: zDate, endDate: zDate, page: 1, pageSize: 5 });
       setEodList(data.items);
-    } catch (err) { logger.error('fetchEod failed', err as Error); toast.error('加载日结报表失败'); }
-    finally { setLoadingEod(false); }
+    } catch (err) {
+      logger.error('fetchEod failed', err as Error);
+      setErrEod(errMsg(err, '加载日结报表失败'));
+    } finally { setLoadingEod(false); }
   };
 
   useEffect(() => { if (activeTab === 'handover') fetchCurrent(); }, [activeTab]);
@@ -93,7 +108,7 @@ export default function ShiftPage() {
     try {
       const data = await shiftApi.openShift({ storeId: STORE_ID, cashierId, openingCash: cash });
       setCurrentShift(data); toast.success('开班成功');
-    } catch (err) { logger.error('openShift failed', err as Error); toast.error('开班失败'); }
+    } catch (err) { logger.error('openShift failed', err as Error); toast.error(errMsg(err, '开班失败')); }
     finally { setSubmitting(false); }
   };
 
@@ -106,7 +121,7 @@ export default function ShiftPage() {
     try {
       const data = await shiftApi.closeShift(currentShift.id, { closingCash: actual, cashActual: actual });
       setCurrentShift(data); toast.success('交班成功'); setActiveTab('history'); fetchHistory();
-    } catch (err) { logger.error('closeShift failed', err as Error); toast.error('交班失败'); }
+    } catch (err) { logger.error('closeShift failed', err as Error); toast.error(errMsg(err, '交班失败')); }
     finally { setSubmitting(false); }
   };
 
@@ -187,6 +202,7 @@ export default function ShiftPage() {
   );
 
   const renderHandover = () => {
+    if (errCurrent) return <AsyncState error={errCurrent} onRetry={() => void fetchCurrent()} />;
     if (loadingCurrent) return <Loader />;
     if (!currentShift) {
       return (
@@ -205,7 +221,7 @@ export default function ShiftPage() {
             </div>
           </div>
           <button onClick={handleOpen} disabled={submitting}
-            className="w-full h-11 bg-pos-accent text-white rounded-lg font-medium hover:bg-[#A8401F] transition-colors flex items-center justify-center gap-2 disabled:opacity-60">
+            className="w-full h-11 bg-pos-accent text-white rounded-lg font-medium hover:bg-pos-accent-hover transition-colors flex items-center justify-center gap-2 disabled:opacity-60">
             <PlayCircle size={18} /> {submitting ? '开班中...' : '开班'}
           </button>
         </div>
@@ -275,7 +291,7 @@ export default function ShiftPage() {
         {isOpen && (
           <div className="flex justify-end">
             <button onClick={handleClose} disabled={submitting}
-              className="h-11 px-8 bg-pos-accent text-white rounded-lg font-medium hover:bg-[#A8401F] transition-colors flex items-center gap-2 disabled:opacity-60">
+              className="h-11 px-8 bg-pos-accent text-white rounded-lg font-medium hover:bg-pos-accent-hover transition-colors flex items-center gap-2 disabled:opacity-60">
               <LogOut size={18} /> {submitting ? '交班中...' : '确认交班'}
             </button>
           </div>
@@ -285,6 +301,7 @@ export default function ShiftPage() {
   };
 
   const renderHistory = () => {
+    if (errHistory) return <AsyncState error={errHistory} onRetry={() => void fetchHistory()} />;
     if (loadingHistory) return <Loader />;
     if (historyList.length === 0) return <div className="bg-white rounded-xl border border-pos-line shadow-sm p-12 text-center text-pos-ink-3">暂无历史班次记录</div>;
     const ths = ['班次号', '收银员', '开班时间', '交班时间', '销售金额', '单数', '状态', '操作'];
@@ -322,7 +339,7 @@ export default function ShiftPage() {
                   </td>
                   <td className="px-4 py-3 text-center">
                     <button onClick={() => setExpandedId(expandedId === s.id ? null : s.id)}
-                      className="text-xs text-pos-accent hover:text-[#A8401F] flex items-center gap-0.5 mx-auto">
+                      className="text-xs text-pos-accent hover:text-pos-accent-hover flex items-center gap-0.5 mx-auto">
                       查看明细 {expandedId === s.id ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                     </button>
                   </td>
@@ -349,6 +366,7 @@ export default function ShiftPage() {
   };
 
   const renderZReport = () => {
+    if (errEod) return <AsyncState error={errEod} onRetry={() => void fetchEod()} />;
     if (loadingEod) return <Loader />;
     const eod = eodList[0];
     return (
@@ -415,7 +433,7 @@ export default function ShiftPage() {
               </button>
               <button
                 onClick={handlePrintEod}
-                className="px-4 py-2 bg-pos-accent text-white rounded-lg text-sm font-medium hover:bg-[#A8401F] transition-colors flex items-center gap-1.5"
+                className="px-4 py-2 bg-pos-accent text-white rounded-lg text-sm font-medium hover:bg-pos-accent-hover transition-colors flex items-center gap-1.5"
               >
                 <Printer size={14} /> 打印Z报
               </button>

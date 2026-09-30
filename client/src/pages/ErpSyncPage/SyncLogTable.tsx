@@ -1,16 +1,19 @@
 import { RefreshCw } from 'lucide-react';
+import AsyncState from '@client/src/components/AsyncState';
 import type { SyncLog } from '@shared/api.interface';
 import { formatDateTime, formatDuration, mapStatus, statusTextMap, getTaskName } from './sync-constants';
 
 interface SyncLogTableProps {
   logs: SyncLog[];
   loading: boolean;
+  /** 加载失败原因；有值时优先渲染错误态（此前失败与「无数据」同样显示「暂无同步日志」） */
+  error?: string | null;
   direction: string;
   onDirectionChange: (dir: string) => void;
   onRefresh: () => void;
 }
 
-export default function SyncLogTable({ logs, loading, direction, onDirectionChange, onRefresh }: SyncLogTableProps) {
+export default function SyncLogTable({ logs, loading, error = null, direction, onDirectionChange, onRefresh }: SyncLogTableProps) {
   const filteredLogs = direction === 'all'
     ? logs
     : logs.filter((log) => log.direction === direction);
@@ -47,7 +50,9 @@ export default function SyncLogTable({ logs, loading, direction, onDirectionChan
           </button>
         </div>
       </div>
-      {loading && filteredLogs.length === 0 ? (
+      {error ? (
+        <AsyncState error={error} onRetry={onRefresh} />
+      ) : loading && filteredLogs.length === 0 ? (
         <div className="text-center py-16 text-pos-ink-3 text-sm">加载中...</div>
       ) : filteredLogs.length === 0 ? (
         <div className="text-center py-16 text-pos-ink-3 text-sm">暂无同步日志</div>

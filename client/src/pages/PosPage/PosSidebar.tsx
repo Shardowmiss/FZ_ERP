@@ -10,7 +10,7 @@ import { STORE_ID } from '@client/src/lib/store';
 
 const LEVEL_COLORS: Record<string, string> = {
   normal: 'bg-gray-400',
-  silver: 'bg-blue-500',
+  silver: 'bg-primary',
   gold: 'bg-yellow-500',
   black: 'bg-orange-600',
 };

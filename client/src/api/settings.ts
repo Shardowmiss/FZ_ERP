@@ -72,3 +72,30 @@ export async function getOpLogs(
     throw error;
   }
 }
+
+/** 当前登录员工档案（含已保存语种），前端初始化语言用。 */
+export async function getMe(): Promise<Employee | null> {
+  try {
+    const response = await axiosForBackend.get('/api/settings/employees/me');
+    return response.data;
+  } catch (error) {
+    logger.error('getMe failed', error as Error);
+    throw error;
+  }
+}
+
+/** 当前登录员工更新自己的语种偏好（个人独立配置）。 */
+export async function updateMyLanguage(
+  language: string,
+): Promise<{ language: string }> {
+  try {
+    const response = await axiosForBackend.patch(
+      '/api/settings/employees/me/language',
+      { language },
+    );
+    return response.data;
+  } catch (error) {
+    logger.error('updateMyLanguage failed', error as Error);
+    throw error;
+  }
+}

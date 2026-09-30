@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Search, Truck, Package, User, Clock, ShoppingBag, X, MapPin, Phone, Info } from 'lucide-react';
 import { logger } from '@lark-apaas/client-toolkit/logger';
+import AsyncState from '@client/src/components/AsyncState';
+import { errMsg } from '@client/src/lib/errMsg';
 import { omnichannel as omniApi } from '@client/src/api';
 import type { OmnichannelOrder } from '@shared/api.interface';
 import { toast } from 'sonner';
@@ -37,11 +39,18 @@ export default function OmnichannelPage() {
   const [search, setSearch] = useState('');
   const [orders, setOrders] = useState<OmnichannelOrder[]>([]);
   const [loading, setLoading] = useState(false);
+  /** 列表加载失败原因；此前失败 setOrders([])，界面落到「暂无订单」，与真的无单不可区分 */
+  const [listError, setListError] = useState<string | null>(null);
   const [detail, setDetail] = useState<OmnichannelOrder | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  /** 详情加载失败原因；此前仅写日志，抽屉停在加载态 */
+  const [detailError, setDetailError] = useState<string | null>(null);
+  /** 当前打开的详情 id，供错误态重试复用 */
+  const [detailId, setDetailId] = useState<string | null>(null);
 
   const fetchList = async (): Promise<void> => {
     setLoading(true);
+    setListError(null);
     try {
       let status: string | undefined;
       let type: string | undefined;
@@ -52,6 +61,7 @@ export default function OmnichannelPage() {
     } catch (e) {
       logger.error('fetch omnichannel orders failed', e as Error);
       setOrders([]);
+      setListError(errMsg(e, '全渠道订单加载失败，请检查网络后重试'));
     } finally { setLoading(false); }
   };
 
@@ -88,7 +98,7 @@ export default function OmnichannelPage() {
       await fetchList();
     } catch (e) {
       logger.error('ship order failed', e as Error);
-      toast('发货失败，请重试');
+      toast(errMsg(e, '发货失败，请重试'));
     }
   };
 
@@ -100,18 +110,21 @@ export default function OmnichannelPage() {
       await fetchList();
     } catch (e) {
       logger.error('pickup order failed', e as Error);
-      toast('核销失败，请重试');
+      toast(errMsg(e, '核销失败，请重试'));
     }
   };
 
   const openDetail = async (id: string): Promise<void> => {
+    setDetailId(id);
     setDetailLoading(true);
     setDetail(null);
+    setDetailError(null);
     try {
       const data = await omniApi.getOrderDetail(id);
       setDetail(data);
     } catch (e) {
       logger.error('fetch order detail failed', e as Error);
+      setDetailError(errMsg(e, '订单详情加载失败'));
     } finally { setDetailLoading(false); }
   };
 
@@ -160,19 +173,19 @@ export default function OmnichannelPage() {
       </div>
 
       <div className="flex-1 overflow-y-auto p-4">
-        {loading && (
+        {listError ? (
+          <AsyncState error={listError} onRetry={() => void fetchList()} />
+        ) : loading ? (
           <div className="flex flex-col items-center justify-center py-20 text-pos-ink-3">
             <div className="w-8 h-8 border-2 border-pos-accent/30 border-t-pos-accent rounded-full animate-spin mb-3" />
             <p className="text-sm">加载中...</p>
           </div>
-        )}
-        {!loading && filtered.length === 0 && (
+        ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-pos-ink-3">
             <Package size={40} className="mb-3 opacity-30" />
             <p className="text-sm">暂无订单</p>
           </div>
-        )}
-        {!loading && filtered.length > 0 && (
+        ) : (
           <div className="space-y-3">
             {filtered.map((order) => {
               const b = badge(order.status);
@@ -234,7 +247,7 @@ export default function OmnichannelPage() {
                              查看详情
                            </button>
                            <button onClick={() => handleShip(order.id)}
-                             className="px-4 py-1.5 text-xs bg-pos-accent text-white rounded-md font-medium hover:bg-[#A8401F] transition-colors flex items-center gap-1">
+                             className="px-4 py-1.5 text-xs bg-pos-accent text-white rounded-md font-medium hover:bg-pos-accent-hover transition-colors flex items-center gap-1">
                              <Truck size={12} /> 确认发货
                            </button>
                          </>
@@ -246,7 +259,7 @@ export default function OmnichannelPage() {
                              查看详情
                            </button>
                            <button onClick={() => handlePickup(order)}
-                             className="px-4 py-1.5 text-xs bg-pos-accent text-white rounded-md font-medium hover:bg-[#A8401F] transition-colors flex items-center gap-1">
+                             className="px-4 py-1.5 text-xs bg-pos-accent text-white rounded-md font-medium hover:bg-pos-accent-hover transition-colors flex items-center gap-1">
                              <User size={12} /> 确认核销
                            </button>
                          </>
@@ -266,14 +279,20 @@ export default function OmnichannelPage() {
         )}
       </div>
 
-      {detail !== null && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setDetail(null)}>
+      {(detail !== null || detailError !== null) && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => { setDetail(null); setDetailError(null); }}>
            <div className="bg-white rounded-xl w-full max-w-lg max-h-[80vh] overflow-y-auto shadow-xl" onClick={(e) => e.stopPropagation()}>
              <div className="flex items-center justify-between px-5 py-4 border-b border-pos-line">
                <h3 className="font-semibold text-pos-ink">订单详情</h3>
                <button onClick={() => setDetail(null)} className="text-pos-ink-3 hover:text-pos-ink"><X size={18} /></button>
              </div>
-             {detailLoading ? (
+             {detailError ? (
+               <AsyncState
+                 error={detailError}
+                 compact
+                 onRetry={() => { if (detailId) void openDetail(detailId); }}
+               />
+             ) : detailLoading ? (
                <div className="p-10 text-center text-pos-ink-3 text-sm">加载中...</div>
              ) : (
                <div className="p-5 space-y-4 text-sm">

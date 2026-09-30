@@ -327,6 +327,7 @@ export class MembersService {
         pointsEarned: row.pointsEarned,
         status: row.status,
         channel: row.channel,
+        saleDate: row.saleDate,
         shiftId: row.shiftId ?? undefined,
         remark: row.remark ?? undefined,
         syncedToErp: row.syncedToErp,

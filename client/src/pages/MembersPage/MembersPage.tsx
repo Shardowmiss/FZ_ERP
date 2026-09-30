@@ -11,6 +11,8 @@ import {
   DialogTitle,
 } from '@client/src/components/ui/dialog';
 import { useOffline } from '@client/src/contexts/OfflineContext';
+import AsyncState from '@client/src/components/AsyncState';
+import { errMsg } from '@client/src/lib/errMsg';
 import * as membersApi from '@client/src/api/members';
 import type { Member, LevelCount } from '@shared/api.interface';
 import CreateMemberDialog from './CreateMemberDialog';
@@ -50,6 +52,8 @@ export default function MembersPage() {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  /** 列表加载失败原因；此前 catch 只写日志，失败时表格落到「暂无会员数据」，用户无从判断是没数据还是接口挂了 */
+  const [listError, setListError] = useState<string | null>(null);
   const [levelCounts, setLevelCounts] = useState<LevelCount[]>([]);
   const [offlineMembers, setOfflineMembers] = useState<Member[]>([]);
 
@@ -63,6 +67,7 @@ export default function MembersPage() {
 
   const fetchMembersOnline = useCallback(async () => {
     setLoading(true);
+    setListError(null);
     try {
       const levelParam =
         activeLevel === 'all' ? undefined : activeLevel;
@@ -76,6 +81,7 @@ export default function MembersPage() {
       setTotal(res.total);
     } catch (error) {
       logger.error('fetchMembers failed', error as Error);
+      setListError(errMsg(error, '会员列表加载失败，请检查网络后重试'));
     } finally {
       setLoading(false);
     }
@@ -83,6 +89,7 @@ export default function MembersPage() {
 
   const fetchMembersOffline = useCallback(() => {
     setLoading(true);
+    setListError(null);
     try {
       const kw = (searchKeyword || '').toLowerCase();
       const offlinePhones = new Set(offlineMembers.map((m) => m.phone));
@@ -104,6 +111,7 @@ export default function MembersPage() {
       setTotal(allMembers.length);
     } catch (error) {
       logger.error('fetchMembersOffline failed', error as Error);
+      setListError(errMsg(error, '本地会员缓存读取失败'));
     } finally { setLoading(false); }
   }, [activeLevel, searchKeyword, page, offlineMembers, searchMembersMerged]);
 
@@ -211,7 +219,7 @@ export default function MembersPage() {
         </div>
         <Button
           onClick={() => setShowCreate(true)}
-          className="bg-pos-accent hover:bg-[#A8401F] text-white border-pos-accent"
+          className="bg-pos-accent hover:bg-pos-accent-hover text-white border-pos-accent"
         >
           <Plus size={16} /> 新增会员
         </Button>
@@ -299,7 +307,14 @@ export default function MembersPage() {
                 </tr>
               </thead>
               <tbody>
-                {loading && (
+                {listError && (
+                  <tr>
+                    <td colSpan={10} className="px-4 py-8">
+                      <AsyncState error={listError} onRetry={fetchMembers} compact />
+                    </td>
+                  </tr>
+                )}
+                {!listError && loading && (
                   <tr>
                     <td
                       colSpan={10}
@@ -309,7 +324,7 @@ export default function MembersPage() {
                     </td>
                   </tr>
                 )}
-                {!loading && members.length === 0 && (
+                {!listError && !loading && members.length === 0 && (
                   <tr>
                     <td
                       colSpan={10}
@@ -319,7 +334,7 @@ export default function MembersPage() {
                     </td>
                   </tr>
                 )}
-                {!loading &&
+                {!listError && !loading &&
                   members.map((member: Member) => (
                     <tr
                       key={member.id}
@@ -379,7 +394,7 @@ export default function MembersPage() {
                         <div className="flex items-center justify-center gap-2 text-xs">
                           <button
                             onClick={() => openDetail(member)}
-                            className="text-pos-accent hover:text-[#A8401F] transition-colors"
+                            className="text-pos-accent hover:text-pos-accent-hover transition-colors"
                           >
                             详情
                           </button>

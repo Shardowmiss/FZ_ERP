@@ -11,7 +11,7 @@ import type { Member } from '@shared/api.interface';
 
 const LEVEL_COLORS: Record<string, string> = {
   normal: 'bg-gray-400',
-  silver: 'bg-blue-500',
+  silver: 'bg-primary',
   gold: 'bg-yellow-500',
   black: 'bg-orange-600',
 };
@@ -80,7 +80,7 @@ export default function MemberDialog({
             />
             <button
               onClick={handleSearch}
-              className="px-4 h-10 bg-pos-accent text-white text-sm rounded-md hover:bg-[#A8401F] transition-colors"
+              className="px-4 h-10 bg-pos-accent text-white text-sm rounded-md hover:bg-pos-accent-hover transition-colors"
             >
               搜索
             </button>

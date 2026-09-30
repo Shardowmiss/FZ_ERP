@@ -7,10 +7,12 @@
  * - 当前登录员工（id/name/role/storeId/storeName）作为单一来源，
  *   替代原先散落的 DEMO_CASHIER_ID 硬编码。
  *
- * ⚠️ 演示性质说明：本环境为 @lark-apaas 一体化框架，服务端无本地可安装的
- * 用户密码库，故登录校验在客户端基于内置演示名册 + PIN 完成，并签发一个
- * HMAC 签名的会话令牌存入 localStorage。生产环境应改为调用服务端
- * /api/auth/login 进行密码校验与 JWT 签发，并在服务端用全局守卫校验。
+ * 鉴权真相（2026-09-30 纠偏）：服务端登录早已实现（A-4），
+ * `server/modules/auth` 提供 `POST /client/api/auth/login`（scrypt 校验 +
+ * HS256 令牌）与全局守卫。前端 `login()` 已**优先走服务端**，
+ * 仅当服务端不可达 / 工号未开通时才降级到内置演示名册，保证门店可继续营业。
+ * 真后端联调已跑通：pos_db 补齐 37 张表 + 种子工号 1001/2002/3003，
+ * 平台在 erp 连接上 `SET ROLE anon_`，故已把 public schema 全部对象授权 anon_。
  */
 
 import React, {

@@ -167,7 +167,7 @@ export default function CartPanel({
          <button
           onClick={onCheckout}
           disabled={items.length === 0}
-          className="w-full h-11 bg-pos-accent text-white rounded-lg font-medium hover:bg-[#A8401F] transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full h-11 bg-pos-accent text-white rounded-lg font-medium hover:bg-pos-accent-hover transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isOffline ? '离线结算' : '结算收款'}
         </button>

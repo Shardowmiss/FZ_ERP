@@ -14,6 +14,8 @@ import {
 } from 'lucide-react';
 import { logger } from '@lark-apaas/client-toolkit/logger';
 import { toast } from 'sonner';
+import AsyncState from '@client/src/components/AsyncState';
+import { errMsg } from '@client/src/lib/errMsg';
 import OfflineDetailDialog from './OfflineDetailDialog';
 import {
   getOfflineQueue,
@@ -68,6 +70,8 @@ export default function OfflineQueuePanel({ compact = false }: OfflineQueuePanel
   const [retryingId, setRetryingId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [detailItem, setDetailItem] = useState<OfflineQueueItem | null>(null);
+  /** 队列加载失败原因；此前只弹 toast，列表落到「暂无离线交易记录」，与队列真的为空不可区分 */
+  const [loadError, setLoadError] = useState<string | null>(null);
   // 本地死信（超过最大重试次数，需人工核对后重提）—— P1-4
   const [deadLetters, setDeadLetters] = useState<PendingItem[]>([]);
   const [requeueingId, setRequeueingId] = useState<string | null>(null);
@@ -83,6 +87,7 @@ export default function OfflineQueuePanel({ compact = false }: OfflineQueuePanel
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const [res, ver] = await Promise.all([
         getOfflineQueue(statusFilter === 'all' ? {} : { status: statusFilter }),
@@ -92,7 +97,8 @@ export default function OfflineQueuePanel({ compact = false }: OfflineQueuePanel
       setVersion(ver);
     } catch (err) {
       logger.error('load offline queue failed', err as Error);
-      toast.error('加载离线队列失败');
+      toast.error(errMsg(err, '加载离线队列失败'));
+      setLoadError(errMsg(err, '离线队列加载失败，请检查网络后重试'));
     } finally {
       setLoading(false);
     }
@@ -119,7 +125,7 @@ export default function OfflineQueuePanel({ compact = false }: OfflineQueuePanel
       setTimeout(() => void loadData(), 2000);
     } catch (err) {
       logger.error('sync all failed', err as Error);
-      toast.error('同步触发失败');
+      toast.error(errMsg(err, '同步触发失败'));
     } finally {
       setSyncingAll(false);
     }
@@ -133,7 +139,7 @@ export default function OfflineQueuePanel({ compact = false }: OfflineQueuePanel
       setTimeout(() => void loadData(), 1500);
     } catch (err) {
       logger.error('retry failed', err as Error);
-      toast.error('重试触发失败');
+      toast.error(errMsg(err, '重试触发失败'));
     } finally {
       setRetryingId(null);
     }
@@ -150,7 +156,7 @@ export default function OfflineQueuePanel({ compact = false }: OfflineQueuePanel
       setTimeout(() => void loadData(), 1000);
     } catch (err) {
       logger.error('requeue failed', err as Error);
-      toast.error('重提失败');
+      toast.error(errMsg(err, '重提失败'));
     } finally {
       setRequeueingId(null);
     }
@@ -242,7 +248,7 @@ export default function OfflineQueuePanel({ compact = false }: OfflineQueuePanel
           <button
             onClick={handleSyncAll}
             disabled={syncingAll || pendingCount + failedCount === 0}
-            className="h-8 px-3 bg-pos-accent text-white rounded-lg text-xs font-medium hover:bg-[#A8401F] transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="h-8 px-3 bg-pos-accent text-white rounded-lg text-xs font-medium hover:bg-pos-accent-hover transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {syncingAll ? (
               <Loader2 size={12} className="animate-spin" />
@@ -281,7 +287,7 @@ export default function OfflineQueuePanel({ compact = false }: OfflineQueuePanel
                 <button
                   onClick={() => void handleRequeue(d.clientId, d.entityType)}
                   disabled={requeueingId === d.clientId}
-                  className="ml-3 h-7 px-3 text-xs bg-pos-accent text-white rounded-md hover:bg-[#A8401F] transition-colors flex items-center gap-1 disabled:opacity-50"
+                  className="ml-3 h-7 px-3 text-xs bg-pos-accent text-white rounded-md hover:bg-pos-accent-hover transition-colors flex items-center gap-1 disabled:opacity-50"
                 >
                   {requeueingId === d.clientId ? (
                     <Loader2 size={12} className="animate-spin" />
@@ -328,7 +334,13 @@ export default function OfflineQueuePanel({ compact = false }: OfflineQueuePanel
                     </tr>
                   </thead>
                   <tbody>
-                    {loading && items.length === 0 ? (
+                    {loadError ? (
+                      <tr>
+                        <td colSpan={8} className="py-8">
+                          <AsyncState error={loadError} onRetry={() => void loadData()} compact />
+                        </td>
+                      </tr>
+                    ) : loading && items.length === 0 ? (
                       <tr>
                         <td colSpan={8} className="py-12 text-center text-pos-ink-3 text-sm">
                           <Loader2 size={16} className="inline-block animate-spin mr-2" />

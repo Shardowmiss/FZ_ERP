@@ -87,6 +87,7 @@ export class ReturnsService {
       pointsEarned: order.pointsEarned,
       status: order.status,
       channel: order.channel,
+      saleDate: order.saleDate,
       shiftId: order.shiftId ?? undefined,
       remark: order.remark ?? undefined,
       syncedToErp: order.syncedToErp,

@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { logger } from '@lark-apaas/client-toolkit/logger';
 import { toast } from 'sonner';
+import { errMsg } from '@client/src/lib/errMsg';
 import { useOffline } from '@client/src/contexts/OfflineContext';
 import OfflineBanner from '@client/src/components/ui/offline-banner';
 import * as masterDataApi from '@client/src/api/master-data';
@@ -67,6 +68,12 @@ export default function InventoryPage() {
   const [stocktakeDialogOpen, setStocktakeDialogOpen] = useState(false);
   const [adjustments, setAdjustments] = useState<StockAdjustment[]>([]);
   const [adjustmentsLoading, setAdjustmentsLoading] = useState(false);
+  // 四个列表各自的加载失败原因：此前 catch 只写日志，失败时表格落到空态，
+  // 与「真的没有单据」不可区分，也没有重试入口。
+  const [transfersError, setTransfersError] = useState<string | null>(null);
+  const [transferReqsError, setTransferReqsError] = useState<string | null>(null);
+  const [stocktakesError, setStocktakesError] = useState<string | null>(null);
+  const [adjustmentsError, setAdjustmentsError] = useState<string | null>(null);
 
   // Tab1: 搜索款式（防抖）
   useEffect(() => {
@@ -133,35 +140,47 @@ export default function InventoryPage() {
   const LIST_PARAMS = { page: 1, pageSize: 50 };
   const loadTransfers = async () => {
     setTransfersLoading(true);
+    setTransfersError(null);
     try {
       const res = await inventoryApi.getTransfers(LIST_PARAMS);
       setTransfers(res.items);
-    } catch (e) { logger.error('load transfers failed', e as Error); }
-    finally { setTransfersLoading(false); }
+    } catch (e) {
+      logger.error('load transfers failed', e as Error);
+      setTransfersError(errMsg(e, '收货单加载失败'));
+    } finally { setTransfersLoading(false); }
   };
   const loadTransferRequests = async () => {
     setTransferReqsLoading(true);
+    setTransferReqsError(null);
     try {
       const res = await inventoryApi.getTransferRequests(LIST_PARAMS);
       setTransferReqs(res.items);
-    } catch (e) { logger.error('load transfer requests failed', e as Error); }
-    finally { setTransferReqsLoading(false); }
+    } catch (e) {
+      logger.error('load transfer requests failed', e as Error);
+      setTransferReqsError(errMsg(e, '要货申请加载失败'));
+    } finally { setTransferReqsLoading(false); }
   };
   const loadStocktakes = async () => {
     setStocktakesLoading(true);
+    setStocktakesError(null);
     try {
       const res = await inventoryApi.getStocktakes(LIST_PARAMS);
       setStocktakes(res.items);
-    } catch (e) { logger.error('load stocktakes failed', e as Error); }
-    finally { setStocktakesLoading(false); }
+    } catch (e) {
+      logger.error('load stocktakes failed', e as Error);
+      setStocktakesError(errMsg(e, '盘点单加载失败'));
+    } finally { setStocktakesLoading(false); }
   };
   const loadAdjustments = async () => {
     setAdjustmentsLoading(true);
+    setAdjustmentsError(null);
     try {
       const res = await inventoryApi.getAdjustments(LIST_PARAMS);
       setAdjustments(res.items);
-    } catch (e) { logger.error('load adjustments failed', e as Error); }
-    finally { setAdjustmentsLoading(false); }
+    } catch (e) {
+      logger.error('load adjustments failed', e as Error);
+      setAdjustmentsError(errMsg(e, '调整单加载失败'));
+    } finally { setAdjustmentsLoading(false); }
   };
 
   const handleSelectStyle = (style: Style) => {
@@ -189,7 +208,7 @@ export default function InventoryPage() {
       loadTransfers();
     } catch (error) {
       logger.error('confirm receipt failed', error as Error);
-      toast.error('收货确认失败');
+      toast.error(errMsg(error, '收货确认失败'));
     }
   };
 
@@ -282,6 +301,8 @@ export default function InventoryPage() {
       title="收货入库单"
       items={transfers}
       loading={transfersLoading}
+      error={transfersError}
+      onRetry={() => void loadTransfers()}
       emptyText="暂无收货单"
       headerKeys={[
         { key: '单号' },
@@ -326,6 +347,8 @@ export default function InventoryPage() {
       title="要货申请单"
       items={transferReqs}
       loading={transferReqsLoading}
+      error={transferReqsError}
+      onRetry={() => void loadTransferRequests()}
       emptyText="暂无要货申请"
       headerKeys={[
         { key: '单号' },
@@ -363,6 +386,8 @@ export default function InventoryPage() {
       title="盘点单"
       items={stocktakes}
       loading={stocktakesLoading}
+      error={stocktakesError}
+      onRetry={() => void loadStocktakes()}
       emptyText="暂无盘点单"
       headerKeys={[
         { key: '单号' },
@@ -412,6 +437,8 @@ export default function InventoryPage() {
       title="库存调整单"
       items={adjustments}
       loading={adjustmentsLoading}
+      error={adjustmentsError}
+      onRetry={() => void loadAdjustments()}
       emptyText="暂无调整单"
       headerKeys={[
         { key: '单号' },

@@ -11,13 +11,14 @@
   --card-foreground: hsl(207 34% 16%);
   --popover: hsl(0 0% 100%);
   --popover-foreground: hsl(207 34% 16%);
-  --primary: hsl(16 62% 48%);
+  /* 主色已与 ERP 统一为品牌蓝 hsl(221 83% 53%) ≈ #2563EB */
+  --primary: hsl(221 83% 53%);
   --primary-foreground: hsl(0 0% 100%);
   --secondary: hsl(40 25% 94%);
   --secondary-foreground: hsl(207 34% 16%);
   --muted: hsl(40 25% 94%);
   --muted-foreground: hsl(208 15% 40%);
-  --accent: hsl(16 62% 48%);
+  --accent: hsl(221 83% 53%);
   --accent-foreground: hsl(0 0% 100%);
   --info: hsl(212 50% 37%);
   --info-foreground: hsl(0 0% 100%);
@@ -29,25 +30,25 @@
   --warning-foreground: hsl(0 0% 100%);
   --border: hsl(35 18% 85%);
   --input: hsl(35 18% 85%);
-  --ring: hsl(16 62% 48%);
-  --chart-1: hsl(16 62% 48%);
+  --ring: hsl(221 83% 53%);
+  --chart-1: hsl(221 83% 53%);
   --chart-2: hsl(207 34% 27%);
   --chart-3: hsl(37 32% 52%);
   --chart-4: hsl(135 14% 49%);
   --chart-5: hsl(270 18% 57%);
   --sidebar: hsl(0 0% 100%);
   --sidebar-foreground: hsl(207 34% 16%);
-  --sidebar-primary: hsl(16 62% 48%);
+  --sidebar-primary: hsl(221 83% 53%);
   --sidebar-primary-foreground: hsl(0 0% 100%);
-  --sidebar-accent: hsl(16 62% 95%);
-  --sidebar-accent-foreground: hsl(16 62% 40%);
+  --sidebar-accent: hsl(221 83% 95%);
+  --sidebar-accent-foreground: hsl(221 83% 40%);
   --sidebar-border: hsl(35 18% 88%);
-  --sidebar-ring: hsl(16 62% 48%);
+  --sidebar-ring: hsl(221 83% 53%);
 
-  --primary-border: hsl(from hsl(16 62% 48%) h s calc(l + var(--opaque-button-border-intensity)));
+  --primary-border: hsl(from hsl(221 83% 53%) h s calc(l + var(--opaque-button-border-intensity)));
   --secondary-border: hsl(from hsl(30 20% 96%) h s calc(l + var(--opaque-button-border-intensity)));
   --destructive-border: hsl(from hsl(3 49% 47%) h s calc(l + var(--opaque-button-border-intensity)));
-  --accent-border: hsl(from hsl(16 62% 48%) h s calc(l + var(--opaque-button-border-intensity)));
+  --accent-border: hsl(from hsl(221 83% 53%) h s calc(l + var(--opaque-button-border-intensity)));
   --muted-border: hsl(from hsl(30 20% 96%) h s calc(l + var(--opaque-button-border-intensity)));
 
   --font-sans:
@@ -88,8 +89,15 @@
   --pos-paper: #FAF8F3;
   --pos-line: #E8E4DA;
   --pos-line-soft: #F0EDE4;
-  --pos-accent: #C4532F;
-  --pos-accent-light: #F6E4DC;
+  /* 品牌主色（与 ERP --primary 对齐）：#2563EB = hsl(221 83% 53%) */
+  --pos-accent: #2563EB;
+  --pos-accent-light: #E8EEFD;
+  /* 主色浅底的渐变终止色 / 描边色，用于告警条等需要主色浅底渐变的场景 */
+  --pos-accent-tint: #DBE7FD;
+  --pos-accent-border: #C7D9FB;
+  /* 主色的 hover/active 深变体。此前各页面直接硬编码 #A8401F（31 处），
+     收编为 token 后换肤只需改这一处。 */
+  --pos-accent-hover: #1D4ED8;
   --pos-ok: #2E7D52;
   --pos-ok-bg: #E6F3EC;
   --pos-warn: #B8781F;
@@ -146,6 +154,9 @@
   --color-pos-line: var(--pos-line);
   --color-pos-accent: var(--pos-accent);
   --color-pos-accent-light: var(--pos-accent-light);
+  --color-pos-accent-tint: var(--pos-accent-tint);
+  --color-pos-accent-border: var(--pos-accent-border);
+  --color-pos-accent-hover: var(--pos-accent-hover);
   --color-pos-ok: var(--pos-ok);
   --color-pos-ok-bg: var(--pos-ok-bg);
   --color-pos-warn: var(--pos-warn);

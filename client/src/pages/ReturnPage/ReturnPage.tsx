@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Search, RefreshCw, ChevronRight, ArrowLeftRight, SearchX, Loader2, Package, WifiOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { logger } from '@lark-apaas/client-toolkit/logger';
+import AsyncState from '@client/src/components/AsyncState';
+import { errMsg } from '@client/src/lib/errMsg';
 import { useOffline } from '@client/src/contexts/OfflineContext';
 import * as salesApi from '@client/src/api/sales';
 import * as returnsApi from '@client/src/api/returns';
@@ -60,6 +62,8 @@ export default function ReturnPage() {
   const [keyword, setKeyword] = useState('');
   const [orders, setOrders] = useState<SaleOrder[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
+  /** 单据搜索失败原因；此前只弹 toast 后清空列表，界面落到「无匹配单据」，用户会以为是没搜到 */
+  const [ordersError, setOrdersError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [detail, setDetail] = useState<SaleOrder | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -69,6 +73,8 @@ export default function ReturnPage() {
   const [submitting, setSubmitting] = useState(false);
   const [records, setRecords] = useState<ReturnOrder[]>([]);
   const [recordsLoading, setRecordsLoading] = useState(false);
+  /** 退货记录加载失败原因；此前只弹 toast，列表区落到「暂无退货记录」 */
+  const [recordsError, setRecordsError] = useState<string | null>(null);
 
   // 整单折扣率：实付 / 原价合计，≤1；用于退货时按行占比分摊整单优惠（P1-3）
   const orderDiscountRatio = useMemo(() => {
@@ -80,14 +86,17 @@ export default function ReturnPage() {
   }, [detail]);
 
   const searchOrdersOnline = useCallback(async (kw: string) => {
-    if (!kw.trim()) return setOrders([]);
+    if (!kw.trim()) { setOrdersError(null); return setOrders([]); }
     setOrdersLoading(true);
+    setOrdersError(null);
     try {
       const res = await salesApi.getOrders({ keyword: kw.trim(), page: 1, pageSize: 20, storeId: STORE_ID });
       setOrders(res.items);
     } catch (e) {
       logger.error('searchOrders failed', e as Error);
-      toast.error('搜索单据失败'); setOrders([]);
+      toast.error(errMsg(e, '搜索单据失败'));
+      setOrders([]);
+      setOrdersError(errMsg(e, '单据搜索失败，请检查网络后重试'));
     } finally { setOrdersLoading(false); }
   }, []);
 
@@ -110,6 +119,7 @@ export default function ReturnPage() {
     } catch (e) {
       logger.error('searchOrdersOffline failed', e as Error);
       setOrders([]);
+      setOrdersError(errMsg(e, '本地单据读取失败'));
     } finally { setOrdersLoading(false); }
   }, [getOfflineOrderList]);
 
@@ -151,12 +161,14 @@ export default function ReturnPage() {
       }
     } catch (e) {
       logger.error('loadDetail failed', e as Error);
-      toast.error('加载明细失败'); setDetail(null);
+      toast.error(errMsg(e, '加载明细失败'));
+      setDetail(null);
     } finally { setDetailLoading(false); }
   }, [effectivelyOffline, orders]);
 
   const loadRecords = useCallback(async () => {
     setRecordsLoading(true);
+    setRecordsError(null);
     try {
       if (effectivelyOffline) {
         // 离线：直接从本地 IndexedDB 读取，刷新页面也不丢（P1-2 修复）
@@ -168,7 +180,8 @@ export default function ReturnPage() {
       }
     } catch (e) {
       logger.error('loadRecords failed', e as Error);
-      toast.error('加载退货记录失败');
+      toast.error(errMsg(e, '加载退货记录失败'));
+      setRecordsError(errMsg(e, '退货记录加载失败，请检查网络后重试'));
     } finally { setRecordsLoading(false); }
   }, [effectivelyOffline, getOfflineReturnList]);
 
@@ -252,7 +265,7 @@ export default function ReturnPage() {
       }
     } catch (e) {
       logger.error('createReturn failed', e as Error);
-      toast.error(effectivelyOffline ? '离线退货失败，请重试' : '退货失败，请重试');
+      toast.error(errMsg(e, effectivelyOffline ? '离线退货失败，请重试' : '退货失败，请重试'));
     } finally { setSubmitting(false); }
   };
 
@@ -304,7 +317,13 @@ export default function ReturnPage() {
                 )}
               </div>
               <div className="flex-1 overflow-y-auto">
-                {ordersLoading ? (
+                {ordersError ? (
+                  <AsyncState
+                    error={ordersError}
+                    compact
+                    onRetry={() => { if (keyword) void searchOrders(keyword); }}
+                  />
+                ) : ordersLoading ? (
                   <div className="flex items-center justify-center py-10"><Loader2 size={20} className="animate-spin text-pos-ink-3" /></div>
                 ) : orders.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-10 text-pos-ink-3 gap-2">
@@ -336,7 +355,7 @@ export default function ReturnPage() {
                 <div className="px-4 py-3 border-b border-pos-line flex items-center justify-between">
                   <span className="text-sm font-medium text-pos-ink">{detail ? `单据明细 · ${detail.orderNo}` : '请选择单据'}</span>
                   {detail && (
-                    <button className="text-xs text-pos-accent hover:text-[#A8401F] transition-colors flex items-center gap-1">
+                    <button className="text-xs text-pos-accent hover:text-pos-accent-hover transition-colors flex items-center gap-1">
                       <ArrowLeftRight size={12} /> 申请换货
                     </button>
                   )}
@@ -418,7 +437,7 @@ export default function ReturnPage() {
                     </div>
                     <button onClick={submitReturn}
                       disabled={totalQty === 0 || submitting || !detail || detailLoading}
-                      className="h-10 px-6 bg-pos-accent text-white rounded-lg font-medium hover:bg-[#A8401F] transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                      className="h-10 px-6 bg-pos-accent text-white rounded-lg font-medium hover:bg-pos-accent-hover transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                       {submitting ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
                       {effectivelyOffline ? '离线退货' : '确认退货'}
                     </button>
@@ -438,7 +457,9 @@ export default function ReturnPage() {
                 <span className="text-[10px] text-pos-warn ml-2">（本地暂存）</span>
               )}
             </div>
-            {recordsLoading ? (
+            {recordsError ? (
+              <AsyncState error={recordsError} onRetry={() => void loadRecords()} />
+            ) : recordsLoading ? (
               <div className="flex items-center justify-center py-16"><Loader2 size={24} className="animate-spin text-pos-ink-3" /></div>
             ) : records.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-pos-ink-3 gap-2">

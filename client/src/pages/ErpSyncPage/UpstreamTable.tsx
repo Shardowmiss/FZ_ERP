@@ -1,14 +1,26 @@
+import AsyncState from '@client/src/components/AsyncState';
 import type { ErpSyncStatus } from '@shared/api.interface';
 import { upTypeNameMap, formatDateTime, mapStatus, statusIconMap } from './sync-constants';
 
 interface UpstreamTableProps {
   items: ErpSyncStatus[];
   loading: boolean;
+  /** 加载失败原因；有值时优先渲染错误态（此前失败与「无数据」同样显示「暂无上行数据」） */
+  error?: string | null;
+  onRetry?: () => void;
   syncingTypes: Set<string>;
   onSync: (type: string) => void;
 }
 
-export default function UpstreamTable({ items, loading, syncingTypes, onSync }: UpstreamTableProps) {
+export default function UpstreamTable({ items, loading, error = null, onRetry, syncingTypes, onSync }: UpstreamTableProps) {
+  // 错误态需要保持卡片容器，否则会退化成没有边框的裸文字
+  if (error) {
+    return (
+      <div className="bg-white rounded-xl border border-pos-line shadow-sm overflow-hidden">
+        <AsyncState error={error} onRetry={onRetry} />
+      </div>
+    );
+  }
   if (loading && items.length === 0) {
     return <div className="text-center py-16 text-pos-ink-3 text-sm">加载中...</div>;
   }
@@ -49,7 +61,7 @@ export default function UpstreamTable({ items, loading, syncingTypes, onSync }: 
                   <button
                     onClick={() => onSync(item.dataType)}
                     disabled={isSyncing}
-                    className="text-xs text-pos-accent hover:text-[#A8401F] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="text-xs text-pos-accent hover:text-pos-accent-hover disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     立即上传
                   </button>

@@ -829,6 +829,7 @@ export interface Employee {
   role: string;
   storeId?: string;
   status: string;
+  language?: string;
   createdAt: string;
   updatedAt: string;
 }

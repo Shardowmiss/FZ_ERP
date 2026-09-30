@@ -3,6 +3,7 @@ import {
   Inject,
   Logger,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { DRIZZLE_DATABASE, type PostgresJsDatabase } from '@server/database/drizzle-tokens';
 import { scopeDatabase } from '@server/database/soft-delete';
@@ -99,6 +100,7 @@ export class SettingsService {
         role: row.role,
         storeId: row.storeId ?? undefined,
         status: row.status,
+        language: row.language ?? 'zh-CN',
         createdAt: row.createdAt.toISOString(),
         updatedAt: row.updatedAt.toISOString(),
       })),
@@ -106,6 +108,43 @@ export class SettingsService {
       page,
       pageSize,
     };
+  }
+
+  /** 返回当前登录员工档案（含已保存的语种偏好），供前端初始化语言。 */
+  async getCurrentEmployee(employeeId: string): Promise<Employee | null> {
+    const rows = await this.db
+      .select()
+      .from(posEmployee)
+      .where(eq(posEmployee.id, employeeId))
+      .limit(1);
+    if (rows.length === 0) return null;
+    const row = rows[0];
+    return {
+      id: row.id,
+      name: row.name,
+      code: row.code,
+      role: row.role,
+      storeId: row.storeId ?? undefined,
+      status: row.status,
+      language: row.language ?? 'zh-CN',
+      createdAt: row.createdAt.toISOString(),
+      updatedAt: row.updatedAt.toISOString(),
+    };
+  }
+
+  /** 当前登录员工更新自己的语种偏好（个人独立配置，仅改自己）。 */
+  async updateCurrentEmployeeLanguage(
+    employeeId: string,
+    language: string,
+  ): Promise<{ language: string }> {
+    if (language !== 'zh-CN' && language !== 'en') {
+      throw new BadRequestException('不支持的语种');
+    }
+    await this.db
+      .update(posEmployee)
+      .set({ language })
+      .where(eq(posEmployee.id, employeeId));
+    return { language };
   }
 
   async getPaymentMethods(): Promise<PaymentMethod[]> {

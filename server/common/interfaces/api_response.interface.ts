@@ -16,6 +16,8 @@ export interface ApiErrorResponse {
     cause?: string;
     /** 错误发生时间 */
     timestamp?: number;
+    /** 检索键：与 details 同值，日志平台可直接按该 ID 捞出本次故障的全部上下文 */
+    requestId?: string;
   };
 }
 

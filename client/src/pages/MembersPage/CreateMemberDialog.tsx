@@ -224,7 +224,7 @@ export default function CreateMemberDialog({
           type="button"
           disabled={submitting}
           onClick={handleSubmit}
-          className="bg-pos-accent hover:bg-[#A8401F] text-white border-pos-accent"
+          className="bg-pos-accent hover:bg-pos-accent-hover text-white border-pos-accent"
         >
           {submitting ? '提交中...' : effectivelyOffline ? '离线注册' : '确认创建'}
         </Button>
