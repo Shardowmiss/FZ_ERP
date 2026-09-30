@@ -174,6 +174,59 @@ export const member = pgTable("member", {
   index("idx_member_status").on(table.status),
 ]);
 
+/**
+ * S3 会员钱包事件账本（迁移 0022）。
+ *
+ * 用途：POS 门店消费产生的积分/储值变动，以「幂等事件」上行到 ERP，由 ERP 统一入账。
+ * `eventKey` 的唯一索引是幂等的**唯一依赖** —— 重试 / 离线补传 / 重放同一事件都只入账一次。
+ *
+ * 背景（为什么需要它）：
+ *   POS 侧在 sales / returns / omnichannel 三处各自本地累加 pos_member.points / stored_value；
+ *   而 ERP 只在「零售单结算」时加积分（retail.service.ts:556），且 POS 上行销售单走的是
+ *   pos-receiver.receiveSales，建的是 status='completed' 的 retail_order，
+ *   **不经过 settleRetailOrder** → ERP 侧根本不会为门店消费加积分。
+ *   结果就是两端各记一套、互不打通，ERP 会员积分对门店消费完全失真。
+ *
+ * ⚠ 注意定义位置：本表外键引用 member.id，必须写在 member 之后。
+ *   曾因写在 member 之前触及 TDZ 而被回滚过一次。
+ */
+export const memberWalletEvent = pgTable("member_wallet_event", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  /** 幂等键：{sourceType}:{sourceNo}:{kind}，如 sale:SO20261001-0001:points */
+  eventKey: varchar("event_key", { length: 160 }).notNull().unique(),
+  memberId: uuid("member_id").notNull(),
+  /** points（积分，整数）| stored_value（储值，单位=分，与 member.storedValue 对齐） */
+  kind: varchar("kind", { length: 20 }).notNull(),
+  /** 增量，可为负（退货回冲为负） */
+  changeValue: bigint("change_value", { mode: "number" }).notNull(),
+  /** 入账后的余额快照，用于对账 */
+  balanceAfter: bigint("balance_after", { mode: "number" }).notNull(),
+  /** sale | return | omnichannel | adjust */
+  sourceType: varchar("source_type", { length: 30 }).notNull(),
+  sourceNo: varchar("source_no", { length: 100 }),
+  storeCode: varchar("store_code", { length: 50 }),
+  /** applied（已入账）| rejected（被拒：会员不存在 / 余额不足） */
+  status: varchar("status", { length: 20 }).notNull().default("applied"),
+  message: text("message"),
+  // System field: Creation time (auto-filled, do not modify)
+  createdAt: customTimestamptz("_created_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  // System field: Creator (auto-filled, do not modify)
+  createdBy: userProfile("_created_by"),
+  // System field: Update time (auto-filled, do not modify)
+  updatedAt: customTimestamptz("_updated_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  // System field: Updater (auto-filled, do not modify)
+  updatedBy: userProfile("_updated_by"),
+}, (table) => [
+  uniqueIndex("uniq_member_wallet_event_key").on(table.eventKey),
+  index("idx_member_wallet_event_member").on(table.memberId, table.createdAt),
+  index("idx_member_wallet_event_source").on(table.sourceType, table.sourceNo),
+  foreignKey({
+    columns: [table.memberId],
+    foreignColumns: [member.id],
+    name: "member_wallet_event_member_id_fkey",
+  }).onDelete("cascade"),
+]);
+
 export const memberTag = pgTable("member_tag", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: varchar("name", { length: 100 }).notNull().unique(),
