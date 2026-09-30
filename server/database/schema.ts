@@ -1083,6 +1083,16 @@ export const posPointsLog = pgTable("pos_points_log", {
 export const posMember = pgTable("pos_member", {
   id: uuid("id").primaryKey().defaultRandom(),
   memberNo: varchar("member_no", { length: 50 }).notNull().unique(),
+  // S2 身份锚点：ERP `member.id`（下行幂等键）。
+  //
+  // 为什么必须有它：此前下行的 `onConflictDoUpdate` 以业务键 `member_no` 为冲突目标，
+  // 一旦 ERP 侧改会员号（合并/重编/录入纠错），同一自然人就会被当成新会员再插一行，
+  // 会员档案与积分随之分裂。稳定主键落地后，以它作为 ON CONFLICT target 才能保证幂等。
+  //
+  // 门店本地新建（含离线回放 offline-sync.service.ts:294）的会员为 NULL —— PostgreSQL
+  // 唯一索引允许多个 NULL 共存，不会互相冲突，因此新旧数据可共存过渡。
+  // 首次同步时由「链接预检」按 member_no / phone 回填存量行（见 erp-integration.service.ts）。
+  erpMemberId: uuid("erp_member_id"),
   name: varchar("name", { length: 100 }),
   phone: varchar("phone", { length: 20 }).notNull().unique(),
   // P2-10：软删除时间戳（见 posStyle.deletedAt 注释）。
@@ -1110,6 +1120,9 @@ export const posMember = pgTable("pos_member", {
   updatedBy: userProfile("_updated_by").default(sql`CASE
     WHEN (current_setting('app.user_id'::text, true) = ''::text) THEN NULL`),
 }, (table) => [
+  // S2：ERP 会员主键唯一锚点。下行 upsert 的 ON CONFLICT 依赖它，
+  // 平台 db-schema-sync 不建索引，须由 scripts/apply-pos-indexes.cjs 幂等补建。
+  uniqueIndex("uniq_pos_member_erp_id").on(table.erpMemberId),
   uniqueIndex("pos_member_member_no_key").on(table.memberNo),
   uniqueIndex("pos_member_phone_key").on(table.phone),
   index("idx_pos_member_phone").on(table.phone),

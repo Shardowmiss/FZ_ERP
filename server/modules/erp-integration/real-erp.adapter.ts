@@ -230,6 +230,8 @@ export class RealErpAdapter {
    */
   async getMembers(lastSyncTime?: string): Promise<{
     members: Array<{
+      /** S2 身份锚点：ERP `member.id`。下行以它为 ON CONFLICT 目标，不能为空 */
+      erpMemberId: string;
       memberNo: string;
       name: string;
       phone: string;
@@ -243,10 +245,13 @@ export class RealErpAdapter {
   }> {
     this.ensureConnected();
     this.logger.log(`[RealERP] 获取会员数据 ${lastSyncTime ? '(增量)' : '(全量)'}`);
+    // S2：必须取 `id`。此前只按业务键 member_no 做冲突目标，ERP 改会员号就会
+    // 把同一自然人插成第二行（档案与积分分裂），故以主键作为唯一真相锚点。
     const rows = lastSyncTime
-      ? await this.client`SELECT member_no, name, phone, gender, birthday, level, points FROM member WHERE _updated_at >= ${new Date(lastSyncTime)}`
-      : await this.client`SELECT member_no, name, phone, gender, birthday, level, points FROM member`;
+      ? await this.client`SELECT id, member_no, name, phone, gender, birthday, level, points FROM member WHERE _updated_at >= ${new Date(lastSyncTime)}`
+      : await this.client`SELECT id, member_no, name, phone, gender, birthday, level, points FROM member`;
     const members = (rows as any[]).map((m) => ({
+      erpMemberId: String(m.id),
       memberNo: m.member_no,
       name: m.name,
       phone: m.phone || `EMPTY_${m.member_no}`,

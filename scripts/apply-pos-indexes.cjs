@@ -15,15 +15,24 @@
 //   pos_promotion        (status, valid_from, valid_to)      促销有效期过滤
 //   pos_promotion        (erp_promotion_id) UNIQUE           Wave 4-C 促销下行幂等键
 //   pos_stock            (sku_id)                            单 SKU 维度查询
+//   pos_member           (erp_member_id)    UNIQUE           S2 会员下行身份锚点
 //
 // 说明：用 CONCURRENTLY 建索引，不锁表（门店 7×24 运行，禁止在运行时阻塞写）。
 //       CONCURRENTLY 不能放在事务块内，故每条独立执行。
 //
-// ⚠ 唯一索引（unique:true）不只是查询加速：promotion-sync.service.ts 的
-//   `onConflictDoUpdate({ target: erpPromotionId })` 依赖它，缺了会直接报
+// ⚠ 唯一索引（unique:true）不只是查询加速：
+//   - promotion-sync.service.ts 的 `onConflictDoUpdate({ target: erpPromotionId })`
+//   - erp-integration.service.ts 会员下行的 `onConflictDoUpdate({ target: erpMemberId })`
+//   都依赖它，缺了会直接报
 //   "no unique or exclusion constraint matching the ON CONFLICT specification"。
-//   建之前先查重 —— 若历史库里已有重复 erp_promotion_id，CONCURRENTLY 会失败，
+//   建之前先查重 —— 若历史库里已有重复值，CONCURRENTLY 会失败，
 //   此时必须先清理重复行（通常保留 _created_at 最早的一行）。
+//
+// ⚠ 历史 Bug（已修）：本脚本曾用 `CREATE INDEX ... IF NOT EXISTS` 建唯一索引 ——
+//   **漏了 UNIQUE 关键字**，导致 uniq_pos_promotion_erp_id 在真库里其实是普通索引，
+//   促销下行在真库必然失败。而 pglite 测试底座（server/test-utils/pglite.ts:59）
+//   手工建了真唯一索引，所以单测全绿、线上必炸 —— 典型「假绿」。
+//   现在按 idx.unique 生成 `CREATE UNIQUE INDEX`。
 const pg = require('postgres');
 
 const DEFAULT_URL = 'postgres://erp:erp@localhost:5434/pos_db';
@@ -31,6 +40,13 @@ const DEFAULT_URL = 'postgres://erp:erp@localhost:5434/pos_db';
 const DRY_RUN = process.argv.includes('--dry-run');
 const targetIdx = process.argv.findIndex((a) => a.startsWith('--target='));
 const DB_URL = targetIdx >= 0 ? process.argv[targetIdx].slice('--target='.length) : process.env.DATABASE_URL || process.env.SUDA_DATABASE_URL || DEFAULT_URL;
+
+// 平台 db-schema-sync 会建表，但不会为已存在的表追加**新列**；
+// 新增的幂等键列必须先落列，否则后面的唯一索引会因列不存在而失败。
+// 列名/类型来自本文件白名单常量（非用户输入），拼字符串是安全的。
+const COLUMNS = [
+  { table: 'pos_member', column: 'erp_member_id', ddl: 'uuid' },
+];
 
 const INDEXES = [
   { name: 'idx_pos_suspended_store_status', table: 'pos_suspended_order', ddl: '(store_id, status, _created_at DESC)' },
@@ -42,8 +58,19 @@ const INDEXES = [
     table: 'pos_promotion',
     ddl: '(erp_promotion_id)',
     unique: true,
+    dupColumn: 'erp_promotion_id',
   },
   { name: 'idx_pos_stock_sku', table: 'pos_stock', ddl: '(sku_id)' },
+  // S2：会员下行身份锚点。erp-integration.service.ts 会员分支改为以 erp_member_id
+  // 作 ON CONFLICT target，没有唯一索引同样跑不起来。
+  // 注意：PG 唯一索引允许多个 NULL，门店本地新建的会员（erp_member_id IS NULL）不受影响。
+  {
+    name: 'uniq_pos_member_erp_id',
+    table: 'pos_member',
+    ddl: '(erp_member_id)',
+    unique: true,
+    dupColumn: 'erp_member_id',
+  },
 ];
 
 async function main() {
@@ -57,6 +84,32 @@ async function main() {
   const failed = [];
 
   try {
+    // 第 0 步：先补列（db-schema-sync 不会给已存在的表加新列）
+    for (const col of COLUMNS) {
+      const [{ exists: tableExists }] = await sql`
+        SELECT to_regclass(${col.table}) IS NOT NULL AS exists
+      `;
+      if (!tableExists) {
+        skipped.push(`${col.table}.${col.column} — 表不存在，跳过`);
+        console.log(`SKIP   ${col.table}.${col.column} (表不存在)`);
+        continue;
+      }
+      const stmt = `ALTER TABLE public.${col.table} ADD COLUMN IF NOT EXISTS ${col.column} ${col.ddl}`;
+      if (DRY_RUN) {
+        console.log(`DRYRUN ${stmt}`);
+        ok += 1;
+        continue;
+      }
+      try {
+        await sql.unsafe(stmt);
+        console.log(`OK     ${col.table}.${col.column} (列已就绪)`);
+        ok += 1;
+      } catch (e) {
+        failed.push(`${col.table}.${col.column}: ${e.message}`);
+        console.log(`FAIL   ${col.table}.${col.column}: ${e.message}`);
+      }
+    }
+
     for (const idx of INDEXES) {
       // 先确认表存在（本地开发库可能尚未建这些业务表，缺表不应视为失败）
       const [{ exists }] = await sql`
@@ -73,23 +126,29 @@ async function main() {
       // duplicated"，不预先查重很难把线索串到「历史库有没有脏数据」上。
       // 表名来自上面的白名单常量（不是用户输入），拼字符串是安全的。
       if (idx.unique) {
+        // dupColumn 由本文件白名单提供（非用户输入），拼字符串安全；
+        // 缺失配置直接报错，避免悄悄退化成「不查重」。
+        if (!idx.dupColumn) {
+          throw new Error(`索引 ${idx.name} 标记为 unique 但未配置 dupColumn，无法确定查重列`);
+        }
         const dupRes = await sql.unsafe(`SELECT count(*) AS dup FROM (
-            SELECT erp_promotion_id FROM public.${idx.table}
-            WHERE erp_promotion_id IS NOT NULL
-            GROUP BY erp_promotion_id HAVING count(*) > 1
+            SELECT ${idx.dupColumn} FROM public.${idx.table}
+            WHERE ${idx.dupColumn} IS NOT NULL
+            GROUP BY ${idx.dupColumn} HAVING count(*) > 1
           ) d`);
         const dup = Number(dupRes[0]?.dup ?? 0);
         if (dup > 0) {
           failed.push(
-            `${idx.table}.${idx.name}: 存在 ${dup} 个重复 erp_promotion_id，请先清理重复行再建唯一索引`,
+            `${idx.table}.${idx.name}: 存在 ${dup} 个重复 ${idx.dupColumn}，请先清理重复行再建唯一索引`,
           );
-          console.log(`FAIL   ${idx.table}.${idx.name}: 存在 ${dup} 个重复 erp_promotion_id`);
+          console.log(`FAIL   ${idx.table}.${idx.name}: 存在 ${dup} 个重复 ${idx.dupColumn}`);
           continue;
         }
       }
 
-      // 幂等：IF NOT EXISTS
-      const stmt = `CREATE INDEX CONCURRENTLY IF NOT EXISTS ${idx.name} ON public.${idx.table} ${idx.ddl}`;
+      // 幂等：IF NOT EXISTS。unique 必须生成 `CREATE UNIQUE INDEX`——
+      // 历史上这里漏了 UNIQUE，导致唯一索引实际是普通索引（见文件头说明）。
+      const stmt = `CREATE ${idx.unique ? 'UNIQUE ' : ''}INDEX CONCURRENTLY IF NOT EXISTS ${idx.name} ON public.${idx.table} ${idx.ddl}`;
       if (DRY_RUN) {
         console.log(`DRYRUN ${stmt}`);
         ok += 1;

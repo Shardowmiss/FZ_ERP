@@ -94,6 +94,8 @@ CREATE TABLE IF NOT EXISTS pos_employee (
 CREATE TABLE IF NOT EXISTS pos_member (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   member_no varchar(50) NOT NULL UNIQUE,
+  -- S2 身份锚点：ERP member.id（下行幂等键，见 schema.ts 同名列注释）
+  erp_member_id uuid,
   name varchar(100),
   phone varchar(20) NOT NULL UNIQUE,
   deleted_at timestamptz,
@@ -114,6 +116,10 @@ CREATE TABLE IF NOT EXISTS pos_member (
   _updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
   _updated_by user_profile DEFAULT NULL
 );
+-- S2：会员下行以 erp_member_id 为 ON CONFLICT 目标，缺唯一索引会直接报
+-- "no unique or exclusion constraint matching the ON CONFLICT specification"。
+-- 真库由 scripts/apply-pos-indexes.cjs 幂等补建；此处必须同步，否则测试是假绿。
+CREATE UNIQUE INDEX IF NOT EXISTS uniq_pos_member_erp_id ON pos_member (erp_member_id);
 
 CREATE TABLE IF NOT EXISTS pos_style (
   id varchar(50) PRIMARY KEY,

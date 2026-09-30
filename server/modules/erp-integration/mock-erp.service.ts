@@ -125,6 +125,8 @@ export class MockErpService {
    */
   async getMembers(lastSyncTime?: string): Promise<{
     members: Array<{
+      /** S2 身份锚点：ERP `member.id`（见 real-erp.adapter.ts 同名说明） */
+      erpMemberId: string;
       memberNo: string;
       name: string;
       phone: string;

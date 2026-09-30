@@ -19,7 +19,7 @@ import {
   posTransfer,
   posTransferItem,
 } from '@server/database/schema';
-import { eq, and, count, desc, sql, gte, lte } from 'drizzle-orm';
+import { eq, and, count, desc, sql, gte, lte, inArray, or, isNull } from 'drizzle-orm';
 import { chunk, BATCH_SIZE } from '@server/common/batch';
 import { MockErpService } from './mock-erp.service';
 import { RealErpAdapter } from './real-erp.adapter';
@@ -31,6 +31,20 @@ import type {
   ListResponse,
   SyncLogQuery,
 } from '@shared/api.interface';
+
+/**
+ * 下行会员源行。类型直接派生自适配器返回值，
+ * 适配器新增/改名列时这里会跟着变，避免两处定义漂移。
+ */
+type ErpMemberFeedRow = Awaited<
+  ReturnType<MockErpService['getMembers']>
+>['members'][number];
+
+/** 被隔离的冲突行（只跳过自己，不影响同批其余会员） */
+interface MemberSyncConflict {
+  memberNo: string;
+  reason: string;
+}
 
 @Injectable()
 export class ErpIntegrationService {
@@ -290,49 +304,17 @@ export class ErpIntegrationService {
         }
         case 'members': {
           const data = await this.mockErpService.getMembers();
-          // P1-1a：由「仅 count」改为真实 upsert 落库。memberNo 为唯一业务键（幂等）。
-          if (data.members.length > 0) {
-            const memberValues = data.members.map((m) => ({
-              memberNo: m.memberNo,
-              name: m.name,
-              phone: m.phone,
-              gender: m.gender,
-              birthday: m.birthday ? m.birthday : null,
-              level: m.level,
-              points: m.points,
-              storedValue: toCents(Number(m.storedValue ?? 0)),
-              erpSyncAt: new Date(),
-            }));
-            await this.db.transaction(async (tx) => {
-              for (const batch of chunk(memberValues, BATCH_SIZE)) {
-                await tx
-                  .insert(posMember)
-                  .values(batch)
-                  .onConflictDoUpdate({
-                    target: posMember.memberNo,
-                    // S1 止血（资金安全）：此处**故意不覆盖** points / stored_value，只同步档案字段。
-                    // 原因：
-                    //  ① POS 侧积分由 sales/returns/omnichannel 各自本地累加，是营运余额；
-                    //  ② ERP `member` 表根本没有 storedValue 字段，RealErpAdapter 取数恒为 0
-                    //     （real-erp.adapter.ts:229 注释、:257 `storedValue: 0`），
-                    //     一旦覆盖会把会员**储值余额清零**——这是资损，不是数据偏差；
-                    //  ③ ERP 的 `points` 是旧快照，覆盖会抹掉门店已累积的积分。
-                    // INSERT 分支仍写入二者（让新会员拿到 ERP 初始值），
-                    // 仅「已存在会员」的冲突更新不再覆写。最终单轨收口见 S3。
-                    set: {
-                      name: sql`excluded.name`,
-                      phone: sql`excluded.phone`,
-                      gender: sql`excluded.gender`,
-                      birthday: sql`excluded.birthday`,
-                      level: sql`excluded.level`,
-                      erpSyncAt: sql`excluded.erp_sync_at`,
-                    },
-                  });
-              }
-            });
-          }
-          count = data.members.length;
-          response = `同步 ${data.members.length} 个会员成功`;
+          const r = await this.syncMembersDownstream(data.members ?? []);
+          count = r.upserted;
+          response =
+            `同步 ${r.upserted} 个会员成功` +
+            (r.anchorless > 0 ? `，跳过 ${r.anchorless} 个缺少 ERP 主键的记录` : '') +
+            (r.conflicts.length > 0
+              ? `，隔离 ${r.conflicts.length} 个冲突行（需人工核对：${r.conflicts
+                  .slice(0, 3)
+                  .map((c) => `${c.memberNo}—${c.reason}`)
+                  .join('；')}${r.conflicts.length > 3 ? '…' : ''}）`
+              : '');
           break;
         }
         case 'stock': {
@@ -407,6 +389,224 @@ export class ErpIntegrationService {
     });
 
     return { success, count };
+  }
+
+  /**
+   * S2：会员下行 —— 以 **ERP 主键 `erp_member_id`** 为身份锚点做幂等 upsert。
+   *
+   * 改造动机（原实现以业务键 `member_no` 为 ON CONFLICT 目标，有两个真实缺陷）：
+   *  ① **身份可漂移**：ERP 侧改会员号（合并/重编/纠错）后，同一自然人会被当成新会员
+   *     再插一行，档案与积分随之分裂 —— 业务键不是稳定身份。
+   *  ② **撞号即全批失败**：冲突目标只有 member_no，而 phone 另有唯一索引；一旦 ERP
+   *     某会员手机号与门店**另一个**会员撞号，会命中非冲突目标列的唯一约束，
+   *     异常被 catch 吞掉 → **整批会员同步静默失败**（仅落 status=failed）。
+   *     一个手机号填错就能让全店会员档案停摆且不告警。
+   *
+   * 本实现的三层策略：
+   *  - **锚点必填**：无 erpMemberId 的源行直接跳过并告警（NULL 锚点会导致每次同步都插新行）。
+   *  - **存量回填**：门店老数据 erp_member_id 为 NULL，首次同步时按 `member_no` 精确匹配
+   *    回填锚点，再走 upsert；**不按手机号猜测合并**（避免把两个自然人误并成一个，
+   *    积分/储值合并是不可逆的资金风险）。
+   *  - **冲突隔离**：撞号/锚点冲突的行只跳过自己并登记原因，其余照常同步，
+   *    不再拖垮整批；冲突清单随同步结果返回并在响应文案里可见。
+   *
+   * 资金语义沿用 S1：已存在会员不覆写 points / stored_value（见下方 set 注释）。
+   */
+  private async syncMembersDownstream(
+    feed: ErpMemberFeedRow[],
+  ): Promise<{ upserted: number; anchorless: number; conflicts: MemberSyncConflict[] }> {
+    const conflicts: MemberSyncConflict[] = [];
+    let upserted = 0;
+
+    // ① 锚点必填：缺 ERP 主键的源行无法幂等，绝不放进 upsert
+    const anchored = feed.filter((m) => !!m.erpMemberId);
+    const anchorless = feed.length - anchored.length;
+    if (anchorless > 0) {
+      this.logger.warn(
+        `会员下行跳过 ${anchorless} 条缺少 ERP 主键(erpMemberId)的记录：` +
+          `NULL 锚点在 PostgreSQL 唯一索引下永不冲突，会每次同步都插入新行。`,
+      );
+    }
+    if (anchored.length === 0) return { upserted: 0, anchorless, conflicts };
+
+    await this.db.transaction(async (tx) => {
+      for (const batch of chunk(anchored, BATCH_SIZE)) {
+        // ② 预检：一次性取出这批可能命中的存量行（锚点 / 会员号 / 手机号三种键）
+        const conds = [
+          inArray(posMember.erpMemberId, batch.map((m) => m.erpMemberId)),
+          inArray(posMember.memberNo, batch.map((m) => m.memberNo)),
+        ];
+        const phones = batch.map((m) => m.phone).filter((p): p is string => !!p);
+        if (phones.length > 0) conds.push(inArray(posMember.phone, phones));
+
+        const existing = await tx
+          .select({
+            id: posMember.id,
+            memberNo: posMember.memberNo,
+            phone: posMember.phone,
+            erpMemberId: posMember.erpMemberId,
+          })
+          .from(posMember)
+          .where(or(...conds));
+
+        const byAnchor = new Map<string, (typeof existing)[number]>();
+        const byNo = new Map<string, (typeof existing)[number]>();
+        const byPhone = new Map<string, (typeof existing)[number]>();
+        for (const r of existing) {
+          if (r.erpMemberId) byAnchor.set(r.erpMemberId, r);
+          byNo.set(r.memberNo, r);
+          if (r.phone) byPhone.set(r.phone, r);
+        }
+
+        const seenAnchor = new Set<string>();
+        // 批内已占用的门店行 / 手机号 / 会员号。
+        // 「只查库存量行」是不够的：同批两条都是新行时，第二条撞第一条的手机号
+        // 在库里查不到（第一条还没插入），必须在批内记账，否则整条 INSERT 一起失败。
+        const claimed = new Set<string>();
+        const claimedPhones = new Set<string>();
+        const claimedNos = new Set<string>();
+        const linkTasks: { posId: string; erpId: string }[] = [];
+        const values: (typeof posMember.$inferInsert)[] = [];
+
+        for (const m of batch) {
+          // 批内重复锚点：保留第一条，其余登记为冲突
+          if (seenAnchor.has(m.erpMemberId)) {
+            conflicts.push({ memberNo: m.memberNo, reason: '本批内 erpMemberId 重复' });
+            continue;
+          }
+          seenAnchor.add(m.erpMemberId);
+
+          const target = byAnchor.get(m.erpMemberId) ?? byNo.get(m.memberNo);
+
+          if (target) {
+            // 该门店会员已绑定**另一个** ERP 主键 → 身份冲突，绝不覆盖
+            if (target.erpMemberId && target.erpMemberId !== m.erpMemberId) {
+              conflicts.push({
+                memberNo: m.memberNo,
+                reason: `门店会员 ${target.memberNo} 已绑定其它 ERP 主键 ${target.erpMemberId}`,
+              });
+              continue;
+            }
+            // 本批已有另一条 ERP 会员认领了这行（典型：两条不同 ERP 会员撞同一手机号）
+            if (claimed.has(target.id)) {
+              conflicts.push({
+                memberNo: m.memberNo,
+                reason: `门店会员 ${target.memberNo} 已被本批另一条 ERP 会员认领`,
+              });
+              continue;
+            }
+            // 手机号已被**别的**会员占用：不能覆写他人手机号（phone 有唯一索引）
+            const phoneOwner = m.phone ? byPhone.get(m.phone) : undefined;
+            if (phoneOwner && phoneOwner.id !== target.id) {
+              conflicts.push({
+                memberNo: m.memberNo,
+                reason: `手机号 ${m.phone} 已被门店会员 ${phoneOwner.memberNo} 占用（疑似 ERP 侧录入错误）`,
+              });
+              continue;
+            }
+            // 本批内已有别的会员占用该手机号（存量行里查不到，必须批内记账）
+            if (m.phone && target.phone !== m.phone && claimedPhones.has(m.phone)) {
+              conflicts.push({
+                memberNo: m.memberNo,
+                reason: `手机号 ${m.phone} 已被本批另一条 ERP 会员占用`,
+              });
+              continue;
+            }
+            // 存量行尚未建锚点 → 先回填，再按锚点 upsert
+            if (!target.erpMemberId) {
+              linkTasks.push({ posId: target.id, erpId: m.erpMemberId });
+              target.erpMemberId = m.erpMemberId;
+              byAnchor.set(m.erpMemberId, target);
+            }
+            claimed.add(target.id);
+          } else {
+            // 全新会员：手机号若已被占用则无法插入，隔离而非让整批失败
+            const phoneOwner = m.phone ? byPhone.get(m.phone) : undefined;
+            if (phoneOwner) {
+              conflicts.push({
+                memberNo: m.memberNo,
+                reason: `手机号 ${m.phone} 已被门店会员 ${phoneOwner.memberNo} 占用（疑似 ERP 侧录入错误）`,
+              });
+              continue;
+            }
+            if (m.phone && claimedPhones.has(m.phone)) {
+              conflicts.push({
+                memberNo: m.memberNo,
+                reason: `手机号 ${m.phone} 已被本批另一条 ERP 会员占用`,
+              });
+              continue;
+            }
+            if (claimedNos.has(m.memberNo)) {
+              conflicts.push({
+                memberNo: m.memberNo,
+                reason: '本批内会员号重复',
+              });
+              continue;
+            }
+            claimedNos.add(m.memberNo);
+          }
+
+          if (m.phone) claimedPhones.add(m.phone);
+
+          values.push({
+            erpMemberId: m.erpMemberId,
+            memberNo: m.memberNo,
+            name: m.name,
+            phone: m.phone,
+            gender: m.gender,
+            birthday: m.birthday ? m.birthday : null,
+            level: m.level,
+            points: m.points,
+            storedValue: toCents(Number(m.storedValue ?? 0)),
+            erpSyncAt: new Date(),
+          });
+        }
+
+        // ③ 回填存量行的锚点（仅限本次判定的 1:1 匹配，不按手机号猜测合并）
+        for (const t of linkTasks) {
+          await tx
+            .update(posMember)
+            .set({ erpMemberId: t.erpId })
+            .where(and(eq(posMember.id, t.posId), isNull(posMember.erpMemberId)));
+        }
+
+        if (values.length === 0) continue;
+
+        await tx
+          .insert(posMember)
+          .values(values)
+          .onConflictDoUpdate({
+            target: posMember.erpMemberId,
+            // S1 止血（资金安全）：此处**故意不覆盖** points / stored_value，只同步档案字段。
+            // 原因：
+            //  ① POS 侧积分由 sales/returns/omnichannel 各自本地累加，是营运余额；
+            //  ② ERP `member` 表根本没有 storedValue 字段，RealErpAdapter 取数恒为 0
+            //     （real-erp.adapter.ts:229 注释、:257 `storedValue: 0`），
+            //     一旦覆盖会把会员**储值余额清零**——这是资损，不是数据偏差；
+            //  ③ ERP 的 `points` 是旧快照，覆盖会抹掉门店已累积的积分。
+            // INSERT 分支仍写入二者（让新会员拿到 ERP 初始值），
+            // 仅「已存在会员」的冲突更新不再覆写。最终单轨收口见 S3。
+            // 另注意：set 不含 memberNo —— 门店本地会员号一旦生成就不再被 ERP 改写。
+            set: {
+              name: sql`excluded.name`,
+              phone: sql`excluded.phone`,
+              gender: sql`excluded.gender`,
+              birthday: sql`excluded.birthday`,
+              level: sql`excluded.level`,
+              erpSyncAt: sql`excluded.erp_sync_at`,
+            },
+          });
+        upserted += values.length;
+      }
+    });
+
+    if (conflicts.length > 0) {
+      this.logger.warn(
+        `会员下行隔离 ${conflicts.length} 个冲突行（其余已正常同步）：` +
+          conflicts.slice(0, 5).map((c) => `[${c.memberNo}] ${c.reason}`).join(' | '),
+      );
+    }
+    return { upserted, anchorless, conflicts };
   }
 
   async getUpstreamStatus(): Promise<ErpSyncStatus[]> {

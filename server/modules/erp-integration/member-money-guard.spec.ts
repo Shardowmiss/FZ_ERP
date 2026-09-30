@@ -27,8 +27,14 @@ describe('会员下行同步 资金护栏（S1）', () => {
   /** 下行数据源：各用例自行设置，模拟 ERP/真实适配器返回的形态 */
   let feed: ErpMemberRow[] = [];
 
-  /** 模拟「真实 ERP」返回：旧的积分快照 + 恒 0 的储值 */
+  /**
+   * 模拟「真实 ERP」返回：旧的积分快照 + 恒 0 的储值。
+   * S2 起每位会员都要有独立的 erpMemberId（同一锚点会被视为同一人），故用自增序号。
+   */
+  let seq = 0;
   const erpRow = (over: Partial<ErpMemberRow> = {}): ErpMemberRow => ({
+    // erp_member_id 列是 uuid，必须用合法 UUID（否则 PG 报 invalid input syntax for uuid）
+    erpMemberId: uuid(++seq),
     memberNo: 'M-001',
     name: '张三(ERP最新)',
     phone: '13800000001',
@@ -112,32 +118,47 @@ describe('会员下行同步 资金护栏（S1）', () => {
   });
 
   /**
-   * 4) **已知缺口的特征测试（记录现状，非期望行为）**
+   * 4) S2 修复验证：**撞号行只隔离自己，不再拖垮整批**。
    *
-   * upsert 的冲突目标只有 `memberNo`，而 `phone` 另有唯一索引。
-   * 因此当 ERP 某会员的手机号与 POS 中**另一个**会员撞号时，
-   * 会命中非冲突目标列的唯一约束 → 整批会员同步失败（异常被 catch，仅日志 status=failed）。
+   * 改造前：upsert 冲突目标只有 `memberNo`，而 phone 另有唯一索引 →
+   * ERP 某会员手机号与门店**另一个**会员撞号时命中非冲突目标列的约束，
+   * 异常被 catch 吞掉 → **整批会员同步静默失败**（仅落 status=failed）。
+   * 「一个手机号填错」就能让全店会员档案停摆且不告警。
    *
-   * 这意味着「一个会员手机号填错」足以让全店会员同步停摆且不告警。
-   * 该缺口应在 S2（身份锚点）一并处理：把冲突目标收敛到 erp_member_id，
-   * 并对 phone 冲突做定向跳过/冲突上报，而不是整批放弃。
+   * 改造后：撞号行被单独隔离并登记原因，同批其余会员照常落库，同步整体仍成功。
    */
-  it('4) 已知缺口：跨会员手机号撞号会导致整批同步失败（当前行为）', async () => {
-    feed = [erpRow({ memberNo: 'M-PHONE', phone: '13800000001' })]; // 与 M-KEEP 撞号
+  it('4) 撞号行被隔离，同批其余会员照常同步（S2 修复点）', async () => {
+    feed = [
+      erpRow({ memberNo: 'M-PHONE', phone: '13800000001' }), // 与存量 M-KEEP 撞号
+      erpRow({ memberNo: 'M-OK', phone: '13800000099' }), // 正常行
+    ];
 
     const r = await svc.syncDownstream('members');
 
-    expect(r.success).toBe(false);
+    expect(r.success).toBe(true); // 不再整批失败
+    // 正常行必须落库（这是「隔离而非放弃」的核心断言）
+    const ok = await rowOf('M-OK');
+    expect(ok).toBeDefined();
+    expect(ok.name).toBe('张三(ERP最新)');
+    // 撞号行不得写入，也不得污染存量会员
     const rows = await t.db
       .select()
       .from(posMember)
       .where(eq(posMember.memberNo, 'M-PHONE'));
     expect(rows).toHaveLength(0);
+    // 存量会员的手机号没有被覆写
+    const keep = await rowOf('M-KEEP');
+    expect(keep.phone).toBe('13800000001');
   });
 });
 
+/** 生成确定性的合法 UUID（erp_member_id 是 uuid 列） */
+const uuid = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
+
 /** 与 MockErpService.getMembers() 单行结构保持一致 */
 interface ErpMemberRow {
+  /** S2 身份锚点：ERP member.id */
+  erpMemberId: string;
   memberNo: string;
   name: string;
   phone: string;
