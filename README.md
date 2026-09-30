@@ -36,9 +36,9 @@ cd FZ_ERP && git checkout dev
 - 代码冲突用 Git 解决；非代码资产放资料库
 - 数据库/存储用 cloud-service，两端连同一后端，消除环境差
 
-## 安全规范（硬约束）：禁止向 Git 提交密钥 / 凭证
-**任何私有密钥、密码、令牌、访问凭证都不得进入 Git 仓库。** 已通过 `.gitignore` 全量排除（见仓库根）。
-- ❌ 禁止提交：`service_role` 私钥、数据库密码、连接串（含密码）、PAT、SSH 私钥、`.env`（非 example）、`*.genie`、`credentials*`、`*secret*`、`config.local.js` 等
-- ✅ 允许提交：`*.example` 占位模板（不含真实值）；以及 **`publishableKey`（前缀 `wbpk_`，公开客户端密钥）**——它等价于 Supabase anon key / Stripe publishable key，按设计就是要发到浏览器的**非私密**凭证，可安全提交
-- 真实密钥如需在本地使用，放 `config.local.js`（已被 `.gitignore` 忽略），并在 `config.example.js` 留占位模板
-- 提交前自查：`git status` 中若出现 `.env` / `*.key` / `*secret*` / `*.genie` 等，立即停止提交并核实
+## 安全规范（硬约束）：禁止向 Git 提交任何密钥 / 凭证
+**包括 `publishableKey`（wbpk_ 前缀的公开客户端密钥）在内的任何密钥都不得进入 Git 仓库。**（用户已通过 `Delete app/index.html` 提交明确要求：不能提交带密钥的材料。）
+- ❌ 禁止提交：`service_role` 私钥、数据库密码、连接串（含密码）、PAT、SSH 私钥、`.env`（非 example）、`*.genie`、`credentials*`、`*secret*`、`config.local.js` 等——无论公私，一律不进仓库
+- ✅ 允许提交：源码与 `*.example` 占位模板（不含真实值）；`config.js`（仅含公开 endpoint + 空占位 key）
+- 密钥如何既"不进 Git"又"线上可用"：**外置到 `app/config.local.js`（已被 `.gitignore` 忽略，仅本机存在）**，由 `index.html` 在运行时加载；发布时该文件随目录上传到线上，但不会被 Git 追踪。换机器时从 WorkBuddy 应用面板复制 `publishableKey` 重建此文件即可
+- 提交前自查：`git status` 中若出现 `.env` / `*.key` / `*secret*` / `*.genie` / `config.local.js` 等，立即停止提交并核实
