@@ -53,8 +53,8 @@ const TradeShowPage: React.FC = () => {
       });
       setList(res.items);
       setTotal(res.total);
-    } catch {
-      toast('加载失败');
+    } catch (e) {
+      toast(errMsg(e, '加载失败'));
     } finally {
       setLoading(false);
     }
@@ -195,7 +195,7 @@ const TradeShowPage: React.FC = () => {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold">订货会主单</h2>
           <button
-            className="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors flex items-center gap-1"
+            className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors flex items-center gap-1"
             onClick={openAdd}
             data-ai-section-type="button"
           >
@@ -210,12 +210,12 @@ const TradeShowPage: React.FC = () => {
             placeholder="搜索名称"
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded text-sm w-60 focus:outline-none focus:border-blue-500"
+            className="px-3 py-2 border border-gray-300 rounded text-sm w-60 focus:outline-none focus:border-primary"
           />
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+            className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
           >
             <option value="">全部状态</option>
             {Object.entries(STATUS_MAP).map(([k, v]) => (
@@ -225,7 +225,7 @@ const TradeShowPage: React.FC = () => {
             ))}
           </select>
           <button
-            className="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
+            className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
             onClick={handleSearch}
             data-ai-section-type="button"
           >
@@ -316,7 +316,7 @@ const TradeShowPage: React.FC = () => {
                         {item.status === 'draft' && (
                           <>
                             <button
-                              className="text-blue-500 hover:text-blue-700 text-xs"
+                              className="text-primary hover:text-blue-700 text-xs"
                               onClick={() => openEdit(item)}
                             >
                               编辑
@@ -427,7 +427,7 @@ const TradeShowPage: React.FC = () => {
                       onChange={(e) =>
                         setForm({ ...form, showNo: e.target.value })
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                     />
                   </div>
                   <div>
@@ -440,7 +440,7 @@ const TradeShowPage: React.FC = () => {
                       onChange={(e) =>
                         setForm({ ...form, name: e.target.value })
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                     />
                   </div>
                   <div>
@@ -454,7 +454,7 @@ const TradeShowPage: React.FC = () => {
                         setForm({ ...form, year: e.target.value })
                       }
                       placeholder="如 2026"
-                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                     />
                   </div>
                   <div>
@@ -466,7 +466,7 @@ const TradeShowPage: React.FC = () => {
                       onChange={(e) =>
                         setForm({ ...form, season: e.target.value })
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                     >
                       <option value="">请选择</option>
                       {SEASON_OPTIONS.map((s) => (
@@ -486,7 +486,7 @@ const TradeShowPage: React.FC = () => {
                       onChange={(e) =>
                         setForm({ ...form, startDate: e.target.value })
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                     />
                   </div>
                   <div>
@@ -499,7 +499,7 @@ const TradeShowPage: React.FC = () => {
                       onChange={(e) =>
                         setForm({ ...form, endDate: e.target.value })
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                     />
                   </div>
                   <div className="col-span-2">
@@ -512,7 +512,7 @@ const TradeShowPage: React.FC = () => {
                         setForm({ ...form, remark: e.target.value })
                       }
                       rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 resize-none"
+                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary resize-none"
                     />
                   </div>
                 </div>
@@ -525,7 +525,7 @@ const TradeShowPage: React.FC = () => {
                   取消
                 </button>
                 <button
-                  className="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
+                  className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
                   onClick={handleSave}
                 >
                   保存

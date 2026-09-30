@@ -47,7 +47,7 @@ const MaterialPage: React.FC = () => {
       setList(res.items);
       setTotal(res.total);
     } catch (e) {
-      toast('加载失败');
+      toast(errMsg(e, '加载失败'));
     } finally {
       setLoading(false);
     }
@@ -169,7 +169,7 @@ const MaterialPage: React.FC = () => {
             <Download size={16} /> 导出
           </button>
           <button
-            className="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
+            className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
             onClick={openAdd}
           >
             + 新增物料
@@ -183,12 +183,12 @@ const MaterialPage: React.FC = () => {
           placeholder="搜索编码/名称"
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded text-sm w-60 focus:outline-none focus:border-blue-500"
+          className="px-3 py-2 border border-gray-300 rounded text-sm w-60 focus:outline-none focus:border-primary"
         />
         <select
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
         >
           <option value="">全部分类</option>
           <option value="主料">主料</option>
@@ -198,14 +198,14 @@ const MaterialPage: React.FC = () => {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
         >
           <option value="">全部状态</option>
           <option value="active">启用</option>
           <option value="inactive">停用</option>
         </select>
         <button
-          className="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
+          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
           onClick={handleSearch}
         >
           查询
@@ -250,7 +250,7 @@ const MaterialPage: React.FC = () => {
                   <td className="px-4 py-3">{item.category || '-'}</td>
                   <td className="px-4 py-3">{renderStatus(item.status)}</td>
                   <td className="px-4 py-3">
-                    <button className="text-blue-500 hover:text-blue-700 mr-3" onClick={() => openEdit(item)}>编辑</button>
+                    <button className="text-primary hover:text-blue-700 mr-3" onClick={() => openEdit(item)}>编辑</button>
                     <button className="text-red-500 hover:text-red-700" onClick={() => handleDelete(item.id)}>删除</button>
                   </td>
                 </tr>
@@ -283,7 +283,7 @@ const MaterialPage: React.FC = () => {
                     type="text"
                     value={form.code || ''}
                     onChange={(e) => setForm({ ...form, code: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   />
                 </div>
                 <div>
@@ -292,7 +292,7 @@ const MaterialPage: React.FC = () => {
                     type="text"
                     value={form.name || ''}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   />
                 </div>
                 <div>
@@ -301,7 +301,7 @@ const MaterialPage: React.FC = () => {
                     type="text"
                     value={form.spec || ''}
                     onChange={(e) => setForm({ ...form, spec: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   />
                 </div>
                 <div>
@@ -309,7 +309,7 @@ const MaterialPage: React.FC = () => {
                   <select
                     value={form.unit || '米'}
                     onChange={(e) => setForm({ ...form, unit: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   >
                     <option value="米">米</option>
                     <option value="码">码</option>
@@ -322,7 +322,7 @@ const MaterialPage: React.FC = () => {
                   <select
                     value={form.defaultSupplierId || ''}
                     onChange={(e) => setForm({ ...form, defaultSupplierId: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   >
                     <option value="">请选择</option>
                     {supplierOptions.map((s) => (
@@ -337,7 +337,7 @@ const MaterialPage: React.FC = () => {
                     step="0.01"
                     value={form.stdPrice ?? ''}
                     onChange={(e) => setForm({ ...form, stdPrice: Number(e.target.value) })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   />
                 </div>
                 <div>
@@ -345,7 +345,7 @@ const MaterialPage: React.FC = () => {
                   <select
                     value={form.category || '主料'}
                     onChange={(e) => setForm({ ...form, category: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   >
                     <option value="主料">主料</option>
                     <option value="辅料">辅料</option>
@@ -357,7 +357,7 @@ const MaterialPage: React.FC = () => {
                   <select
                     value={form.status || 'active'}
                     onChange={(e) => setForm({ ...form, status: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   >
                     <option value="active">启用</option>
                     <option value="inactive">停用</option>
@@ -369,7 +369,7 @@ const MaterialPage: React.FC = () => {
                     value={form.remark || ''}
                     onChange={(e) => setForm({ ...form, remark: e.target.value })}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 resize-none"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary resize-none"
                   />
                 </div>
               </div>
@@ -382,7 +382,7 @@ const MaterialPage: React.FC = () => {
                 取消
               </button>
               <button
-                className="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleSave}
                 disabled={submitting}
               >

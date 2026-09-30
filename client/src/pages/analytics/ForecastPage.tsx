@@ -4,6 +4,8 @@ import { toast } from 'sonner';
 import { axiosForBackend } from '@lark-apaas/client-toolkit/utils/getAxiosForBackend';
 import { analyticsApi } from '@client/src/api/analytics';
 import type { ForecastResult, Sku } from '@shared/api.interface';
+import { CHART_PRIMARY, CHART_WARNING } from '@client/src/lib/chart-colors';
+import { errMsg } from '@/utils/errMsg';
 
 const ForecastPage: React.FC = () => {
   const [skuOptions, setSkuOptions] = useState<Sku[]>([]);
@@ -20,8 +22,8 @@ const ForecastPage: React.FC = () => {
     try {
       const r = await axiosForBackend.get('/api/base/sku/list', { params: { pageSize: 200 } });
       setSkuOptions(r.data?.items || []);
-    } catch {
-      toast('加载SKU失败');
+    } catch (e) {
+      toast(errMsg(e, '加载SKU失败'));
     }
   };
 
@@ -34,8 +36,8 @@ const ForecastPage: React.FC = () => {
     try {
       const r = await analyticsApi.forecast(skuId, horizon);
       setResult(r);
-    } catch {
-      toast('预测失败');
+    } catch (e) {
+      toast(errMsg(e, '预测失败'));
     }
     setLoading(false);
   };
@@ -55,8 +57,8 @@ const ForecastPage: React.FC = () => {
     xAxis: { type: 'category' as const, data: months, axisLabel: { fontSize: 10, rotate: 45 } },
     yAxis: { type: 'value' as const },
     series: [
-      { name: '历史销量', type: 'line' as const, data: histData, itemStyle: { color: '#3b82f6' }, lineStyle: { width: 2 } },
-      { name: '预测销量', type: 'line' as const, data: foreData, itemStyle: { color: '#f59e0b' }, lineStyle: { type: 'dashed' as const, width: 2 } },
+      { name: '历史销量', type: 'line' as const, data: histData, itemStyle: { color: CHART_PRIMARY }, lineStyle: { width: 2 } },
+      { name: '预测销量', type: 'line' as const, data: foreData, itemStyle: { color: CHART_WARNING }, lineStyle: { type: 'dashed' as const, width: 2 } },
     ],
   };
 
@@ -68,7 +70,7 @@ const ForecastPage: React.FC = () => {
           <select
             value={skuId}
             onChange={(e) => setSkuId(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded text-sm w-64 focus:outline-none focus:border-blue-500"
+            className="px-3 py-2 border border-gray-300 rounded text-sm w-64 focus:outline-none focus:border-primary"
           >
             <option value="">选择SKU</option>
             {skuOptions.map((s) => (
@@ -78,7 +80,7 @@ const ForecastPage: React.FC = () => {
           <select
             value={horizon}
             onChange={(e) => setHorizon(Number(e.target.value))}
-            className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+            className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
           >
             <option value={3}>预测3个月</option>
             <option value={6}>预测6个月</option>
@@ -87,7 +89,7 @@ const ForecastPage: React.FC = () => {
           <button
             onClick={handleForecast}
             disabled={loading}
-            className="px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50"
+            className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50"
           >
             {loading ? '预测中...' : '开始预测'}
           </button>

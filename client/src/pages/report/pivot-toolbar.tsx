@@ -124,7 +124,7 @@ export function Toolbar({
         <div className="flex gap-2">
           <button
             onClick={onSearch}
-            className="bg-blue-500 text-white px-4 py-1 rounded text-sm hover:bg-blue-600 transition-colors flex items-center gap-1 h-7"
+            className="bg-primary text-white px-4 py-1 rounded text-sm hover:bg-blue-600 transition-colors flex items-center gap-1 h-7"
           >
             <Search size={14} />
             查询

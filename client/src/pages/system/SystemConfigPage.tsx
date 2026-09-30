@@ -262,6 +262,24 @@ const SystemConfigPage: React.FC = () => {
       </div>
 
       <div className="bg-white rounded-lg border border-gray-200 p-5">
+        <h2 className="text-base font-semibold text-gray-800 mb-2">单据查询默认</h2>
+        <p className="text-xs text-gray-500 mb-4">配置各单据列表页进入时的默认查询时间范围</p>
+        <ConfigRow
+          label="单据默认查询天数"
+          description="进入销售/采购/零售/库存/财务/生产等单据列表页时，默认按最近 N 天过滤；清空日期筛选则查全部。保存后立即对所有用户生效。"
+        >
+          <input
+            type="number"
+            min={1}
+            step={1}
+            value={config.defaultDocQueryDays}
+            onChange={(e) => update('defaultDocQueryDays', Number(e.target.value) || 90)}
+            className="w-24 rounded border border-gray-300 px-2 py-1 text-sm text-right"
+          />
+        </ConfigRow>
+      </div>
+
+      <div className="bg-white rounded-lg border border-gray-200 p-5">
         <h2 className="text-base font-semibold text-gray-800 mb-2">唯一码流水留存（冷热分离）</h2>
         <p className="text-xs text-gray-500 mb-4">仅管理员可配置与操作。将过早的流水从热表搬移到归档表，降低热表体积与查询成本，溯源仍完整可见。</p>
         <ConfigRow

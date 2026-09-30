@@ -53,8 +53,8 @@ const AllocationDetailDialog: React.FC<AllocationDetailDialogProps> = ({
         ]);
         setDetailItems(detail.items || []);
         setSkuList(skus);
-      } catch {
-        toast('加载明细失败');
+      } catch (e) {
+        toast(errMsg(e, '加载明细失败'));
       } finally {
         setDetailLoading(false);
       }
@@ -182,7 +182,7 @@ const AllocationDetailDialog: React.FC<AllocationDetailDialogProps> = ({
             {renderStatus(order.status)}
             {onPrint && (
               <button
-                className="text-blue-500 hover:text-blue-600 text-sm flex items-center gap-1 ml-2"
+                className="text-primary hover:text-blue-600 text-sm flex items-center gap-1 ml-2"
                 onClick={onPrint}
               >
                 <Printer size={14} />
@@ -289,7 +289,7 @@ const AllocationDetailDialog: React.FC<AllocationDetailDialogProps> = ({
               {!isApproved && !detailEditing && (
                 <>
                   <button
-                    className="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
+                    className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
                     onClick={() => setDetailEditing(true)}
                     data-ai-section-type="button"
                   >
@@ -314,7 +314,7 @@ const AllocationDetailDialog: React.FC<AllocationDetailDialogProps> = ({
                     取消
                   </button>
                   <button
-                    className="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors disabled:opacity-50"
+                    className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors disabled:opacity-50"
                     onClick={handleSave}
                     disabled={saving}
                   >

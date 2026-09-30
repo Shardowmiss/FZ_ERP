@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, Send, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -53,12 +53,29 @@ const DocPage: React.FC<DocPageProps> = ({
   submitting = false,
 }) => {
   const navigate = useNavigate();
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  // Ctrl/⌘ + S 保存。挂在单据页统一抽象层，22 个单据编辑页自动获得。
+  // 标签页缓存下可能同时挂载多个单据页，故只对当前可见的页面生效。
+  useEffect(() => {
+    const onKeyDown = (ev: KeyboardEvent) => {
+      const root = rootRef.current;
+      if (!root || (root as HTMLElement).offsetParent === null) return;
+      if ((ev.ctrlKey || ev.metaKey) && (ev.key === 's' || ev.key === 'S')) {
+        if (!onSave || saving) return;
+        ev.preventDefault();
+        onSave();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [onSave, saving]);
 
   const resolvedStatusColor = statusColor ?? (status ? statusColorMap[status] : '');
   const resolvedStatusLabel = status ? (statusLabelMap[status] ?? status) : '';
 
   return (
-    <div className="flex flex-col h-[calc(100vh-56px)]">
+    <div ref={rootRef} className="flex flex-col h-[calc(100vh-56px)]">
       {/* Top action bar */}
       <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-5 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">

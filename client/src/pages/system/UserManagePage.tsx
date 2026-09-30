@@ -219,7 +219,7 @@ const UserManagePage: React.FC = () => {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold">用户管理</h2>
         <button
-          className="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
+          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
           onClick={openAdd}
         >
           新增用户
@@ -232,19 +232,19 @@ const UserManagePage: React.FC = () => {
           placeholder="搜索用户名/姓名"
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded text-sm w-60 focus:outline-none focus:border-blue-500"
+          className="px-3 py-2 border border-gray-300 rounded text-sm w-60 focus:outline-none focus:border-primary"
         />
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
         >
           <option value="">全部状态</option>
           <option value="active">启用</option>
           <option value="inactive">禁用</option>
         </select>
         <button
-          className="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
+          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
           onClick={handleSearch}
         >
           搜索
@@ -296,7 +296,7 @@ const UserManagePage: React.FC = () => {
                   </td>
                   <td className="px-4 py-3">
                     <button
-                      className="text-blue-500 hover:text-blue-700 mr-3"
+                      className="text-primary hover:text-blue-700 mr-3"
                       onClick={() => openEdit(item)}
                     >
                       编辑
@@ -381,7 +381,7 @@ const UserManagePage: React.FC = () => {
                     onChange={(e) => setForm({ ...form, username: e.target.value })}
                     disabled={!!editingId}
                     className={
-                      'w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 ' +
+                      'w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary ' +
                       (editingId ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : '')
                     }
                   />
@@ -394,7 +394,7 @@ const UserManagePage: React.FC = () => {
                     type="text"
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   />
                 </div>
                 <div>
@@ -407,7 +407,7 @@ const UserManagePage: React.FC = () => {
                     type="password"
                     value={form.password}
                     onChange={(e) => setForm({ ...form, password: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   />
                 </div>
                 <div>
@@ -420,7 +420,7 @@ const UserManagePage: React.FC = () => {
                     onChange={(e) =>
                       setForm({ ...form, confirmPassword: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   />
                 </div>
                 <div>
@@ -429,7 +429,7 @@ const UserManagePage: React.FC = () => {
                     type="text"
                     value={form.phone}
                     onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   />
                 </div>
                 <div>
@@ -438,7 +438,7 @@ const UserManagePage: React.FC = () => {
                     type="text"
                     value={form.department}
                     onChange={(e) => setForm({ ...form, department: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   />
                 </div>
                 <div>
@@ -446,7 +446,7 @@ const UserManagePage: React.FC = () => {
                   <select
                     value={form.status}
                     onChange={(e) => setForm({ ...form, status: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   >
                     <option value="active">启用</option>
                     <option value="inactive">禁用</option>
@@ -470,7 +470,7 @@ const UserManagePage: React.FC = () => {
                               onChange={(e) =>
                                 handleRoleChange(role.id, e.target.checked)
                               }
-                              className="w-4 h-4 accent-blue-500"
+                              className="w-4 h-4 accent-primary"
                             />
                             <span>{role.name}</span>
                           </label>
@@ -485,7 +485,7 @@ const UserManagePage: React.FC = () => {
                     value={form.remark}
                     onChange={(e) => setForm({ ...form, remark: e.target.value })}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 resize-none"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary resize-none"
                   />
                 </div>
               </div>
@@ -498,7 +498,7 @@ const UserManagePage: React.FC = () => {
                 取消
               </button>
               <button
-                className="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleSave}
                 disabled={submitting}
               >

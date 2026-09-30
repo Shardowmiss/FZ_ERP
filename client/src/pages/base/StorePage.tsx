@@ -59,7 +59,7 @@ const StorePage: React.FC = () => {
       setList(res.items);
       setTotal(res.total);
     } catch (e) {
-      toast('加载失败');
+      toast(errMsg(e, '加载失败'));
     } finally {
       setLoading(false);
     }
@@ -191,7 +191,7 @@ const StorePage: React.FC = () => {
             <Download size={16} /> 导出
           </button>
           <button
-            className="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
+            className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
             onClick={openAdd}
           >
             + 新增门店
@@ -205,12 +205,12 @@ const StorePage: React.FC = () => {
           placeholder="搜索编码/名称"
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded text-sm w-60 focus:outline-none focus:border-blue-500"
+          className="px-3 py-2 border border-gray-300 rounded text-sm w-60 focus:outline-none focus:border-primary"
         />
         <select
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
         >
           <option value="">全部类型</option>
           <option value="direct">直营店</option>
@@ -219,14 +219,14 @@ const StorePage: React.FC = () => {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
         >
           <option value="">全部状态</option>
           <option value="active">营业</option>
           <option value="inactive">停业</option>
         </select>
         <button
-          className="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
+          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
           onClick={handleSearch}
         >
           查询
@@ -271,7 +271,7 @@ const StorePage: React.FC = () => {
                   <td className="px-4 py-3 text-gray-600">{item.address || '-'}</td>
                   <td className="px-4 py-3">{renderStatus(item.status)}</td>
                   <td className="px-4 py-3">
-                    <button className="text-blue-500 hover:text-blue-700 mr-3" onClick={() => openEdit(item)}>编辑</button>
+                    <button className="text-primary hover:text-blue-700 mr-3" onClick={() => openEdit(item)}>编辑</button>
                     <button className="text-red-500 hover:text-red-700" onClick={() => handleDelete(item.id)}>删除</button>
                   </td>
                 </tr>
@@ -304,7 +304,7 @@ const StorePage: React.FC = () => {
                     type="text"
                     value={form.code || ''}
                     onChange={(e) => setForm({ ...form, code: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   />
                 </div>
                 <div>
@@ -313,7 +313,7 @@ const StorePage: React.FC = () => {
                     type="text"
                     value={form.name || ''}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   />
                 </div>
                 <div>
@@ -321,7 +321,7 @@ const StorePage: React.FC = () => {
                   <select
                     value={form.storeType || 'direct'}
                     onChange={(e) => setForm({ ...form, storeType: e.target.value, dealerId: e.target.value === 'dealer' ? form.dealerId : '' })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   >
                     <option value="direct">直营店</option>
                     <option value="dealer">经销商门店</option>
@@ -333,7 +333,7 @@ const StorePage: React.FC = () => {
                     <select
                       value={form.dealerId || ''}
                       onChange={(e) => setForm({ ...form, dealerId: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                     >
                       <option value="">请选择经销商</option>
                       {dealerOptions.map((d: OptionItem) => (
@@ -347,7 +347,7 @@ const StorePage: React.FC = () => {
                   <select
                     value={form.warehouseId || ''}
                     onChange={(e) => setForm({ ...form, warehouseId: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   >
                     <option value="">请选择仓库</option>
                     {warehouseOptions.map((w: WarehouseOption) => (
@@ -361,7 +361,7 @@ const StorePage: React.FC = () => {
                     type="text"
                     value={form.contactPerson || ''}
                     onChange={(e) => setForm({ ...form, contactPerson: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   />
                 </div>
                 <div>
@@ -370,7 +370,7 @@ const StorePage: React.FC = () => {
                     type="text"
                     value={form.phone || ''}
                     onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   />
                 </div>
                 <div className="col-span-2">
@@ -379,7 +379,7 @@ const StorePage: React.FC = () => {
                     type="text"
                     value={form.address || ''}
                     onChange={(e) => setForm({ ...form, address: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   />
                 </div>
                 <div>
@@ -387,7 +387,7 @@ const StorePage: React.FC = () => {
                   <select
                     value={form.status || 'active'}
                     onChange={(e) => setForm({ ...form, status: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   >
                     <option value="active">营业</option>
                     <option value="inactive">停业</option>
@@ -399,7 +399,7 @@ const StorePage: React.FC = () => {
                     value={form.remark || ''}
                     onChange={(e) => setForm({ ...form, remark: e.target.value })}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 resize-none"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary resize-none"
                   />
                 </div>
               </div>
@@ -412,7 +412,7 @@ const StorePage: React.FC = () => {
                 取消
               </button>
               <button
-                className="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
+                className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
                 onClick={handleSave}
               >
                 保存

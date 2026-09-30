@@ -372,7 +372,7 @@ const StyleAttrDefPage: React.FC = () => {
                     key={item.id}
                     className={`px-3 py-2.5 cursor-pointer transition-colors ${
                       selectedId === item.id
-                        ? 'bg-blue-50 border-l-2 border-blue-500'
+                        ? 'bg-blue-50 border-l-2 border-primary'
                         : 'hover:bg-gray-50 border-l-2 border-transparent'
                     }`}
                     onClick={() => setSelectedId(item.id)}
@@ -413,7 +413,7 @@ const StyleAttrDefPage: React.FC = () => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-7 w-7 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                          className="h-7 w-7 text-primary hover:text-blue-700 hover:bg-blue-50"
                           onClick={() => openEditAttrDef(item)}
                           title="编辑"
                         >
@@ -516,7 +516,7 @@ const StyleAttrDefPage: React.FC = () => {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                            className="h-8 w-8 text-primary hover:text-blue-700 hover:bg-blue-50"
                             onClick={() => openEditAttrValue(item)}
                             title="编辑"
                           >

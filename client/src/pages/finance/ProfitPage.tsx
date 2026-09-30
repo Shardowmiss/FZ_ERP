@@ -62,7 +62,7 @@ const ProfitPage: React.FC = () => {
       setAnalysis(res.data);
     } catch (error) {
       logger.error('毛利分析失败', error);
-      toast('分析失败');
+      toast(errMsg(error, '分析失败'));
       setAnalysis(null);
     }
     setAnalyzing(false);
@@ -121,7 +121,7 @@ const ProfitPage: React.FC = () => {
           <select
             value={selectedOrderId}
             onChange={(e) => setSelectedOrderId(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded text-sm w-72 focus:outline-none focus:border-blue-500"
+            className="px-3 py-2 border border-gray-300 rounded text-sm w-72 focus:outline-none focus:border-primary"
           >
             <option value="">请选择已审核的销售订单</option>
             {orders.map((o) => (
@@ -134,7 +134,7 @@ const ProfitPage: React.FC = () => {
         <button
           onClick={handleAnalyze}
           disabled={!selectedOrderId || analyzing}
-          className="px-6 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-6 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {analyzing ? '分析中...' : '开始分析'}
         </button>

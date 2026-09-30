@@ -127,8 +127,8 @@ const PreOrderPage: React.FC = () => {
         });
       setList(res.items);
       setTotal(res.total);
-    } catch {
-      toast('加载失败');
+    } catch (e) {
+      toast(errMsg(e, '加载失败'));
     } finally {
       setLoading(false);
     }
@@ -142,8 +142,8 @@ const PreOrderPage: React.FC = () => {
        ]);
        setTradeShowOptions(ts);
        setStyleOptions(st);
-     } catch {
-       toast('加载选项失败');
+     } catch (e) {
+       toast(errMsg(e, '加载选项失败'));
      }
    };
 
@@ -151,8 +151,8 @@ const PreOrderPage: React.FC = () => {
      try {
        const res = await baseApi.styleAttribute.getAll('brand', true);
        setBrandOptions(res.map((b: any) => ({ attrCode: b.attrCode, attrName: b.attrName })));
-     } catch {
-       toast('加载品牌失败');
+     } catch (e) {
+       toast(errMsg(e, '加载品牌失败'));
      }
    };
 
@@ -240,8 +240,8 @@ const PreOrderPage: React.FC = () => {
       setPrintPartnerName(partnerName);
       setPrintRemark(detail.remark || '');
       setPrintOpen(true);
-    } catch {
-      toast('加载打印数据失败');
+    } catch (e) {
+      toast(errMsg(e, '加载打印数据失败'));
     }
   };
 
@@ -273,8 +273,8 @@ const PreOrderPage: React.FC = () => {
       await tradeShowApi.preOrder.confirm(id);
       fetchData();
       toast('确认成功');
-    } catch {
-      toast('确认失败');
+    } catch (e) {
+      toast(errMsg(e, '确认失败'));
     }
   };
 
@@ -330,7 +330,7 @@ const PreOrderPage: React.FC = () => {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold">预订单</h2>
         <button
-          className="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
+          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
           onClick={openAdd}
           data-ai-section-type="button"
         >
@@ -342,7 +342,7 @@ const PreOrderPage: React.FC = () => {
         <select
           value={tradeShowFilter}
           onChange={(e) => setTradeShowFilter(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 min-w-[180px]"
+          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary min-w-[180px]"
         >
           <option value="">全部订货会</option>
           {tradeShowOptions.map((t) => (
@@ -354,7 +354,7 @@ const PreOrderPage: React.FC = () => {
         <select
           value={submitterTypeFilter}
           onChange={(e) => setSubmitterTypeFilter(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
         >
           <option value="">全部类型</option>
           <option value="dealer">经销商</option>
@@ -363,7 +363,7 @@ const PreOrderPage: React.FC = () => {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
         >
           <option value="">全部状态</option>
           {Object.entries(STATUS_MAP).map(([k, v]) => (
@@ -375,7 +375,7 @@ const PreOrderPage: React.FC = () => {
          <select
            value={styleFilter}
            onChange={(e) => setStyleFilter(e.target.value)}
-           className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 min-w-[180px]"
+           className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary min-w-[180px]"
          >
            <option value="">全部款号</option>
            {styleOptions.map((s) => (
@@ -387,7 +387,7 @@ const PreOrderPage: React.FC = () => {
          <select
            value={brandFilter}
            onChange={(e) => setBrandFilter(e.target.value)}
-           className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 min-w-[140px]"
+           className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary min-w-[140px]"
          >
            <option value="">全部品牌</option>
            {brandOptions.map((b: { attrCode: string; attrName: string }) => (
@@ -399,10 +399,10 @@ const PreOrderPage: React.FC = () => {
           placeholder="搜索单号"
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded text-sm w-48 focus:outline-none focus:border-blue-500"
+          className="px-3 py-2 border border-gray-300 rounded text-sm w-48 focus:outline-none focus:border-primary"
         />
         <button
-          className="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
+          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
           onClick={handleSearch}
           data-ai-section-type="button"
         >
@@ -490,7 +490,7 @@ const PreOrderPage: React.FC = () => {
                         明细
                       </button>
                       <button
-                        className="text-blue-500 hover:text-blue-700 text-xs flex items-center gap-0.5"
+                        className="text-primary hover:text-blue-700 text-xs flex items-center gap-0.5"
                         onClick={() => openPrint(item)}
                       >
                         <Printer size={12} />
@@ -499,7 +499,7 @@ const PreOrderPage: React.FC = () => {
                       {item.status === 'draft' && (
                         <>
                           <button
-                            className="text-blue-500 hover:text-blue-700 text-xs"
+                            className="text-primary hover:text-blue-700 text-xs"
                             onClick={() => openEdit(item)}
                           >
                             编辑

@@ -106,7 +106,7 @@ const SkuMatrixTable: React.FC<SkuMatrixTableProps> = ({
                         onChange?.(color, size, Number(e.target.value))
                       }
                       disabled={readOnly}
-                      className="w-full px-2 py-1 text-center border border-gray-200 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-600"
+                      className="w-full px-2 py-1 text-center border border-gray-200 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-600"
                     />
                   </td>
                 ))}

@@ -23,6 +23,22 @@ function redirectToLogin(): void {
   window.location.assign(`${base}/login`);
 }
 
+/** 读取非 HttpOnly cookie（用于 double-submit 回放 CSRF 令牌）。 */
+function getCookie(name: string): string {
+  if (typeof document === 'undefined') return '';
+  const cookies = document.cookie.split('; ');
+  for (const c of cookies) {
+    const idx = c.indexOf('=');
+    if (idx === -1) continue;
+    if (c.slice(0, idx) === name) return decodeURIComponent(c.slice(idx + 1));
+  }
+  return '';
+}
+
+// 与 server/common/security/erp-csrf.util.ts 中的 ERP_CSRF_COOKIE_NAME / ERP_CSRF_HEADER_NAME 保持一致。
+const ERP_CSRF_COOKIE_NAME = 'erp-csrf';
+const ERP_CSRF_HEADER_NAME = 'x-erp-csrf';
+
 export function isOnLoginPage(): boolean {
   const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
   const base = getBasePath().replace(/\/$/, '');
@@ -40,6 +56,13 @@ function installInterceptor(): void {
     if (token) {
       config.headers = config.headers || {};
       config.headers['x-auth-token'] = token;
+    }
+    // 应用层自签 CSRF（D.1）：读取 erp-csrf cookie 并回放为同名 header（double-submit），
+    // 供服务端 ErpCsrfGuard 校验。cookie/header 同名即满足同源约束，跨站请求无法读取/设置。
+    const csrf = getCookie(ERP_CSRF_COOKIE_NAME);
+    if (csrf) {
+      config.headers = config.headers || {};
+      config.headers[ERP_CSRF_HEADER_NAME] = csrf;
     }
     if (!config.meta) config.meta = {};
     config.meta.autoJumpToLogin = false;

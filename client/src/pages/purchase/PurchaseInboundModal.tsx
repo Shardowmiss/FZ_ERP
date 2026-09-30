@@ -58,7 +58,7 @@ const PurchaseInboundModal: React.FC<InboundModalProps> = ({
           </span>
           <div className="flex items-center gap-2">
             {viewOnly && (
-              <button onClick={onPrint} className="text-blue-500 hover:text-blue-600 text-sm flex items-center gap-1">
+              <button onClick={onPrint} className="text-primary hover:text-blue-600 text-sm flex items-center gap-1">
                 <Printer size={14} /> 打印
               </button>
             )}
@@ -73,7 +73,7 @@ const PurchaseInboundModal: React.FC<InboundModalProps> = ({
                 disabled={viewOnly}
                 value={formOrderId}
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => onOrderChange(e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
+                className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-primary disabled:bg-gray-100"
               >
                 <option value="">请选择采购订单</option>
                 {approvedOrders.map((o: PurchaseOrder) => (
@@ -87,7 +87,7 @@ const PurchaseInboundModal: React.FC<InboundModalProps> = ({
                 disabled={viewOnly}
                 value={formWarehouseId}
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => onWarehouseChange(e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
+                className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-primary disabled:bg-gray-100"
               >
                 <option value="">请选择仓库</option>
                 {warehouseOptions.map((w: { id: string; code: string; name: string }) => (
@@ -104,7 +104,7 @@ const PurchaseInboundModal: React.FC<InboundModalProps> = ({
                 disabled={viewOnly}
                 value={formInboundDate}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => onInboundDateChange(e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
+                className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-primary disabled:bg-gray-100"
               />
             </div>
             <div />
@@ -116,7 +116,7 @@ const PurchaseInboundModal: React.FC<InboundModalProps> = ({
               value={formRemark}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onRemarkChange(e.target.value)}
               rows={2}
-              className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
+              className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-primary disabled:bg-gray-100"
             />
           </div>
           <div>
@@ -197,7 +197,7 @@ const PurchaseInboundModal: React.FC<InboundModalProps> = ({
             <button
               onClick={onSave}
               disabled={submitting}
-              className="px-4 py-1.5 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
             >{submitting ? '保存中...' : '保存'}</button>
           )}
         </div>

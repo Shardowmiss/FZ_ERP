@@ -2,6 +2,7 @@ import React, { Suspense, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTabs, getTabInfoFromPath } from '@client/src/contexts/TabsContext';
 import { useAuth } from '@client/src/contexts/AuthContext';
+import { computeKeepAliveKeys, DEFAULT_MAX_KEEP_ALIVE } from './keepAliveStrategy';
 
 import DashboardPage from '@client/src/pages/Dashboard/DashboardPage';
 import WelcomePage from '@client/src/pages/Welcome/WelcomePage';
@@ -177,7 +178,6 @@ function getRouteComponent(pathname: string): React.ComponentType | null {
     '/base/color-group': ColorGroupPage,
     '/base/size-group': SizeGroupPage,
     '/base/material': MaterialPage,
-    '/base/customer': CustomerPage,
     '/base/supplier': SupplierPage,
     '/base/warehouse': WarehousePage,
     '/base/style-attribute': StyleAttrDefPage,
@@ -285,19 +285,31 @@ const TabPageCache: React.FC = () => {
   const { hasPermission } = useAuth();
   const [mountedKeys, setMountedKeys] = useState<Set<string>>(new Set(['dashboard']));
   const editComponentsRef = useRef<Map<string, React.ComponentType>>(new Map());
+  // C.2：记录 tab 激活先后顺序（索引 0 = 最近），供 LRU 淘汰使用
+  const recencyRef = useRef<string[]>(['dashboard']);
 
   useEffect(() => {
-    setMountedKeys((prev) => {
-      const next = new Set(prev);
-      tabs.forEach((t) => next.add(t.key));
-      next.forEach((k) => {
-        if (!tabs.some((t) => t.key === k) && k !== 'dashboard') {
-          next.delete(k);
-        }
-      });
-      return next;
-    });
-  }, [tabs]);
+    // 1) 更新激活顺序：当前 activeKey 提到最前
+    if (activeKey) {
+      recencyRef.current = [
+        activeKey,
+        ...recencyRef.current.filter((k) => k !== activeKey),
+      ].slice(0, DEFAULT_MAX_KEEP_ALIVE * 2);
+    }
+    // 2) 计算保持挂载的 key：以 recency 为序保留最近 N 个，并强制保留
+    //    dashboard 与当前激活 tab（避免可见页被误淘汰）。
+    setMountedKeys(
+      new Set(
+        computeKeepAliveKeys({
+          openTabKeys: tabs.map((t) => t.key),
+          activeKey,
+          recency: recencyRef.current,
+          max: DEFAULT_MAX_KEEP_ALIVE,
+          alwaysKeep: ['dashboard'],
+        }),
+      ),
+    );
+  }, [tabs, activeKey]);
 
   const activeTabInfo = getTabInfoFromPath(location.pathname);
 

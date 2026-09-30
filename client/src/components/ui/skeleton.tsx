@@ -1,13 +1,2 @@
-import { cn } from "@/lib/utils"
-
-function Skeleton({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="skeleton"
-      className={cn("bg-accent animate-pulse rounded-md", className)}
-      {...props}
-    />
-  )
-}
-
-export { Skeleton }
+// A.1 共享 UI 组件：本文件为薄壳（re-export shim），实际实现见 @shared/ui/skeleton
+export * from '@shared/ui/skeleton';

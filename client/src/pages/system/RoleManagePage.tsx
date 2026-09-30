@@ -62,8 +62,8 @@ const RoleManagePage: React.FC = () => {
       const res = await rbacApi.roles.list(params);
       setList(res.items);
       setTotal(res.total);
-    } catch {
-      toast('加载失败');
+    } catch (e) {
+      toast(errMsg(e, '加载失败'));
     } finally {
       setLoading(false);
     }
@@ -92,8 +92,8 @@ const RoleManagePage: React.FC = () => {
       setFormDescription(role.description ?? '');
       setFormStatus(role.status);
       setShowModal(true);
-    } catch {
-      toast('加载角色信息失败');
+    } catch (e) {
+      toast(errMsg(e, '加载角色信息失败'));
     }
   };
 
@@ -246,7 +246,7 @@ const RoleManagePage: React.FC = () => {
                     <div className="flex items-center gap-3">
                       <button
                         onClick={() => openEdit(item.id)}
-                        className="text-blue-500 hover:text-blue-600"
+                        className="text-primary hover:text-blue-600"
                       >
                         编辑
                       </button>

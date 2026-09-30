@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { analyticsApi } from '@client/src/api/analytics';
 import type { MobileDashboard, PendingApproval } from '@shared/api.interface';
+import { errMsg } from '@/utils/errMsg';
 
 const DOC_LABEL: Record<string, string> = {
   sales_order: '销售订单',
@@ -18,8 +19,8 @@ const MobileDashboardPage: React.FC = () => {
     setLoading(true);
     try {
       setData(await analyticsApi.mobileDashboard());
-    } catch {
-      toast('加载失败');
+    } catch (e) {
+      toast(errMsg(e, '加载失败'));
     }
     setLoading(false);
   };
@@ -37,8 +38,8 @@ const MobileDashboardPage: React.FC = () => {
       } else {
         toast('该单据已不是待审状态');
       }
-    } catch {
-      toast('审批失败');
+    } catch (e) {
+      toast(errMsg(e, '审批失败'));
     }
   };
 
@@ -48,7 +49,7 @@ const MobileDashboardPage: React.FC = () => {
 
   return (
     <div className="max-w-md mx-auto bg-gray-100 min-h-screen p-3 space-y-3">
-      <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl p-4">
+      <div className="bg-gradient-to-r from-primary to-blue-600 text-white rounded-xl p-4">
         <div className="text-sm opacity-80">今日经营概览</div>
         <div className="grid grid-cols-2 gap-3 mt-3">
           <div>
@@ -83,7 +84,7 @@ const MobileDashboardPage: React.FC = () => {
               </div>
               <button
                 onClick={() => approve(a)}
-                className="px-3 py-1 bg-blue-500 text-white rounded text-xs"
+                className="px-3 py-1 bg-primary text-white rounded text-xs"
               >
                 审批
               </button>

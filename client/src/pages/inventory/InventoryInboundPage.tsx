@@ -135,7 +135,7 @@ const InventoryInboundPage: React.FC = () => {
           <h1 className="text-xl font-semibold text-gray-800">入库单</h1>
           <button
             onClick={handleAdd}
-            className="px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
+            className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600"
           >
             + 新增入库单
           </button>
@@ -145,7 +145,7 @@ const InventoryInboundPage: React.FC = () => {
         <select
           value={typeFilter}
           onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}
-          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
         >
           <option value="">全部类型</option>
           {Object.entries(typeMap).map(([k, v]) => (
@@ -154,7 +154,7 @@ const InventoryInboundPage: React.FC = () => {
         </select>
         <button
           onClick={loadList}
-          className="px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
+          className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600"
         >
           查询
         </button>
@@ -198,7 +198,7 @@ const InventoryInboundPage: React.FC = () => {
                   </td>
                   <td className="px-4 py-3 text-gray-500 text-xs">{item.createdAt || '-'}</td>
                   <td className="px-4 py-3">
-                    <button onClick={() => handleView(item)} className="text-blue-500 hover:underline text-sm">查看</button>
+                    <button onClick={() => handleView(item)} className="text-primary hover:underline text-sm">查看</button>
                   </td>
                 </tr>
               ))

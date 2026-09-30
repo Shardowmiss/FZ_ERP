@@ -5,6 +5,7 @@ import { baseApi } from '@client/src/api/base';
 import type { ProductionCostResult, ProductionCostItem, Bom } from '@shared/api.interface';
 import { toast } from 'sonner';
 import { TableContainer } from '@client/src/components/ui';
+import { errMsg } from '@/utils/errMsg';
 
 const ProductionCostPage: React.FC = () => {
   const [styleId, setStyleId] = useState<string>('');
@@ -44,8 +45,8 @@ const ProductionCostPage: React.FC = () => {
       } else if (boms.length > 0) {
         setBomVersion(boms[0].version);
       }
-    } catch {
-      toast('加载BOM版本失败');
+    } catch (e) {
+      toast(errMsg(e, '加载BOM版本失败'));
     }
   };
 
@@ -61,8 +62,8 @@ const ProductionCostPage: React.FC = () => {
       if (bomVersion) params.bomVersion = bomVersion;
       const res = await productionApi.cost.calculate(params);
       setResult(res);
-    } catch {
-      toast('成本核算失败');
+    } catch (e) {
+      toast(errMsg(e, '成本核算失败'));
     } finally {
       setLoading(false);
     }
@@ -108,7 +109,7 @@ const ProductionCostPage: React.FC = () => {
             <select
               value={styleId}
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => { void handleStyleChange(e.target.value); }}
-              className="border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500 w-56"
+              className="border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-primary w-56"
             >
               <option value="">请选择款号</option>
               {styleOptions.map((s: { id: string; styleNo: string; name: string }) => (
@@ -122,7 +123,7 @@ const ProductionCostPage: React.FC = () => {
               type="number"
               value={quantity}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQuantity(Number(e.target.value))}
-              className="border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500 w-40"
+              className="border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-primary w-40"
               min="1"
             />
           </div>
@@ -131,7 +132,7 @@ const ProductionCostPage: React.FC = () => {
             <select
               value={bomVersion}
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setBomVersion(e.target.value)}
-              className="border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500 w-40"
+              className="border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-primary w-40"
             >
               <option value="">默认（激活版本）</option>
               {bomList.map((b: Bom) => (
@@ -144,7 +145,7 @@ const ProductionCostPage: React.FC = () => {
           <button
             onClick={() => { void handleCalculate(); }}
             disabled={loading}
-            className="px-5 py-1.5 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 flex items-center gap-1"
+            className="px-5 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600 disabled:opacity-50 flex items-center gap-1"
           >
             <Calculator size={16} /> 核算
           </button>

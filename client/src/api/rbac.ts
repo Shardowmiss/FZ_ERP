@@ -15,6 +15,8 @@ export const rbacApi = {
     request<void>('/api/auth/logout', 'POST'),
   me: () =>
     request<CurrentUserResponse>('/api/auth/me'),
+  updateMyLanguage: (language: string) =>
+    request<CurrentUserResponse>('/api/auth/me/language', 'PATCH', { language }),
 
   users: {
     list: (params: { page?: number; pageSize?: number; keyword?: string; status?: string }) =>

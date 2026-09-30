@@ -313,6 +313,8 @@ export class SalesReturnService {
       styleNo: string;
       color: string;
       size: string;
+      colorId: string | null;
+      sizeId: string | null;
       quantity: string;
       price: string;
       amount: string;
@@ -338,6 +340,8 @@ export class SalesReturnService {
         styleNo: skuItem.styleNo,
         color: skuItem.color,
         size: skuItem.size,
+        colorId: skuItem.colorId ?? null,
+        sizeId: skuItem.sizeId ?? null,
         quantity: round3(qty),
         price: round4(prc),
         amount: round2(amt),

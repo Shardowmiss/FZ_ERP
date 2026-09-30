@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useDefaultDocDate } from '@client/src/hooks/useDefaultDocDate';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Download, Printer } from 'lucide-react';
 import { PrintDialog } from '@client/src/components/print/PrintDialog';
@@ -42,8 +43,9 @@ const MaterialPurchaseOrderPage: React.FC = () => {
   const [filterEndDate, setFilterEndDate] = useState<string>('');
   const [keyword, setKeyword] = useState<string>('');
   const [searchKeyword, setSearchKeyword] = useState<string>('');
-  const [searchStartDate, setSearchStartDate] = useState<string>('');
-  const [searchEndDate, setSearchEndDate] = useState<string>('');
+  const def = useDefaultDocDate();
+  const [searchStartDate, setSearchStartDate] = useState<string>(def.startDate);
+  const [searchEndDate, setSearchEndDate] = useState<string>(def.endDate);
 
   const [supplierOptions, setSupplierOptions] = useState<{ id: string; code: string; name: string }[]>([]);
   const [materialOptions, setMaterialOptions] = useState<{ id: string; code: string; name: string; unit: string }[]>([]);
@@ -74,8 +76,8 @@ const MaterialPurchaseOrderPage: React.FC = () => {
       const res = await productionApi.materialPurchaseOrder.list(params);
       setList(res.items);
       setTotal(res.total);
-    } catch {
-      toast('加载失败');
+    } catch (e) {
+      toast(errMsg(e, '加载失败'));
     } finally {
       setLoading(false);
     }
@@ -152,8 +154,8 @@ const MaterialPurchaseOrderPage: React.FC = () => {
       setPrintTotalAmount(order.totalAmount);
       setPrintRemark(order.remark ?? '');
       setPrintOpen(true);
-    } catch {
-      toast('加载详情失败');
+    } catch (e) {
+      toast(errMsg(e, '加载详情失败'));
     }
   };
 
@@ -235,7 +237,7 @@ const MaterialPurchaseOrderPage: React.FC = () => {
           </button>
           <button
             onClick={openAdd}
-            className="px-3 py-1.5 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center gap-1"
+            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600 flex items-center gap-1"
           >
             <Plus size={16} /> + 新增订单
           </button>
@@ -249,7 +251,7 @@ const MaterialPurchaseOrderPage: React.FC = () => {
           <select
             value={filterSupplier}
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => { setFilterSupplier(e.target.value); setPage(1); }}
-            className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500"
+            className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
           >
             <option value="">全部</option>
             {supplierOptions.map((s: { id: string; code: string; name: string }) => (
@@ -263,7 +265,7 @@ const MaterialPurchaseOrderPage: React.FC = () => {
           <select
             value={filterStatus}
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => { setFilterStatus(e.target.value); setPage(1); }}
-            className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500"
+            className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
           >
             <option value="">全部</option>
             <option value="draft">草稿</option>
@@ -278,14 +280,14 @@ const MaterialPurchaseOrderPage: React.FC = () => {
             type="date"
             value={filterStartDate}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilterStartDate(e.target.value)}
-            className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500"
+            className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
           />
           <span className="text-gray-400">~</span>
           <input
             type="date"
             value={filterEndDate}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilterEndDate(e.target.value)}
-            className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500"
+            className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
           />
         </div>
         <div className="flex items-center gap-1">
@@ -295,12 +297,12 @@ const MaterialPurchaseOrderPage: React.FC = () => {
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setKeyword(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
             placeholder="搜索单号"
-            className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500 w-44"
+            className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary w-44"
           />
         </div>
         <button
           onClick={handleSearch}
-          className="px-4 py-1.5 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+          className="px-4 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600"
         >
           查询
         </button>
@@ -342,7 +344,7 @@ const MaterialPurchaseOrderPage: React.FC = () => {
                   <td className="py-2 px-4 space-x-2">
                     {item.status === 'draft' && (
                       <>
-                        <button onClick={() => openEdit(item.id)} className="text-blue-500 hover:text-blue-600">编辑</button>
+                        <button onClick={() => openEdit(item.id)} className="text-primary hover:text-blue-600">编辑</button>
                         <button onClick={() => handleDelete(item.id)} className="text-red-500 hover:text-red-600">删除</button>
                         <button onClick={() => handleStatusAction(item.id, 'submit')} className="text-orange-500 hover:text-orange-600">提交审核</button>
                         <button onClick={() => handleListPrint(item.id)} className="text-gray-500 hover:text-gray-600 inline-flex align-middle" title="打印">
@@ -361,7 +363,7 @@ const MaterialPurchaseOrderPage: React.FC = () => {
                     )}
                     {item.status === 'approved' && (
                       <>
-                        <button onClick={() => openView(item.id)} className="text-blue-500 hover:text-blue-600">查看</button>
+                        <button onClick={() => openView(item.id)} className="text-primary hover:text-blue-600">查看</button>
                         <button onClick={() => handleListPrint(item.id)} className="text-gray-500 hover:text-gray-600 inline-flex align-middle" title="打印">
                           <Printer size={14} />
                         </button>
@@ -370,7 +372,7 @@ const MaterialPurchaseOrderPage: React.FC = () => {
                     )}
                     {item.status === 'completed' && (
                       <>
-                        <button onClick={() => openView(item.id)} className="text-blue-500 hover:text-blue-600">查看</button>
+                        <button onClick={() => openView(item.id)} className="text-primary hover:text-blue-600">查看</button>
                         <button onClick={() => handleListPrint(item.id)} className="text-gray-500 hover:text-gray-600 inline-flex align-middle" title="打印">
                           <Printer size={14} />
                         </button>

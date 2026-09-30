@@ -1,16 +1,2 @@
-import { Loader2Icon } from "lucide-react"
-
-import { cn } from "@/lib/utils"
-
-function Spinner({ className, ...props }: React.ComponentProps<"svg">) {
-  return (
-    <Loader2Icon
-      role="status"
-      aria-label="Loading"
-      className={cn("size-4 animate-spin", className)}
-      {...props}
-    />
-  )
-}
-
-export { Spinner }
+// A.1 共享 UI 组件：本文件为薄壳（re-export shim），实际实现见 @shared/ui/spinner
+export * from '@shared/ui/spinner';

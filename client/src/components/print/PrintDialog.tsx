@@ -57,7 +57,7 @@ export const PrintDialog: React.FC<PrintDialogProps> = ({
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                       onShowAllSizesChange(e.target.checked)
                     }
-                    className="w-4 h-4 accent-blue-500"
+                    className="w-4 h-4 accent-primary"
                   />
                   显示尺码组全部尺码
                 </label>

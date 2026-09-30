@@ -53,7 +53,7 @@ const PayablePage: React.FC = () => {
       setTotal(res.data.total || 0);
     } catch (error) {
       logger.error('加载应付列表失败', error);
-      toast('加载失败');
+      toast(errMsg(error, '加载失败'));
     }
     setLoading(false);
   };
@@ -174,7 +174,7 @@ const PayablePage: React.FC = () => {
       loadList();
     } catch (error) {
       logger.error('付款失败', error);
-      toast('付款失败');
+      toast(errMsg(error, '付款失败'));
     } finally {
       setSubmitting(false);
     }
@@ -207,12 +207,12 @@ const PayablePage: React.FC = () => {
           placeholder="搜索单号/供应商名"
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded text-sm w-52 focus:outline-none focus:border-blue-500"
+          className="px-3 py-2 border border-gray-300 rounded text-sm w-52 focus:outline-none focus:border-primary"
         />
         <select
           value={statusFilter}
           onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
         >
           <option value="">全部状态</option>
           <option value="unpaid">未付款</option>
@@ -221,7 +221,7 @@ const PayablePage: React.FC = () => {
         </select>
         <button
           onClick={handleSearch}
-          className="px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
+          className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600"
         >
           查询
         </button>
@@ -281,7 +281,7 @@ const PayablePage: React.FC = () => {
                     <td className="px-4 py-3 text-center">
                       <button
                         onClick={() => handleViewDetail(item)}
-                        className="text-blue-500 hover:text-blue-600 mr-3"
+                        className="text-primary hover:text-blue-600 mr-3"
                       >
                         查看/付款
                       </button>
@@ -359,7 +359,7 @@ const PayablePage: React.FC = () => {
               {currentItem.status !== 'paid' && (
                 <button
                   onClick={openPaymentModal}
-                  className="px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
+                  className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600"
                 >
                   付款核销
                 </button>
@@ -388,7 +388,7 @@ const PayablePage: React.FC = () => {
                   type="date"
                   value={paymentForm.paymentDate}
                   onChange={(e) => setPaymentForm({ ...paymentForm, paymentDate: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                 />
               </div>
               <div>
@@ -398,7 +398,7 @@ const PayablePage: React.FC = () => {
                   step="0.01"
                   value={paymentForm.amount}
                   onChange={(e) => setPaymentForm({ ...paymentForm, amount: Number(e.target.value) })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                 />
               </div>
               <div>
@@ -406,7 +406,7 @@ const PayablePage: React.FC = () => {
                 <select
                   value={paymentForm.paymentMethod}
                   onChange={(e) => setPaymentForm({ ...paymentForm, paymentMethod: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                 >
                   <option value="bank">银行转账</option>
                   <option value="cash">现金</option>
@@ -420,7 +420,7 @@ const PayablePage: React.FC = () => {
                 <textarea
                   value={paymentForm.remark}
                   onChange={(e) => setPaymentForm({ ...paymentForm, remark: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   rows={2}
                 />
               </div>
@@ -435,7 +435,7 @@ const PayablePage: React.FC = () => {
               <button
                 onClick={handlePayment}
                 disabled={submitting}
-                className="px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {submitting ? '付款中...' : '确认付款'}
               </button>

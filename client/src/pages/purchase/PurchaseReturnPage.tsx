@@ -80,7 +80,7 @@ const PurchaseReturnPage: React.FC = () => {
       setTotal(res.data.total || 0);
     } catch (error) {
       logger.error('加载采购退货列表失败', error);
-      toast('加载失败');
+      toast(errMsg(error, '加载失败'));
     }
     setLoading(false);
   };
@@ -199,7 +199,7 @@ const PurchaseReturnPage: React.FC = () => {
         <h1 className="text-xl font-semibold text-gray-800">采购退货</h1>
         <button
           onClick={handleAdd}
-          className="px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 flex items-center gap-1"
+          className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600 flex items-center gap-1"
         >
           <Plus size={16} /> 新增采购退货
         </button>
@@ -211,12 +211,12 @@ const PurchaseReturnPage: React.FC = () => {
           placeholder="搜索单号/供应商"
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded text-sm w-52 focus:outline-none focus:border-blue-500"
+          className="px-3 py-2 border border-gray-300 rounded text-sm w-52 focus:outline-none focus:border-primary"
         />
         <select
           value={statusFilter}
           onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
         >
           <option value="">全部状态</option>
           <option value="draft">草稿</option>
@@ -225,7 +225,7 @@ const PurchaseReturnPage: React.FC = () => {
 </select>
         <button
           onClick={() => { setPage(1); loadList(); }}
-          className="px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
+          className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600"
         >
           查询
         </button>
@@ -289,7 +289,7 @@ const PurchaseReturnPage: React.FC = () => {
                         </>
                        ) : (
                          <>
-                           <button onClick={() => handleView(item)} className="text-blue-500 hover:text-blue-600 mr-3">查看</button>
+                           <button onClick={() => handleView(item)} className="text-primary hover:text-blue-600 mr-3">查看</button>
                            <button onClick={() => handleListPrint(item)} className="text-gray-500 hover:text-gray-600 inline-flex align-middle" title="打印">
                              <Printer size={14} />
                            </button>

@@ -92,8 +92,8 @@ const FinishReceiptEditPage: React.FC = () => {
           size: it.size ?? '',
           qty: it.qty,
         })));
-      } catch {
-        toast('加载详情失败');
+      } catch (e) {
+        toast(errMsg(e, '加载详情失败'));
       } finally {
         setLoading(false);
       }
@@ -285,7 +285,7 @@ const FinishReceiptEditPage: React.FC = () => {
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-medium text-gray-700">SKU 明细</h2>
         {!viewOnly && (
-          <button onClick={addItem} className="text-sm text-blue-500 hover:text-blue-600">+ 添加行</button>
+          <button onClick={addItem} className="text-sm text-primary hover:text-blue-600">+ 添加行</button>
         )}
       </div>
       <div className="border border-gray-200 rounded overflow-hidden">

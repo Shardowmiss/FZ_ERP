@@ -231,6 +231,8 @@ export class SalesOrderService {
       styleNo: string;
       color: string;
       size: string;
+      colorId: string | null;
+      sizeId: string | null;
       quantity: string;
       price: string;
       amount: string;
@@ -255,6 +257,8 @@ export class SalesOrderService {
         styleNo: skuItem.styleNo,
         color: skuItem.color,
         size: skuItem.size,
+        colorId: skuItem.colorId ?? null,
+        sizeId: skuItem.sizeId ?? null,
         quantity: round3(qty),
         price: round4(prc),
         amount: round2(amt),
@@ -356,6 +360,8 @@ export class SalesOrderService {
       styleNo: string;
       color: string;
       size: string;
+      colorId: string | null;
+      sizeId: string | null;
       quantity: string;
       price: string;
       amount: string;
@@ -383,6 +389,8 @@ export class SalesOrderService {
         styleNo: skuItem.styleNo,
         color: skuItem.color,
         size: skuItem.size,
+        colorId: skuItem.colorId ?? null,
+        sizeId: skuItem.sizeId ?? null,
         quantity: round3(qty),
         price: round4(prc),
         amount: round2(amt),

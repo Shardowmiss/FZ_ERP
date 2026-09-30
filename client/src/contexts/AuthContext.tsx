@@ -8,6 +8,7 @@ import {
 import { rbacApi } from '@client/src/api/rbac';
 import type { RbacUser, RbacPermission } from '@shared/api.interface';
 import { logger } from '@lark-apaas/client-toolkit/logger';
+import { useI18n, type Locale } from '@client/src/i18n';
 
 interface AuthContextType {
   user: RbacUser | null;
@@ -30,6 +31,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [menus, setMenus] = useState<RbacPermission[]>([]);
   const [permissions, setPermissions] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { setLanguage } = useI18n();
+
+  // 登录后应用个人语种偏好（user.language 落库值），实现「个人用户在系统设置中单独配置语种」
+  useEffect(() => {
+    const lang = user?.language;
+    if (lang === 'zh-CN' || lang === 'en') {
+      setLanguage(lang as Locale);
+    }
+  }, [user?.language, setLanguage]);
 
   useEffect(() => {
     const token = localStorage.getItem(TOKEN_KEY);

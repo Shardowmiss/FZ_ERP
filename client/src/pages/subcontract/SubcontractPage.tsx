@@ -70,7 +70,7 @@ const SubcontractPage: React.FC = () => {
               onClick={() => setTab(t.key)}
               className={`px-4 py-2 text-sm border-b-2 -mb-px ${
                 tab === t.key
-                  ? 'border-blue-500 text-blue-600 font-medium'
+                  ? 'border-primary text-blue-600 font-medium'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
             >
@@ -133,7 +133,7 @@ const OrderTab: React.FC<{ supplierOptions: Option[]; skuOptions: Option[]; onCh
   return (
     <div>
       <div className="mb-3 flex justify-end">
-        <button onClick={() => setShowForm(!showForm)} className="px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600">
+        <button onClick={() => setShowForm(!showForm)} className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600">
           {showForm ? '收起' : '新建委外订单'}
         </button>
       </div>
@@ -236,7 +236,7 @@ const IssueTab: React.FC<{ orderOptions: any[]; warehouseOptions: Option[]; mate
   return (
     <div>
       <div className="mb-3 flex justify-end">
-        <button onClick={() => setShowForm(!showForm)} className="px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600">{showForm ? '收起' : '新建发料单'}</button>
+        <button onClick={() => setShowForm(!showForm)} className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600">{showForm ? '收起' : '新建发料单'}</button>
       </div>
       {showForm && (
         <div className="mb-4 p-4 bg-gray-50 rounded border border-gray-200">
@@ -336,7 +336,7 @@ const ReceiptTab: React.FC<{ orderOptions: any[]; warehouseOptions: Option[]; sk
   return (
     <div>
       <div className="mb-3 flex justify-end">
-        <button onClick={() => setShowForm(!showForm)} className="px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600">{showForm ? '收起' : '新建回收单'}</button>
+        <button onClick={() => setShowForm(!showForm)} className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600">{showForm ? '收起' : '新建回收单'}</button>
       </div>
       {showForm && (
         <div className="mb-4 p-4 bg-gray-50 rounded border border-gray-200">
@@ -426,13 +426,13 @@ const FeeTab: React.FC<{ orderOptions: any[]; supplierOptions: Option[]; onChang
   };
   const settle = async (id: string) => {
     try { await axiosForBackend.post(`/api/subcontract/fee/${id}/settle`); toast.success('已结算，生成应付账款'); load(); onChanged(); }
-    catch (e) { logger.error('结算失败', e); toast('结算失败'); }
+    catch (e) { logger.error('结算失败', e); toast(errMsg(e, '结算失败')); }
   };
 
   return (
     <div>
       <div className="mb-3 flex justify-end">
-        <button onClick={() => setShowForm(!showForm)} className="px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600">{showForm ? '收起' : '录入加工费'}</button>
+        <button onClick={() => setShowForm(!showForm)} className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600">{showForm ? '收起' : '录入加工费'}</button>
       </div>
       {showForm && (
         <div className="mb-4 p-4 bg-gray-50 rounded border border-gray-200">

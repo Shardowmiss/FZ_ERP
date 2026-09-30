@@ -9,6 +9,7 @@ import type {
   MemberProfile,
   MemberPoint,
 } from '@shared/api.interface';
+import { CHART_PRIMARY, CHART_POSITIVE } from '@client/src/lib/chart-colors';
 
 const LEVEL_LABEL: Record<string, string> = {
   normal: '普通', silver: '银卡', gold: '金卡', vip: 'VIP',
@@ -56,7 +57,7 @@ const MemberPage: React.FC = () => {
     try {
       setProfile(await memberApi.profile(m.id));
       setPoints([]);
-    } catch { toast('加载画像失败'); }
+    } catch (e) { toast(errMsg(e, '加载画像失败')); }
   };
 
   const adjustPoints = async () => {
@@ -67,7 +68,7 @@ const MemberPage: React.FC = () => {
       setPointDelta(0); setPointRemark('');
       openProfile({ id: profile.memberId } as Member);
       load();
-    } catch { toast('调整失败'); }
+    } catch (e) { toast('调整失败'); }
   };
 
   const sendCampaign = async () => {
@@ -75,7 +76,7 @@ const MemberPage: React.FC = () => {
     try {
       const r = await memberApi.campaign(campaignTag, campaignTitle);
       toast.success(`营销推送已提交，覆盖 ${r.affectedCount} 人`);
-    } catch { toast('推送失败'); }
+    } catch (e) { toast(errMsg(e, '推送失败')); }
   };
 
   const catOption = {
@@ -83,13 +84,13 @@ const MemberPage: React.FC = () => {
     grid: { left: 80, right: 20, top: 20, bottom: 30 },
     xAxis: { type: 'value' as const },
     yAxis: { type: 'category' as const, data: [...(profile?.categoryBreakdown || [])].reverse().map((c) => c.category), axisLabel: { fontSize: 10 } },
-    series: [{ type: 'bar' as const, data: [...(profile?.categoryBreakdown || [])].reverse().map((c) => c.amount), itemStyle: { color: '#10b981', borderRadius: [0, 4, 4, 0] }, barWidth: 14 }],
+    series: [{ type: 'bar' as const, data: [...(profile?.categoryBreakdown || [])].reverse().map((c) => c.amount), itemStyle: { color: CHART_POSITIVE, borderRadius: [0, 4, 4, 0] }, barWidth: 14 }],
   };
   const monthOption = {
     tooltip: { trigger: 'axis' as const }, grid: { left: 40, right: 20, top: 20, bottom: 30 },
     xAxis: { type: 'category' as const, data: profile?.purchaseMonths.map((m) => m.month) || [], axisLabel: { fontSize: 10, rotate: 45 } },
     yAxis: { type: 'value' as const },
-    series: [{ type: 'line' as const, data: profile?.purchaseMonths.map((m) => m.amount) || [], itemStyle: { color: '#3b82f6' }, areaStyle: { color: 'rgba(59,130,246,0.15)' } }],
+    series: [{ type: 'line' as const, data: profile?.purchaseMonths.map((m) => m.amount) || [], itemStyle: { color: CHART_PRIMARY }, areaStyle: { color: 'rgba(59,130,246,0.15)' } }],
   };
 
   return (
@@ -97,7 +98,7 @@ const MemberPage: React.FC = () => {
       <div className="bg-white rounded-lg shadow-sm p-5">
         <div className="flex items-center justify-between mb-3">
           <h1 className="text-xl font-semibold text-gray-800">会员私域运营</h1>
-          <button onClick={() => { setForm({ name: '', phone: '', level: 'normal' }); setShowForm((v) => !v); }} className="px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600">
+          <button onClick={() => { setForm({ name: '', phone: '', level: 'normal' }); setShowForm((v) => !v); }} className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600">
             {showForm ? '收起' : '新增会员'}
           </button>
         </div>
@@ -141,7 +142,7 @@ const MemberPage: React.FC = () => {
                   <td className="px-3 py-2 text-right text-gray-700">¥{m.totalSpent.toFixed(2)}</td>
                   <td className="px-3 py-2 text-right text-gray-600">{m.orderCount}</td>
                   <td className="px-3 py-2 text-right text-gray-600">{m.points}</td>
-                  <td className="px-3 py-2 text-center"><button onClick={() => openProfile(m)} className="text-blue-500 text-xs">画像</button></td>
+                  <td className="px-3 py-2 text-center"><button onClick={() => openProfile(m)} className="text-primary text-xs">画像</button></td>
                 </tr>
               ))
             )}
@@ -182,7 +183,7 @@ const MemberPage: React.FC = () => {
           <div className="flex gap-3 flex-wrap items-end border-t border-gray-100 pt-3">
             <input type="number" placeholder="积分变动" value={pointDelta} onChange={(e) => setPointDelta(Number(e.target.value))} className="px-3 py-2 border border-gray-300 rounded text-sm w-28" />
             <input placeholder="备注" value={pointRemark} onChange={(e) => setPointRemark(e.target.value)} className="px-3 py-2 border border-gray-300 rounded text-sm w-40" />
-            <button onClick={adjustPoints} className="px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600">调整积分</button>
+            <button onClick={adjustPoints} className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600">调整积分</button>
           </div>
         </div>
       )}

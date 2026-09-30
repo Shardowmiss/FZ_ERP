@@ -50,7 +50,7 @@ export default function InventoryTransferPage() {
       setTotal(res.total);
     } catch (e) {
       logger.error('加载调拨单失败', e);
-      toast('加载失败');
+      toast(errMsg(e, '加载失败'));
     } finally { setLoading(false); }
   };
 
@@ -136,7 +136,7 @@ export default function InventoryTransferPage() {
       fetchList();
     } catch (e) {
       logger.error('记账失败', e);
-      toast('记账失败');
+      toast(errMsg(e, '记账失败'));
     }
   };
 
@@ -148,7 +148,7 @@ export default function InventoryTransferPage() {
       fetchList();
     } catch (e) {
       logger.error('验收失败', e);
-      toast('验收失败');
+      toast(errMsg(e, '验收失败'));
     }
   };
 
@@ -229,7 +229,7 @@ export default function InventoryTransferPage() {
       <div className="bg-white rounded-lg shadow-sm p-5">
         <div className="mb-4 flex items-center justify-between">
           <h1 className="text-xl font-semibold">调拨单</h1>
-          <button onClick={openCreate} className="bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600">
+          <button onClick={openCreate} className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-blue-600">
             + 新增调拨单
           </button>
         </div>
@@ -262,7 +262,7 @@ export default function InventoryTransferPage() {
           </select>
         </div>
         <button onClick={handleSearch}
-          className="bg-blue-500 text-white px-4 py-1.5 rounded text-sm hover:bg-blue-600">查询</button>
+          className="bg-primary text-white px-4 py-1.5 rounded text-sm hover:bg-blue-600">查询</button>
         <button onClick={handleExport}
           className="bg-white text-gray-700 border border-gray-300 px-4 py-1.5 rounded text-sm hover:bg-gray-50">导出</button>
         <button onClick={handleReset}
@@ -296,7 +296,7 @@ export default function InventoryTransferPage() {
                   <td className="px-4">{item.items?.length ?? 0}</td>
                   <td className="px-4"><span className={`px-2 py-0.5 rounded text-xs ${st.color}`}>{st.label}</span></td>
                   <td className="px-4 space-x-2">
-                    <button onClick={() => openView(item.id)} className="text-blue-500 hover:underline">查看</button>
+                    <button onClick={() => openView(item.id)} className="text-primary hover:underline">查看</button>
                     {item.status === 'draft' && (
                       <>
                         <button onClick={() => handleBook(item.id)} className="text-green-500 hover:underline">记账</button>

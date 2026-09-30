@@ -337,7 +337,7 @@ function SimpleUserProfile(props: {
             <div className="flex items-center gap-2 pt-0.5 pb-1.5 leading-tight font-semibold">
               <span className="text-xl">{userProfileInfo.name}</span>
               {userProfileInfo.userType === '_externalUser' && (
-                <Badge className="rounded-sm border-0 bg-blue-500/20 pt-px pr-1.5 pb-px pl-1 text-sm text-blue-900">
+                <Badge className="rounded-sm border-0 bg-primary/20 pt-px pr-1.5 pb-px pl-1 text-sm text-blue-900">
                   外部
                 </Badge>
               )}

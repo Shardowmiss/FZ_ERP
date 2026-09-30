@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useDefaultDocDate } from '@client/src/hooks/useDefaultDocDate';
 import { useNavigate } from 'react-router-dom';
 import { salesApi } from '@client/src/api/sales';
 import { baseApi } from '@client/src/api/base';
@@ -33,8 +34,9 @@ export default function SalesOrderPage() {
 
   const [customerId, setCustomerId] = useState('');
   const [status, setStatus] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const def = useDefaultDocDate();
+  const [startDate, setStartDate] = useState(def.startDate);
+  const [endDate, setEndDate] = useState(def.endDate);
   const [keyword, setKeyword] = useState('');
 
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -104,7 +106,7 @@ export default function SalesOrderPage() {
       setTotal(res.total);
     } catch (e) {
       logger.error('加载销售订单失败', e);
-      toast('加载失败');
+      toast(errMsg(e, '加载失败'));
     } finally {
       setLoading(false);
     }
@@ -216,7 +218,7 @@ export default function SalesOrderPage() {
       fetchList();
     } catch (e) {
       logger.error('记账失败', e);
-      toast('记账失败');
+      toast(errMsg(e, '记账失败'));
     }
   };
 
@@ -228,7 +230,7 @@ export default function SalesOrderPage() {
       fetchList();
     } catch (e) {
       logger.error('取消审核失败', e);
-      toast('取消审核失败');
+      toast(errMsg(e, '取消审核失败'));
     }
   };
 
@@ -249,7 +251,7 @@ export default function SalesOrderPage() {
       setPrintOpen(true);
     } catch (e) {
       logger.error('加载打印数据失败', e);
-      toast('加载打印数据失败');
+      toast(errMsg(e, '加载打印数据失败'));
     }
   };
 
@@ -260,7 +262,7 @@ export default function SalesOrderPage() {
         {hasPermission('sales:order:create') && (
           <button
             onClick={openCreate}
-            className="bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600 flex items-center gap-1"
+            className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-blue-600 flex items-center gap-1"
           >
             <Plus size={16} /> 新增销售订单
           </button>
@@ -325,7 +327,7 @@ export default function SalesOrderPage() {
         </div>
         <button
           onClick={handleSearch}
-          className="bg-blue-500 text-white px-4 py-1.5 rounded text-sm hover:bg-blue-600"
+          className="bg-primary text-white px-4 py-1.5 rounded text-sm hover:bg-blue-600"
         >
           查询
         </button>
@@ -375,7 +377,7 @@ export default function SalesOrderPage() {
                       {order.status === 'draft' && (
                         <>
                           {hasPermission('sales:order:edit') && (
-                            <button onClick={() => openEdit(order)} className="text-blue-500 hover:underline">编辑</button>
+                            <button onClick={() => openEdit(order)} className="text-primary hover:underline">编辑</button>
                           )}
                           {hasPermission('sales:order:delete') && (
                             <button onClick={() => handleDelete(order.id)} className="text-red-500 hover:underline">删除</button>
@@ -384,7 +386,7 @@ export default function SalesOrderPage() {
                             <button onClick={() => handleAudit(order.id)} className="text-green-500 hover:underline">审核</button>
                           )}
                           {hasPermission('sales:order:print') && (
-                            <button onClick={() => handlePrintFromList(order.id)} className="text-blue-500 hover:underline inline-flex items-center" title="打印">
+                            <button onClick={() => handlePrintFromList(order.id)} className="text-primary hover:underline inline-flex items-center" title="打印">
                               <Printer size={14} />
                             </button>
                           )}
@@ -392,15 +394,15 @@ export default function SalesOrderPage() {
                       )}
                       {order.status === 'audited' && (
                         <>
-                          <button onClick={() => openView(order)} className="text-blue-500 hover:underline">查看</button>
+                          <button onClick={() => openView(order)} className="text-primary hover:underline">查看</button>
                           {hasPermission('sales:order:approve') && (
-                            <button onClick={() => handleBook(order.id)} className="text-blue-500 hover:underline">记账</button>
+                            <button onClick={() => handleBook(order.id)} className="text-primary hover:underline">记账</button>
                           )}
                           {hasPermission('sales:order:approve') && (
                             <button onClick={() => handleCancelAudit(order.id)} className="text-orange-500 hover:underline">取消审核</button>
                           )}
                           {hasPermission('sales:order:print') && (
-                            <button onClick={() => handlePrintFromList(order.id)} className="text-blue-500 hover:underline inline-flex items-center" title="打印">
+                            <button onClick={() => handlePrintFromList(order.id)} className="text-primary hover:underline inline-flex items-center" title="打印">
                               <Printer size={14} />
                             </button>
                           )}
@@ -408,9 +410,9 @@ export default function SalesOrderPage() {
                       )}
                       {order.status === 'booked' && (
                         <>
-                          <button onClick={() => openView(order)} className="text-blue-500 hover:underline">查看</button>
+                          <button onClick={() => openView(order)} className="text-primary hover:underline">查看</button>
                           {hasPermission('sales:order:print') && (
-                            <button onClick={() => handlePrintFromList(order.id)} className="text-blue-500 hover:underline inline-flex items-center" title="打印">
+                            <button onClick={() => handlePrintFromList(order.id)} className="text-primary hover:underline inline-flex items-center" title="打印">
                               <Printer size={14} />
                             </button>
                           )}

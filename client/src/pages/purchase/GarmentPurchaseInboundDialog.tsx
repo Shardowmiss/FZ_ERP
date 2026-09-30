@@ -4,6 +4,7 @@ import { garmentPurchaseApi, baseApi } from '@client/src/api';
 import type { GarmentPurchaseInbound, GarmentPurchaseOrder, Sku } from '@shared/api.interface';
 import GarmentSkuMatrixTable, { type SkuQtyPriceMatrix } from './GarmentSkuMatrixTable';
 import { toast } from 'sonner';
+import { errMsg } from '@/utils/errMsg';
 
 interface StyleBlock {
   styleId: string;
@@ -142,8 +143,8 @@ const GarmentPurchaseInboundDialog: React.FC<GarmentPurchaseInboundDialogProps> 
       const order = await garmentPurchaseApi.order.get(orderId);
       const blocks = await buildFromOrderSkus(order.skus ?? []);
       setStyleBlocks(blocks);
-    } catch {
-      toast('加载订单明细失败');
+    } catch (e) {
+      toast(errMsg(e, '加载订单明细失败'));
     }
   };
 
@@ -347,7 +348,7 @@ const GarmentPurchaseInboundDialog: React.FC<GarmentPurchaseInboundDialogProps> 
                       void handleOrderChange(e.target.value);
                     }}
                     disabled={viewOnly}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-500"
                   >
                     <option value="">请选择</option>
                     {approvedOrders.map((o) => (
@@ -367,7 +368,7 @@ const GarmentPurchaseInboundDialog: React.FC<GarmentPurchaseInboundDialogProps> 
                       setFormWarehouseId(e.target.value)
                     }
                     disabled={viewOnly}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-500"
                   >
                     <option value="">请选择</option>
                     {warehouseOptions.map((w) => (
@@ -388,7 +389,7 @@ const GarmentPurchaseInboundDialog: React.FC<GarmentPurchaseInboundDialogProps> 
                       setFormInboundDate(e.target.value)
                     }
                     disabled={viewOnly}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-500"
                   />
                 </div>
                 <div>
@@ -401,7 +402,7 @@ const GarmentPurchaseInboundDialog: React.FC<GarmentPurchaseInboundDialogProps> 
                     }
                     disabled={viewOnly}
                     placeholder="请输入备注"
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-500"
                   />
                 </div>
               </div>
@@ -470,7 +471,7 @@ const GarmentPurchaseInboundDialog: React.FC<GarmentPurchaseInboundDialogProps> 
             <button
               onClick={handleSave}
               disabled={saving}
-              className="px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50"
+              className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50"
             >保存</button>
           )}
         </div>

@@ -30,7 +30,7 @@ const MonthClosePage: React.FC = () => {
       setList(data || []);
     } catch (error) {
       logger.error('加载月结列表失败', error);
-      toast('加载失败');
+      toast(errMsg(error, '加载失败'));
     }
     setLoading(false);
   };
@@ -72,7 +72,7 @@ const MonthClosePage: React.FC = () => {
       setShowDetail(true);
     } catch (error) {
       logger.error('加载月结详情失败', error);
-      toast('加载详情失败');
+      toast(errMsg(error, '加载详情失败'));
     }
     setDetailLoading(false);
   };
@@ -235,7 +235,7 @@ const MonthClosePage: React.FC = () => {
                       {item.status === 'open' ? (
                         <button
                           onClick={() => handleClose(item)}
-                          className="px-3 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600"
+                          className="px-3 py-1 bg-primary text-white rounded text-xs hover:bg-blue-600"
                         >
                           月结
                         </button>
@@ -243,7 +243,7 @@ const MonthClosePage: React.FC = () => {
                         <div className="flex items-center justify-center gap-2">
                           <button
                             onClick={() => handleViewDetail(item)}
-                            className="text-blue-500 hover:text-blue-600 text-xs"
+                            className="text-primary hover:text-blue-600 text-xs"
                           >
                             查看详情
                           </button>
@@ -377,7 +377,7 @@ const MonthClosePage: React.FC = () => {
                       value={reopenRemark}
                       onChange={(e) => setReopenRemark(e.target.value)}
                       rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 resize-none"
+                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary resize-none"
                       placeholder="请输入反月结原因"
                     />
                   </div>
@@ -396,7 +396,7 @@ const MonthClosePage: React.FC = () => {
                 disabled={actionLoading}
                 className={`px-4 py-2 text-white rounded text-sm disabled:opacity-50 ${
                   confirmType === 'close'
-                    ? 'bg-blue-500 hover:bg-blue-600'
+                    ? 'bg-primary hover:bg-blue-600'
                     : 'bg-red-500 hover:bg-red-600'
                 }`}
               >

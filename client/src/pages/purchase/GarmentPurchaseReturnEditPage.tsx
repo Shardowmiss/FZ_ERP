@@ -51,8 +51,8 @@ const GarmentPurchaseReturnEditPage: React.FC = () => {
             status: 'approved',
           });
           setApprovedInbounds(res.items);
-        } catch {
-          toast('加载入库单失败');
+        } catch (e) {
+          toast(errMsg(e, '加载入库单失败'));
         } finally {
           setLoadingInbounds(false);
         }
@@ -73,8 +73,8 @@ const GarmentPurchaseReturnEditPage: React.FC = () => {
         setFormRemark(ret.remark ?? '');
         const blocks = await buildStyleBlocksFromSkus(ret.skus ?? []);
         setStyleBlocks(blocks);
-      } catch {
-        toast('加载详情失败');
+      } catch (e) {
+        toast(errMsg(e, '加载详情失败'));
       } finally {
         setLoading(false);
       }
@@ -148,8 +148,8 @@ const GarmentPurchaseReturnEditPage: React.FC = () => {
       }));
       const blocks = await buildStyleBlocksFromSkus(skusWithIds);
       setStyleBlocks(blocks);
-    } catch {
-      toast('加载入库单明细失败');
+    } catch (e) {
+      toast(errMsg(e, '加载入库单明细失败'));
     }
   };
 
@@ -291,7 +291,7 @@ const GarmentPurchaseReturnEditPage: React.FC = () => {
             void handleInboundChange(e.target.value);
           }}
           disabled={viewOnly || !isNew}
-          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-500"
         >
           <option value="">请选择</option>
           {approvedInbounds.map((i) => (
@@ -312,7 +312,7 @@ const GarmentPurchaseReturnEditPage: React.FC = () => {
             setFormReturnDate(e.target.value)
           }
           disabled={viewOnly}
-          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-500"
         />
       </div>
       <div className="col-span-2">
@@ -325,7 +325,7 @@ const GarmentPurchaseReturnEditPage: React.FC = () => {
           }
           disabled={viewOnly}
           placeholder="请输入备注"
-          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-500"
         />
       </div>
     </div>

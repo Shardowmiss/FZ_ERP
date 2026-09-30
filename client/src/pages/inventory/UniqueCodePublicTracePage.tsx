@@ -5,6 +5,7 @@ import { logger } from '@lark-apaas/client-toolkit/logger';
 import { uniqueCodeApi, type PublicTrace } from '@client/src/api/uniqueCode';
 import { Card, CardContent, CardHeader, CardTitle } from '@client/src/components/ui/card';
 import { Badge } from '@client/src/components/ui/badge';
+import { CHART_PRIMARY } from '@client/src/lib/chart-colors';
 
 /* ------------------------------------------------------------------ *
  * 公开溯源页（消费者 / 门店扫码直达，无需登录）
@@ -198,7 +199,7 @@ const UniqueCodePublicTracePage: React.FC = () => {
                           width: 10,
                           height: 10,
                           borderRadius: '50%',
-                          background: '#3b82f6',
+                          background: CHART_PRIMARY,
                           border: '2px solid #fff',
                           boxShadow: '0 0 0 1px #bfdbfe',
                         }}

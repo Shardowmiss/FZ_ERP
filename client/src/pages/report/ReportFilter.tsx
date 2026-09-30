@@ -226,7 +226,7 @@ export default function ReportFilter({
         <div className="flex gap-2">
           <button
             onClick={handleSearch}
-            className="bg-blue-500 text-white px-4 py-1.5 rounded text-sm hover:bg-blue-600 transition-colors"
+            className="bg-primary text-white px-4 py-1.5 rounded text-sm hover:bg-blue-600 transition-colors"
           >
             查询
           </button>

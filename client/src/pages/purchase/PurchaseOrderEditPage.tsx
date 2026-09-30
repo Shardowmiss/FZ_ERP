@@ -100,8 +100,8 @@ const PurchaseOrderEditPage: React.FC = () => {
         setPrintPartnerName(order.supplierName);
         setPrintTotalAmount(order.totalAmount);
         setPrintRemark(order.remark ?? '');
-      } catch {
-        toast('加载详情失败');
+      } catch (e) {
+        toast(errMsg(e, '加载详情失败'));
       } finally {
         setLoading(false);
       }
@@ -225,7 +225,7 @@ const PurchaseOrderEditPage: React.FC = () => {
             disabled={viewOnly}
             value={formSupplierId}
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFormSupplierId(e.target.value)}
-            className="w-full border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
+            className="w-full border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:border-primary disabled:bg-gray-100"
           >
             <option value="">请选择供应商</option>
             {supplierOptions.map((s: { id: string; code: string; name: string }) => (
@@ -240,7 +240,7 @@ const PurchaseOrderEditPage: React.FC = () => {
             disabled={viewOnly}
             value={formOrderDate}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormOrderDate(e.target.value)}
-            className="w-full border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
+            className="w-full border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:border-primary disabled:bg-gray-100"
           />
         </div>
       </div>
@@ -252,7 +252,7 @@ const PurchaseOrderEditPage: React.FC = () => {
             disabled={viewOnly}
             value={formExpectDate}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormExpectDate(e.target.value)}
-            className="w-full border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
+            className="w-full border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:border-primary disabled:bg-gray-100"
           />
         </div>
         <div />
@@ -264,7 +264,7 @@ const PurchaseOrderEditPage: React.FC = () => {
           value={formRemark}
           onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormRemark(e.target.value)}
           rows={2}
-          className="w-full border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
+          className="w-full border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:border-primary disabled:bg-gray-100"
         />
       </div>
     </div>
@@ -275,7 +275,7 @@ const PurchaseOrderEditPage: React.FC = () => {
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-medium text-gray-700">明细</h2>
         {!viewOnly && (
-          <button onClick={handleAddRow} className="text-sm text-blue-500 hover:text-blue-600">+ 添加行</button>
+          <button onClick={handleAddRow} className="text-sm text-primary hover:text-blue-600">+ 添加行</button>
         )}
       </div>
       <table className="w-full text-sm border border-gray-200">

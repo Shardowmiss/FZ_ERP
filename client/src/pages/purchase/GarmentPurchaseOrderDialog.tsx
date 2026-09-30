@@ -4,6 +4,7 @@ import { baseApi } from '@client/src/api';
 import type { GarmentPurchaseOrder, Sku } from '@shared/api.interface';
 import GarmentSkuMatrixTable, { type SkuQtyPriceMatrix } from './GarmentSkuMatrixTable';
 import { toast } from 'sonner';
+import { errMsg } from '@/utils/errMsg';
 
 export interface StyleBlock {
   styleId: string;
@@ -94,8 +95,8 @@ const GarmentPurchaseOrderDialog: React.FC<GarmentPurchaseOrderDialogProps> = ({
     try {
       const order: GarmentPurchaseOrder = await onLoadDetail(id);
       await initFromData(order);
-    } catch {
-      toast('加载详情失败');
+    } catch (e) {
+      toast(errMsg(e, '加载详情失败'));
     } finally {
       setLoading(false);
     }
@@ -185,8 +186,8 @@ const GarmentPurchaseOrderDialog: React.FC<GarmentPurchaseOrderDialogProps> = ({
         },
       ]);
       setAddStyleId('');
-    } catch {
-      toast('加载SKU失败');
+    } catch (e) {
+      toast(errMsg(e, '加载SKU失败'));
     } finally {
       setLoadingStyleId('');
     }
@@ -346,7 +347,7 @@ const GarmentPurchaseOrderDialog: React.FC<GarmentPurchaseOrderDialogProps> = ({
                       setFormSupplierName(s?.name || '');
                     }}
                     disabled={viewOnly}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-500"
                   >
                     <option value="">请选择</option>
                     {supplierOptions.map((s) => (
@@ -367,7 +368,7 @@ const GarmentPurchaseOrderDialog: React.FC<GarmentPurchaseOrderDialogProps> = ({
                       setFormOrderDate(e.target.value)
                     }
                     disabled={viewOnly}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-500"
                   />
                 </div>
                 <div>
@@ -381,7 +382,7 @@ const GarmentPurchaseOrderDialog: React.FC<GarmentPurchaseOrderDialogProps> = ({
                       setFormExpectDate(e.target.value)
                     }
                     disabled={viewOnly}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-500"
                   />
                 </div>
                 <div>
@@ -394,7 +395,7 @@ const GarmentPurchaseOrderDialog: React.FC<GarmentPurchaseOrderDialogProps> = ({
                     }
                     disabled={viewOnly}
                     placeholder="请输入品牌"
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-500"
                   />
                 </div>
                 <div>
@@ -407,7 +408,7 @@ const GarmentPurchaseOrderDialog: React.FC<GarmentPurchaseOrderDialogProps> = ({
                     }
                     disabled={viewOnly}
                     placeholder="请输入采购员"
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-500"
                   />
                 </div>
                 <div className="col-span-3">
@@ -420,7 +421,7 @@ const GarmentPurchaseOrderDialog: React.FC<GarmentPurchaseOrderDialogProps> = ({
                     }
                     disabled={viewOnly}
                     placeholder="请输入备注"
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-500"
                   />
                 </div>
               </div>
@@ -436,7 +437,7 @@ const GarmentPurchaseOrderDialog: React.FC<GarmentPurchaseOrderDialogProps> = ({
                       onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
                         setAddStyleId(e.target.value)
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                     >
                       <option value="">请选择款号</option>
                       {styleOptions.map((s) => (
@@ -449,7 +450,7 @@ const GarmentPurchaseOrderDialog: React.FC<GarmentPurchaseOrderDialogProps> = ({
                   <button
                     onClick={handleAddStyle}
                     disabled={loadingStyleId !== ''}
-                    className="px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50 flex items-center gap-1"
+                    className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50 flex items-center gap-1"
                   >
                     <Plus size={16} /> 添加
                   </button>
@@ -524,7 +525,7 @@ const GarmentPurchaseOrderDialog: React.FC<GarmentPurchaseOrderDialogProps> = ({
             <button
               onClick={handleSave}
               disabled={saving}
-              className="px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50"
+              className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50"
             >保存</button>
           )}
         </div>

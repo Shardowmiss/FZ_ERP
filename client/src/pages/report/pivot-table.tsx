@@ -81,7 +81,7 @@ export function PivotTable({
               key={uniqueKey}
               className={`border-b border-gray-100 h-9 ${
                 isGrandTotal
-                  ? 'bg-blue-500 text-white font-bold'
+                  ? 'bg-primary text-white font-bold'
                   : isSubtotal
                     ? 'bg-gray-100 font-semibold text-gray-700'
                     : rowIdx % 2 === 0
@@ -158,7 +158,7 @@ export function PivotTable({
         {grandTotal && Object.keys(grandTotal).length > 0 && (
           <tr
             key="grand-total"
-            className="border-t-2 border-gray-300 bg-blue-500 text-white font-bold h-10"
+            className="border-t-2 border-gray-300 bg-primary text-white font-bold h-10"
           >
             <td
               colSpan={rowFieldCount}

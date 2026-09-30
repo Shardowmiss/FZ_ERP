@@ -73,7 +73,7 @@ export default function RetailReturnPage() {
       setTotal(res.total);
     } catch (e) {
       logger.error('加载退货单列表失败', e);
-      toast('加载失败');
+      toast(errMsg(e, '加载失败'));
     } finally {
       setLoading(false);
     }
@@ -179,7 +179,7 @@ export default function RetailReturnPage() {
       setPrintOpen(true);
     } catch (e) {
       logger.error('加载打印数据失败', e);
-      toast('加载打印数据失败');
+      toast(errMsg(e, '加载打印数据失败'));
     }
   };
 
@@ -191,7 +191,7 @@ export default function RetailReturnPage() {
       fetchList();
     } catch (e) {
       logger.error('退款失败', e);
-      toast('退款失败');
+      toast(errMsg(e, '退款失败'));
     }
   };
 
@@ -212,7 +212,7 @@ export default function RetailReturnPage() {
         <h1 className="text-xl font-semibold">零售退货单</h1>
         <button
           onClick={openCreate}
-          className="bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600 flex items-center gap-2"
+          className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-blue-600 flex items-center gap-2"
         >
           <Plus size={16} />
           新增退货
@@ -259,7 +259,7 @@ export default function RetailReturnPage() {
         </div>
         <button
           onClick={handleSearch}
-          className="bg-blue-500 text-white px-4 py-1.5 rounded text-sm hover:bg-blue-600"
+          className="bg-primary text-white px-4 py-1.5 rounded text-sm hover:bg-blue-600"
         >查询</button>
         <button
           onClick={handleReset}
@@ -296,7 +296,7 @@ export default function RetailReturnPage() {
                     <span className={`px-2 py-0.5 rounded text-xs ${st.variant}`}>{st.label}</span>
                   </td>
                   <td className="px-4 space-x-2">
-                    <button onClick={() => openView(item.id)} className="text-blue-500 hover:underline">查看</button>
+                    <button onClick={() => openView(item.id)} className="text-primary hover:underline">查看</button>
                     <button onClick={() => openPrint(item)} className="text-gray-500 hover:underline inline-flex items-center gap-0.5">
                       <Printer size={12} />打印
                     </button>

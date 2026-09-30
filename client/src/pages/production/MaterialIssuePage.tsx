@@ -50,16 +50,20 @@ export default function MaterialIssuePage() {
         pageSize: number;
         status?: string;
         keyword?: string;
+        startDate?: string;
+        endDate?: string;
       } = { page, pageSize };
       if (filterStatus) params.status = filterStatus;
       if (keyword) params.keyword = keyword;
+      if (filterStartDate) params.startDate = filterStartDate;
+      if (filterEndDate) params.endDate = filterEndDate;
       const res: PaginationResult<ProductionMaterialIssue> =
         await productionApi.materialIssue.list(params);
       setList(res.items);
       setTotal(res.total);
     } catch (e) {
       logger.error('加载领料单失败', e);
-      toast('加载失败');
+      toast(errMsg(e, '加载失败'));
     } finally {
       setLoading(false);
     }
@@ -67,7 +71,7 @@ export default function MaterialIssuePage() {
 
   useEffect(() => {
     fetchList();
-  }, [page, pageSize, filterStatus, keyword]);
+  }, [page, pageSize, filterStatus, keyword, filterStartDate, filterEndDate]);
 
   useEffect(() => {
     const loadOpts = async (): Promise<void> => {
@@ -152,9 +156,13 @@ export default function MaterialIssuePage() {
         pageSize: number;
         status?: string;
         keyword?: string;
+        startDate?: string;
+        endDate?: string;
       } = { page: 1, pageSize: 10000 };
       if (filterStatus) params.status = filterStatus;
       if (keyword) params.keyword = keyword;
+      if (filterStartDate) params.startDate = filterStartDate;
+      if (filterEndDate) params.endDate = filterEndDate;
       const res: PaginationResult<ProductionMaterialIssue> =
         await productionApi.materialIssue.list(params);
       const data = res.items.map((it: ProductionMaterialIssue) => ({
@@ -186,7 +194,7 @@ export default function MaterialIssuePage() {
           <h1 className="text-xl font-semibold">领料单</h1>
           <button
             onClick={openCreate}
-            className="bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600 flex items-center gap-1"
+            className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-blue-600 flex items-center gap-1"
           >
             <Plus size={16} /> 新增领料单
           </button>
@@ -202,7 +210,7 @@ export default function MaterialIssuePage() {
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
                 placeholder="领料单号/工单号"
-                className="border border-gray-300 rounded pl-7 pr-2 py-1.5 text-sm w-48 focus:outline-none focus:border-blue-500"
+                className="border border-gray-300 rounded pl-7 pr-2 py-1.5 text-sm w-48 focus:outline-none focus:border-primary"
               />
             </div>
           </div>
@@ -240,7 +248,7 @@ export default function MaterialIssuePage() {
           </div>
           <button
             onClick={handleSearch}
-            className="bg-blue-500 text-white px-4 py-1.5 rounded text-sm hover:bg-blue-600 flex items-center gap-1"
+            className="bg-primary text-white px-4 py-1.5 rounded text-sm hover:bg-blue-600 flex items-center gap-1"
           >
             <Search size={14} /> 查询
           </button>
@@ -286,10 +294,10 @@ export default function MaterialIssuePage() {
                       <span className={`px-2 py-0.5 rounded text-xs ${st.color}`}>{st.label}</span>
                     </td>
                     <td className="px-4 space-x-2">
-                      <button onClick={() => openView(item.id)} className="text-blue-500 hover:underline">查看</button>
+                      <button onClick={() => openView(item.id)} className="text-primary hover:underline">查看</button>
                       {item.status === 'draft' && (
                         <>
-                          <button onClick={() => openEdit(item.id)} className="text-blue-500 hover:underline">编辑</button>
+                          <button onClick={() => openEdit(item.id)} className="text-primary hover:underline">编辑</button>
                           <button onClick={() => handleApprove(item.id)} className="text-green-500 hover:underline">审核</button>
                           <button onClick={() => handleDelete(item.id)} className="text-red-500 hover:underline">删除</button>
                                                 <button onClick={() => handleVoid(item.id)} className="text-red-500 hover:text-red-600">作废</button>

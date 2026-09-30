@@ -4,6 +4,7 @@ import { axiosForBackend } from '@lark-apaas/client-toolkit/utils/getAxiosForBac
 import { logger } from '@lark-apaas/client-toolkit/logger';
 import { toast } from 'sonner';
 import DocPage from '@/components/DocPage/DocPage';
+import { errMsg } from '@/utils/errMsg';
 
 const InventoryInboundEditPage: React.FC = () => {
   const navigate = useNavigate();
@@ -143,7 +144,7 @@ const InventoryInboundEditPage: React.FC = () => {
       navigate(backPath);
     } catch (error) {
       logger.error('创建入库单失败', error);
-      toast('创建失败');
+      toast(errMsg(error, '创建失败'));
     } finally {
       setSubmitting(false);
     }
@@ -161,7 +162,7 @@ const InventoryInboundEditPage: React.FC = () => {
           value={formData.warehouseId}
           onChange={(e) => setFormData({ ...formData, warehouseId: e.target.value })}
           disabled={viewOnly}
-          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
+          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-100"
         >
           <option value="">请选择仓库</option>
           {warehouseOptions.map((w) => (
@@ -175,7 +176,7 @@ const InventoryInboundEditPage: React.FC = () => {
           value={formData.inboundType}
           onChange={(e) => setFormData({ ...formData, inboundType: e.target.value })}
           disabled={viewOnly}
-          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
+          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-100"
         >
           <option value="production_finished">生产完工入库</option>
           <option value="other_in">其他入库</option>
@@ -188,7 +189,7 @@ const InventoryInboundEditPage: React.FC = () => {
           value={formData.inboundDate}
           onChange={(e) => setFormData({ ...formData, inboundDate: e.target.value })}
           disabled={viewOnly}
-          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
+          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-100"
         />
       </div>
       <div>
@@ -222,7 +223,7 @@ const InventoryInboundEditPage: React.FC = () => {
           value={formData.remark}
           onChange={(e) => setFormData({ ...formData, remark: e.target.value })}
           disabled={viewOnly}
-          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
+          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-100"
           rows={2}
         />
       </div>
@@ -234,7 +235,7 @@ const InventoryInboundEditPage: React.FC = () => {
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-medium text-gray-700">入库明细</h3>
         {!viewOnly && (
-          <button onClick={addItem} className="text-sm text-blue-500 hover:text-blue-600">+ 添加行</button>
+          <button onClick={addItem} className="text-sm text-primary hover:text-blue-600">+ 添加行</button>
         )}
       </div>
       <table className="w-full text-sm border border-gray-200">
@@ -265,7 +266,7 @@ const InventoryInboundEditPage: React.FC = () => {
                         ? handleSkuChange(idx, e.target.value)
                         : handleMaterialChange(idx, e.target.value)
                       }
-                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                     >
                       <option value="">请选择</option>
                       {(formData.itemType === 'finished' ? skuOptions : materialOptions).map((opt: any) => (
@@ -284,7 +285,7 @@ const InventoryInboundEditPage: React.FC = () => {
                       min="0"
                       value={it.quantity}
                       onChange={(e) => updateItem(idx, 'quantity', Number(e.target.value))}
-                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm text-right focus:outline-none focus:border-blue-500"
+                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm text-right focus:outline-none focus:border-primary"
                     />
                   )}
                 </td>
@@ -296,7 +297,7 @@ const InventoryInboundEditPage: React.FC = () => {
                       min="0"
                       value={it.unitCost}
                       onChange={(e) => updateItem(idx, 'unitCost', Number(e.target.value))}
-                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm text-right focus:outline-none focus:border-blue-500"
+                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm text-right focus:outline-none focus:border-primary"
                     />
                   )}
                 </td>
@@ -307,7 +308,7 @@ const InventoryInboundEditPage: React.FC = () => {
                       value={it.batchNo || ''}
                       onChange={(e) => updateItem(idx, 'batchNo', e.target.value)}
                       placeholder="批次号"
-                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                     />
                   )}
                 </td>

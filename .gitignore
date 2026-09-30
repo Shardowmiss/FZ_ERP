@@ -74,6 +74,9 @@ pnpm-lock.yaml
 .pgdata/
 .pgdata
 
+# 本地数据库备份 dumps（迁移前手备，非源码，体积大，严禁入库）
+backups/
+
 # WorkBuddy 项目数据（非源码）
 .workbuddy/
 

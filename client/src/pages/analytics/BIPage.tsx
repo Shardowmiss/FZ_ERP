@@ -3,6 +3,8 @@ import SafeChart from '@client/src/components/SafeChart';
 import { toast } from 'sonner';
 import { analyticsApi } from '@client/src/api/analytics';
 import type { BiResult } from '@shared/api.interface';
+import { CHART_PRIMARY, CHART_POSITIVE } from '@client/src/lib/chart-colors';
+import { errMsg } from '@/utils/errMsg';
 
 const DIMS: { value: string; label: string }[] = [
   { value: 'style', label: '按款号' },
@@ -27,8 +29,8 @@ const BIPage: React.FC = () => {
     try {
       const r = await analyticsApi.bi(dim, metric, from || undefined, to || undefined);
       setPrimary(r);
-    } catch {
-      toast('查询失败');
+    } catch (e) {
+      toast(errMsg(e, '查询失败'));
     }
     setLoading(false);
   };
@@ -37,8 +39,8 @@ const BIPage: React.FC = () => {
     try {
       const r = await analyticsApi.bi(drillDim, metric, from || undefined, to || undefined);
       setDrill(r);
-    } catch {
-      toast('下钻失败');
+    } catch (e) {
+      toast(errMsg(e, '下钻失败'));
     }
   };
 
@@ -62,7 +64,7 @@ const BIPage: React.FC = () => {
     series: [{
       type: 'bar' as const,
       data: [...data.rows].reverse().map((r) => (metric === 'quantity' ? r.quantity : r.amount)),
-      itemStyle: { color: isDrill ? '#10b981' : '#3b82f6', borderRadius: [0, 4, 4, 0] },
+      itemStyle: { color: isDrill ? CHART_POSITIVE : CHART_PRIMARY, borderRadius: [0, 4, 4, 0] },
       barWidth: 14,
     }],
   });
@@ -97,10 +99,10 @@ const BIPage: React.FC = () => {
       <div className="bg-white rounded-lg shadow-sm p-5">
         <h1 className="text-xl font-semibold text-gray-800 mb-4">自助 BI 钻取分析</h1>
         <div className="flex flex-wrap gap-3 items-end">
-          <select value={dim} onChange={(e) => setDim(e.target.value)} className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500">
+          <select value={dim} onChange={(e) => setDim(e.target.value)} className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary">
             {DIMS.map((d) => <option key={d.value} value={d.value}>{d.label}</option>)}
           </select>
-          <select value={metric} onChange={(e) => setMetric(e.target.value)} className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500">
+          <select value={metric} onChange={(e) => setMetric(e.target.value)} className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary">
             <option value="amount">按销售额</option>
             <option value="quantity">按销量</option>
           </select>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useDefaultDocDate } from '@client/src/hooks/useDefaultDocDate';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search } from 'lucide-react';
 import { garmentPurchaseApi, baseApi } from '@client/src/api';
@@ -36,8 +37,9 @@ const GarmentPurchaseOrderPage: React.FC = () => {
 
   const [filterSupplier, setFilterSupplier] = useState<string>('');
   const [filterStatus, setFilterStatus] = useState<string>('');
-  const [filterStartDate, setFilterStartDate] = useState<string>('');
-  const [filterEndDate, setFilterEndDate] = useState<string>('');
+  const def = useDefaultDocDate();
+  const [filterStartDate, setFilterStartDate] = useState<string>(def.startDate);
+  const [filterEndDate, setFilterEndDate] = useState<string>(def.endDate);
   const [keyword, setKeyword] = useState<string>('');
 
   const [supplierOptions, setSupplierOptions] = useState<
@@ -67,8 +69,8 @@ const GarmentPurchaseOrderPage: React.FC = () => {
       const res = await garmentPurchaseApi.order.list(params);
       setList(res.items);
       setTotal(res.total);
-    } catch {
-      toast('加载失败');
+    } catch (e) {
+      toast(errMsg(e, '加载失败'));
     } finally {
       setLoading(false);
     }
@@ -191,7 +193,7 @@ const GarmentPurchaseOrderPage: React.FC = () => {
           <h1 className="text-xl font-semibold text-gray-800">款号采购订单</h1>
           <button
             onClick={openAdd}
-            className="px-3 py-1.5 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center gap-1"
+            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600 flex items-center gap-1"
           >
              <Plus size={16} /> 新增款号采购订单
           </button>
@@ -202,7 +204,7 @@ const GarmentPurchaseOrderPage: React.FC = () => {
             <select
               value={filterSupplier}
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilterSupplier(e.target.value)}
-              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500"
+              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
             >
               <option value="">全部</option>
               {supplierOptions.map((s: { id: string; code: string; name: string }) => (
@@ -216,7 +218,7 @@ const GarmentPurchaseOrderPage: React.FC = () => {
             <select
               value={filterStatus}
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilterStatus(e.target.value)}
-              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500"
+              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
             >
               <option value="">全部</option>
               <option value="draft">草稿</option>
@@ -231,14 +233,14 @@ const GarmentPurchaseOrderPage: React.FC = () => {
               type="date"
               value={filterStartDate}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilterStartDate(e.target.value)}
-              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500"
+              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
             />
             <span className="text-gray-400">~</span>
             <input
               type="date"
               value={filterEndDate}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilterEndDate(e.target.value)}
-              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500"
+              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
             />
           </div>
           <div className="flex items-center gap-1">
@@ -249,7 +251,7 @@ const GarmentPurchaseOrderPage: React.FC = () => {
                 value={keyword}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setKeyword(e.target.value)}
                 placeholder="搜索单号"
-                className="border border-gray-300 rounded pl-7 pr-2 py-1 text-sm focus:outline-none focus:border-blue-500 w-44"
+                className="border border-gray-300 rounded pl-7 pr-2 py-1 text-sm focus:outline-none focus:border-primary w-44"
               />
             </div>
           </div>
@@ -260,7 +262,7 @@ const GarmentPurchaseOrderPage: React.FC = () => {
               setPage(1);
               fetchList();
             }}
-            className="px-3 py-1.5 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center gap-1"
+            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600 flex items-center gap-1"
           >
             <Search size={14} /> 查询
           </button>
@@ -333,7 +335,7 @@ const GarmentPurchaseOrderPage: React.FC = () => {
                       <>
                         <button
                           onClick={() => openEdit(item.id)}
-                          className="text-blue-500 hover:text-blue-600"
+                          className="text-primary hover:text-blue-600"
                         >编辑</button>
                         <button
                           onClick={() => { void handleDelete(item.id); }}
@@ -350,7 +352,7 @@ const GarmentPurchaseOrderPage: React.FC = () => {
                       <>
                         <button
                           onClick={() => openView(item.id)}
-                          className="text-blue-500 hover:text-blue-600"
+                          className="text-primary hover:text-blue-600"
                         >查看</button>
                         <button
                           onClick={() => { void handleStatusAction(item.id, 'approve'); }}
@@ -362,7 +364,7 @@ const GarmentPurchaseOrderPage: React.FC = () => {
                       <>
                         <button
                           onClick={() => openView(item.id)}
-                          className="text-blue-500 hover:text-blue-600"
+                          className="text-primary hover:text-blue-600"
                         >查看</button>
                         <button
                           onClick={() => { void handleStatusAction(item.id, 'unapprove'); }}
@@ -374,7 +376,7 @@ const GarmentPurchaseOrderPage: React.FC = () => {
                       <>
                         <button
                           onClick={() => openView(item.id)}
-                          className="text-blue-500 hover:text-blue-600"
+                          className="text-primary hover:text-blue-600"
                         >查看</button>
                       </>
                     )}

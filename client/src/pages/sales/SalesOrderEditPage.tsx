@@ -353,7 +353,7 @@ export default function SalesOrderEditPage() {
             <button
               onClick={handleAddStyle}
               disabled={addingStyle}
-              className="text-blue-500 text-sm hover:underline disabled:text-gray-400"
+              className="text-primary text-sm hover:underline disabled:text-gray-400"
             >
               {addingStyle ? '加载中...' : '+ 添加款号'}
             </button>

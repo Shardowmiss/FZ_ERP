@@ -2,7 +2,7 @@
 /** auto generated, do not edit */
 import { sql } from 'drizzle-orm';
 import { isNull, isNotNull } from 'drizzle-orm';
-import { bigint, boolean, date, foreignKey, index, integer, jsonb, numeric, pgTable, text, uniqueIndex, uuid, varchar, customType } from "drizzle-orm/pg-core"
+import { bigint, boolean, date, foreignKey, index, integer, jsonb, numeric, pgTable, text, uniqueIndex, uuid, varchar, customType, primaryKey } from "drizzle-orm/pg-core"
 
 export const customTimestamptz = customType<{
   data: Date;
@@ -198,6 +198,8 @@ export const omniOrderItem = pgTable("omni_order_item", {
   styleNo: varchar("style_no", { length: 50 }).notNull(),
   color: varchar("color", { length: 50 }).notNull(),
   size: varchar("size", { length: 50 }).notNull(),
+  colorId: uuid("color_id").references(() => color.id, { onDelete: 'set null' }),
+  sizeId: uuid("size_id").references(() => size.id, { onDelete: 'set null' }),
   quantity: numeric("quantity").notNull().default('0'),
   price: numeric("price").notNull().default('0'),
   amount: numeric("amount").notNull().default('0'),
@@ -319,6 +321,8 @@ export const subcontractReceiptItem = pgTable("subcontract_receipt_item", {
   styleNo: varchar("style_no", { length: 50 }).notNull(),
   color: varchar("color", { length: 50 }).notNull(),
   size: varchar("size", { length: 50 }).notNull(),
+  colorId: uuid("color_id").references(() => color.id, { onDelete: 'set null' }),
+  sizeId: uuid("size_id").references(() => size.id, { onDelete: 'set null' }),
   quantity: numeric("quantity").notNull().default('0'),
   unitPrice: numeric("unit_price").notNull().default('0'),
   amount: numeric("amount").notNull().default('0'),
@@ -443,6 +447,8 @@ export const subcontractOrderItem = pgTable("subcontract_order_item", {
   styleNo: varchar("style_no", { length: 50 }).notNull(),
   color: varchar("color", { length: 50 }).notNull(),
   size: varchar("size", { length: 50 }).notNull(),
+  colorId: uuid("color_id").references(() => color.id, { onDelete: 'set null' }),
+  sizeId: uuid("size_id").references(() => size.id, { onDelete: 'set null' }),
   quantity: numeric("quantity").notNull().default('0'),
   unitPrice: numeric("unit_price").notNull().default('0'),
   amount: numeric("amount").notNull().default('0'),
@@ -498,6 +504,8 @@ export const inventoryBatch = pgTable("inventory_batch", {
   styleNo: varchar("style_no", { length: 50 }).notNull(),
   color: varchar("color", { length: 50 }).notNull(),
   size: varchar("size", { length: 50 }).notNull(),
+  colorId: uuid("color_id").references(() => color.id, { onDelete: 'set null' }),
+  sizeId: uuid("size_id").references(() => size.id, { onDelete: 'set null' }),
   warehouseId: uuid("warehouse_id").notNull(),
   warehouseName: varchar("warehouse_name", { length: 200 }).notNull(),
   batchNo: varchar("batch_no", { length: 50 }).notNull(),
@@ -771,6 +779,8 @@ export const productionFinishReceiptItem = pgTable("production_finish_receipt_it
   skuCode: varchar("sku_code", { length: 50 }),
   color: varchar("color", { length: 50 }),
   size: varchar("size", { length: 50 }),
+  colorId: uuid("color_id").references(() => color.id, { onDelete: 'set null' }),
+  sizeId: uuid("size_id").references(() => size.id, { onDelete: 'set null' }),
   qty: numeric("qty").notNull().default('0'),
   // System field: Creation time (auto-filled, do not modify)
   createdAt: customTimestamptz("_created_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
@@ -1025,6 +1035,8 @@ export const garmentPurchaseReturnSku = pgTable("garment_purchase_return_sku", {
   skuId: uuid("sku_id").notNull(),
   color: varchar("color", { length: 50 }).notNull(),
   size: varchar("size", { length: 50 }).notNull(),
+  colorId: uuid("color_id").references(() => color.id, { onDelete: 'set null' }),
+  sizeId: uuid("size_id").references(() => size.id, { onDelete: 'set null' }),
   quantity: numeric("quantity").notNull().default('0'),
   price: numeric("price").notNull().default('0'),
   amount: numeric("amount").notNull().default('0'),
@@ -1091,6 +1103,8 @@ export const garmentPurchaseInboundSku = pgTable("garment_purchase_inbound_sku",
   skuId: uuid("sku_id").notNull(),
   color: varchar("color", { length: 50 }).notNull(),
   size: varchar("size", { length: 50 }).notNull(),
+  colorId: uuid("color_id").references(() => color.id, { onDelete: 'set null' }),
+  sizeId: uuid("size_id").references(() => size.id, { onDelete: 'set null' }),
   quantity: numeric("quantity").notNull().default('0'),
   price: numeric("price").notNull().default('0'),
   amount: numeric("amount").notNull().default('0'),
@@ -1151,6 +1165,8 @@ export const garmentPurchaseOrderSku = pgTable("garment_purchase_order_sku", {
   skuId: uuid("sku_id").notNull(),
   color: varchar("color", { length: 50 }).notNull(),
   size: varchar("size", { length: 50 }).notNull(),
+  colorId: uuid("color_id").references(() => color.id, { onDelete: 'set null' }),
+  sizeId: uuid("size_id").references(() => size.id, { onDelete: 'set null' }),
   quantity: numeric("quantity").notNull().default('0'),
   price: numeric("price").notNull().default('0'),
   amount: numeric("amount").notNull().default('0'),
@@ -1293,6 +1309,8 @@ export const rbacUser = pgTable("rbac_user", {
   department: varchar("department", { length: 100 }),
   status: varchar("status", { length: 20 }).notNull().default('active'),
   remark: varchar("remark", { length: 500 }),
+  // 个人语种偏好（个人级 i18n）：落库后登录即应用；缺省简体中文
+  language: varchar("language", { length: 10 }).notNull().default('zh-CN'),
   // System field: Creation time (auto-filled, do not modify)
   createdAt: customTimestamptz("_created_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
   // System field: Creator (auto-filled, do not modify)
@@ -1417,6 +1435,8 @@ export const retailOrderItem = pgTable("retail_order_item", {
   styleNo: varchar("style_no", { length: 32 }).notNull(),
   color: varchar("color", { length: 32 }),
   size: varchar("size", { length: 32 }),
+  colorId: uuid("color_id").references(() => color.id, { onDelete: 'set null' }),
+  sizeId: uuid("size_id").references(() => size.id, { onDelete: 'set null' }),
   quantity: numeric("quantity").notNull().default('1'),
   tagPrice: numeric("tag_price").notNull().default('0'),
   dealPrice: numeric("deal_price").notNull().default('0'),
@@ -1483,6 +1503,8 @@ export const allocationItem = pgTable("allocation_item", {
   skuCode: varchar("sku_code", { length: 100 }).notNull(),
   color: varchar("color", { length: 50 }),
   size: varchar("size", { length: 50 }),
+  colorId: uuid("color_id").references(() => color.id, { onDelete: 'set null' }),
+  sizeId: uuid("size_id").references(() => size.id, { onDelete: 'set null' }),
   preQty: numeric("pre_qty").notNull().default('0'),
   allocatedQty: numeric("allocated_qty").notNull().default('0'),
   generatedDocType: varchar("generated_doc_type", { length: 20 }),
@@ -1533,6 +1555,8 @@ export const preOrderItem = pgTable("pre_order_item", {
   skuCode: varchar("sku_code", { length: 100 }).notNull(),
   color: varchar("color", { length: 50 }),
   size: varchar("size", { length: 50 }),
+  colorId: uuid("color_id").references(() => color.id, { onDelete: 'set null' }),
+  sizeId: uuid("size_id").references(() => size.id, { onDelete: 'set null' }),
   qty: numeric("qty").notNull().default('0'),
   // System field: Creation time (auto-filled, do not modify)
   createdAt: customTimestamptz("_created_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
@@ -1848,6 +1872,8 @@ export const inventoryStocktakeItem = pgTable("inventory_stocktake_item", {
   itemName: varchar("item_name", { length: 200 }).notNull(),
   color: varchar("color", { length: 50 }),
   size: varchar("size", { length: 50 }),
+  colorId: uuid("color_id").references(() => color.id, { onDelete: 'set null' }),
+  sizeId: uuid("size_id").references(() => size.id, { onDelete: 'set null' }),
   bookQty: numeric("book_qty").notNull().default('0'),
   actualQty: numeric("actual_qty").notNull().default('0'),
   diffQty: numeric("diff_qty").notNull().default('0'),
@@ -1902,6 +1928,8 @@ export const inventoryTransferItem = pgTable("inventory_transfer_item", {
   itemName: varchar("item_name", { length: 200 }).notNull(),
   color: varchar("color", { length: 50 }),
   size: varchar("size", { length: 50 }),
+  colorId: uuid("color_id").references(() => color.id, { onDelete: 'set null' }),
+  sizeId: uuid("size_id").references(() => size.id, { onDelete: 'set null' }),
   quantity: numeric("quantity").notNull().default('0'),
   // System field: Creation time (auto-filled, do not modify)
   createdAt: customTimestamptz("_created_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
@@ -1988,6 +2016,8 @@ export const replenishPlanItem = pgTable("replenish_plan_item", {
   styleNo: varchar("style_no", { length: 32 }),
   color: varchar("color", { length: 32 }),
   size: varchar("size", { length: 32 }),
+  colorId: uuid("color_id").references(() => color.id, { onDelete: 'set null' }),
+  sizeId: uuid("size_id").references(() => size.id, { onDelete: 'set null' }),
   recentSalesQty: numeric("recent_sales_qty"),
   dailyAvg: numeric("daily_avg"),
   currentStock: numeric("current_stock"),
@@ -2075,6 +2105,8 @@ export const inventoryStock = pgTable("inventory_stock", {
   styleNo: varchar("style_no", { length: 50 }).notNull(),
   color: varchar("color", { length: 50 }).notNull(),
   size: varchar("size", { length: 50 }).notNull(),
+  colorId: uuid("color_id").references(() => color.id, { onDelete: 'set null' }),
+  sizeId: uuid("size_id").references(() => size.id, { onDelete: 'set null' }),
   warehouseId: uuid("warehouse_id").notNull(),
   warehouseName: varchar("warehouse_name", { length: 200 }).notNull(),
   quantity: numeric("quantity").notNull().default('0'),
@@ -2113,6 +2145,8 @@ export const inventoryFlow = pgTable("inventory_flow", {
   styleNo: varchar("style_no", { length: 50 }),
   color: varchar("color", { length: 50 }),
   size: varchar("size", { length: 50 }),
+  colorId: uuid("color_id").references(() => color.id, { onDelete: 'set null' }),
+  sizeId: uuid("size_id").references(() => size.id, { onDelete: 'set null' }),
   materialCode: varchar("material_code", { length: 50 }),
   materialName: varchar("material_name", { length: 200 }),
   warehouseId: uuid("warehouse_id").notNull(),
@@ -2146,6 +2180,8 @@ export const salesReturnItem = pgTable("sales_return_item", {
   styleNo: varchar("style_no", { length: 50 }).notNull(),
   color: varchar("color", { length: 50 }).notNull(),
   size: varchar("size", { length: 50 }).notNull(),
+  colorId: uuid("color_id").references(() => color.id, { onDelete: 'set null' }),
+  sizeId: uuid("size_id").references(() => size.id, { onDelete: 'set null' }),
   quantity: numeric("quantity").notNull().default('0'),
   price: numeric("price").notNull().default('0'),
   amount: numeric("amount").notNull().default('0'),
@@ -2217,6 +2253,8 @@ export const salesOutboundItem = pgTable("sales_outbound_item", {
   styleNo: varchar("style_no", { length: 50 }).notNull(),
   color: varchar("color", { length: 50 }).notNull(),
   size: varchar("size", { length: 50 }).notNull(),
+  colorId: uuid("color_id").references(() => color.id, { onDelete: 'set null' }),
+  sizeId: uuid("size_id").references(() => size.id, { onDelete: 'set null' }),
   quantity: numeric("quantity").notNull().default('0'),
   price: numeric("price").notNull().default('0'),
   costPrice: numeric("cost_price").notNull().default('0'),
@@ -2295,6 +2333,8 @@ export const salesOrderItem = pgTable("sales_order_item", {
   styleNo: varchar("style_no", { length: 50 }).notNull(),
   color: varchar("color", { length: 50 }).notNull(),
   size: varchar("size", { length: 50 }).notNull(),
+  colorId: uuid("color_id").references(() => color.id, { onDelete: 'set null' }),
+  sizeId: uuid("size_id").references(() => size.id, { onDelete: 'set null' }),
   quantity: numeric("quantity").notNull().default('0'),
   price: numeric("price").notNull().default('0'),
   amount: numeric("amount").notNull().default('0'),
@@ -2744,6 +2784,8 @@ export const sku = pgTable("sku", {
   styleNo: varchar("style_no", { length: 50 }).notNull(),
   color: varchar("color", { length: 50 }).notNull(),
   size: varchar("size", { length: 50 }).notNull(),
+  colorId: uuid("color_id").references(() => color.id, { onDelete: 'set null' }),
+  sizeId: uuid("size_id").references(() => size.id, { onDelete: 'set null' }),
   barcode: varchar("barcode", { length: 100 }),
   costPrice: numeric("cost_price").default('0'),
   tagPrice: numeric("tag_price").default('0'),
@@ -2761,7 +2803,7 @@ export const sku = pgTable("sku", {
   updatedBy: userProfile("_updated_by"),
 }, (table) => [
   uniqueIndex("sku_sku_code_key").on(table.skuCode),
-  uniqueIndex("idx_sku_style_color_size").on(table.styleId, table.color, table.size),
+  uniqueIndex("idx_sku_style_color_id_size_id").on(table.styleId, table.colorId, table.sizeId),
   index("idx_sku_color").on(table.color),
   index("idx_sku_size").on(table.size),
   index("idx_sku_status").on(table.status),
@@ -3349,6 +3391,8 @@ export const hangtagPrintItem = pgTable("hangtag_print_item", {
   styleName: varchar("style_name", { length: 200 }),
   color: varchar("color", { length: 50 }).notNull(),
   size: varchar("size", { length: 50 }).notNull(),
+  colorId: uuid("color_id").references(() => color.id, { onDelete: 'set null' }),
+  sizeId: uuid("size_id").references(() => size.id, { onDelete: 'set null' }),
   /** 强绑定 SKU：打印时按 款号/颜色/尺码 反查落定，即使后续 SKU 资源变动，打印记录仍可溯源 */
   skuId: uuid("sku_id"),
   quantity: numeric("quantity").notNull().default('0'),
@@ -3393,6 +3437,8 @@ export const uniqueCodeStock = pgTable("unique_code_stock", {
   styleNo: varchar("style_no", { length: 50 }).notNull(),
   color: varchar("color", { length: 50 }).notNull(),
   size: varchar("size", { length: 50 }).notNull(),
+  colorId: uuid("color_id").references(() => color.id, { onDelete: 'set null' }),
+  sizeId: uuid("size_id").references(() => size.id, { onDelete: 'set null' }),
   /** 当前所在仓库（校验「是否本仓」的权威字段） */
   warehouseId: uuid("warehouse_id").notNull(),
   /**
@@ -3451,6 +3497,8 @@ export const docUniqueCode = pgTable("doc_unique_code", {
   styleNo: varchar("style_no", { length: 50 }),
   color: varchar("color", { length: 50 }),
   size: varchar("size", { length: 50 }),
+  colorId: uuid("color_id").references(() => color.id, { onDelete: 'set null' }),
+  sizeId: uuid("size_id").references(() => size.id, { onDelete: 'set null' }),
   /** 扫码时操作的仓库（用于本仓校验） */
   warehouseId: uuid("warehouse_id"),
   /**
@@ -3500,6 +3548,8 @@ export const docUniqueCodeArchive = pgTable("doc_unique_code_archive", {
   styleNo: varchar("style_no", { length: 50 }),
   color: varchar("color", { length: 50 }),
   size: varchar("size", { length: 50 }),
+  colorId: uuid("color_id").references(() => color.id, { onDelete: 'set null' }),
+  sizeId: uuid("size_id").references(() => size.id, { onDelete: 'set null' }),
   warehouseId: uuid("warehouse_id"),
   scanType: varchar("scan_type", { length: 20 }).notNull(),
   operatorId: varchar("operator_id", { length: 64 }),
@@ -3580,6 +3630,8 @@ export const posReturnItem = pgTable("pos_return_item", {
   styleNo: varchar("style_no", { length: 50 }),
   color: varchar("color", { length: 50 }),
   size: varchar("size", { length: 50 }),
+  colorId: uuid("color_id").references(() => color.id, { onDelete: 'set null' }),
+  sizeId: uuid("size_id").references(() => size.id, { onDelete: 'set null' }),
   quantity: numeric("quantity").notNull().default('0'),
   price: numeric("price").notNull().default('0'),
   amount: numeric("amount").notNull().default('0'),
@@ -3618,6 +3670,8 @@ export const posRequisitionItem = pgTable("pos_requisition_item", {
   styleNo: varchar("style_no", { length: 50 }),
   color: varchar("color", { length: 50 }),
   size: varchar("size", { length: 50 }),
+  colorId: uuid("color_id").references(() => color.id, { onDelete: 'set null' }),
+  sizeId: uuid("size_id").references(() => size.id, { onDelete: 'set null' }),
   qty: numeric("qty").notNull().default('0'),
   remark: varchar("remark", { length: 200 }),
   createdAt: customTimestamptz("_created_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
@@ -3685,6 +3739,54 @@ export const color = pgTable("color", {
 }, (table) => [
   uniqueIndex("color_code_key").on(table.code),
   index("idx_color_status").on(table.status),
+]);
+
+// ---------------------------------------------------------------------------
+// 尺码主数据（基础档案-商品资料拆分：尺码独立实体，对应 size 表）
+// ---------------------------------------------------------------------------
+export const size = pgTable("size", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  code: varchar("code", { length: 50 }).notNull().unique(),
+  name: varchar("name", { length: 100 }).notNull(),
+  sortOrder: integer("sort_order").notNull().default(0),
+  status: varchar("status", { length: 20 }).notNull().default('active'),
+  remark: text("remark"),
+  // System field: Creation time (auto-filled, do not modify)
+  createdAt: customTimestamptz("_created_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  // System field: Creator (auto-filled, do not modify)
+  createdBy: userProfile("_created_by"),
+  // System field: Update time (auto-filled, do not modify)
+  updatedAt: customTimestamptz("_updated_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  // System field: Updater (auto-filled, do not modify)
+  updatedBy: userProfile("_updated_by"),
+}, (table) => [
+  uniqueIndex("size_code_key").on(table.code),
+  index("idx_size_status").on(table.status),
+]);
+
+// ---------------------------------------------------------------------------
+// 尺码组与尺码关系（基础档案-商品资料拆分：尺码组与尺码关系，对应 size_group_size 关联表）
+// ---------------------------------------------------------------------------
+export const sizeGroupSize = pgTable("size_group_size", {
+  sizeGroupId: uuid("size_group_id").notNull().references(() => sizeGroup.id, { onDelete: 'cascade' }),
+  sizeId: uuid("size_id").notNull().references(() => size.id, { onDelete: 'cascade' }),
+  sortOrder: integer("sort_order").notNull().default(0),
+}, (table) => [
+  primaryKey({ columns: [table.sizeGroupId, table.sizeId] }),
+  index("idx_size_group_size_size").on(table.sizeId),
+]);
+
+// ---------------------------------------------------------------------------
+// 颜色组与颜色关系（P1-1：颜色组关系化，对齐已有的 size_group_size）
+// 组关系（哪些颜色属于某颜色组）以关联表为单一真相；color_group.colors jsonb 作为派生镜像。
+// ---------------------------------------------------------------------------
+export const colorGroupColor = pgTable("color_group_color", {
+  colorGroupId: uuid("color_group_id").notNull().references(() => colorGroup.id, { onDelete: 'cascade' }),
+  colorId: uuid("color_id").notNull().references(() => color.id, { onDelete: 'cascade' }),
+  sortOrder: integer("sort_order").notNull().default(0),
+}, (table) => [
+  primaryKey({ columns: [table.colorGroupId, table.colorId] }),
+  index("idx_color_group_color_color").on(table.colorId),
 ]);
 
 // ---------------------------------------------------------------------------

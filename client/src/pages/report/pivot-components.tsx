@@ -127,7 +127,7 @@ export function DropZonePanel({
             items.map((item, index) => (
               <div key={item.key} className="relative flex items-center">
                 {dragOverIndex === index && !insertAfter && (
-                  <div className="absolute -left-0.5 top-0 bottom-0 w-0.5 bg-blue-500 rounded z-10" />
+                  <div className="absolute -left-0.5 top-0 bottom-0 w-0.5 bg-primary rounded z-10" />
                 )}
                 <div
                   draggable
@@ -151,7 +151,7 @@ export function DropZonePanel({
                   </button>
                 </div>
                 {dragOverIndex === index && insertAfter && (
-                  <div className="absolute -right-0.5 top-0 bottom-0 w-0.5 bg-blue-500 rounded z-10" />
+                  <div className="absolute -right-0.5 top-0 bottom-0 w-0.5 bg-primary rounded z-10" />
                 )}
               </div>
             ))
@@ -271,7 +271,7 @@ export function ValueDropZonePanel({
             values.map((v, index) => (
               <div key={v.key} className="relative flex items-center">
                 {dragOverIndex === index && !insertAfter && (
-                  <div className="absolute -left-0.5 top-0 bottom-0 w-0.5 bg-blue-500 rounded z-10" />
+                  <div className="absolute -left-0.5 top-0 bottom-0 w-0.5 bg-primary rounded z-10" />
                 )}
                 <div
                   draggable
@@ -310,7 +310,7 @@ export function ValueDropZonePanel({
                   </button>
                 </div>
                 {dragOverIndex === index && insertAfter && (
-                  <div className="absolute -right-0.5 top-0 bottom-0 w-0.5 bg-blue-500 rounded z-10" />
+                  <div className="absolute -right-0.5 top-0 bottom-0 w-0.5 bg-primary rounded z-10" />
                 )}
               </div>
             ))
@@ -405,7 +405,7 @@ export function FieldPanel({
               ) : (
                 <ChevronDown size={14} className="text-gray-400" />
               )}
-              <Box size={14} className="text-blue-500" />
+              <Box size={14} className="text-primary" />
               <span>{group.label}</span>
             </div>
             <AnimatePresence initial={false}>
@@ -436,7 +436,7 @@ export function FieldPanel({
                           />
                           <Box
                             size={12}
-                            className="text-blue-500 flex-shrink-0"
+                            className="text-primary flex-shrink-0"
                           />
                           <span className="truncate">{field.label}</span>
                         </div>

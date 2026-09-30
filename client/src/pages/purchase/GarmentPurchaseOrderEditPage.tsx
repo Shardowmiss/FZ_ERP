@@ -89,8 +89,8 @@ const GarmentPurchaseOrderEditPage: React.FC = () => {
         const skus = order.skus ?? [];
         const blocks = await buildStyleBlocksFromSkus(skus);
         setStyleBlocks(blocks);
-      } catch {
-        toast('加载详情失败');
+      } catch (e) {
+        toast(errMsg(e, '加载详情失败'));
       } finally {
         setLoading(false);
       }
@@ -169,8 +169,8 @@ const GarmentPurchaseOrderEditPage: React.FC = () => {
         },
       ]);
       setAddStyleId('');
-    } catch {
-      toast('加载SKU失败');
+    } catch (e) {
+      toast(errMsg(e, '加载SKU失败'));
     } finally {
       setLoadingStyleId('');
     }
@@ -345,7 +345,7 @@ const GarmentPurchaseOrderEditPage: React.FC = () => {
             setFormSupplierName(s?.name || '');
           }}
           disabled={viewOnly}
-          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-500"
         >
           <option value="">请选择</option>
           {supplierOptions.map((s) => (
@@ -366,7 +366,7 @@ const GarmentPurchaseOrderEditPage: React.FC = () => {
             setFormOrderDate(e.target.value)
           }
           disabled={viewOnly}
-          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-500"
         />
       </div>
       <div>
@@ -380,7 +380,7 @@ const GarmentPurchaseOrderEditPage: React.FC = () => {
             setFormExpectDate(e.target.value)
           }
           disabled={viewOnly}
-          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-500"
         />
       </div>
       <div>
@@ -393,7 +393,7 @@ const GarmentPurchaseOrderEditPage: React.FC = () => {
           }
           disabled={viewOnly}
           placeholder="请输入品牌"
-          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-500"
         />
       </div>
       <div>
@@ -406,7 +406,7 @@ const GarmentPurchaseOrderEditPage: React.FC = () => {
           }
           disabled={viewOnly}
           placeholder="请输入采购员"
-          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-500"
         />
       </div>
       <div className="col-span-3">
@@ -419,7 +419,7 @@ const GarmentPurchaseOrderEditPage: React.FC = () => {
           }
           disabled={viewOnly}
           placeholder="请输入备注"
-          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-500"
         />
       </div>
     </div>
@@ -440,7 +440,7 @@ const GarmentPurchaseOrderEditPage: React.FC = () => {
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
                 setAddStyleId(e.target.value)
               }
-              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
             >
               <option value="">请选择款号</option>
               {styleOptions.map((s) => (
@@ -453,7 +453,7 @@ const GarmentPurchaseOrderEditPage: React.FC = () => {
           <button
             onClick={handleAddStyle}
             disabled={loadingStyleId !== ''}
-            className="px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50 flex items-center gap-1"
+            className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50 flex items-center gap-1"
           >
             <Plus size={16} /> 添加
           </button>

@@ -162,6 +162,8 @@ export const productionApi = {
       warehouseId?: string;
       status?: string;
       keyword?: string;
+      startDate?: string;
+      endDate?: string;
     }) =>
       request<PaginationResult<ProductionMaterialIssue>>(
         '/api/production/material-issue', 'GET', null, params),
@@ -184,6 +186,8 @@ export const productionApi = {
       warehouseId?: string;
       status?: string;
       keyword?: string;
+      startDate?: string;
+      endDate?: string;
     }) =>
       request<PaginationResult<ProductionFinishReceipt>>(
         '/api/production/finish-receipt', 'GET', null, params),

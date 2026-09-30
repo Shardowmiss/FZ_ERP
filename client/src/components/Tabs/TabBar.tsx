@@ -142,7 +142,7 @@ const TabBar: React.FC = () => {
                 </button>
               )}
               {isActive && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500 pointer-events-none" />
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary pointer-events-none" />
               )}
             </div>
           );
@@ -179,7 +179,7 @@ const TabBar: React.FC = () => {
             }}
             className="flex items-center gap-2 px-2 py-1 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
           >
-            <div className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-medium">
+            <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs font-medium">
               {(user?.name || user?.username || 'U').charAt(0).toUpperCase()}
             </div>
             <span className="text-xs max-w-[80px] truncate">

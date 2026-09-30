@@ -123,8 +123,8 @@ const PurchaseInboundEditPage: React.FC = () => {
         setPrintWarehouseName(inbound.warehouseName);
         setPrintTotalAmount(inbound.totalAmount);
         setPrintRemark(inbound.remark ?? '');
-      } catch {
-        toast('加载详情失败');
+      } catch (e) {
+        toast(errMsg(e, '加载详情失败'));
       } finally {
         setLoading(false);
       }
@@ -155,8 +155,8 @@ const PurchaseInboundEditPage: React.FC = () => {
           batchNo: '',
         }));
       setFormItems(items);
-    } catch {
-      toast('加载订单明细失败');
+    } catch (e) {
+      toast(errMsg(e, '加载订单明细失败'));
     }
   };
 
@@ -229,7 +229,7 @@ const PurchaseInboundEditPage: React.FC = () => {
             disabled={viewOnly}
             value={formOrderId}
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => { void handleOrderChange(e.target.value); }}
-            className="w-full border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
+            className="w-full border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:border-primary disabled:bg-gray-100"
           >
             <option value="">请选择采购订单</option>
             {approvedOrders.map((o: PurchaseOrder) => (
@@ -243,7 +243,7 @@ const PurchaseInboundEditPage: React.FC = () => {
             disabled={viewOnly}
             value={formWarehouseId}
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFormWarehouseId(e.target.value)}
-            className="w-full border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
+            className="w-full border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:border-primary disabled:bg-gray-100"
           >
             <option value="">请选择仓库</option>
             {warehouseOptions.map((w: { id: string; code: string; name: string }) => (
@@ -260,7 +260,7 @@ const PurchaseInboundEditPage: React.FC = () => {
             disabled={viewOnly}
             value={formInboundDate}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormInboundDate(e.target.value)}
-            className="w-full border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
+            className="w-full border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:border-primary disabled:bg-gray-100"
           />
         </div>
         <div />
@@ -272,7 +272,7 @@ const PurchaseInboundEditPage: React.FC = () => {
           value={formRemark}
           onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormRemark(e.target.value)}
           rows={2}
-          className="w-full border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
+          className="w-full border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:border-primary disabled:bg-gray-100"
         />
       </div>
     </div>

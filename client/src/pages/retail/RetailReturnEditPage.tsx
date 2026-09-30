@@ -17,6 +17,7 @@ import StyleMatrixBlock from '@client/src/components/StyleMatrixBlock';
 import type { StyleBlockData, StyleMatrix } from '@client/src/components/StyleMatrixBlock';
 import { calcBlocksTotal } from '@client/src/components/styleMatrixUtils';
 import DocPage from '@client/src/components/DocPage/DocPage';
+import { errMsg } from '@/utils/errMsg';
 
 const RETURN_STATUS_MAP: Record<string, { label: string; variant: string }> = {
   draft: { label: '待退款', variant: 'bg-amber-100 text-amber-700' },
@@ -217,7 +218,7 @@ export default function RetailReturnEditPage() {
         setReturnBlocks(blocks);
       } catch (e) {
         logger.error('加载原单失败', e);
-        toast('加载失败');
+        toast(errMsg(e, '加载失败'));
       } finally {
         setLoading(false);
       }
@@ -273,7 +274,7 @@ export default function RetailReturnEditPage() {
         setReturnBlocks(blocks);
       } catch (e) {
         logger.error('加载详情失败', e);
-        toast('加载失败');
+        toast(errMsg(e, '加载失败'));
       } finally {
         setLoading(false);
       }
@@ -335,7 +336,7 @@ export default function RetailReturnEditPage() {
       setReturnBlocks(blocks);
     } catch (e) {
       logger.error('查询零售单失败', e);
-      toast('查询失败');
+      toast(errMsg(e, '查询失败'));
     } finally { setSearching(false); }
   };
 
@@ -384,7 +385,7 @@ export default function RetailReturnEditPage() {
       navigate(BACK_PATH);
     } catch (e) {
       logger.error('创建退货单失败', e);
-      toast('创建失败');
+      toast(errMsg(e, '创建失败'));
     } finally {
       setSaving(false);
     }
@@ -408,7 +409,7 @@ export default function RetailReturnEditPage() {
       setPrintOpen(true);
     } catch (e) {
       logger.error('加载打印数据失败', e);
-      toast('加载打印数据失败');
+      toast(errMsg(e, '加载打印数据失败'));
     }
   };
 
@@ -428,7 +429,7 @@ export default function RetailReturnEditPage() {
             <button
               onClick={searchOrder}
               disabled={searching}
-              className="bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600 disabled:opacity-50"
+              className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-blue-600 disabled:opacity-50"
             >{searching ? '查询中...' : '查询'}</button>
           </div>
         </div>

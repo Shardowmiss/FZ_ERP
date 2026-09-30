@@ -111,8 +111,8 @@ const AllocationPage: React.FC = () => {
         });
       setList(res.items);
       setTotal(res.total);
-    } catch {
-      toast('加载失败');
+    } catch (e) {
+      toast(errMsg(e, '加载失败'));
     } finally {
       setLoading(false);
     }
@@ -126,8 +126,8 @@ const AllocationPage: React.FC = () => {
       ]);
       setTradeShowOptions(ts);
       setStyleOptions(st);
-    } catch {
-      toast('加载选项失败');
+    } catch (e) {
+      toast(errMsg(e, '加载选项失败'));
     }
   };
 
@@ -198,8 +198,8 @@ const AllocationPage: React.FC = () => {
       setCreateOpen(false);
       fetchData();
       toast('创建成功，已自动生成配货明细');
-    } catch {
-      toast('创建失败');
+    } catch (e) {
+      toast(errMsg(e, '创建失败'));
     }
   };
 
@@ -221,8 +221,8 @@ const AllocationPage: React.FC = () => {
       setPrintItems(skuItems);
       setPrintDocNo(detail.allocationNo);
       setPrintOpen(true);
-    } catch {
-      toast('加载打印数据失败');
+    } catch (e) {
+      toast(errMsg(e, '加载打印数据失败'));
     }
   };
 
@@ -271,7 +271,7 @@ const AllocationPage: React.FC = () => {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold">配货管理</h2>
         <button
-          className="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors flex items-center gap-1"
+          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors flex items-center gap-1"
           onClick={openCreate}
           data-ai-section-type="button"
         >
@@ -284,7 +284,7 @@ const AllocationPage: React.FC = () => {
         <select
           value={tradeShowFilter}
           onChange={(e) => setTradeShowFilter(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 min-w-[200px]"
+          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary min-w-[200px]"
         >
           <option value="">全部订货会</option>
           {tradeShowOptions.map((t) => (
@@ -296,7 +296,7 @@ const AllocationPage: React.FC = () => {
          <select
            value={styleFilter}
            onChange={(e) => setStyleFilter(e.target.value)}
-           className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 min-w-[200px]"
+           className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary min-w-[200px]"
          >
            <option value="">全部款号</option>
            {styleOptions.map((s) => (
@@ -308,7 +308,7 @@ const AllocationPage: React.FC = () => {
          <select
            value={brandFilter}
            onChange={(e) => setBrandFilter(e.target.value)}
-           className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 min-w-[160px]"
+           className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary min-w-[160px]"
          >
            <option value="">全部品牌</option>
            {brandOptions.map((b: { attrCode: string; attrName: string }) => (
@@ -318,7 +318,7 @@ const AllocationPage: React.FC = () => {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
         >
           <option value="">全部状态</option>
           {Object.entries(STATUS_MAP).map(([k, v]) => (
@@ -328,7 +328,7 @@ const AllocationPage: React.FC = () => {
           ))}
         </select>
         <button
-          className="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
+          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
           onClick={handleSearch}
           data-ai-section-type="button"
         >
@@ -415,7 +415,7 @@ const AllocationPage: React.FC = () => {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2 flex-wrap">
                         <button
-                          className="text-blue-500 hover:text-blue-700 text-xs flex items-center gap-0.5"
+                          className="text-primary hover:text-blue-700 text-xs flex items-center gap-0.5"
                           onClick={() => openDetail(item)}
                         >
                           <Eye size={12} />
@@ -507,7 +507,7 @@ const AllocationPage: React.FC = () => {
                 <select
                   value={createTradeShowId}
                   onChange={(e) => setCreateTradeShowId(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                 >
                   <option value="">请选择订货会</option>
                   {tradeShowOptions.map((t) => (
@@ -524,7 +524,7 @@ const AllocationPage: React.FC = () => {
                 <select
                   value={createStyleId}
                   onChange={(e) => setCreateStyleId(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                 >
                   <option value="">请选择款号</option>
                   {styleOptions.map((s) => (
@@ -545,7 +545,7 @@ const AllocationPage: React.FC = () => {
                   onChange={(e) =>
                     setCreateTotalQty(Number(e.target.value) || 0)
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   placeholder="请输入总到货数量"
                 />
               </div>
@@ -561,7 +561,7 @@ const AllocationPage: React.FC = () => {
                 取消
               </button>
               <button
-                className="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
+                className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
                 onClick={handleCreate}
               >
                 创建

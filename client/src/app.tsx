@@ -8,6 +8,7 @@ import '@client/src/api/request-interceptor';
 import { AuthProvider } from './contexts/AuthContext';
 import { TabsProvider } from './contexts/TabsContext';
 import { SystemConfigProvider } from './contexts/SystemConfigContext';
+import { LanguageProvider } from './i18n';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import LoginPage from './pages/Login/Login';
@@ -21,12 +22,14 @@ const SkuPage = React.lazy(() => import('./pages/base/SkuPage'));
 const ColorGroupPage = React.lazy(() => import('./pages/base/ColorGroupPage'));
 const SizeGroupPage = React.lazy(() => import('./pages/base/SizeGroupPage'));
 const MaterialPage = React.lazy(() => import('./pages/base/MaterialPage'));
-const CustomerPage = React.lazy(() => import('./pages/base/CustomerPage'));
 const SupplierPage = React.lazy(() => import('./pages/base/SupplierPage'));
 const WarehousePage = React.lazy(() => import('./pages/base/WarehousePage'));
 const StyleAttrDefPage = React.lazy(() => import('./pages/base/StyleAttrDefPage'));
 const DealerPage = React.lazy(() => import('./pages/base/DealerPage'));
 const StorePage = React.lazy(() => import('./pages/base/StorePage'));
+const ColorPage = React.lazy(() => import('./pages/base/ColorPage'));
+const SizePage = React.lazy(() => import('./pages/base/SizePage'));
+const SizeGroupRelationPage = React.lazy(() => import('./pages/base/SizeGroupRelationPage'));
 
 const BomPage = React.lazy(() => import('./pages/bom/BomPage'));
 
@@ -237,6 +240,7 @@ const protectedWith = (
 const RoutesComponent = () => {
   useGlobalErrorHandler();
   return (
+    <LanguageProvider>
     <AuthProvider>
     <SystemConfigProvider>
       <ErrorBoundary
@@ -388,10 +392,6 @@ const RoutesComponent = () => {
             element={protectedWith(<SkuPage />, 'base:sku')}
           />
           <Route
-            path="base/color-group"
-            element={protectedWith(<ColorGroupPage />, 'base:style')}
-          />
-          <Route
             path="base/size-group"
             element={protectedWith(<SizeGroupPage />, 'base:sku')}
           />
@@ -400,16 +400,8 @@ const RoutesComponent = () => {
             element={protectedWith(<MaterialPage />, 'base:material')}
           />
           <Route
-            path="base/customer"
-            element={protectedWith(<CustomerPage />, 'base:customer')}
-          />
-          <Route
             path="base/supplier"
             element={protectedWith(<SupplierPage />, 'base:supplier')}
-          />
-          <Route
-            path="base/warehouse"
-            element={protectedWith(<WarehousePage />, 'base:warehouse')}
           />
           <Route
             path="base/style-attribute"
@@ -417,11 +409,27 @@ const RoutesComponent = () => {
           />
           <Route
             path="base/dealer"
-            element={protectedWith(<DealerPage />, 'base:customer')}
+            element={protectedWith(<DealerPage />, 'base:dealer')}
           />
           <Route
             path="base/store"
-            element={protectedWith(<StorePage />, 'base:customer')}
+            element={protectedWith(<StorePage />, 'base:store')}
+          />
+          <Route
+            path="product/code-rule"
+            element={protectedWith(<CodeRulePage />, 'system:permission')}
+          />
+          <Route
+            path="product/color"
+            element={protectedWith(<ColorPage />, 'base:color')}
+          />
+          <Route
+            path="product/size"
+            element={protectedWith(<SizePage />, 'base:size')}
+          />
+          <Route
+            path="product/size-group-relation"
+            element={protectedWith(<SizeGroupRelationPage />, 'base:size')}
           />
 
           <Route
@@ -816,10 +824,6 @@ const RoutesComponent = () => {
           />
 
           <Route
-            path="system/code-rule"
-            element={protectedWith(<CodeRulePage />, 'system:permission')}
-          />
-          <Route
             path="system/user"
             element={protectedWith(<UserManagePage />, 'system:user')}
           />
@@ -935,6 +939,7 @@ const RoutesComponent = () => {
       </ErrorBoundary>
     </SystemConfigProvider>
     </AuthProvider>
+    </LanguageProvider>
   );
 };
 

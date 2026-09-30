@@ -43,7 +43,7 @@ const WarehousePage: React.FC = () => {
       setList(res.items);
       setTotal(res.total);
     } catch (e) {
-      toast('加载失败');
+      toast(errMsg(e, '加载失败'));
     } finally {
       setLoading(false);
     }
@@ -151,7 +151,7 @@ const WarehousePage: React.FC = () => {
             <Download size={16} /> 导出
           </button>
           <button
-            className="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
+            className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
             onClick={openAdd}
           >
             + 新增仓库
@@ -165,12 +165,12 @@ const WarehousePage: React.FC = () => {
           placeholder="搜索编码/名称"
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded text-sm w-60 focus:outline-none focus:border-blue-500"
+          className="px-3 py-2 border border-gray-300 rounded text-sm w-60 focus:outline-none focus:border-primary"
         />
         <select
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
         >
           <option value="">全部类型</option>
           <option value="fabric">面辅料仓</option>
@@ -179,14 +179,14 @@ const WarehousePage: React.FC = () => {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
         >
           <option value="">全部状态</option>
           <option value="active">启用</option>
           <option value="inactive">停用</option>
         </select>
         <button
-          className="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
+          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
           onClick={handleSearch}
         >
           查询
@@ -229,7 +229,7 @@ const WarehousePage: React.FC = () => {
                   <td className="px-4 py-3 text-gray-600">{item.address || '-'}</td>
                   <td className="px-4 py-3">{renderStatus(item.status)}</td>
                   <td className="px-4 py-3">
-                    <button className="text-blue-500 hover:text-blue-700 mr-3" onClick={() => openEdit(item)}>编辑</button>
+                    <button className="text-primary hover:text-blue-700 mr-3" onClick={() => openEdit(item)}>编辑</button>
                     <button className="text-red-500 hover:text-red-700" onClick={() => handleDelete(item.id)}>删除</button>
                   </td>
                 </tr>
@@ -262,7 +262,7 @@ const WarehousePage: React.FC = () => {
                     type="text"
                     value={form.code || ''}
                     onChange={(e) => setForm({ ...form, code: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   />
                 </div>
                 <div>
@@ -271,7 +271,7 @@ const WarehousePage: React.FC = () => {
                     type="text"
                     value={form.name || ''}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   />
                 </div>
                 <div>
@@ -279,7 +279,7 @@ const WarehousePage: React.FC = () => {
                   <select
                     value={form.type || 'fabric'}
                     onChange={(e) => setForm({ ...form, type: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   >
                     <option value="fabric">面辅料仓</option>
                     <option value="finished">成品仓</option>
@@ -290,7 +290,7 @@ const WarehousePage: React.FC = () => {
                   <select
                     value={form.status || 'active'}
                     onChange={(e) => setForm({ ...form, status: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   >
                     <option value="active">启用</option>
                     <option value="inactive">停用</option>
@@ -302,7 +302,7 @@ const WarehousePage: React.FC = () => {
                     type="text"
                     value={form.address || ''}
                     onChange={(e) => setForm({ ...form, address: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   />
                 </div>
                 <div className="col-span-2">
@@ -311,7 +311,7 @@ const WarehousePage: React.FC = () => {
                     value={form.remark || ''}
                     onChange={(e) => setForm({ ...form, remark: e.target.value })}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 resize-none"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary resize-none"
                   />
                 </div>
               </div>
@@ -324,7 +324,7 @@ const WarehousePage: React.FC = () => {
                 取消
               </button>
               <button
-                className="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleSave}
                 disabled={submitting}
               >

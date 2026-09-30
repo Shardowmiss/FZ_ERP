@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useDefaultDocDate } from '@client/src/hooks/useDefaultDocDate';
 import { inventoryApi } from '@client/src/api/inventory';
 import { baseApi } from '@client/src/api/base';
 import type { InventoryFlow, Warehouse, PaginationResult } from '@shared/api.interface';
@@ -38,8 +39,9 @@ export default function InventoryFlowPage() {
   const [itemType, setItemType] = useState('');
   const [flowType, setFlowType] = useState('');
   const [warehouseId, setWarehouseId] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const def = useDefaultDocDate();
+  const [startDate, setStartDate] = useState(def.startDate);
+  const [endDate, setEndDate] = useState(def.endDate);
   const [keyword, setKeyword] = useState('');
 
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
@@ -59,7 +61,7 @@ export default function InventoryFlowPage() {
       setTotal(res.total);
     } catch (e) {
       logger.error('加载库存流水失败', e);
-      toast('加载失败');
+      toast(errMsg(e, '加载失败'));
     } finally { setLoading(false); }
   };
 
@@ -164,7 +166,7 @@ export default function InventoryFlowPage() {
             placeholder="SKU/物料编码" className="border border-gray-300 rounded px-3 py-1.5 text-sm w-40" />
         </div>
         <button onClick={handleSearch}
-          className="bg-blue-500 text-white px-4 py-1.5 rounded text-sm hover:bg-blue-600">查询</button>
+          className="bg-primary text-white px-4 py-1.5 rounded text-sm hover:bg-blue-600">查询</button>
         <button onClick={handleExport}
           className="bg-white text-gray-700 border border-gray-300 px-4 py-1.5 rounded text-sm hover:bg-gray-50">导出</button>
       </div>

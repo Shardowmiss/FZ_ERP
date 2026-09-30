@@ -246,7 +246,7 @@ const PaymentEditPage: React.FC = () => {
           <select
             value={formSupplierId}
             onChange={(e) => setFormSupplierId(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-primary"
           >
             <option value="">请选择</option>
             {supplierOptions.map((c) => (
@@ -264,7 +264,7 @@ const PaymentEditPage: React.FC = () => {
             type="date"
             value={formPaymentDate}
             onChange={(e) => setFormPaymentDate(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-primary"
           />
         )}
       </div>
@@ -278,7 +278,7 @@ const PaymentEditPage: React.FC = () => {
             step="0.01"
             value={formAmount}
             onChange={(e) => setFormAmount(Number(e.target.value))}
-            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-primary"
           />
         )}
       </div>
@@ -290,7 +290,7 @@ const PaymentEditPage: React.FC = () => {
           <select
             value={formPaymentMethod}
             onChange={(e) => setFormPaymentMethod(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-primary"
           >
             <option value="cash">现金</option>
             <option value="bank">转账</option>
@@ -309,7 +309,7 @@ const PaymentEditPage: React.FC = () => {
             value={formHandler}
             onChange={(e) => setFormHandler(e.target.value)}
             placeholder="请输入经办人"
-            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-primary"
           />
         )}
       </div>
@@ -324,7 +324,7 @@ const PaymentEditPage: React.FC = () => {
           {!viewOnly && (
             <button
               onClick={loadSupplierPayables}
-              className="text-sm text-blue-500 hover:text-blue-600"
+              className="text-sm text-primary hover:text-blue-600"
             >
               + 添加核销单
             </button>
@@ -368,7 +368,7 @@ const PaymentEditPage: React.FC = () => {
                           step="0.01"
                           value={it.writeoffAmount}
                           onChange={(e) => updateWriteoffAmount(idx, Number(e.target.value))}
-                          className="w-28 px-2 py-1 border border-gray-300 rounded text-right text-sm focus:outline-none focus:border-blue-500"
+                          className="w-28 px-2 py-1 border border-gray-300 rounded text-right text-sm focus:outline-none focus:border-primary"
                         />
                       )}
                     </td>
@@ -399,7 +399,7 @@ const PaymentEditPage: React.FC = () => {
             value={formRemark}
             onChange={(e) => setFormRemark(e.target.value)}
             rows={2}
-            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-primary"
           />
         )}
       </div>
@@ -457,7 +457,7 @@ const PaymentEditPage: React.FC = () => {
               </button>
               <button
                 onClick={confirmPickPayables}
-                className="px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
+                className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600"
               >
                 确定
               </button>

@@ -185,7 +185,7 @@ const PurchaseReconciliationPage: React.FC = () => {
           <h1 className="text-xl font-semibold text-gray-800">采购对账</h1>
           <button
             onClick={openAdd}
-            className="px-3 py-1.5 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center gap-1"
+            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600 flex items-center gap-1"
           >
             <Plus size={16} /> 新建对账
           </button>
@@ -196,7 +196,7 @@ const PurchaseReconciliationPage: React.FC = () => {
             <select
               value={filterSupplier}
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilterSupplier(e.target.value)}
-              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500"
+              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
             >
               <option value="">全部</option>
               {supplierOptions.map((s) => (
@@ -209,7 +209,7 @@ const PurchaseReconciliationPage: React.FC = () => {
             <select
               value={filterStatus}
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilterStatus(e.target.value)}
-              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500"
+              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
             >
               <option value="">全部</option>
               <option value="draft">草稿</option>
@@ -222,19 +222,19 @@ const PurchaseReconciliationPage: React.FC = () => {
               type="date"
               value={filterStartDate}
               onChange={(e) => setFilterStartDate(e.target.value)}
-              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500"
+              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
             />
             <span className="text-gray-400">~</span>
             <input
               type="date"
               value={filterEndDate}
               onChange={(e) => setFilterEndDate(e.target.value)}
-              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500"
+              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
             />
           </div>
           <button
             onClick={handleSearch}
-            className="px-3 py-1.5 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center gap-1"
+            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600 flex items-center gap-1"
           >
             <Search size={14} /> 查询
           </button>
@@ -284,7 +284,7 @@ const PurchaseReconciliationPage: React.FC = () => {
                       </span>
                     </td>
                     <td className="py-2 px-4 space-x-2">
-                      <button onClick={() => openView(item.id)} className="text-blue-500 hover:text-blue-600">查看</button>
+                      <button onClick={() => openView(item.id)} className="text-primary hover:text-blue-600">查看</button>
                     </td>
                   </tr>
                 ))
@@ -315,7 +315,7 @@ const PurchaseReconciliationPage: React.FC = () => {
                   <select
                     value={formSupplierId}
                     onChange={(e) => setFormSupplierId(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-primary"
                   >
                     <option value="">请选择</option>
                     {supplierOptions.map((c) => (
@@ -329,7 +329,7 @@ const PurchaseReconciliationPage: React.FC = () => {
                     type="date"
                     value={formStartDate}
                     onChange={(e) => setFormStartDate(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-primary"
                   />
                 </div>
                 <div>
@@ -338,7 +338,7 @@ const PurchaseReconciliationPage: React.FC = () => {
                     type="date"
                     value={formEndDate}
                     onChange={(e) => setFormEndDate(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-primary"
                   />
                 </div>
               </div>
@@ -347,7 +347,7 @@ const PurchaseReconciliationPage: React.FC = () => {
                 <button
                   onClick={handlePreview}
                   disabled={previewLoading}
-                  className="px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {previewLoading ? '计算中...' : '预览'}
                 </button>
@@ -376,7 +376,7 @@ const PurchaseReconciliationPage: React.FC = () => {
                         onClick={() => setPreviewTab('inbound')}
                         className={`px-4 py-2 text-sm border-b-2 -mb-px ${
                           previewTab === 'inbound'
-                            ? 'border-blue-500 text-blue-600 font-medium'
+                            ? 'border-primary text-blue-600 font-medium'
                             : 'border-transparent text-gray-600 hover:text-gray-800'
                         }`}
                       >
@@ -386,7 +386,7 @@ const PurchaseReconciliationPage: React.FC = () => {
                         onClick={() => setPreviewTab('return')}
                         className={`px-4 py-2 text-sm border-b-2 -mb-px ${
                           previewTab === 'return'
-                            ? 'border-blue-500 text-blue-600 font-medium'
+                            ? 'border-primary text-blue-600 font-medium'
                             : 'border-transparent text-gray-600 hover:text-gray-800'
                         }`}
                       >
@@ -454,7 +454,7 @@ const PurchaseReconciliationPage: React.FC = () => {
               <button
                 onClick={handleConfirm}
                 disabled={submitting || !previewData}
-                className="px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {submitting ? '确认中...' : '确认对账'}
               </button>

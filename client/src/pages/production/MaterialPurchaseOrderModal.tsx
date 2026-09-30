@@ -57,7 +57,7 @@ const MaterialPurchaseOrderModal: React.FC<OrderModalProps> = ({
           </span>
           <div className="flex items-center gap-2">
             {editId && (
-              <button onClick={onPrint} className="text-blue-500 hover:text-blue-600 text-sm flex items-center gap-1">
+              <button onClick={onPrint} className="text-primary hover:text-blue-600 text-sm flex items-center gap-1">
                 <Printer size={14} /> 打印
               </button>
             )}
@@ -72,7 +72,7 @@ const MaterialPurchaseOrderModal: React.FC<OrderModalProps> = ({
                 disabled={viewOnly}
                 value={formSupplierId}
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => onSupplierChange(e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
+                className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-primary disabled:bg-gray-100"
               >
                 <option value="">请选择供应商</option>
                 {supplierOptions.map((s: { id: string; code: string; name: string }) => (
@@ -87,7 +87,7 @@ const MaterialPurchaseOrderModal: React.FC<OrderModalProps> = ({
                 disabled={viewOnly}
                 value={formOrderDate}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => onOrderDateChange(e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
+                className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-primary disabled:bg-gray-100"
               />
             </div>
           </div>
@@ -99,7 +99,7 @@ const MaterialPurchaseOrderModal: React.FC<OrderModalProps> = ({
                 disabled={viewOnly}
                 value={formExpectDate}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => onExpectDateChange(e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
+                className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-primary disabled:bg-gray-100"
               />
             </div>
             <div />
@@ -111,14 +111,14 @@ const MaterialPurchaseOrderModal: React.FC<OrderModalProps> = ({
               value={formRemark}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onRemarkChange(e.target.value)}
               rows={2}
-              className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
+              className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-primary disabled:bg-gray-100"
             />
           </div>
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="text-sm text-gray-600 font-medium">明细</label>
               {!viewOnly && (
-                <button onClick={onAddRow} className="text-sm text-blue-500 hover:text-blue-600">+ 添加行</button>
+                <button onClick={onAddRow} className="text-sm text-primary hover:text-blue-600">+ 添加行</button>
               )}
             </div>
             <table className="w-full text-sm border border-gray-200">
@@ -210,7 +210,7 @@ const MaterialPurchaseOrderModal: React.FC<OrderModalProps> = ({
           {!viewOnly && (
             <button
               onClick={onSave}
-              className="px-4 py-1.5 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+              className="px-4 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600"
             >保存</button>
           )}
         </div>

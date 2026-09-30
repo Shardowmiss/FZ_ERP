@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useDefaultDocDate } from '@client/src/hooks/useDefaultDocDate';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Download } from 'lucide-react';
 import { productionApi } from '@client/src/api/production';
@@ -33,8 +34,9 @@ export default function WorkOrderPage() {
 
   const [keyword, setKeyword] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
-  const [filterStartDate, setFilterStartDate] = useState('');
-  const [filterEndDate, setFilterEndDate] = useState('');
+  const def = useDefaultDocDate();
+  const [filterStartDate, setFilterStartDate] = useState(def.startDate);
+  const [filterEndDate, setFilterEndDate] = useState(def.endDate);
 
   const [styleOptions, setStyleOptions] = useState<{ id: string; styleNo: string; name: string }[]>([]);
   const [supplierOptions, setSupplierOptions] = useState<{ id: string; code: string; name: string }[]>([]);
@@ -62,7 +64,7 @@ export default function WorkOrderPage() {
       setTotal(res.total);
     } catch (e) {
       logger.error('加载生产工单失败', e);
-      toast('加载失败');
+      toast(errMsg(e, '加载失败'));
     } finally {
       setLoading(false);
     }
@@ -193,7 +195,7 @@ export default function WorkOrderPage() {
           <h1 className="text-xl font-semibold">生产工单</h1>
           <button
             onClick={openCreate}
-            className="bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600 flex items-center gap-1"
+            className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-blue-600 flex items-center gap-1"
           >
             <Plus size={16} /> 新增工单
           </button>
@@ -209,7 +211,7 @@ export default function WorkOrderPage() {
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
                 placeholder="工单号/款号"
-                className="border border-gray-300 rounded pl-7 pr-2 py-1.5 text-sm w-44 focus:outline-none focus:border-blue-500"
+                className="border border-gray-300 rounded pl-7 pr-2 py-1.5 text-sm w-44 focus:outline-none focus:border-primary"
               />
             </div>
           </div>
@@ -247,7 +249,7 @@ export default function WorkOrderPage() {
           </div>
           <button
             onClick={handleSearch}
-            className="bg-blue-500 text-white px-4 py-1.5 rounded text-sm hover:bg-blue-600 flex items-center gap-1"
+            className="bg-primary text-white px-4 py-1.5 rounded text-sm hover:bg-blue-600 flex items-center gap-1"
           >
             <Search size={14} /> 查询
           </button>
@@ -294,10 +296,10 @@ export default function WorkOrderPage() {
                       <span className={`px-2 py-0.5 rounded text-xs ${st.color}`}>{st.label}</span>
                     </td>
                     <td className="px-4 space-x-2">
-                      <button onClick={() => openView(item.id)} className="text-blue-500 hover:underline">查看</button>
+                      <button onClick={() => openView(item.id)} className="text-primary hover:underline">查看</button>
                       {item.status === 'draft' && (
                         <>
-                          <button onClick={() => openEdit(item.id)} className="text-blue-500 hover:underline">编辑</button>
+                          <button onClick={() => openEdit(item.id)} className="text-primary hover:underline">编辑</button>
                           <button onClick={() => handleApprove(item.id)} className="text-green-500 hover:underline">审核下发</button>
                           <button onClick={() => handleDelete(item.id)} className="text-red-500 hover:underline">删除</button>
                                                 <button onClick={() => handleVoid(item.id)} className="text-red-500 hover:text-red-600">作废</button>

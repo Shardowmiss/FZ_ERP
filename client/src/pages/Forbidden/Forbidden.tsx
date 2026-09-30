@@ -9,7 +9,7 @@ const ForbiddenPage = () => {
         <p className="text-sm text-gray-400 mt-2">请联系管理员分配相应权限</p>
         <Link
           to="/dashboard"
-          className="inline-block mt-6 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+          className="inline-block mt-6 px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-600 transition"
         >
           返回首页
         </Link>

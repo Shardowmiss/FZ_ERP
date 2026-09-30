@@ -21,7 +21,7 @@ print_time() {
 # ==================== 步骤 0 ====================
 echo "🗑️  [0/6] 安装插件"
 STEP_START=$(node -e "console.log(Date.now())")
-npx fullstack-cli action-plugin init || true
+npx -y fullstack-cli action-plugin init < /dev/null || true
 print_time $STEP_START
 echo ""
 
@@ -46,11 +46,11 @@ STEP_START=$(node -e "console.log(Date.now())")
 # 在 client/server 构建之前生成到 dist/，供 DefinePlugin 注入前端 bundle
 # 注意：nest-cli.json 中 deleteOutDir 必须为 false（模板默认值），否则 nest build 会清掉 dist/
 echo "   ├─ 生成 API 路由定义..."
-npx generate-api-routes --server-dir ./server --out-dir ./dist > /tmp/gen-api-routes.log 2>&1 &
+npx -y generate-api-routes --server-dir ./server --out-dir ./dist < /dev/null > /tmp/gen-api-routes.log 2>&1 &
 API_ROUTES_PID=$!
 
 echo "   ├─ 生成页面路由定义..."
-npx generate-page-routes --app-path ./client/src/app.tsx --out-dir ./dist > /tmp/gen-page-routes.log 2>&1 &
+npx -y generate-page-routes --app-path ./client/src/app.tsx --out-dir ./dist < /dev/null > /tmp/gen-page-routes.log 2>&1 &
 PAGE_ROUTES_PID=$!
 
 API_ROUTES_EXIT=0

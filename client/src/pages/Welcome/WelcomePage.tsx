@@ -63,7 +63,7 @@ const welcomeRows: FlowRow[] = [
       {
         title: '成衣采购',
         icon: <ShoppingCart size={20} />,
-        color: 'text-blue-500',
+        color: 'text-primary',
         borderColor: 'border-blue-200',
         bgColor: 'bg-blue-50',
         items: ['采购订单', '采购入库', '采购退货'],
@@ -72,7 +72,7 @@ const welcomeRows: FlowRow[] = [
       {
         title: '面辅料采购',
         icon: <Package size={20} />,
-        color: 'text-blue-500',
+        color: 'text-primary',
         borderColor: 'border-blue-200',
         bgColor: 'bg-blue-50',
         items: ['采购订单', '面辅料入库'],
@@ -224,7 +224,7 @@ const WelcomePage: React.FC = () => {
                         ))}
                       </ul>
                       {card.path && (
-                        <div className="mt-3 pt-3 border-t border-gray-100 text-xs text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                        <div className="mt-3 pt-3 border-t border-gray-100 text-xs text-primary opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
                           立即进入 <ArrowRight size={10} />
                         </div>
                       )}

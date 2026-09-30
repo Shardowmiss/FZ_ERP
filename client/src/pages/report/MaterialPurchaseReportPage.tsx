@@ -131,7 +131,7 @@ export default function MaterialPurchaseReportPage() {
             <select
               value={filterSupplier}
               onChange={(e) => setFilterSupplier(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
             >
               <option value="">全部</option>
               {supplierOptions.map((s) => (
@@ -144,7 +144,7 @@ export default function MaterialPurchaseReportPage() {
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
             >
               <option value="">全部</option>
               <option value="draft">草稿</option>
@@ -158,7 +158,7 @@ export default function MaterialPurchaseReportPage() {
               type="date"
               value={filterStartDate}
               onChange={(e) => setFilterStartDate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
             />
           </div>
           <div>
@@ -167,7 +167,7 @@ export default function MaterialPurchaseReportPage() {
               type="date"
               value={filterEndDate}
               onChange={(e) => setFilterEndDate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
             />
           </div>
           <div>
@@ -177,7 +177,7 @@ export default function MaterialPurchaseReportPage() {
               value={filterKeyword}
               onChange={(e) => setFilterKeyword(e.target.value)}
               placeholder="单号搜索"
-              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
             />
           </div>
         </div>
@@ -190,7 +190,7 @@ export default function MaterialPurchaseReportPage() {
           </button>
           <button
             onClick={handleSearch}
-            className="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
+            className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
           >
             搜索
           </button>

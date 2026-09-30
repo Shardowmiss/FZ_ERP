@@ -14,6 +14,8 @@ import type {
 } from '@shared/api.interface';
 import { logger } from '@lark-apaas/client-toolkit/logger';
 import { toast } from 'sonner';
+import { CHART_PALETTE, CHART_PRIMARY, CHART_POSITIVE } from '@client/src/lib/chart-colors';
+import { errMsg } from '@/utils/errMsg';
 
 interface StoreOption {
   id: string;
@@ -82,7 +84,7 @@ const RetailReportPage: React.FC = () => {
       setTrend(res.trend);
     } catch (e) {
       logger.error('加载报表失败', e);
-      toast('加载失败');
+      toast(errMsg(e, '加载失败'));
     } finally {
       setLoading(false);
     }
@@ -148,8 +150,8 @@ const RetailReportPage: React.FC = () => {
         smooth: true,
         data: trend.map((item: RetailTrendItem) => item.amount),
         areaStyle: { color: 'rgba(59, 130, 246, 0.15)' },
-        lineStyle: { color: '#3b82f6', width: 2 },
-        itemStyle: { color: '#3b82f6' },
+        lineStyle: { color: CHART_PRIMARY, width: 2 },
+        itemStyle: { color: CHART_PRIMARY },
         yAxisIndex: 0,
       },
       {
@@ -157,8 +159,8 @@ const RetailReportPage: React.FC = () => {
         type: 'line' as const,
         smooth: true,
         data: trend.map((item: RetailTrendItem) => item.orderCount),
-        lineStyle: { color: '#10b981', width: 2 },
-        itemStyle: { color: '#10b981' },
+        lineStyle: { color: CHART_POSITIVE, width: 2 },
+        itemStyle: { color: CHART_POSITIVE },
         yAxisIndex: 1,
       },
     ],
@@ -178,7 +180,7 @@ const RetailReportPage: React.FC = () => {
       name: '销售额',
       type: 'bar' as const,
       data: [...storeRank].reverse().map((item: RetailStoreRankItem) => item.amount),
-      itemStyle: { color: '#3b82f6', borderRadius: [0, 4, 4, 0] },
+      itemStyle: { color: CHART_PRIMARY, borderRadius: [0, 4, 4, 0] },
       barWidth: 16,
     }],
   };
@@ -202,7 +204,7 @@ const RetailReportPage: React.FC = () => {
         name: PAY_METHOD_LABELS[item.method] || item.method,
         value: item.amount,
       })),
-      color: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'],
+      color: CHART_PALETTE,
     }],
   };
 
@@ -220,7 +222,7 @@ const RetailReportPage: React.FC = () => {
       name: '销量',
       type: 'bar' as const,
       data: [...styleTop].reverse().map((item: RetailStyleTopItem) => item.qty),
-      itemStyle: { color: '#10b981', borderRadius: [0, 4, 4, 0] },
+      itemStyle: { color: CHART_POSITIVE, borderRadius: [0, 4, 4, 0] },
       barWidth: 16,
     }],
   };
@@ -278,7 +280,7 @@ const RetailReportPage: React.FC = () => {
            </div>
           <button
             onClick={fetchData}
-            className="bg-blue-500 text-white px-4 py-1.5 rounded text-sm hover:bg-blue-600"
+            className="bg-primary text-white px-4 py-1.5 rounded text-sm hover:bg-blue-600"
           >刷新</button>
         </div>
       </div>
@@ -287,7 +289,7 @@ const RetailReportPage: React.FC = () => {
       <div className="grid grid-cols-4 gap-4">
         <StatCard
           icon={<DollarSign className="text-white" size={24} />}
-          iconBg="bg-blue-500"
+          iconBg="bg-primary"
           value={`¥ ${summary?.totalAmount?.toFixed(2) ?? '0.00'}`}
           label="零售总额"
           sub={`${summary?.orderCount ?? 0} 笔订单`}

@@ -263,7 +263,7 @@ const CodeRulePage: React.FC = () => {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Settings size={20} className="text-blue-500" />
+          <Settings size={20} className="text-primary" />
           <h1 className="text-xl font-semibold text-gray-800">编码规则配置</h1>
         </div>
         <Button onClick={handleSave} disabled={saving}>
@@ -386,31 +386,31 @@ const CodeRulePage: React.FC = () => {
           </TabsList>
           <TabsContent value="season">
             <div className="text-sm text-gray-500 mb-3">
-              季节编码已统一从「款号属性维护」读取，请到 <Link to="/base/style-attribute" className="text-blue-500 hover:underline">基础档案→款号属性维护</Link> 页面管理
+              季节编码已统一从「款号属性维护」读取，请到 <Link to="/base/style-attribute" className="text-primary hover:underline">基础档案→款号属性维护</Link> 页面管理
             </div>
             <ReadOnlyMapping columns={['名称', '代码']} data={mapping.seasons} />
           </TabsContent>
           <TabsContent value="category">
             <div className="text-sm text-gray-500 mb-3">
-              品类编码已统一从「款号属性维护」读取，请到 <Link to="/base/style-attribute" className="text-blue-500 hover:underline">基础档案→款号属性维护</Link> 页面管理
+              品类编码已统一从「款号属性维护」读取，请到 <Link to="/base/style-attribute" className="text-primary hover:underline">基础档案→款号属性维护</Link> 页面管理
             </div>
             <ReadOnlyMapping columns={['名称', '代码']} data={mapping.categories} />
           </TabsContent>
           <TabsContent value="subCategory">
             <div className="text-sm text-gray-500 mb-3">
-              小类编码已统一从「款号属性维护」读取，请到 <Link to="/base/style-attribute" className="text-blue-500 hover:underline">基础档案→款号属性维护</Link> 页面管理
+              小类编码已统一从「款号属性维护」读取，请到 <Link to="/base/style-attribute" className="text-primary hover:underline">基础档案→款号属性维护</Link> 页面管理
             </div>
             <ReadOnlySubCategoryMapping data={mapping.subCategories} />
           </TabsContent>
            <TabsContent value="fit">
              <div className="text-sm text-gray-500 mb-3">
-               版型编码已统一从「款号属性维护」读取，请到 <Link to="/base/style-attribute" className="text-blue-500 hover:underline">基础档案→款号属性维护</Link> 页面管理
+               版型编码已统一从「款号属性维护」读取，请到 <Link to="/base/style-attribute" className="text-primary hover:underline">基础档案→款号属性维护</Link> 页面管理
              </div>
              <ReadOnlyMapping columns={['名称', '代码']} data={mapping.fits} />
            </TabsContent>
            <TabsContent value="brand">
              <div className="text-sm text-gray-500 mb-3">
-               品牌编码已统一从「款号属性维护」读取，请到 <Link to="/base/style-attribute" className="text-blue-500 hover:underline">基础档案→款号属性维护→品牌</Link> 页面管理
+               品牌编码已统一从「款号属性维护」读取，请到 <Link to="/base/style-attribute" className="text-primary hover:underline">基础档案→款号属性维护→品牌</Link> 页面管理
              </div>
              <BrandMappingTable data={brandOptions.length > 0 ? brandOptions : mapping.brands} />
            </TabsContent>

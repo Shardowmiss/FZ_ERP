@@ -352,7 +352,7 @@ export default function PivotAnalysisPage() {
   );
 
   return (
-    <div className="p-5 h-full flex flex-col bg-[#f5f7fa]">
+    <div className="p-5 h-full flex flex-col bg-muted">
       <div className="flex-1 flex gap-4 min-h-0">
         {/* Left: Field panel */}
         <FieldPanel

@@ -67,7 +67,7 @@ const StyleAttributePage: React.FC = () => {
       setList(res.items);
       setTotal(res.total);
     } catch (e) {
-      toast('加载失败');
+      toast(errMsg(e, '加载失败'));
     } finally {
       setLoading(false);
     }
@@ -200,7 +200,7 @@ const StyleAttributePage: React.FC = () => {
           >
             {tab.label}
             {activeTab === tab.key && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500" />
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
             )}
           </button>
         ))}
@@ -215,17 +215,17 @@ const StyleAttributePage: React.FC = () => {
           onChange={(e) => setKeyword(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
           onBlur={handleSearch}
-          className="px-3 py-2 border border-gray-300 rounded text-sm w-60 focus:outline-none focus:border-blue-500"
+          className="px-3 py-2 border border-gray-300 rounded text-sm w-60 focus:outline-none focus:border-primary"
         />
         <button
-          className="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
+          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
           onClick={handleSearch}
         >
           查询
         </button>
         <div className="flex-1" />
         <button
-          className="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
+          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
           onClick={openAdd}
         >
           + 新增属性
@@ -274,7 +274,7 @@ const StyleAttributePage: React.FC = () => {
                   <td className="px-4 py-3">{renderStatus(item.status)}</td>
                   <td className="px-4 py-3">
                     <button
-                      className="text-blue-500 hover:text-blue-700 mr-3"
+                      className="text-primary hover:text-blue-700 mr-3"
                       onClick={() => openEdit(item)}
                     >
                       编辑
@@ -327,7 +327,7 @@ const StyleAttributePage: React.FC = () => {
                     <select
                       value={form.parentCode}
                       onChange={(e) => setForm({ ...form, parentCode: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                     >
                       <option value="">请选择大类</option>
                       {categoryOptions.map((c) => (
@@ -346,7 +346,7 @@ const StyleAttributePage: React.FC = () => {
                     type="text"
                     value={form.attrCode}
                     onChange={(e) => setForm({ ...form, attrCode: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                     placeholder="请输入属性编码"
                   />
                 </div>
@@ -358,7 +358,7 @@ const StyleAttributePage: React.FC = () => {
                     type="text"
                     value={form.attrName}
                     onChange={(e) => setForm({ ...form, attrName: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                     placeholder="请输入属性名称"
                   />
                 </div>
@@ -368,7 +368,7 @@ const StyleAttributePage: React.FC = () => {
                     type="number"
                     value={form.sortOrder}
                     onChange={(e) => setForm({ ...form, sortOrder: Number(e.target.value) })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   />
                 </div>
                 <div>
@@ -376,7 +376,7 @@ const StyleAttributePage: React.FC = () => {
                   <select
                     value={form.status}
                     onChange={(e) => setForm({ ...form, status: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   >
                     <option value="active">启用</option>
                     <option value="inactive">禁用</option>
@@ -388,7 +388,7 @@ const StyleAttributePage: React.FC = () => {
                     value={form.remark}
                     onChange={(e) => setForm({ ...form, remark: e.target.value })}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 resize-none"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary resize-none"
                     placeholder="可选"
                   />
                 </div>
@@ -402,7 +402,7 @@ const StyleAttributePage: React.FC = () => {
                 取消
               </button>
               <button
-                className="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
+                className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
                 onClick={handleSave}
               >
                 确定

@@ -24,6 +24,7 @@ import {
   calcBlocksTotal,
 } from '@client/src/components/styleMatrixUtils';
 import DocPage from '@client/src/components/DocPage/DocPage';
+import { errMsg } from '@/utils/errMsg';
 
 const STATUS_MAP: Record<string, { label: string; variant: string }> = {
   draft: { label: '草稿', variant: 'bg-gray-100 text-gray-600' },
@@ -244,7 +245,7 @@ export default function RetailOrderEditPage() {
         setBlocks(rebuiltBlocks);
       } catch (e) {
         logger.error('加载详情失败', e);
-        toast('加载失败');
+        toast(errMsg(e, '加载失败'));
       } finally {
         setLoading(false);
       }
@@ -286,7 +287,7 @@ export default function RetailOrderEditPage() {
       setSelectedStyleId('');
     } catch (e) {
       logger.error('加载款号SKU失败', e);
-      toast('加载款号SKU失败');
+      toast(errMsg(e, '加载款号SKU失败'));
     }
   };
 
@@ -370,7 +371,7 @@ export default function RetailOrderEditPage() {
       navigate(BACK_PATH);
     } catch (e) {
       logger.error('结算失败', e);
-      toast('结算失败');
+      toast(errMsg(e, '结算失败'));
     } finally {
       setSubmitting(false);
     }
@@ -397,7 +398,7 @@ export default function RetailOrderEditPage() {
       navigate(BACK_PATH);
     } catch (e) {
       logger.error('创建失败', e);
-      toast('创建失败');
+      toast(errMsg(e, '创建失败'));
     } finally {
       setSaving(false);
     }
@@ -421,7 +422,7 @@ export default function RetailOrderEditPage() {
       setPrintOpen(true);
     } catch (e) {
       logger.error('加载打印数据失败', e);
-      toast('加载打印数据失败');
+      toast(errMsg(e, '加载打印数据失败'));
     }
   };
 
@@ -477,7 +478,7 @@ export default function RetailOrderEditPage() {
       {/* 左侧款号矩阵区 */}
       <div className="flex-1 border border-gray-200 rounded-lg flex flex-col">
         <div className="p-3 border-b border-gray-200 flex items-center gap-2">
-          <Grid3X3 size={16} className="text-blue-500" />
+          <Grid3X3 size={16} className="text-primary" />
           <span className="text-sm font-medium text-gray-700">款号矩阵</span>
           {!viewOnly && blocks.length > 0 && (
             <button
@@ -505,7 +506,7 @@ export default function RetailOrderEditPage() {
                 </select>
                 <button
                   onClick={addStyleBlock}
-                  className="bg-blue-500 text-white px-3 py-1.5 rounded text-sm hover:bg-blue-600 inline-flex items-center gap-1"
+                  className="bg-primary text-white px-3 py-1.5 rounded text-sm hover:bg-blue-600 inline-flex items-center gap-1"
                 >
                   <Plus size={14} /> 添加
                 </button>

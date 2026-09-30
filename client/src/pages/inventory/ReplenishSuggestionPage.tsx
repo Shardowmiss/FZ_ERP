@@ -68,7 +68,7 @@ const ReplenishSuggestionPage: React.FC = () => {
       setTotal(res.data?.length || 0);
     } catch (error) {
       logger.error('加载补货建议失败', error);
-      toast('加载失败');
+      toast(errMsg(error, '加载失败'));
     }
     setLoading(false);
   };
@@ -120,7 +120,7 @@ const ReplenishSuggestionPage: React.FC = () => {
             <select
               value={warehouseFilter}
               onChange={(e) => { setWarehouseFilter(e.target.value); setPage(1); }}
-              className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+              className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
             >
               <option value="">全部仓库</option>
               {warehouseOptions.map((w) => (
@@ -133,11 +133,11 @@ const ReplenishSuggestionPage: React.FC = () => {
             placeholder="搜索款号/SKU"
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded text-sm w-52 focus:outline-none focus:border-blue-500"
+            className="px-3 py-2 border border-gray-300 rounded text-sm w-52 focus:outline-none focus:border-primary"
           />
           <button
             onClick={() => { setPage(1); loadList(); }}
-            className="px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
+            className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600"
           >
             查询
           </button>
@@ -149,7 +149,7 @@ const ReplenishSuggestionPage: React.FC = () => {
             <select
               value={supplierId}
               onChange={(e) => setSupplierId(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+              className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
             >
               <option value="">请选择供应商</option>
               {supplierOptions.map((s) => (
@@ -163,7 +163,7 @@ const ReplenishSuggestionPage: React.FC = () => {
               type="date"
               value={orderDate}
               onChange={(e) => setOrderDate(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+              className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
             />
           </div>
           <button

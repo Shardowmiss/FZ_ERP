@@ -7,6 +7,7 @@ import type {
 } from '@shared/api.interface';
 import { toast } from 'sonner';
 import { ChevronDown, ChevronRight } from 'lucide-react';
+import { errMsg } from '@/utils/errMsg';
 
 const PreOrderSummaryPage: React.FC = () => {
   const [tradeShowOptions, setTradeShowOptions] = useState<
@@ -33,8 +34,8 @@ const PreOrderSummaryPage: React.FC = () => {
       } else if (opts.length > 0) {
         setSelectedTradeShow(opts[0].id);
       }
-     } catch {
-       toast('加载订货会选项失败');
+     } catch (e) {
+       toast(errMsg(e, '加载订货会选项失败'));
      }
    };
 
@@ -61,8 +62,8 @@ const PreOrderSummaryPage: React.FC = () => {
     try {
        const data = await tradeShowApi.summary.byStyle(tradeShowId, { brand: brandFilter || undefined });
       setSummaryList(data);
-    } catch {
-      toast('加载汇总失败');
+    } catch (e) {
+      toast(errMsg(e, '加载汇总失败'));
     } finally {
       setLoading(false);
     }
@@ -107,8 +108,8 @@ const PreOrderSummaryPage: React.FC = () => {
         styleId,
       );
       setSkuSummary(data);
-    } catch {
-      toast('加载SKU汇总失败');
+    } catch (e) {
+      toast(errMsg(e, '加载SKU汇总失败'));
     } finally {
       setLoadingSku(false);
     }
@@ -160,7 +161,7 @@ const PreOrderSummaryPage: React.FC = () => {
            <select
              value={selectedTradeShow}
              onChange={(e) => setSelectedTradeShow(e.target.value)}
-             className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 min-w-[240px]"
+             className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary min-w-[240px]"
            >
              <option value="">请选择订货会</option>
              {tradeShowOptions.map((t) => (
@@ -175,7 +176,7 @@ const PreOrderSummaryPage: React.FC = () => {
            <select
              value={brandFilter}
              onChange={(e) => setBrandFilter(e.target.value)}
-             className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 min-w-[160px]"
+             className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary min-w-[160px]"
            >
              <option value="">全部品牌</option>
              {brandOptions.map((b: { attrCode: string; attrName: string }) => (

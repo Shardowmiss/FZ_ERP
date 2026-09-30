@@ -33,7 +33,7 @@ const ColorGroupPage: React.FC = () => {
       setList(res.items);
       setTotal(res.total);
     } catch (e) {
-      toast('加载失败');
+      toast(errMsg(e, '加载失败'));
     } finally {
       setLoading(false);
     }
@@ -133,7 +133,7 @@ const ColorGroupPage: React.FC = () => {
         <h2 className="text-xl font-semibold">颜色组管理</h2>
         <div className="flex items-center gap-2">
           <button
-            className="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
+            className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
             onClick={openAdd}
           >
             + 新增颜色组
@@ -148,10 +148,10 @@ const ColorGroupPage: React.FC = () => {
           placeholder="搜索编码/名称"
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded text-sm w-60 focus:outline-none focus:border-blue-500"
+          className="px-3 py-2 border border-gray-300 rounded text-sm w-60 focus:outline-none focus:border-primary"
         />
         <button
-          className="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
+          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
           onClick={handleSearch}
         >
           查询
@@ -205,7 +205,7 @@ const ColorGroupPage: React.FC = () => {
                   <td className="px-4 py-3">{item.colors ? item.colors.length : 0}</td>
                   <td className="px-4 py-3 text-gray-500">{item.createdAt?.replace('T', ' ').slice(0, 19) || '-'}</td>
                   <td className="px-4 py-3">
-                    <button className="text-blue-500 hover:text-blue-700 mr-3" onClick={() => openEdit(item)}>编辑</button>
+                    <button className="text-primary hover:text-blue-700 mr-3" onClick={() => openEdit(item)}>编辑</button>
                     <button className="text-red-500 hover:text-red-700" onClick={() => handleDelete(item.id)}>删除</button>
                   </td>
                 </tr>
@@ -239,7 +239,7 @@ const ColorGroupPage: React.FC = () => {
                     type="text"
                     value={form.code}
                     onChange={(e) => setForm({ ...form, code: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   />
                 </div>
                 <div>
@@ -248,14 +248,14 @@ const ColorGroupPage: React.FC = () => {
                     type="text"
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   />
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <label className="block text-sm text-gray-700">颜色列表</label>
                     <button
-                      className="text-sm text-blue-500 hover:text-blue-700"
+                      className="text-sm text-primary hover:text-blue-700"
                       onClick={addColor}
                     >
                       + 添加颜色
@@ -269,7 +269,7 @@ const ColorGroupPage: React.FC = () => {
                           placeholder="颜色名称"
                           value={color.name}
                           onChange={(e) => updateColor(index, 'name', e.target.value)}
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                         />
                         <input
                           type="color"
@@ -282,7 +282,7 @@ const ColorGroupPage: React.FC = () => {
                           placeholder="#ffffff"
                           value={color.value}
                           onChange={(e) => updateColor(index, 'value', e.target.value)}
-                          className="w-24 px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                          className="w-24 px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                         />
                         <button
                           className="text-red-500 hover:text-red-700 text-sm px-2"
@@ -304,7 +304,7 @@ const ColorGroupPage: React.FC = () => {
                 取消
               </button>
               <button
-                className="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleSave}
                 disabled={submitting}
               >

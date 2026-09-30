@@ -158,7 +158,7 @@ const InventoryOutboundEditPage: React.FC = () => {
           value={formData.warehouseId}
           onChange={(e) => setFormData({ ...formData, warehouseId: e.target.value })}
           disabled={viewOnly}
-          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
+          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-100"
         >
           <option value="">请选择仓库</option>
           {warehouseOptions.map((w) => (
@@ -172,7 +172,7 @@ const InventoryOutboundEditPage: React.FC = () => {
           value={formData.outboundType}
           onChange={(e) => setFormData({ ...formData, outboundType: e.target.value })}
           disabled={viewOnly}
-          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
+          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-100"
         >
           <option value="production_issue">生产领料</option>
           <option value="other_out">其他出库</option>
@@ -185,7 +185,7 @@ const InventoryOutboundEditPage: React.FC = () => {
           value={formData.outboundDate}
           onChange={(e) => setFormData({ ...formData, outboundDate: e.target.value })}
           disabled={viewOnly}
-          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
+          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-100"
         />
       </div>
       <div>
@@ -219,7 +219,7 @@ const InventoryOutboundEditPage: React.FC = () => {
           value={formData.remark}
           onChange={(e) => setFormData({ ...formData, remark: e.target.value })}
           disabled={viewOnly}
-          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
+          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-100"
           rows={2}
         />
       </div>
@@ -231,7 +231,7 @@ const InventoryOutboundEditPage: React.FC = () => {
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-medium text-gray-700">出库明细</h3>
         {!viewOnly && (
-          <button onClick={addItem} className="text-sm text-blue-500 hover:text-blue-600">+ 添加行</button>
+          <button onClick={addItem} className="text-sm text-primary hover:text-blue-600">+ 添加行</button>
         )}
       </div>
       <table className="w-full text-sm border border-gray-200">
@@ -261,7 +261,7 @@ const InventoryOutboundEditPage: React.FC = () => {
                         ? handleSkuChange(idx, e.target.value)
                         : handleMaterialChange(idx, e.target.value)
                       }
-                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                     >
                       <option value="">请选择</option>
                       {(formData.itemType === 'finished' ? skuOptions : materialOptions).map((opt: any) => (
@@ -280,7 +280,7 @@ const InventoryOutboundEditPage: React.FC = () => {
                       min="0"
                       value={it.quantity}
                       onChange={(e) => updateItem(idx, 'quantity', Number(e.target.value))}
-                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm text-right focus:outline-none focus:border-blue-500"
+                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm text-right focus:outline-none focus:border-primary"
                     />
                   )}
                 </td>
@@ -291,7 +291,7 @@ const InventoryOutboundEditPage: React.FC = () => {
                       value={it.batchNo || ''}
                       onChange={(e) => updateItem(idx, 'batchNo', e.target.value)}
                       placeholder="批次号"
-                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                     />
                   )}
                 </td>

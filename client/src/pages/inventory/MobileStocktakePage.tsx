@@ -78,7 +78,7 @@ const MobileStocktakePage: React.FC = () => {
       setBatchNo('');
     } catch (error) {
       logger.error('查询失败', error);
-      toast('查询失败');
+      toast(errMsg(error, '查询失败'));
     }
   };
 
@@ -158,7 +158,7 @@ const MobileStocktakePage: React.FC = () => {
           <select
             value={warehouseId}
             onChange={(e) => setWarehouseId(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
           >
             <option value="">请选择仓库</option>
             {warehouseOptions.map((w) => (
@@ -173,7 +173,7 @@ const MobileStocktakePage: React.FC = () => {
             type="date"
             value={stocktakeDate}
             onChange={(e) => setStocktakeDate(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
           />
         </div>
 
@@ -185,11 +185,11 @@ const MobileStocktakePage: React.FC = () => {
             value={barcode}
             onChange={(e) => setBarcode(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') handleLookup(); }}
-            className="flex-1 px-3 py-3 border border-gray-300 rounded text-base focus:outline-none focus:border-blue-500"
+            className="flex-1 px-3 py-3 border border-gray-300 rounded text-base focus:outline-none focus:border-primary"
           />
           <button
             onClick={handleLookup}
-            className="px-4 py-3 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
+            className="px-4 py-3 bg-primary text-white rounded text-sm hover:bg-blue-600"
           >
             查询
           </button>
@@ -211,14 +211,14 @@ const MobileStocktakePage: React.FC = () => {
                 placeholder="实盘数量"
                 value={actualQty}
                 onChange={(e) => setActualQty(e.target.value)}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded text-base focus:outline-none focus:border-blue-500"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded text-base focus:outline-none focus:border-primary"
               />
               <input
                 type="text"
                 placeholder="批次号(可选)"
                 value={batchNo}
                 onChange={(e) => setBatchNo(e.target.value)}
-                className="w-36 px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                className="w-36 px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
               />
               <button
                 onClick={handleAdd}

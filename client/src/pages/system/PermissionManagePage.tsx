@@ -364,7 +364,7 @@ const PermissionManagePage: React.FC = () => {
         >
           <div className="px-4 py-3 border-b border-gray-200">
             <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-              <Shield size={16} className="text-blue-500" /> 角色列表
+              <Shield size={16} className="text-primary" /> 角色列表
             </h2>
           </div>
           <div className="py-1 flex-1 overflow-y-auto">
@@ -383,7 +383,7 @@ const PermissionManagePage: React.FC = () => {
                   onClick={() => handleSelectRole(role.id)}
                   className={`px-4 py-2.5 text-sm cursor-pointer border-l-2 transition-colors ${
                     selectedRoleId === role.id
-                      ? 'bg-white border-l-blue-500 text-blue-600 font-medium'
+                      ? 'bg-white border-l-primary text-blue-600 font-medium'
                       : 'border-l-transparent text-gray-600 hover:bg-white hover:text-gray-800'
                   }`}
                 >

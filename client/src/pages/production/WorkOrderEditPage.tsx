@@ -67,8 +67,8 @@ const WorkOrderEditPage: React.FC = () => {
         setFormPlanStartDate(order.planStartDate ? order.planStartDate.slice(0, 10) : '');
         setFormPlanFinishDate(order.planFinishDate ? order.planFinishDate.slice(0, 10) : '');
         setFormRemark(order.remark ?? '');
-      } catch {
-        toast('加载详情失败');
+      } catch (e) {
+        toast(errMsg(e, '加载详情失败'));
       } finally {
         setLoading(false);
       }
@@ -120,8 +120,8 @@ const WorkOrderEditPage: React.FC = () => {
         await productionApi.workOrder.approve(id as string);
         toast('下发成功');
         navigate(BACK_PATH);
-      } catch {
-        toast('下发失败');
+      } catch (e) {
+        toast(errMsg(e, '下发失败'));
       }
     }
     setSubmitting(false);

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useDefaultDocDate } from '@client/src/hooks/useDefaultDocDate';
 import { useNavigate } from 'react-router-dom';
 import { retailApi } from '@client/src/api/retail';
 import { baseApi } from '@client/src/api/base';
@@ -47,8 +48,9 @@ export default function RetailOrderPage() {
   const [loading, setLoading] = useState(false);
 
   const [filterStoreId, setFilterStoreId] = useState('');
-  const [filterStartDate, setFilterStartDate] = useState('');
-  const [filterEndDate, setFilterEndDate] = useState('');
+  const def = useDefaultDocDate();
+  const [filterStartDate, setFilterStartDate] = useState(def.startDate);
+  const [filterEndDate, setFilterEndDate] = useState(def.endDate);
   const [filterStatus, setFilterStatus] = useState('');
   const [filterKeyword, setFilterKeyword] = useState('');
 
@@ -84,7 +86,7 @@ export default function RetailOrderPage() {
       setTotal(res.total);
     } catch (e) {
       logger.error('加载零售单列表失败', e);
-      toast('加载失败');
+      toast(errMsg(e, '加载失败'));
     } finally {
       setLoading(false);
     }
@@ -207,7 +209,7 @@ export default function RetailOrderPage() {
       setPrintOpen(true);
     } catch (e) {
       logger.error('加载打印数据失败', e);
-      toast('加载打印数据失败');
+      toast(errMsg(e, '加载打印数据失败'));
     }
   };
 
@@ -217,7 +219,7 @@ export default function RetailOrderPage() {
         <h1 className="text-xl font-semibold">零售单</h1>
         <button
           onClick={openCreate}
-          className="bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600 flex items-center gap-2"
+          className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-blue-600 flex items-center gap-2"
         >
           <Plus size={16} />
           新增零售单
@@ -282,7 +284,7 @@ export default function RetailOrderPage() {
         </div>
         <button
           onClick={handleSearch}
-          className="bg-blue-500 text-white px-4 py-1.5 rounded text-sm hover:bg-blue-600"
+          className="bg-primary text-white px-4 py-1.5 rounded text-sm hover:bg-blue-600"
         >查询</button>
         <button
           onClick={handleReset}
@@ -325,7 +327,7 @@ export default function RetailOrderPage() {
                     <span className={`px-2 py-0.5 rounded text-xs ${st.variant}`}>{st.label}</span>
                   </td>
                   <td className="px-4 space-x-2">
-                    <button onClick={() => openView(item.id)} className="text-blue-500 hover:underline">查看</button>
+                    <button onClick={() => openView(item.id)} className="text-primary hover:underline">查看</button>
                     <button onClick={() => openPrint(item)} className="text-gray-500 hover:underline inline-flex items-center gap-0.5">
                       <Printer size={12} />打印
                     </button>

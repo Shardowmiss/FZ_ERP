@@ -26,8 +26,8 @@ const LifecyclePage: React.FC = () => {
     setLoading(true);
     try {
       setList(await analyticsApi.lifecycle(days));
-    } catch {
-      toast('加载失败');
+    } catch (e) {
+      toast(errMsg(e, '加载失败'));
     }
     setLoading(false);
   };
@@ -54,7 +54,7 @@ const LifecyclePage: React.FC = () => {
           <select
             value={days}
             onChange={(e) => setDays(Number(e.target.value))}
-            className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+            className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
           >
             <option value={30}>近30天动销</option>
             <option value={90}>近90天动销</option>

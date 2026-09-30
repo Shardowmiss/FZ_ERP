@@ -13,6 +13,7 @@ import { SkuDocPrintContent, MaterialDocPrintContent } from '@client/src/compone
 import type { SkuMatrixItem } from '@client/src/components/print/SkuMatrixTable';
 import type { MaterialListItem } from '@client/src/components/print/MaterialListTable';
 import DocPage from '@/components/DocPage/DocPage';
+import { errMsg } from '@/utils/errMsg';
 
 interface StoreOption {
   id: string;
@@ -262,7 +263,7 @@ export default function InventoryTransferEditPage() {
       })));
     } catch (e) {
       logger.error('加载详情失败', e);
-      toast('加载失败');
+      toast(errMsg(e, '加载失败'));
     } finally { setLoading(false); }
   };
 
@@ -372,7 +373,7 @@ export default function InventoryTransferEditPage() {
       navigate(backPath);
     } catch (e) {
       logger.error('创建失败', e);
-      toast('创建失败');
+      toast(errMsg(e, '创建失败'));
     } finally {
       setSubmitting(false);
     }
@@ -387,7 +388,7 @@ export default function InventoryTransferEditPage() {
       loadDetail(id);
     } catch (e) {
       logger.error('签收失败', e);
-      toast('签收失败');
+      toast(errMsg(e, '签收失败'));
     }
   };
 
@@ -579,7 +580,7 @@ export default function InventoryTransferEditPage() {
       <div className="mb-2 flex items-center justify-between">
         <span className="text-sm font-medium">明细</span>
         {!viewOnly && (
-          <button onClick={addItem} className="text-blue-500 text-sm hover:underline">+ 添加行</button>
+          <button onClick={addItem} className="text-primary text-sm hover:underline">+ 添加行</button>
         )}
       </div>
       <div className="border border-gray-200 rounded overflow-hidden">

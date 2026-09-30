@@ -11,6 +11,8 @@ import type {
   InventoryWarningItem,
 } from '@shared/api.interface';
 import { toast } from 'sonner';
+import { CHART_PRIMARY, CHART_POSITIVE } from '@client/src/lib/chart-colors';
+import { errMsg } from '@/utils/errMsg';
 
 interface StatCardProps {
   icon: React.ReactNode;
@@ -51,8 +53,8 @@ const DashboardPage: React.FC = () => {
         setSalesTrend(t);
         setTopStyles(top);
         setWarnings(w);
-      } catch {
-        toast('加载数据失败');
+      } catch (e) {
+        toast(errMsg(e, '加载数据失败'));
       } finally {
         setLoading(false);
       }
@@ -78,8 +80,8 @@ const DashboardPage: React.FC = () => {
       smooth: true,
       data: salesTrend.map((item: SalesTrendItem) => item.amount),
       areaStyle: { color: 'rgba(59, 130, 246, 0.15)' },
-      lineStyle: { color: '#3b82f6', width: 2 },
-      itemStyle: { color: '#3b82f6' },
+      lineStyle: { color: CHART_PRIMARY, width: 2 },
+      itemStyle: { color: CHART_PRIMARY },
     }],
   };
 
@@ -96,7 +98,7 @@ const DashboardPage: React.FC = () => {
       name: '销量',
       type: 'bar' as const,
       data: [...topStyles].reverse().map((item: TopStyleItem) => item.quantity),
-      itemStyle: { color: '#10b981', borderRadius: [0, 4, 4, 0] },
+      itemStyle: { color: CHART_POSITIVE, borderRadius: [0, 4, 4, 0] },
       barWidth: 16,
     }],
   };
@@ -111,7 +113,7 @@ const DashboardPage: React.FC = () => {
       <div className="grid grid-cols-5 gap-4">
         <StatCard
           icon={<TrendingUp className="text-white" size={24} />}
-          iconBg="bg-blue-500"
+          iconBg="bg-primary"
           value={`¥ ${stats?.todaySales.toFixed(2) ?? '0.00'}`}
           label="今日销售额"
         />

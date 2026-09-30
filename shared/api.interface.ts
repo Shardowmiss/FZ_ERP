@@ -20,12 +20,44 @@ export interface ColorGroup {
   createdAt: string;
 }
 
+/** 颜色主数据（独立实体，对应 color 表；弃用 color_group 内嵌 colors 后改用此表） */
+export interface Color {
+  id: string;
+  code: string;
+  name: string;
+  hex: string;
+  sortOrder: number;
+  status: string;
+  remark?: string;
+  createdAt: string;
+}
+
+/** 尺码主数据（独立实体，对应 size 表；与 size_group 通过 size_group_size 关联表建立多对多关系） */
+export interface Size {
+  id: string;
+  code: string;
+  name: string;
+  sortOrder: number;
+  status: string;
+  remark?: string;
+  createdAt: string;
+}
+
 export interface SizeGroup {
   id: string;
   code: string;
   name: string;
   sizes: string[];
   createdAt: string;
+}
+
+/** 尺码组与尺码的关系行（size_group_size 关联表），由 size-group 成员接口返回 */
+export interface SizeGroupSize {
+  sizeGroupId: string;
+  sizeId: string;
+  sizeCode: string;
+  sizeName: string;
+  sortOrder: number;
 }
 
 export interface Style {
@@ -57,6 +89,8 @@ export interface Sku {
   styleNo: string;
   color: string;
   size: string;
+  colorId?: string;
+  sizeId?: string;
   barcode?: string;
   costPrice: number;
   tagPrice: number;
@@ -1132,6 +1166,7 @@ export interface RbacUser {
   department?: string;
   status: string;
   remark?: string;
+  language?: string;
   roleIds?: string[];
   roleCodes?: string[];
   createdAt: string;
@@ -1908,6 +1943,8 @@ export interface SystemConfig {
   pendingApprovalAlert: boolean;
   maxTabs: number;
   uniqueCodeArchiveDays: number;
+  /** 单据列表页默认查询天数：进入各单据时默认按最近 N 天过滤；0 或不配置视为 90。管理员可在「系统配置」调整。 */
+  defaultDocQueryDays: number;
 }
 
 // ===== P0-1 条码 / 批次 / 移动盘点 =====

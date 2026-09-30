@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@client/src/contexts/AuthContext';
 import { LogOut } from 'lucide-react';
+import { useT } from '@client/src/i18n';
+import { LanguageSwitcher } from '@client/src/components/LanguageSwitcher';
 
 interface MenuChildItem {
   key: string;
@@ -43,21 +45,30 @@ const menuItems: MenuItem[] = [
     permission: 'dashboard',
   },
   {
-    key: 'base',
-    label: '基础档案',
+    key: 'product',
+    label: '商品资料',
     icon: <NotebookPen size={18} />,
     children: [
       { key: 'style', label: '款号管理', path: '/base/style', permission: 'base:style' },
       { key: 'sku', label: 'SKU管理', path: '/base/sku', permission: 'base:sku' },
-      { key: 'color-group', label: '颜色组', path: '/base/color-group', permission: 'base:style' },
+      { key: 'color', label: '颜色', path: '/product/color', permission: 'base:color' },
       { key: 'size-group', label: '尺码组', path: '/base/size-group', permission: 'base:sku' },
-      { key: 'material', label: '面辅料档案', path: '/base/material', permission: 'base:material' },
-      { key: 'customer', label: '客户档案', path: '/base/customer', permission: 'base:customer' },
-      { key: 'supplier', label: '供应商档案', path: '/base/supplier', permission: 'base:supplier' },
-      { key: 'warehouse', label: '仓库档案', path: '/base/warehouse', permission: 'base:warehouse' },
-      { key: 'dealer', label: '经销商管理', path: '/base/dealer', permission: 'base:customer' },
-      { key: 'store', label: '门店管理', path: '/base/store', permission: 'base:customer' },
+      { key: 'size', label: '尺码', path: '/product/size', permission: 'base:size' },
+      { key: 'size-group-relation', label: '尺码组与尺码关系', path: '/product/size-group-relation', permission: 'base:size' },
       { key: 'style-attribute', label: '款号属性维护', path: '/base/style-attribute', permission: 'base:style' },
+      // 原用 system:permission（系统权限），会让「有系统权限=有编码规则」，属误授；改用款号码
+      { key: 'code-rule', label: '款号编码规则', path: '/product/code-rule', permission: 'base:style' },
+    ],
+  },
+  {
+    key: 'channel',
+    // 原名「渠道管理」，与「渠道铺货」（实为下游补货）语义无关却同名，易误入，故更名
+    label: '客商与门店',
+    icon: <Truck size={18} />,
+    children: [
+      { key: 'supplier', label: '供应商管理', path: '/base/supplier', permission: 'base:supplier' },
+      { key: 'dealer', label: '经销商管理', path: '/base/dealer', permission: 'base:dealer' },
+      { key: 'store', label: '店仓管理', path: '/base/store', permission: 'base:store' },
     ],
   },
   {
@@ -77,6 +88,7 @@ const menuItems: MenuItem[] = [
     icon: <Factory size={18} />,
     children: [
       { key: 'prod-bom', label: 'BOM管理', path: '/production/bom', permission: 'production:bom' },
+      { key: 'material', label: '面辅料管理', path: '/base/material', permission: 'base:material' },
       { key: 'material-purchase-order', label: '面辅料采购订单', path: '/production/material-purchase-order', permission: 'production:material_order' },
       { key: 'material-purchase-inbound', label: '面辅料入库', path: '/production/material-purchase-inbound', permission: 'production:material_inbound' },
       { key: 'mrp', label: 'MRP运算', path: '/production/mrp', permission: 'production:mrp' },
@@ -84,6 +96,7 @@ const menuItems: MenuItem[] = [
       { key: 'work-order', label: '生产工单', path: '/production/work-order', permission: 'production:work_order' },
       { key: 'material-issue', label: '领料单', path: '/production/material-issue', permission: 'production:material_issue' },
       { key: 'finish-receipt', label: '完工入库单', path: '/production/finish-receipt', permission: 'production:finish_receipt' },
+      { key: 'subcontract-main', label: '委外管理', path: '/subcontract', permission: 'subcontract:manage' },
     ],
   },
   {
@@ -98,6 +111,7 @@ const menuItems: MenuItem[] = [
       { key: 'retail-order', label: '零售单', path: '/retail/order', permission: 'sales:order' },
       { key: 'retail-return', label: '零售退货单', path: '/retail/return', permission: 'sales:return' },
       { key: 'retail-report', label: '零售报表', path: '/retail/report', permission: 'sales:order' },
+      { key: 'omni-main', label: '全渠道订单', path: '/omni', permission: 'omni:manage' },
     ],
   },
   {
@@ -112,18 +126,20 @@ const menuItems: MenuItem[] = [
       { key: 'inv-transfer', label: '调拨单', path: '/inventory/transfer', permission: 'inventory:transfer' },
       { key: 'inv-stocktake', label: '盘点单', path: '/inventory/stocktake', permission: 'inventory:stocktake' },
       { key: 'inv-warning', label: '库存预警', path: '/inventory/warning', permission: 'inventory:warning' },
-      { key: 'inv-replenish', label: '补货建议', path: '/inventory/replenish', permission: 'inventory:warning' },
       { key: 'inv-barcode', label: '条码/批次', path: '/inventory/barcode', permission: 'inventory:query' },
       { key: 'inv-mobile-stocktake', label: '移动盘点', path: '/inventory/mobile-stocktake', permission: 'inventory:stocktake' },
     ],
   },
   {
     key: 'channel-replenish',
-    label: '渠道铺货',
+    // 补货类入口集中于此，并在名称上标明业务方向：
+    // 「补货建议」是上游采购向（安全库存法 → 采购单），「补货计划/模板」是下游门店向（铺货）。
+    label: '补货管理',
     icon: <Truck size={18} />,
     children: [
-      { key: 'replenish-plan', label: '补货计划', path: '/inventory/replenish-plan', permission: 'inventory:replenish-plan' },
-      { key: 'replenish-template', label: '补货模板', path: '/inventory/replenish-template', permission: 'inventory:replenish-template' },
+      { key: 'inv-replenish', label: '补货建议（采购向）', path: '/inventory/replenish', permission: 'inventory:warning' },
+      { key: 'replenish-plan', label: '补货计划（门店向）', path: '/inventory/replenish-plan', permission: 'inventory:replenish-plan' },
+      { key: 'replenish-template', label: '补货模板（门店向）', path: '/inventory/replenish-template', permission: 'inventory:replenish-template' },
     ],
   },
   {
@@ -170,22 +186,6 @@ const menuItems: MenuItem[] = [
     ],
   },
   {
-    key: 'subcontract',
-    label: '委外加工',
-    icon: <Factory size={18} />,
-    children: [
-      { key: 'subcontract-main', label: '委外管理', path: '/subcontract', permission: 'inventory:query' },
-    ],
-  },
-  {
-    key: 'omni',
-    label: '全渠道 OMS',
-    icon: <ShoppingBag size={18} />,
-    children: [
-      { key: 'omni-main', label: '全渠道订单', path: '/omni', permission: 'sales:view' },
-    ],
-  },
-  {
     key: 'member',
     label: '会员私域',
     icon: <Users size={18} />,
@@ -198,7 +198,6 @@ const menuItems: MenuItem[] = [
     label: '系统管理',
     icon: <Settings size={18} />,
     children: [
-      { key: 'code-rule', label: '编码规则配置', path: '/system/code-rule', permission: 'system:permission' },
       { key: 'user', label: '用户管理', path: '/system/user', permission: 'system:user' },
       { key: 'role', label: '角色管理', path: '/system/role', permission: 'system:role' },
       { key: 'permission', label: '权限管理', path: '/system/permission', permission: 'system:permission' },
@@ -216,6 +215,7 @@ const Layout: React.FC = () => {
   const { user, hasMenu, logout } = useAuth();
   const { tabs } = useTabs();
   const hasTabs = tabs.length > 0;
+  const t = useT();
 
   const filteredMenuItems = useMemo(() => {
     return menuItems
@@ -296,7 +296,7 @@ const Layout: React.FC = () => {
                 : 'ml-2'
             }`}
           >
-            服装ERP系统
+            {t('app.title')}
           </span>
         </div>
         <nav className="flex-1 overflow-y-auto py-2">
@@ -413,7 +413,7 @@ const Layout: React.FC = () => {
             className={`w-full flex items-center ${
               collapsed ? 'justify-center' : 'justify-end'
             } px-4 py-2.5 text-gray-400 hover:text-white hover:bg-gray-700 transition-colors text-sm`}
-            title={collapsed ? '展开侧边栏' : '收起侧边栏'}
+            title={collapsed ? t('app.expandMenu') : t('app.collapseMenu')}
           >
             {collapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
              <span
@@ -423,7 +423,7 @@ const Layout: React.FC = () => {
                    : 'ml-2'
                }`}
              >
-               收起菜单
+               {t('app.collapseMenu')}
              </span>
           </button>
         </div>
@@ -512,6 +512,7 @@ const WelcomeTopBar: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const t = useT();
 
   const handleLogout = async () => {
     await logout();
@@ -528,7 +529,7 @@ const WelcomeTopBar: React.FC = () => {
         }}
         className="flex items-center gap-2 px-2 py-1 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
       >
-        <div className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-medium">
+        <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs font-medium">
           {(user?.name || user?.username || 'U').charAt(0).toUpperCase()}
         </div>
         <span className="text-xs max-w-[80px] truncate">
@@ -537,20 +538,21 @@ const WelcomeTopBar: React.FC = () => {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded shadow-lg py-1 text-xs min-w-[120px] z-50">
+        <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded shadow-lg py-1 text-xs min-w-[150px] z-50">
           <div className="px-3 py-2 text-gray-400 border-b border-gray-100">
             <div className="text-gray-700 font-medium truncate">
               {user?.name || user?.username}
             </div>
             <div className="text-[11px] truncate">{user?.username || ''}</div>
           </div>
+          <LanguageSwitcher />
           <button
             type="button"
             className="w-full text-left px-3 py-1.5 hover:bg-gray-50 text-gray-600 flex items-center gap-2"
             onClick={handleLogout}
           >
             <LogOut size={12} />
-            退出登录
+            {t('topbar.logout')}
           </button>
         </div>
       )}

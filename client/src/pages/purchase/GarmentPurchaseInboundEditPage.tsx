@@ -69,8 +69,8 @@ const GarmentPurchaseInboundEditPage: React.FC = () => {
             status: 'approved',
           });
           setApprovedOrders(res.items);
-        } catch {
-          toast('加载采购单失败');
+        } catch (e) {
+          toast(errMsg(e, '加载采购单失败'));
         } finally {
           setLoadingOrders(false);
         }
@@ -92,8 +92,8 @@ const GarmentPurchaseInboundEditPage: React.FC = () => {
         setFormRemark(inbound.remark ?? '');
         const blocks = await buildStyleBlocksFromSkus(inbound.skus ?? []);
         setStyleBlocks(blocks);
-      } catch {
-        toast('加载详情失败');
+      } catch (e) {
+        toast(errMsg(e, '加载详情失败'));
       } finally {
         setLoading(false);
       }
@@ -205,8 +205,8 @@ const GarmentPurchaseInboundEditPage: React.FC = () => {
       const order = await garmentPurchaseApi.order.get(orderId);
       const blocks = await buildFromOrderSkus(order.skus ?? []);
       setStyleBlocks(blocks);
-    } catch {
-      toast('加载订单明细失败');
+    } catch (e) {
+      toast(errMsg(e, '加载订单明细失败'));
     }
   };
 
@@ -360,7 +360,7 @@ const GarmentPurchaseInboundEditPage: React.FC = () => {
             void handleOrderChange(e.target.value);
           }}
           disabled={viewOnly || !isNew}
-          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-500"
         >
           <option value="">请选择</option>
           {approvedOrders.map((o) => (
@@ -380,7 +380,7 @@ const GarmentPurchaseInboundEditPage: React.FC = () => {
             setFormWarehouseId(e.target.value)
           }
           disabled={viewOnly}
-          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-500"
         >
           <option value="">请选择</option>
           {warehouseOptions.map((w) => (
@@ -401,7 +401,7 @@ const GarmentPurchaseInboundEditPage: React.FC = () => {
             setFormInboundDate(e.target.value)
           }
           disabled={viewOnly}
-          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-500"
         />
       </div>
       <div>
@@ -414,7 +414,7 @@ const GarmentPurchaseInboundEditPage: React.FC = () => {
           }
           disabled={viewOnly}
           placeholder="请输入备注"
-          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-500"
         />
       </div>
     </div>

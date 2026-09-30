@@ -261,7 +261,7 @@ export default function SalesOrderModal({
           </h3>
           <div className="flex items-center gap-2">
             {(viewMode || editId) && hasPermission('sales:order:print') && (
-              <button onClick={handlePrint} className="text-blue-500 hover:underline text-sm inline-flex items-center gap-1">
+              <button onClick={handlePrint} className="text-primary hover:underline text-sm inline-flex items-center gap-1">
                 <Printer size={14} /> 打印
               </button>
             )}
@@ -338,7 +338,7 @@ export default function SalesOrderModal({
                     <button
                       onClick={handleAddStyle}
                       disabled={addingStyle}
-                      className="text-blue-500 text-sm hover:underline disabled:text-gray-400"
+                      className="text-primary text-sm hover:underline disabled:text-gray-400"
                     >
                       {addingStyle ? '加载中...' : '+ 添加款号'}
                     </button>
@@ -386,7 +386,7 @@ export default function SalesOrderModal({
             <button
               onClick={handleSubmit}
               disabled={submitting}
-              className="px-4 py-1.5 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-1.5 bg-primary text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
             >{submitting ? '保存中...' : '保存'}</button>
           )}
         </div>

@@ -56,8 +56,8 @@ const BomPage: React.FC = () => {
       const res = await productionApi.bom.list(params);
       setList(res.items);
       setTotal(res.total);
-    } catch {
-      toast('加载失败');
+    } catch (e) {
+      toast(errMsg(e, '加载失败'));
     } finally {
       setLoading(false);
     }
@@ -110,8 +110,8 @@ const BomPage: React.FC = () => {
         bomType: it.bomType,
       })));
       setShowModal(true);
-    } catch {
-      toast('加载详情失败');
+    } catch (e) {
+      toast(errMsg(e, '加载详情失败'));
     }
   };
 
@@ -200,8 +200,8 @@ const BomPage: React.FC = () => {
     try {
       const res = await productionApi.bom.costSimulation(costStyleId);
       setCostResult(res);
-    } catch {
-      toast('成本模拟失败');
+    } catch (e) {
+      toast(errMsg(e, '成本模拟失败'));
     }
   };
 
@@ -249,7 +249,7 @@ const BomPage: React.FC = () => {
           </button>
           <button
             onClick={openAdd}
-            className="px-3 py-1.5 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center gap-1"
+            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600 flex items-center gap-1"
           >
             <Plus size={16} /> + 新增BOM
           </button>
@@ -262,7 +262,7 @@ const BomPage: React.FC = () => {
         <select
           value={styleId}
           onChange={(e: React.ChangeEvent<HTMLSelectElement>) => { setStyleId(e.target.value); setPage(1); }}
-          className="border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500"
+          className="border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-primary"
         >
           <option value="">全部款号</option>
           {styleOptions.map((s: { id: string; styleNo: string; name: string }) => (
@@ -301,7 +301,7 @@ const BomPage: React.FC = () => {
                   </td>
                   <td className="py-2 px-4 text-gray-500">{item.createdAt || '-'}</td>
                   <td className="py-2 px-4">
-                    <button onClick={() => openEdit(item.id)} className="text-blue-500 hover:text-blue-600 mr-3">编辑</button>
+                    <button onClick={() => openEdit(item.id)} className="text-primary hover:text-blue-600 mr-3">编辑</button>
                     <button onClick={() => handleDelete(item.id)} className="text-red-500 hover:text-red-600 mr-3">删除</button>
                     <button
                       onClick={async () => {
@@ -345,7 +345,7 @@ const BomPage: React.FC = () => {
                   <select
                     value={formStyleId}
                     onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFormStyleId(e.target.value)}
-                    className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-primary"
                   >
                     <option value="">请选择款号</option>
                     {styleOptions.map((s: { id: string; styleNo: string; name: string }) => (
@@ -359,7 +359,7 @@ const BomPage: React.FC = () => {
                     type="text"
                     value={formVersion}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormVersion(e.target.value)}
-                    className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-primary"
                   />
                 </div>
               </div>
@@ -369,13 +369,13 @@ const BomPage: React.FC = () => {
                   value={formRemark}
                   onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormRemark(e.target.value)}
                   rows={2}
-                  className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500"
+                  className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-primary"
                 />
               </div>
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-sm text-gray-600 font-medium">BOM明细</label>
-                  <button onClick={handleAddRow} className="text-sm text-blue-500 hover:text-blue-600">+ 添加行</button>
+                  <button onClick={handleAddRow} className="text-sm text-primary hover:text-blue-600">+ 添加行</button>
                 </div>
                 <table className="w-full text-sm border border-gray-200">
                   <thead>
@@ -445,7 +445,7 @@ const BomPage: React.FC = () => {
             </div>
             <div className="px-5 py-3 border-t border-gray-200 flex justify-end gap-2">
               <button onClick={() => setShowModal(false)} className="px-4 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50">取消</button>
-              <button onClick={handleSubmit} className="px-4 py-1.5 text-sm bg-blue-500 text-white rounded hover:bg-blue-600">保存</button>
+              <button onClick={handleSubmit} className="px-4 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600">保存</button>
             </div>
           </div>
         </div>
@@ -465,14 +465,14 @@ const BomPage: React.FC = () => {
                 <select
                   value={costStyleId}
                   onChange={(e: React.ChangeEvent<HTMLSelectElement>) => { setCostStyleId(e.target.value); setCostResult(null); }}
-                  className="border border-gray-300 rounded px-3 py-1.5 text-sm flex-1 max-w-xs focus:outline-none focus:border-blue-500"
+                  className="border border-gray-300 rounded px-3 py-1.5 text-sm flex-1 max-w-xs focus:outline-none focus:border-primary"
                 >
                   <option value="">请选择款号</option>
                   {styleOptions.map((s: { id: string; styleNo: string; name: string }) => (
                     <option key={s.id} value={s.id}>{s.styleNo} - {s.name}</option>
                   ))}
                 </select>
-                <button onClick={runCostSim} className="px-4 py-1.5 text-sm bg-blue-500 text-white rounded hover:bg-blue-600">模拟</button>
+                <button onClick={runCostSim} className="px-4 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600">模拟</button>
               </div>
               {costResult && (
                 <>
@@ -515,7 +515,7 @@ const BomPage: React.FC = () => {
               )}
             </div>
             <div className="px-5 py-3 border-t border-gray-200 flex justify-end">
-              <button onClick={() => setShowCostModal(false)} className="px-4 py-1.5 text-sm bg-blue-500 text-white rounded hover:bg-blue-600">关闭</button>
+              <button onClick={() => setShowCostModal(false)} className="px-4 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600">关闭</button>
             </div>
           </div>
         </div>

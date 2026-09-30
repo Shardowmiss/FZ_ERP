@@ -170,7 +170,7 @@ const StyleMatrixBlock: React.FC<StyleMatrixBlockProps> = ({
         <div className="flex items-center gap-2 cursor-pointer select-none"
           onClick={() => onToggleCollapse?.(styleId)}>
           {collapsed ? <ChevronRight size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
-          <Grid3X3 size={16} className="text-blue-500" />
+          <Grid3X3 size={16} className="text-primary" />
           <span className="font-medium text-gray-800">{styleNo}</span>
           <span className="text-gray-500 text-sm">{styleName}</span>
           {brand && <span className="text-gray-400 text-xs px-1.5 py-0.5 bg-gray-100 rounded">{brand}</span>}
@@ -224,7 +224,7 @@ const StyleMatrixBlock: React.FC<StyleMatrixBlockProps> = ({
                         {!readOnly && (
                           <button
                             onClick={() => handleFillColumn(size)}
-                            className="text-[10px] text-blue-500 hover:text-blue-700 hover:bg-blue-50 px-1 py-0.5 rounded"
+                            className="text-[10px] text-primary hover:text-blue-700 hover:bg-blue-50 px-1 py-0.5 rounded"
                             title="整列填充"
                           >
                             填充
@@ -299,7 +299,7 @@ const StyleMatrixBlock: React.FC<StyleMatrixBlockProps> = ({
                                   handleCellChange(color, size, 'qty', Number(e.target.value))
                                 }
                                 disabled={readOnly}
-                                className="w-full px-2 py-1 text-center border border-gray-200 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-600"
+                                className="w-full px-2 py-1 text-center border border-gray-200 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-600"
                                 title={`${color} / ${size}${max !== undefined ? ` (最多${max})` : ''}`}
                               />
                             </td>
@@ -314,7 +314,7 @@ const StyleMatrixBlock: React.FC<StyleMatrixBlockProps> = ({
                                     handleCellChange(color, size, 'price', Number(e.target.value))
                                   }
                                   disabled={readOnly}
-                                  className="w-full px-2 py-1 text-center border border-gray-200 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-600"
+                                  className="w-full px-2 py-1 text-center border border-gray-200 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-600"
                                 />
                               </td>
                             )}
@@ -333,7 +333,7 @@ const StyleMatrixBlock: React.FC<StyleMatrixBlockProps> = ({
                         {!readOnly && (
                           <button
                             onClick={() => handleFillRow(color)}
-                            className="text-[10px] text-blue-500 hover:text-blue-700 hover:bg-blue-50 px-2 py-1 rounded"
+                            className="text-[10px] text-primary hover:text-blue-700 hover:bg-blue-50 px-2 py-1 rounded"
                             title="整行填充"
                           >
                             整行填充

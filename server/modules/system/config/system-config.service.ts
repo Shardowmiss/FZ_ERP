@@ -23,6 +23,7 @@ export const DEFAULT_SYSTEM_CONFIG: SystemConfig = {
   pendingApprovalAlert: true,
   maxTabs: 10,
   uniqueCodeArchiveDays: 0,
+  defaultDocQueryDays: 90,
 };
 
 const CONFIG_KEYS: (keyof SystemConfig)[] = [
@@ -42,6 +43,7 @@ const CONFIG_KEYS: (keyof SystemConfig)[] = [
   'pendingApprovalAlert',
   'maxTabs',
   'uniqueCodeArchiveDays',
+  'defaultDocQueryDays',
 ];
 
 function parseValue(key: keyof SystemConfig, raw: string): boolean | number | string {

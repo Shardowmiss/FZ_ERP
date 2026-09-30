@@ -127,7 +127,7 @@ const OperationLogPage: React.FC = () => {
               value={filterUser}
               onChange={(e) => setFilterUser(e.target.value)}
               placeholder="用户名/ID"
-              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500 w-36"
+              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary w-36"
             />
           </div>
           <div className="flex items-center gap-1">
@@ -135,7 +135,7 @@ const OperationLogPage: React.FC = () => {
             <select
               value={filterModule}
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilterModule(e.target.value)}
-              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500"
+              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
             >
               {moduleOptions.map((m) => (
                 <option key={m.value} value={m.value}>{m.label}</option>
@@ -147,7 +147,7 @@ const OperationLogPage: React.FC = () => {
             <select
               value={filterType}
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilterType(e.target.value)}
-              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500"
+              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
             >
               {typeOptions.map((t) => (
                 <option key={t.value} value={t.value}>{t.label}</option>
@@ -160,14 +160,14 @@ const OperationLogPage: React.FC = () => {
               type="date"
               value={filterStartDate}
               onChange={(e) => setFilterStartDate(e.target.value)}
-              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500"
+              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
             />
             <span className="text-gray-400">~</span>
             <input
               type="date"
               value={filterEndDate}
               onChange={(e) => setFilterEndDate(e.target.value)}
-              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500"
+              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
             />
           </div>
           <div className="flex items-center gap-1">
@@ -178,13 +178,13 @@ const OperationLogPage: React.FC = () => {
                 value={keyword}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setKeyword(e.target.value)}
                 placeholder="搜索操作对象/内容"
-                className="border border-gray-300 rounded pl-7 pr-2 py-1 text-sm focus:outline-none focus:border-blue-500 w-48"
+                className="border border-gray-300 rounded pl-7 pr-2 py-1 text-sm focus:outline-none focus:border-primary w-48"
               />
             </div>
           </div>
           <button
             onClick={handleSearch}
-            className="px-3 py-1.5 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center gap-1"
+            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600 flex items-center gap-1"
           >
             <Search size={14} /> 查询
           </button>

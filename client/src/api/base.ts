@@ -1,13 +1,37 @@
 import { request } from './request';
 import type {
   PaginationParams, PaginationResult,
-  Style, Sku, ColorGroup, SizeGroup,
+  Style, Sku, Color, ColorGroup, SizeGroup, Size, SizeGroupSize,
   Material, Customer, Supplier, Warehouse,
   Dealer, Store,
   StyleCreateAutoRequest,
 } from '@shared/api.interface';
 
 export const baseApi = {
+  color: {
+    list: (params: PaginationParams & { keyword?: string }) =>
+      request<PaginationResult<Color>>('/api/base/color', 'GET', null, params),
+    get: (id: string) => request<Color>(`/api/base/color/${id}`),
+    create: (data: Partial<Color>) => request<Color>('/api/base/color', 'POST', data),
+    update: (id: string, data: Partial<Color>) =>
+      request<Color>(`/api/base/color/${id}`, 'PUT', data),
+    remove: (id: string) => request<void>(`/api/base/color/${id}`, 'DELETE'),
+
+    options: () =>
+      request<{ id: string; code: string; name: string; hex: string }[]>('/api/base/color/options/list'),
+  },
+  size: {
+    list: (params: PaginationParams & { keyword?: string }) =>
+      request<PaginationResult<Size>>('/api/base/size', 'GET', null, params),
+    get: (id: string) => request<Size>(`/api/base/size/${id}`),
+    create: (data: Partial<Size>) => request<Size>('/api/base/size', 'POST', data),
+    update: (id: string, data: Partial<Size>) =>
+      request<Size>(`/api/base/size/${id}`, 'PUT', data),
+    remove: (id: string) => request<void>(`/api/base/size/${id}`, 'DELETE'),
+
+    options: () =>
+      request<{ id: string; code: string; name: string }[]>('/api/base/size/options/list'),
+  },
   colorGroup: {
     list: (params: PaginationParams & { keyword?: string }) =>
       request<PaginationResult<ColorGroup>>('/api/base/color-group', 'GET', null, params),
@@ -27,6 +51,15 @@ export const baseApi = {
       request<SizeGroup>(`/api/base/size-group/${id}`, 'PUT', data),
     remove: (id: string) => request<void>(`/api/base/size-group/${id}`, 'DELETE'),
 
+    /** 尺码组与尺码关系：列出某尺码组下的尺码成员 */
+    members: (groupId: string) =>
+      request<SizeGroupSize[]>(`/api/base/size-group/${groupId}/sizes`),
+    /** 向尺码组添加尺码成员 */
+    addMember: (groupId: string, sizeId: string) =>
+      request<SizeGroupSize[]>(`/api/base/size-group/${groupId}/sizes`, 'POST', { sizeId }),
+    /** 从尺码组移除尺码成员 */
+    removeMember: (groupId: string, sizeId: string) =>
+      request<SizeGroupSize[]>(`/api/base/size-group/${groupId}/sizes/${sizeId}`, 'DELETE'),
   },
   style: {
     list: (params: PaginationParams & { keyword?: string; category?: string; status?: string; brand?: string }) =>

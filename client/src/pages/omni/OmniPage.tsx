@@ -8,6 +8,7 @@ import type {
   OmniOrderDetail,
   OmniAllocateResult,
 } from '@shared/api.interface';
+import { errMsg } from '@/utils/errMsg';
 
 interface ItemRow {
   skuCode: string;
@@ -39,13 +40,13 @@ const OmniPage: React.FC = () => {
   const [cForm, setCForm] = useState({ channelId: '', customerName: '', items: [{ skuCode: '', styleNo: '', color: '', size: '', quantity: 1, price: 0 }] as ItemRow[] });
 
   const loadChannels = async () => {
-    try { setChannels(await omniApi.channels()); } catch { toast('加载渠道失败'); }
+    try { setChannels(await omniApi.channels()); } catch (e) { toast('加载渠道失败'); }
   };
   const loadOrders = async () => {
     try {
       const r = await omniApi.orders(page, 20, status || undefined, channelId || undefined);
       setOrders(r.list); setTotal(r.total);
-    } catch { toast('加载订单失败'); }
+    } catch (e) { toast(errMsg(e, '加载订单失败')); }
   };
 
   useEffect(() => { loadChannels(); }, []);
@@ -53,11 +54,11 @@ const OmniPage: React.FC = () => {
 
   const addChannel = async () => {
     if (!newChannelName || !newChannelCode) { toast('请填写渠道名称与编码'); return; }
-    try { await omniApi.createChannel({ name: newChannelName, channelCode: newChannelCode }); toast.success('渠道已添加'); setNewChannelName(''); setNewChannelCode(''); loadChannels(); } catch { toast('添加失败'); }
+    try { await omniApi.createChannel({ name: newChannelName, channelCode: newChannelCode }); toast.success('渠道已添加'); setNewChannelName(''); setNewChannelCode(''); loadChannels(); } catch (e) { toast(errMsg(e, '添加失败')); }
   };
 
   const openDetail = async (id: string) => {
-    try { setDetail(await omniApi.order(id)); setAllocateResult(null); } catch { toast('加载明细失败'); }
+    try { setDetail(await omniApi.order(id)); setAllocateResult(null); } catch (e) { toast(errMsg(e, '加载明细失败')); }
   };
 
   const resolveSku = async (skuCode: string) => {
@@ -85,12 +86,12 @@ const OmniPage: React.FC = () => {
       setShowCreate(false);
       setCForm({ channelId: '', customerName: '', items: [{ skuCode: '', styleNo: '', color: '', size: '', quantity: 1, price: 0 }] });
       loadOrders();
-    } catch { toast('创建失败'); }
+    } catch (e) { toast('创建失败'); }
   };
 
-  const audit = async (id: string) => { try { await omniApi.audit(id); toast.success('已审单'); openDetail(id); loadOrders(); } catch { toast('审单失败'); } };
-  const allocate = async (id: string) => { try { setAllocateResult(await omniApi.allocate(id)); toast.success('已分配'); openDetail(id); } catch { toast('分配失败'); } };
-  const ship = async (id: string) => { try { await omniApi.ship(id); toast.success('已发货'); openDetail(id); loadOrders(); } catch { toast('发货失败'); } };
+  const audit = async (id: string) => { try { await omniApi.audit(id); toast.success('已审单'); openDetail(id); loadOrders(); } catch (e) { toast(errMsg(e, '审单失败')); } };
+  const allocate = async (id: string) => { try { setAllocateResult(await omniApi.allocate(id)); toast.success('已分配'); openDetail(id); } catch (e) { toast(errMsg(e, '分配失败')); } };
+  const ship = async (id: string) => { try { await omniApi.ship(id); toast.success('已发货'); openDetail(id); loadOrders(); } catch (e) { toast(errMsg(e, '发货失败')); } };
 
   const updateItem = (idx: number, patch: Partial<ItemRow>) => {
     setCForm((f) => ({ ...f, items: f.items.map((it, i) => (i === idx ? { ...it, ...patch } : it)) }));
@@ -101,7 +102,7 @@ const OmniPage: React.FC = () => {
       <div className="bg-white rounded-lg shadow-sm p-5">
         <div className="flex items-center justify-between mb-3">
           <h1 className="text-xl font-semibold text-gray-800">全渠道 OMS</h1>
-          <button onClick={() => setShowCreate((v) => !v)} className="px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600">
+          <button onClick={() => setShowCreate((v) => !v)} className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600">
             {showCreate ? '收起' : '新建订单'}
           </button>
         </div>
@@ -127,7 +128,7 @@ const OmniPage: React.FC = () => {
                   )}
                 </div>
               ))}
-              <button onClick={() => setCForm((f) => ({ ...f, items: [...f.items, { skuCode: '', styleNo: '', color: '', size: '', quantity: 1, price: 0 }] }))} className="text-blue-500 text-xs">+ 添加商品</button>
+              <button onClick={() => setCForm((f) => ({ ...f, items: [...f.items, { skuCode: '', styleNo: '', color: '', size: '', quantity: 1, price: 0 }] }))} className="text-primary text-xs">+ 添加商品</button>
             </div>
             <button onClick={createOrder} className="px-4 py-2 bg-emerald-500 text-white rounded text-sm hover:bg-emerald-600">提交订单</button>
           </div>
@@ -174,7 +175,7 @@ const OmniPage: React.FC = () => {
                   <td className="px-3 py-2 text-gray-700">{o.customerName}</td>
                   <td className="px-3 py-2 text-right text-gray-700">¥{o.totalAmount.toFixed(2)}</td>
                   <td className="px-3 py-2 text-center"><span className="px-2 py-0.5 rounded text-xs bg-blue-100 text-blue-600">{STATUS_LABEL[o.status] || o.status}</span></td>
-                  <td className="px-3 py-2 text-center"><button onClick={() => openDetail(o.id)} className="text-blue-500 text-xs">明细</button></td>
+                  <td className="px-3 py-2 text-center"><button onClick={() => openDetail(o.id)} className="text-primary text-xs">明细</button></td>
                 </tr>
               ))
             )}
@@ -188,7 +189,7 @@ const OmniPage: React.FC = () => {
           <div className="flex items-center justify-between mb-3">
             <div className="text-base font-medium text-gray-800">订单明细 {detail.orderNo}</div>
             <div className="space-x-2">
-              {detail.status === 'pending' && <button onClick={() => audit(detail.id)} className="px-3 py-1 bg-blue-500 text-white rounded text-xs">审单</button>}
+              {detail.status === 'pending' && <button onClick={() => audit(detail.id)} className="px-3 py-1 bg-primary text-white rounded text-xs">审单</button>}
               {detail.status === 'approved' && <button onClick={() => allocate(detail.id)} className="px-3 py-1 bg-amber-500 text-white rounded text-xs">分配库存</button>}
               {detail.status === 'approved' && <button onClick={() => ship(detail.id)} className="px-3 py-1 bg-emerald-500 text-white rounded text-xs">发货</button>}
             </div>

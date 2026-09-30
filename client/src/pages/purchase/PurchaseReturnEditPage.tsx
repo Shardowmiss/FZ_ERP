@@ -7,6 +7,7 @@ import DocPage from '@client/src/components/DocPage/DocPage';
 import { PrintDialog } from '@client/src/components/print/PrintDialog';
 import { MaterialDocPrintContent } from '@client/src/components/print/DocPrintContent';
 import type { MaterialListItem } from '@client/src/components/print/MaterialListTable';
+import { errMsg } from '@/utils/errMsg';
 
 interface ReturnFormItem {
   materialId: string;
@@ -129,8 +130,8 @@ const PurchaseReturnEditPage: React.FC = () => {
         setPrintWarehouseName(data.warehouseName || '');
         setPrintTotalAmount(data.totalAmount);
         setPrintRemark(data.remark || '');
-      } catch {
-        toast('加载详情失败');
+      } catch (e) {
+        toast(errMsg(e, '加载详情失败'));
       } finally {
         setLoading(false);
       }
@@ -201,7 +202,7 @@ const PurchaseReturnEditPage: React.FC = () => {
       navigate(BACK_PATH);
     } catch (error) {
       logger.error('创建采购退货失败', error);
-      toast('创建失败');
+      toast(errMsg(error, '创建失败'));
     } finally {
       setSaving(false);
     }
@@ -263,7 +264,7 @@ const PurchaseReturnEditPage: React.FC = () => {
           <select
             value={formInboundId}
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => { void handleInboundChange(e.target.value); }}
-            className="w-full border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:border-blue-500"
+            className="w-full border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:border-primary"
           >
             <option value="">请选择已审核的入库单</option>
             {inboundOptions.map((i: any) => (
@@ -279,7 +280,7 @@ const PurchaseReturnEditPage: React.FC = () => {
             type="date"
             value={formReturnDate}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormReturnDate(e.target.value)}
-            className="w-full border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:border-blue-500"
+            className="w-full border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:border-primary"
           />
         </div>
       </div>
@@ -288,7 +289,7 @@ const PurchaseReturnEditPage: React.FC = () => {
         <textarea
           value={formRemark}
           onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormRemark(e.target.value)}
-          className="w-full border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:border-blue-500"
+          className="w-full border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:border-primary"
           rows={2}
         />
       </div>
@@ -361,7 +362,7 @@ const PurchaseReturnEditPage: React.FC = () => {
                     max={it.quantity}
                     value={it.returnQty || 0}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateReturnQty(idx, Number(e.target.value))}
-                    className="w-24 px-2 py-1 border border-gray-300 rounded text-sm text-right focus:outline-none focus:border-blue-500"
+                    className="w-24 px-2 py-1 border border-gray-300 rounded text-sm text-right focus:outline-none focus:border-primary"
                   />
                 </td>
                 <td className="px-3 py-2 text-right text-gray-500">{it.unitPrice.toFixed(4)}</td>

@@ -4,6 +4,7 @@ import { garmentPurchaseApi, baseApi } from '@client/src/api';
 import type { GarmentPurchaseReturn, GarmentPurchaseInbound, Sku } from '@shared/api.interface';
 import SkuMatrixTable, { type SkuMatrix } from '../trade-show/SkuMatrixTable';
 import { toast } from 'sonner';
+import { errMsg } from '@/utils/errMsg';
 
 interface StyleBlock {
   styleId: string;
@@ -144,8 +145,8 @@ const GarmentPurchaseReturnDialog: React.FC<GarmentPurchaseReturnDialogProps> = 
       }));
       const blocks = await buildStyleBlocksFromSkus(skusWithIds);
       setStyleBlocks(blocks);
-    } catch {
-      toast('加载入库单明细失败');
+    } catch (e) {
+      toast(errMsg(e, '加载入库单明细失败'));
     }
   };
 
@@ -289,7 +290,7 @@ const GarmentPurchaseReturnDialog: React.FC<GarmentPurchaseReturnDialogProps> = 
                       void handleInboundChange(e.target.value);
                     }}
                     disabled={viewOnly}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-500"
                   >
                     <option value="">请选择</option>
                     {approvedInbounds.map((i) => (
@@ -310,7 +311,7 @@ const GarmentPurchaseReturnDialog: React.FC<GarmentPurchaseReturnDialogProps> = 
                       setFormReturnDate(e.target.value)
                     }
                     disabled={viewOnly}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-500"
                   />
                 </div>
                 <div className="col-span-2">
@@ -323,7 +324,7 @@ const GarmentPurchaseReturnDialog: React.FC<GarmentPurchaseReturnDialogProps> = 
                     }
                     disabled={viewOnly}
                     placeholder="请输入备注"
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-500"
                   />
                 </div>
               </div>
@@ -399,7 +400,7 @@ const GarmentPurchaseReturnDialog: React.FC<GarmentPurchaseReturnDialogProps> = 
             <button
               onClick={handleSave}
               disabled={saving}
-              className="px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50"
+              className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50"
             >保存</button>
           )}
         </div>

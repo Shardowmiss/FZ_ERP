@@ -12,6 +12,7 @@ import { SkuDocPrintContent, MaterialDocPrintContent } from '@client/src/compone
 import type { SkuMatrixItem } from '@client/src/components/print/SkuMatrixTable';
 import type { MaterialListItem } from '@client/src/components/print/MaterialListTable';
 import DocPage from '@/components/DocPage/DocPage';
+import { errMsg } from '@/utils/errMsg';
 
 interface StocktakeItemForm {
   skuId?: string;
@@ -168,7 +169,7 @@ export default function InventoryStocktakeEditPage() {
       })));
     } catch (e) {
       logger.error('加载详情失败', e);
-      toast('加载失败');
+      toast(errMsg(e, '加载失败'));
     } finally { setLoading(false); }
   };
 
@@ -266,7 +267,7 @@ export default function InventoryStocktakeEditPage() {
       navigate(backPath);
     } catch (e) {
       logger.error('创建失败', e);
-      toast('创建失败');
+      toast(errMsg(e, '创建失败'));
     } finally {
       setSubmitting(false);
     }
@@ -360,7 +361,7 @@ export default function InventoryStocktakeEditPage() {
       <div className="mb-2 flex items-center justify-between">
         <span className="text-sm font-medium">明细</span>
         {!viewOnly && (
-          <button onClick={addItem} className="text-blue-500 text-sm hover:underline">+ 添加行</button>
+          <button onClick={addItem} className="text-primary text-sm hover:underline">+ 添加行</button>
         )}
       </div>
       <div className="border border-gray-200 rounded overflow-hidden">

@@ -170,7 +170,7 @@ const ReplenishTemplatePage: React.FC = () => {
               <h2 className="text-sm font-medium text-gray-700">模板列表</h2>
               <button
                 onClick={startCreate}
-                className="px-3 py-1.5 bg-blue-500 text-white rounded text-xs hover:bg-blue-600"
+                className="px-3 py-1.5 bg-primary text-white rounded text-xs hover:bg-blue-600"
               >
                 + 新建模板
               </button>
@@ -230,7 +230,7 @@ const ReplenishTemplatePage: React.FC = () => {
                 <select
                   value={form.scopeType || 'all'}
                   onChange={(e) => set('scopeType', e.target.value as any)}
-                  className="px-3 py-2 border border-gray-300 rounded text-sm w-full focus:outline-none focus:border-blue-500"
+                  className="px-3 py-2 border border-gray-300 rounded text-sm w-full focus:outline-none focus:border-primary"
                 >
                   <option value="all">全部门店</option>
                   <option value="store_type">按门店类型</option>
@@ -243,7 +243,7 @@ const ReplenishTemplatePage: React.FC = () => {
                   <select
                     value={scopeStoreType}
                     onChange={(e) => setScopeStoreType(e.target.value as any)}
-                    className="px-3 py-2 border border-gray-300 rounded text-sm w-full focus:outline-none focus:border-blue-500"
+                    className="px-3 py-2 border border-gray-300 rounded text-sm w-full focus:outline-none focus:border-primary"
                   >
                     <option value="franchise">经销商（生成销售单）</option>
                     <option value="direct">直营店（生成调拨单）</option>
@@ -257,7 +257,7 @@ const ReplenishTemplatePage: React.FC = () => {
                     multiple
                     value={storeIds}
                     onChange={(e) => setStoreIds(Array.from(e.target.selectedOptions).map((o) => o.value))}
-                    className="px-3 py-2 border border-gray-300 rounded text-sm w-full h-28 focus:outline-none focus:border-blue-500"
+                    className="px-3 py-2 border border-gray-300 rounded text-sm w-full h-28 focus:outline-none focus:border-primary"
                   >
                     {stores.map((s) => (
                       <option key={s.id} value={s.id}>{s.name}（{s.storeType === 'franchise' ? '经销商' : '直营店'}）</option>
@@ -275,7 +275,7 @@ const ReplenishTemplatePage: React.FC = () => {
                 <select
                   value={form.sourceWarehouseRule || 'fixed'}
                   onChange={(e) => set('sourceWarehouseRule', e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded text-sm w-full focus:outline-none focus:border-blue-500"
+                  className="px-3 py-2 border border-gray-300 rounded text-sm w-full focus:outline-none focus:border-primary"
                 >
                   <option value="fixed">固定主仓</option>
                 </select>
@@ -287,7 +287,7 @@ const ReplenishTemplatePage: React.FC = () => {
                   value={skuIds}
                   onChange={(e) => setSkuIds(e.target.value)}
                   placeholder="留空表示全部 SKU"
-                  className="px-3 py-2 border border-gray-300 rounded text-sm w-full focus:outline-none focus:border-blue-500"
+                  className="px-3 py-2 border border-gray-300 rounded text-sm w-full focus:outline-none focus:border-primary"
                 />
               </div>
               <div className="col-span-2 flex items-center gap-2">
@@ -303,7 +303,7 @@ const ReplenishTemplatePage: React.FC = () => {
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50"
+                className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50"
               >
                 {saving ? '保存中...' : '保存模板'}
               </button>
@@ -333,7 +333,7 @@ const TextField: React.FC<{ label: string; value: string; onChange: (v: string) 
       value={value}
       placeholder={placeholder}
       onChange={(e) => onChange(e.target.value)}
-      className="px-3 py-2 border border-gray-300 rounded text-sm w-full focus:outline-none focus:border-blue-500"
+      className="px-3 py-2 border border-gray-300 rounded text-sm w-full focus:outline-none focus:border-primary"
     />
   </div>
 );
@@ -350,7 +350,7 @@ const NumberField: React.FC<{ label: string; value: number; onChange: (v: number
       min={0}
       value={value}
       onChange={(e) => onChange(Number(e.target.value) || 0)}
-      className="px-3 py-2 border border-gray-300 rounded text-sm w-full focus:outline-none focus:border-blue-500"
+      className="px-3 py-2 border border-gray-300 rounded text-sm w-full focus:outline-none focus:border-primary"
     />
   </div>
 );

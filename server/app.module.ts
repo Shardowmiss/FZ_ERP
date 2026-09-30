@@ -10,6 +10,7 @@ import { DataScopeInterceptor } from './common/interceptors/data-scope.intercept
 import { GlobalExceptionFilter } from './common/filters/exception.filter';
 import { AuthGuard } from './common/guards/auth.guard';
 import { PermissionGuard } from './common/guards/permission.guard';
+import { ErpCsrfGuard } from './common/guards/erp-csrf.guard';
 import { RbacService } from './modules/rbac/rbac.service';
 import { ViewModule } from './modules/view/view.module';
 import { BaseModule } from './modules/base/base.module';
@@ -98,6 +99,12 @@ import { ConsistencyModule } from './modules/consistency/consistency.module';
     {
       provide: APP_GUARD,
       useClass: PermissionGuard,
+    },
+    // 应用层自签 CSRF 守卫（D.1）：对状态变更 + 非公开 + 非机器端点强制校验
+    // erp-csrf 令牌（cookie===header 且 HMAC 有效）。跳过只读方法 / @Public() / /api/pos-receiver。
+    {
+      provide: APP_GUARD,
+      useClass: ErpCsrfGuard,
     },
     // 审计：全局拦截器覆盖所有写操作，自动记录操作日志（异步落库、不阻断业务）
     {

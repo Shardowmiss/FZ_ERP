@@ -26,6 +26,7 @@ const DEFAULT_CONFIG: SystemConfig = {
   pendingApprovalAlert: true,
   maxTabs: 10,
   uniqueCodeArchiveDays: 0,
+  defaultDocQueryDays: 90,
 };
 
 interface ConfigContextType {

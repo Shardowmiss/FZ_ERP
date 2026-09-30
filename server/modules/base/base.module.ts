@@ -10,8 +10,10 @@ import { SkuController } from './sku/sku.controller';
 import { SkuService } from './sku/sku.service';
 import { MaterialController } from './material/material.controller';
 import { MaterialService } from './material/material.service';
-import { CustomerController } from './customer/customer.controller';
-import { CustomerService } from './customer/customer.service';
+import { ColorController } from './color/color.controller';
+import { ColorService } from './color/color.service';
+import { SizeController } from './size/size.controller';
+import { SizeService } from './size/size.service';
 import { SupplierController } from './supplier/supplier.controller';
 import { SupplierService } from './supplier/supplier.service';
 import { WarehouseController } from './warehouse/warehouse.controller';
@@ -35,7 +37,8 @@ import { SystemModule } from '../system/system.module';
     StyleController,
     SkuController,
     MaterialController,
-    CustomerController,
+    ColorController,
+    SizeController,
     SupplierController,
     WarehouseController,
     StyleAttributeController,
@@ -49,7 +52,8 @@ import { SystemModule } from '../system/system.module';
     StyleService,
     SkuService,
     MaterialService,
-    CustomerService,
+    ColorService,
+    SizeService,
     SupplierService,
     WarehouseService,
     StyleAttributeService,
@@ -63,7 +67,8 @@ import { SystemModule } from '../system/system.module';
     StyleService,
     SkuService,
     MaterialService,
-    CustomerService,
+    ColorService,
+    SizeService,
     SupplierService,
     WarehouseService,
     StyleAttributeService,

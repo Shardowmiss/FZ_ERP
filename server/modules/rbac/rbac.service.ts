@@ -186,6 +186,7 @@ export class RbacService {
       department: row.department ?? undefined,
       status: row.status,
       remark: row.remark ?? undefined,
+      language: row.language ?? 'zh-CN',
       createdAt: row.createdAt.toISOString(),
     };
   }
@@ -261,6 +262,29 @@ export class RbacService {
     return { user, menus, permissions };
   }
 
+  /**
+   * 更新「当前登录用户」的个人语种偏好（user.language）。
+   * 由 /api/auth/me/language 调用：用户身份由 token 确定，无需特殊权限，
+   * 任何已登录个人均可修改自己的语种（满足「个人用户在系统设置中单独配置语种」）。
+   */
+  async updateCurrentUserLanguage(
+    token: string,
+    language: string,
+  ): Promise<CurrentUserResponse> {
+    const userId = await this.getTokenUserId(token);
+    if (!userId) {
+      throw new UnauthorizedException('登录已过期，请重新登录');
+    }
+    if (language !== 'zh-CN' && language !== 'en') {
+      throw new BadRequestException('不支持的语种');
+    }
+    await this.db
+      .update(rbacUser)
+      .set({ language, updatedAt: new Date() })
+      .where(eq(rbacUser.id, userId));
+    return this.getCurrentUser(token);
+  }
+
   async logout(token: string): Promise<void> {
     await this.removeToken(token);
   }
@@ -289,6 +313,8 @@ export class RbacService {
     { code: 'base:sku', name: '基础-SKU' },
     { code: 'base:material', name: '基础-物料' },
     { code: 'base:customer', name: '基础-客户' },
+    { code: 'base:color', name: '基础-颜色' },
+    { code: 'base:size', name: '基础-尺码' },
     { code: 'base:supplier', name: '基础-供应商' },
     { code: 'base:warehouse', name: '基础-仓库' },
     { code: 'base:dealer', name: '基础-经销商' },
@@ -644,6 +670,7 @@ export class RbacService {
       department?: string;
       status?: string;
       remark?: string;
+      language?: string;
     },
   ): Promise<RbacUser> {
     const patch: Partial<RbacUserInsert> = {};
@@ -688,6 +715,12 @@ export class RbacService {
     }
     if (data.remark !== undefined) {
       patch.remark = data.remark ?? null;
+    }
+    if (data.language !== undefined) {
+      if (data.language !== 'zh-CN' && data.language !== 'en') {
+        throw new BadRequestException('不支持的语种');
+      }
+      patch.language = data.language;
     }
 
     if (Object.keys(patch).length === 0)

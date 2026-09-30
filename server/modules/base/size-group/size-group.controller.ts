@@ -43,4 +43,23 @@ export class SizeGroupController {
     await this.sizeGroupService.remove(id);
     return { success: true };
   }
+
+  // ===== 尺码组与尺码关系 =====
+
+  @Get(':id/sizes')
+  async members(@Param('id') id: string) {
+    return this.sizeGroupService.listMembers(id);
+  }
+
+  @CheckPermission('base:size')
+  @Post(':id/sizes')
+  async addMember(@Param('id') id: string, @Body() body: { sizeId: string }) {
+    return this.sizeGroupService.addMember(id, body.sizeId);
+  }
+
+  @CheckPermission('base:size')
+  @Delete(':id/sizes/:sizeId')
+  async removeMember(@Param('id') id: string, @Param('sizeId') sizeId: string) {
+    return this.sizeGroupService.removeMember(id, sizeId);
+  }
 }

@@ -1,6 +1,6 @@
 import { Injectable, Inject, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { DRIZZLE_DATABASE, type PostgresJsDatabase } from '@lark-apaas/fullstack-nestjs-core';
-import { sku, style } from '@server/database/schema';
+import { sku, style, color, size } from '@server/database/schema';
 import { eq, and, count, desc, or, ilike, inArray } from 'drizzle-orm';
 import type { Sku } from '@shared/api.interface';
 import { escapeLike } from '@server/common/utils/escape-like';
@@ -30,6 +30,8 @@ function skuRowToDto(row: typeof sku.$inferSelect): Sku {
     styleNo: row.styleNo,
     color: row.color,
     size: row.size,
+    colorId: row.colorId ?? undefined,
+    sizeId: row.sizeId ?? undefined,
     barcode: row.barcode ?? undefined,
     costPrice: Number(row.costPrice ?? 0),
     tagPrice: Number(row.tagPrice ?? 0),
@@ -184,6 +186,21 @@ export class SkuService {
       resolveIdx.push({ i, styleId: sid });
     }
 
+    // 3.5) color/size 名称 → 主数据 id 解析（B.1 / P1-3 M4）
+    //   匹配不上则留 NULL，过渡期由 varchar 镜像(color/size)兜底；P1-4 再收紧 NOT NULL + 强制主数据。
+    const colorNames = [...new Set(resolveIdx.map((x) => items[x.i].color))];
+    const sizeNames = [...new Set(resolveIdx.map((x) => items[x.i].size))];
+    const colorRows = await this.db
+      .select({ id: color.id, name: color.name })
+      .from(color)
+      .where(inArray(color.name, colorNames));
+    const sizeRows = await this.db
+      .select({ id: size.id, name: size.name })
+      .from(size)
+      .where(inArray(size.name, sizeNames));
+    const colorMap = new Map(colorRows.map((c) => [c.name, c.id]));
+    const sizeMap = new Map(sizeRows.map((s) => [s.name, s.id]));
+
     // 4) 已存在 skuCode 跳过
     let skipped = 0;
     let toInsert = resolveIdx;
@@ -209,6 +226,7 @@ export class SkuService {
     // 5) 复合唯一 (styleId, color, size) 预检：批内重复 + 已存在（避免事务内冲突毒化事务）
     type Cand = {
       i: number; styleId: string; skuCode: string; styleNo: string; color: string; size: string;
+      colorId?: string | null; sizeId?: string | null;
       barcode?: string | null; costPrice?: number; tagPrice?: number; supplyPrice?: number;
       safetyStockMin?: number; safetyStockMax?: number; status?: string;
     };
@@ -224,7 +242,10 @@ export class SkuService {
       compSeen.set(compKey, x.i);
       cand.push({
         i: x.i, styleId: x.styleId, skuCode: it.skuCode, styleNo: it.styleNo,
-        color: it.color, size: it.size, barcode: it.barcode ?? null,
+        color: it.color, size: it.size,
+        colorId: colorMap.get(it.color) ?? null,
+        sizeId: sizeMap.get(it.size) ?? null,
+        barcode: it.barcode ?? null,
         costPrice: it.costPrice, tagPrice: it.tagPrice, supplyPrice: it.supplyPrice,
         safetyStockMin: it.safetyStockMin, safetyStockMax: it.safetyStockMax, status: it.status,
       });
@@ -264,6 +285,8 @@ export class SkuService {
               styleNo: c.styleNo,
               color: c.color,
               size: c.size,
+              colorId: c.colorId ?? null,
+              sizeId: c.sizeId ?? null,
               barcode: c.barcode,
               costPrice: String(c.costPrice ?? 0),
               tagPrice: String(c.tagPrice ?? 0),

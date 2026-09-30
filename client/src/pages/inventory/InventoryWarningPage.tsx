@@ -177,12 +177,12 @@ const InventoryWarningPage: React.FC = () => {
           placeholder="搜索款号/SKU"
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded text-sm w-52 focus:outline-none focus:border-blue-500"
+          className="px-3 py-2 border border-gray-300 rounded text-sm w-52 focus:outline-none focus:border-primary"
         />
         <select
           value={warehouseFilter}
           onChange={(e) => { setWarehouseFilter(e.target.value); setPage(1); }}
-          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
         >
           <option value="">全部仓库</option>
           {warehouseOptions.map((w) => (
@@ -192,7 +192,7 @@ const InventoryWarningPage: React.FC = () => {
         <select
           value={warningType}
           onChange={(e) => { setWarningType(e.target.value); setPage(1); }}
-          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
         >
           <option value="">全部预警</option>
           <option value="below_min">低于下限</option>
@@ -200,7 +200,7 @@ const InventoryWarningPage: React.FC = () => {
         </select>
         <button
           onClick={handleSearch}
-          className="px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
+          className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600"
         >
           查询
         </button>

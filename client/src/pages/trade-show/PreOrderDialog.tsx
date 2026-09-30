@@ -4,6 +4,7 @@ import type { PreOrder, PreOrderItem, Sku } from '@shared/api.interface';
 import { toast } from 'sonner';
 import { Printer } from 'lucide-react';
 import SkuMatrixTable, { type SkuMatrix } from './SkuMatrixTable';
+import { errMsg } from '@/utils/errMsg';
 
 interface PreOrderDialogProps {
   open: boolean;
@@ -88,8 +89,8 @@ const PreOrderDialog: React.FC<PreOrderDialogProps> = ({
         const res = await baseApi.store.options();
         setStoreOptions(res);
       }
-    } catch {
-      toast('加载提交方选项失败');
+    } catch (e) {
+      toast(errMsg(e, '加载提交方选项失败'));
     }
   };
 
@@ -108,8 +109,8 @@ const PreOrderDialog: React.FC<PreOrderDialogProps> = ({
         m[sku.color][sku.size] = existing?.qty || 0;
       }
       setMatrix(m);
-    } catch {
-      toast('加载SKU失败');
+    } catch (e) {
+      toast(errMsg(e, '加载SKU失败'));
     } finally {
       setLoadingSkus(false);
     }
@@ -132,8 +133,8 @@ const PreOrderDialog: React.FC<PreOrderDialogProps> = ({
         m[sku.color][sku.size] = 0;
       }
       setMatrix(m);
-    } catch {
-      toast('加载SKU失败');
+    } catch (e) {
+      toast(errMsg(e, '加载SKU失败'));
     } finally {
       setLoadingSkus(false);
     }
@@ -224,7 +225,7 @@ const PreOrderDialog: React.FC<PreOrderDialogProps> = ({
             </h3>
             {viewMode && onPrint && (
               <button
-                className="text-blue-500 hover:text-blue-600 text-sm flex items-center gap-1"
+                className="text-primary hover:text-blue-600 text-sm flex items-center gap-1"
                 onClick={onPrint}
               >
                 <Printer size={14} />
@@ -249,7 +250,7 @@ const PreOrderDialog: React.FC<PreOrderDialogProps> = ({
                 value={formTradeShowId}
                 onChange={(e) => setFormTradeShowId(e.target.value)}
                 disabled={viewMode}
-                className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-500"
               >
                 <option value="">请选择</option>
                 {tradeShowOptions.map((t) => (
@@ -294,7 +295,7 @@ const PreOrderDialog: React.FC<PreOrderDialogProps> = ({
                 value={formSubmitterId}
                 onChange={(e) => setFormSubmitterId(e.target.value)}
                 disabled={viewMode}
-                className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-500"
               >
                 <option value="">请选择</option>
                 {submitterOptions.map((d) => (
@@ -312,7 +313,7 @@ const PreOrderDialog: React.FC<PreOrderDialogProps> = ({
                 value={formStyleId}
                 onChange={(e) => handleStyleChange(e.target.value)}
                 disabled={viewMode}
-                className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-500"
               >
                 <option value="">请选择</option>
                 {styleOptions.map((s) => (
@@ -352,7 +353,7 @@ const PreOrderDialog: React.FC<PreOrderDialogProps> = ({
               onChange={(e) => setFormRemark(e.target.value)}
               rows={2}
               disabled={viewMode}
-              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 resize-none disabled:bg-gray-50 disabled:text-gray-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary resize-none disabled:bg-gray-50 disabled:text-gray-500"
             />
           </div>
         </div>
@@ -365,7 +366,7 @@ const PreOrderDialog: React.FC<PreOrderDialogProps> = ({
           </button>
           {!viewMode && (
             <button
-              className="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors disabled:opacity-50"
+              className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors disabled:opacity-50"
               onClick={handleSave}
               disabled={saving}
             >

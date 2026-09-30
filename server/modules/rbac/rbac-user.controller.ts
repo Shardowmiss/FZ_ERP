@@ -76,6 +76,7 @@ export class RbacUserController {
       department?: string;
       status?: string;
       remark?: string;
+      language?: string;
     },
   ): Promise<RbacUser> {
     return this.rbacService.updateUser(id, body);

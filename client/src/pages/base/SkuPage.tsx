@@ -19,6 +19,8 @@ const SkuPage: React.FC = () => {
   const [sizeFilter, setSizeFilter] = useState('');
   const [searchSize, setSearchSize] = useState('');
   const [styleOptions, setStyleOptions] = useState<{ id: string; styleNo: string; name: string }[]>([]);
+  const [colorOptions, setColorOptions] = useState<{ id: string; code: string; name: string }[]>([]);
+  const [sizeOptions, setSizeOptions] = useState<{ id: string; code: string; name: string }[]>([]);
   const [styleFilter, setStyleFilter] = useState('');
   const [searchStyleId, setSearchStyleId] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -39,7 +41,7 @@ const SkuPage: React.FC = () => {
       setList(res.items);
       setTotal(res.total);
     } catch (e) {
-      toast('加载失败');
+      toast(errMsg(e, '加载失败'));
     } finally {
       setLoading(false);
     }
@@ -54,12 +56,32 @@ const SkuPage: React.FC = () => {
     }
   };
 
+  // M7（B.1 颜色尺码双轨统一）：颜色/尺码筛选改用主数据下拉，避免自由串输入
+  const fetchColorOptions = async () => {
+    try {
+      const res = await baseApi.color.options();
+      setColorOptions(res);
+    } catch (e) {
+      // non-critical
+    }
+  };
+  const fetchSizeOptions = async () => {
+    try {
+      const res = await baseApi.size.options();
+      setSizeOptions(res);
+    } catch (e) {
+      // non-critical
+    }
+  };
+
   useEffect(() => {
     fetchData();
   }, [page, pageSize, searchKeyword, searchStyleId, searchColor, searchSize]);
 
   useEffect(() => {
     fetchStyleOptions();
+    fetchColorOptions();
+    fetchSizeOptions();
   }, []);
 
   const handleSearch = () => {
@@ -137,34 +159,40 @@ const SkuPage: React.FC = () => {
           placeholder="搜索SKU编码"
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded text-sm w-60 focus:outline-none focus:border-blue-500"
+          className="px-3 py-2 border border-gray-300 rounded text-sm w-60 focus:outline-none focus:border-primary"
         />
         <select
           value={styleFilter}
           onChange={(e) => setStyleFilter(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 min-w-[160px]"
+          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary min-w-[160px]"
         >
           <option value="">全部款号</option>
           {styleOptions.map((s) => (
             <option key={s.id} value={s.id}>{s.styleNo} - {s.name}</option>
           ))}
         </select>
-        <input
-          type="text"
-          placeholder="颜色"
+        <select
           value={colorFilter}
           onChange={(e) => setColorFilter(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded text-sm w-28 focus:outline-none focus:border-blue-500"
-        />
-        <input
-          type="text"
-          placeholder="尺码"
+          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary min-w-[120px]"
+        >
+          <option value="">全部颜色</option>
+          {colorOptions.map((c) => (
+            <option key={c.id} value={c.name}>{c.name}</option>
+          ))}
+        </select>
+        <select
           value={sizeFilter}
           onChange={(e) => setSizeFilter(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded text-sm w-24 focus:outline-none focus:border-blue-500"
-        />
+          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary min-w-[100px]"
+        >
+          <option value="">全部尺码</option>
+          {sizeOptions.map((s) => (
+            <option key={s.id} value={s.name}>{s.name}</option>
+          ))}
+        </select>
         <button
-          className="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
+          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
           onClick={handleSearch}
         >
           查询
@@ -215,7 +243,7 @@ const SkuPage: React.FC = () => {
                   <td className="px-4 py-3">{item.safetyStockMax?.toFixed(3)}</td>
                   <td className="px-4 py-3">{renderStatus(item.status)}</td>
                   <td className="px-4 py-3">
-                    <button className="text-blue-500 hover:text-blue-700" onClick={() => openEdit(item)}>编辑</button>
+                    <button className="text-primary hover:text-blue-700" onClick={() => openEdit(item)}>编辑</button>
                   </td>
                 </tr>
               ))
@@ -256,7 +284,7 @@ const SkuPage: React.FC = () => {
                      type="text"
                      value={form.barcode || ''}
                      onChange={(e) => setForm({ ...form, barcode: e.target.value })}
-                     className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                     className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                    />
                  </div>
                  <div>
@@ -284,7 +312,7 @@ const SkuPage: React.FC = () => {
                     step="0.01"
                     value={form.costPrice ?? ''}
                     onChange={(e) => setForm({ ...form, costPrice: Number(e.target.value) })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   />
                 </div>
                 <div>
@@ -294,7 +322,7 @@ const SkuPage: React.FC = () => {
                     step="0.01"
                     value={form.tagPrice ?? ''}
                     onChange={(e) => setForm({ ...form, tagPrice: Number(e.target.value) })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   />
                 </div>
                 <div>
@@ -304,7 +332,7 @@ const SkuPage: React.FC = () => {
                     step="0.01"
                     value={form.supplyPrice ?? ''}
                     onChange={(e) => setForm({ ...form, supplyPrice: Number(e.target.value) })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   />
                 </div>
                 <div>
@@ -314,7 +342,7 @@ const SkuPage: React.FC = () => {
                     step="0.001"
                     value={form.safetyStockMin ?? ''}
                     onChange={(e) => setForm({ ...form, safetyStockMin: Number(e.target.value) })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   />
                 </div>
                 <div>
@@ -324,7 +352,7 @@ const SkuPage: React.FC = () => {
                     step="0.001"
                     value={form.safetyStockMax ?? ''}
                     onChange={(e) => setForm({ ...form, safetyStockMax: Number(e.target.value) })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   />
                 </div>
                 <div className="col-span-2">
@@ -332,7 +360,7 @@ const SkuPage: React.FC = () => {
                   <select
                     value={form.status || 'active'}
                     onChange={(e) => setForm({ ...form, status: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   >
                     <option value="active">启用</option>
                     <option value="inactive">停用</option>
@@ -348,7 +376,7 @@ const SkuPage: React.FC = () => {
                 取消
               </button>
               <button
-                className="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleSave}
                 disabled={submitting}
               >

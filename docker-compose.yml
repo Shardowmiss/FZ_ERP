@@ -1,0 +1,55 @@
+# F.2 本地一键起环境（docker-compose 版）
+#
+# ⚠️ 关于数据库的重要说明（务必先读）：
+#   本仓库的 migrations/*.sql 不能从零建库（0001 即引用未建出的类型），
+#   权威库结构只存在于本地 homebrew 集群的数据目录 erp_source/.pgdata。
+#   因此【不要】用 docker 起一个空的 postgres 指望它能建表——
+#   那样跑出来的实例没有一张表，应用会全部 500。
+#
+#   正确姿势（两步）：
+#   1) 先在本机起本地库（管理 .pgdata，幂等、安全）：
+#        npm run dev:up
+#       （等价于 bash scripts/dev-up.sh，确保 5434 上的 erp_db 就绪）
+#   2) 再用本 compose 把“应用”跑在容器里，连到本机已起的库：
+#        docker compose up app
+#
+#   app 容器通过 host.docker.internal 访问本机 5434 的 erp_db；
+#   数据库本身仍在你本机的 .pgdata，没有被容器接管，结构零风险。
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # 生产构建产物由 Dockerfile 内的 `npm run build:prod` 生成
+    ports:
+      - "3000:3000"
+    environment:
+      # 连到本机已起的 postgres（host.docker.internal 是 docker 提供的主机别名）
+      SUDA_DATABASE_URL: "postgres://erp:erp@host.docker.internal:5434/erp_db"
+      DATABASE_URL: "postgres://erp:erp@host.docker.internal:5434/erp_db"
+      CLIENT_BASE_PATH: "/client"
+      NODE_ENV: "production"
+    # 若本机库还没起，app 会连不上；先 `npm run dev:up` 即可。
+    restart: unless-stopped
+
+  # ---- 可选的“纯 docker 数据库”模板（默认禁用）---------------------------
+  # 警告：下面的 db 起的是【空库】，本仓库无法从 migrations 建表。
+  # 仅当你已有一份 erp_db 的结构+数据 dump 并愿意在 initdb 后手动恢复时才启用。
+  # 否则请保持禁用，使用上面的“本机 .pgdata + npm run dev:up”方案。
+  #
+  # db:
+  #   image: postgres:16
+  #   environment:
+  #     POSTGRES_USER: erp
+  #     POSTGRES_PASSWORD: erp
+  #     POSTGRES_DB: erp_db
+  #   ports:
+  #     - "5434:5432"
+  #   volumes:
+  #     - erp_pgdata:/var/lib/postgresql/data
+  #   # 如需恢复 dump，把 .sql 放到 ./docker-db-init/ 并在此处挂载：
+  #   # - ./docker-db-init:/docker-entrypoint-initdb.d
+  #
+  # volumes:
+  #   erp_pgdata:

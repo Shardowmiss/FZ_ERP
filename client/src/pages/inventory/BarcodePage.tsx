@@ -56,7 +56,7 @@ const BarcodePage: React.FC = () => {
       setTotal(res.data.total || 0);
     } catch (error) {
       logger.error('加载批次库存失败', error);
-      toast('加载失败');
+      toast(errMsg(error, '加载失败'));
     }
     setLoading(false);
   };
@@ -90,7 +90,7 @@ const BarcodePage: React.FC = () => {
           <button
             onClick={handleGenerate}
             disabled={generating}
-            className="px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50"
+            className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50"
           >
             {generating ? '生成中...' : '为缺失条码的SKU生成条码'}
           </button>
@@ -102,12 +102,12 @@ const BarcodePage: React.FC = () => {
             placeholder="SKU编码"
             value={skuCode}
             onChange={(e) => setSkuCode(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded text-sm w-44 focus:outline-none focus:border-blue-500"
+            className="px-3 py-2 border border-gray-300 rounded text-sm w-44 focus:outline-none focus:border-primary"
           />
           <select
             value={warehouseId}
             onChange={(e) => { setWarehouseId(e.target.value); setPage(1); }}
-            className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+            className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
           >
             <option value="">全部仓库</option>
             {warehouseOptions.map((w) => (
@@ -119,11 +119,11 @@ const BarcodePage: React.FC = () => {
             placeholder="批次号"
             value={batchNo}
             onChange={(e) => setBatchNo(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded text-sm w-44 focus:outline-none focus:border-blue-500"
+            className="px-3 py-2 border border-gray-300 rounded text-sm w-44 focus:outline-none focus:border-primary"
           />
           <button
             onClick={handleSearch}
-            className="px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
+            className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600"
           >
             查询
           </button>

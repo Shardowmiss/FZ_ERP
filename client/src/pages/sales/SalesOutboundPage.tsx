@@ -60,7 +60,7 @@ export default function SalesOutboundPage() {
        setTotal(res.total);
      } catch (e) {
        logger.error('加载出库单失败', e);
-       toast('加载失败');
+       toast(errMsg(e, '加载失败'));
      } finally {
        setLoading(false);
      }
@@ -136,7 +136,7 @@ export default function SalesOutboundPage() {
       setPrintOpen(true);
     } catch (e) {
       logger.error('加载打印数据失败', e);
-      toast('加载打印数据失败');
+      toast(errMsg(e, '加载打印数据失败'));
     }
   };
 
@@ -160,7 +160,7 @@ export default function SalesOutboundPage() {
       fetchList();
     } catch (e) {
       logger.error('记账失败', e);
-      toast('记账失败');
+      toast(errMsg(e, '记账失败'));
     }
   };
 
@@ -172,7 +172,7 @@ export default function SalesOutboundPage() {
       fetchList();
     } catch (e) {
       logger.error('取消审核失败', e);
-      toast('取消审核失败');
+      toast(errMsg(e, '取消审核失败'));
     }
   };
 
@@ -184,7 +184,7 @@ export default function SalesOutboundPage() {
       fetchList();
     } catch (e) {
       logger.error('验收失败', e);
-      toast('验收失败');
+      toast(errMsg(e, '验收失败'));
     }
   };
 
@@ -215,7 +215,7 @@ export default function SalesOutboundPage() {
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-xl font-semibold">销售出库</h1>
         {hasPermission('sales:outbound:create') && (
-          <button onClick={openCreate} className="bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600 flex items-center gap-1">
+          <button onClick={openCreate} className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-blue-600 flex items-center gap-1">
             <Plus size={16} /> 新增销售出库
           </button>
         )}
@@ -250,7 +250,7 @@ export default function SalesOutboundPage() {
             className="border border-gray-300 rounded px-3 py-1.5 text-sm w-48" />
         </div>
         <button onClick={handleSearch}
-          className="bg-blue-500 text-white px-4 py-1.5 rounded text-sm hover:bg-blue-600">查询</button>
+          className="bg-primary text-white px-4 py-1.5 rounded text-sm hover:bg-blue-600">查询</button>
         <button onClick={handleExport}
           className="px-4 py-1.5 border border-gray-300 rounded text-sm hover:bg-gray-50">导出</button>
        </div>
@@ -297,7 +297,7 @@ export default function SalesOutboundPage() {
                             <button onClick={() => handleDelete(item.id)} className="text-red-500 hover:underline">删除</button>
                           )}
                           {hasPermission('sales:outbound:print') && (
-                            <button onClick={() => handlePrintFromList(item.id)} className="text-blue-500 hover:underline inline-flex items-center" title="打印">
+                            <button onClick={() => handlePrintFromList(item.id)} className="text-primary hover:underline inline-flex items-center" title="打印">
                               <Printer size={14} />
                             </button>
                           )}
@@ -306,15 +306,15 @@ export default function SalesOutboundPage() {
                       )}
                       {item.status === 'audited' && (
                         <>
-                          <button onClick={() => openView(item.id)} className="text-blue-500 hover:underline">查看</button>
+                          <button onClick={() => openView(item.id)} className="text-primary hover:underline">查看</button>
                           {hasPermission('sales:outbound:approve') && (
-                            <button onClick={() => handleBook(item.id)} className="text-blue-500 hover:underline">记账</button>
+                            <button onClick={() => handleBook(item.id)} className="text-primary hover:underline">记账</button>
                           )}
                           {hasPermission('sales:outbound:approve') && (
                             <button onClick={() => handleCancelAudit(item.id)} className="text-orange-500 hover:underline">取消审核</button>
                           )}
                           {hasPermission('sales:outbound:print') && (
-                            <button onClick={() => handlePrintFromList(item.id)} className="text-blue-500 hover:underline inline-flex items-center" title="打印">
+                            <button onClick={() => handlePrintFromList(item.id)} className="text-primary hover:underline inline-flex items-center" title="打印">
                               <Printer size={14} />
                             </button>
                           )}
@@ -322,12 +322,12 @@ export default function SalesOutboundPage() {
                       )}
                       {item.status === 'booked' && (
                         <>
-                          <button onClick={() => openView(item.id)} className="text-blue-500 hover:underline">查看</button>
+                          <button onClick={() => openView(item.id)} className="text-primary hover:underline">查看</button>
                           {hasPermission('sales:outbound:approve') && (
                             <button onClick={() => handleAccept(item.id)} className="text-green-500 hover:underline">验收</button>
                           )}
                           {hasPermission('sales:outbound:print') && (
-                            <button onClick={() => handlePrintFromList(item.id)} className="text-blue-500 hover:underline inline-flex items-center" title="打印">
+                            <button onClick={() => handlePrintFromList(item.id)} className="text-primary hover:underline inline-flex items-center" title="打印">
                               <Printer size={14} />
                             </button>
                           )}
@@ -335,9 +335,9 @@ export default function SalesOutboundPage() {
                       )}
                       {item.status === 'accepted' && (
                         <>
-                          <button onClick={() => openView(item.id)} className="text-blue-500 hover:underline">查看</button>
+                          <button onClick={() => openView(item.id)} className="text-primary hover:underline">查看</button>
                           {hasPermission('sales:outbound:print') && (
-                            <button onClick={() => handlePrintFromList(item.id)} className="text-blue-500 hover:underline inline-flex items-center" title="打印">
+                            <button onClick={() => handlePrintFromList(item.id)} className="text-primary hover:underline inline-flex items-center" title="打印">
                               <Printer size={14} />
                             </button>
                           )}

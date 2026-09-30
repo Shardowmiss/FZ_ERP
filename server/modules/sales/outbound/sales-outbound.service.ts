@@ -287,6 +287,8 @@ export class SalesOutboundService {
       styleNo: string;
       color: string;
       size: string;
+      colorId: string | null;
+      sizeId: string | null;
       quantity: string;
       price: string;
       costPrice: string;
@@ -328,6 +330,8 @@ export class SalesOutboundService {
         styleNo: orderItem.styleNo,
         color: orderItem.color,
         size: orderItem.size,
+        colorId: orderItem.colorId ?? null,
+        sizeId: orderItem.sizeId ?? null,
         quantity: round3(qty),
         price: round4(price),
         costPrice: round4(costPrice),

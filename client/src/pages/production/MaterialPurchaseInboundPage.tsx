@@ -71,8 +71,8 @@ const MaterialPurchaseInboundPage: React.FC = () => {
       const res = await productionApi.materialPurchaseInbound.list(params);
       setList(res.items);
       setTotal(res.total);
-    } catch {
-      toast('加载失败');
+    } catch (e) {
+      toast(errMsg(e, '加载失败'));
     } finally {
       setLoading(false);
     }
@@ -166,8 +166,8 @@ const MaterialPurchaseInboundPage: React.FC = () => {
       setPrintTotalAmount(inbound.totalAmount);
       setPrintRemark(inbound.remark ?? '');
       setPrintOpen(true);
-    } catch {
-      toast('加载详情失败');
+    } catch (e) {
+      toast(errMsg(e, '加载详情失败'));
     }
   };
 
@@ -227,7 +227,7 @@ const MaterialPurchaseInboundPage: React.FC = () => {
           </button>
           <button
             onClick={openAdd}
-            className="px-3 py-1.5 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center gap-1"
+            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600 flex items-center gap-1"
           >
             <Plus size={16} /> + 新增入库
           </button>
@@ -241,7 +241,7 @@ const MaterialPurchaseInboundPage: React.FC = () => {
           <select
             value={filterSupplier}
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => { setFilterSupplier(e.target.value); setPage(1); }}
-            className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500"
+            className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
           >
             <option value="">全部</option>
             {supplierOptions.map((s: { id: string; code: string; name: string }) => (
@@ -255,7 +255,7 @@ const MaterialPurchaseInboundPage: React.FC = () => {
           <select
             value={filterStatus}
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => { setFilterStatus(e.target.value); setPage(1); }}
-            className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500"
+            className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
           >
             <option value="">全部</option>
             <option value="draft">草稿</option>
@@ -270,12 +270,12 @@ const MaterialPurchaseInboundPage: React.FC = () => {
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setKeyword(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
             placeholder="搜索采购单号"
-            className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500 w-44"
+            className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary w-44"
           />
         </div>
         <button
           onClick={handleSearch}
-          className="px-4 py-1.5 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+          className="px-4 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600"
         >
           查询
         </button>
@@ -329,7 +329,7 @@ const MaterialPurchaseInboundPage: React.FC = () => {
                     )}
                     {(item.status === 'approved' || item.status === 'completed') && (
                       <>
-                        <button onClick={() => openView(item.id)} className="text-blue-500 hover:text-blue-600">查看</button>
+                        <button onClick={() => openView(item.id)} className="text-primary hover:text-blue-600">查看</button>
                         <button onClick={() => handleListPrint(item.id)} className="text-gray-500 hover:text-gray-600 inline-flex align-middle" title="打印">
                           <Printer size={14} />
                         </button>

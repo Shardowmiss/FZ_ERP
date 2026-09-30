@@ -175,7 +175,7 @@ const ReplenishPlanPage: React.FC = () => {
             <select
               value={storeId}
               onChange={(e) => onStoreChange(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 min-w-[200px]"
+              className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary min-w-[200px]"
             >
               <option value="">请选择门店</option>
               {stores.map((s) => (
@@ -190,7 +190,7 @@ const ReplenishPlanPage: React.FC = () => {
             <select
               value={sourceWarehouseId}
               onChange={(e) => setSourceWarehouseId(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+              className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
             >
               <option value="">系统默认主仓</option>
               {warehouses.map((w) => (
@@ -214,7 +214,7 @@ const ReplenishPlanPage: React.FC = () => {
           <button
             onClick={handleCalc}
             disabled={calcLoading}
-            className="px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50"
+            className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50"
           >
             {calcLoading ? '计算中...' : '计算建议量'}
           </button>
@@ -322,7 +322,7 @@ const NumberField: React.FC<{
       min={0}
       value={value}
       onChange={(e) => onChange(Number(e.target.value) || 0)}
-      className="px-3 py-2 border border-gray-300 rounded text-sm w-24 focus:outline-none focus:border-blue-500"
+      className="px-3 py-2 border border-gray-300 rounded text-sm w-24 focus:outline-none focus:border-primary"
     />
   </div>
 );

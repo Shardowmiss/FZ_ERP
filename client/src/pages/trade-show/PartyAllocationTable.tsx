@@ -126,7 +126,7 @@ const PartyAllocationTable: React.FC<PartyAllocationTableProps> = ({
                                 Number(e.target.value) || 0,
                               )
                             }
-                            className="w-full px-1 py-1 text-center border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+                            className="w-full px-1 py-1 text-center border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                           />
                         ) : (
                           <div

@@ -7,10 +7,11 @@ import type {
   StyleAttribute, StyleAttrDef,
 } from '@shared/api.interface';
 import { toast } from 'sonner';
+import { errMsg } from '@/utils/errMsg';
 
 const CURRENT_YEAR = String(new Date().getFullYear());
 
-export const inputCls = "w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500";
+export const inputCls = "w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary";
 export const labelCls = "block text-sm text-gray-700 mb-1";
 export const reqCls = "text-red-500";
 
@@ -73,8 +74,8 @@ export const AutoCreateForm = forwardRef<AutoCreateFormHandle, AutoCreateFormPro
             initAttrs['year'] = current ? current.valueName : yearDef.values[0].valueName;
           }
           setForm((f) => ({ ...f, attributes: initAttrs }));
-        } catch {
-          toast('加载属性定义失败');
+        } catch (e) {
+          toast(errMsg(e, '加载属性定义失败'));
         }
       };
       loadAttrs();
