@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FZ_ERP 协同开发起步</title>
+<script src="https://cdn.jsdelivr.net/npm/@tencent-ai/workbuddy-cloud-sdk@dev/lib/index.global.js"></script>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 720px; margin: 24px auto; padding: 0 16px; }
+  h1 { font-size: 20px; }
+  .row { display: flex; gap: 8px; margin: 12px 0; }
+  input { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 8px; }
+  button { padding: 8px 16px; border: 0; border-radius: 8px; background: #185FA5; color: #fff; cursor: pointer; }
+  button.del { background: #c0392b; padding: 4px 10px; font-size: 12px; }
+  ul { list-style: none; padding: 0; }
+  li { padding: 10px; border: 1px solid #eee; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+  .meta { color: #888; font-size: 12px; min-height: 16px; }
+</style>
+</head>
+<body>
+<h1>FZ_ERP · 协同开发起步</h1>
+<p class="meta">公司和家里两端开发同一份代码，数据存云端（WorkBuddy Cloud Service）。</p>
+<div class="row">
+  <input id="title" placeholder="输入一条记录，如「秋季新款到货」">
+  <button id="add">新增</button>
+</div>
+<ul id="list"></ul>
+<div id="msg" class="meta"></div>
+
+<script>
+// 来自 activate 返回的 publicConfig（仅含前端可公开的值）
+const publicConfig = {
+  endpoint: "https://fz-erp.app.workbuddy.host",
+  publishableKey: "wbpk_JEDvafohnXwJhLbrurjccx_Q5EInrTnSGcbjhu7e2rZr8Q0vV9GCweX"
+}
+const cloud = WorkBuddyCloud.createWorkBuddyCloud(publicConfig)
+const TABLE = 'records'
+
+function showMsg(t){ document.getElementById('msg').textContent = t }
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))
+}
+
+async function load(){
+  const { data, error } = await cloud.database
+    .from(TABLE).select('*').order('created_at', { ascending: false }).limit(50)
+  if(error){ showMsg('加载失败：' + (error.message || error.code)); return }
+  const list = document.getElementById('list')
+  list.innerHTML = ''
+  ;(data || []).forEach(r => {
+    const li = document.createElement('li')
+    li.innerHTML = '<span>' + escapeHtml(r.title) + '</span>' +
+      '<button class="del" data-id="' + r.id + '">删除</button>'
+    list.appendChild(li)
+  })
+}
+
+document.getElementById('add').addEventListener('click', async () => {
+  const title = document.getElementById('title').value.trim()
+  if(!title){ showMsg('请输入内容'); return }
+  const { data, error } = await cloud.database.from(TABLE).insert({ title }).select()
+  if(error){ showMsg('新增失败：' + (error.message || error.code)); return }
+  document.getElementById('title').value = ''
+  showMsg('已新增，可在另一端刷新看到')
+  load()
+})
+
+document.getElementById('list').addEventListener('click', async (e) => {
+  if(e.target.tagName === 'BUTTON'){
+    const id = e.target.getAttribute('data-id')
+    const { data, error } = await cloud.database.from(TABLE).delete().eq('id', id).select()
+    if(error){ showMsg('删除失败：' + (error.message || error.code)); return }
+    if(!data || data.length === 0){ showMsg('删除失败（无权限或记录不存在）'); return }
+    load()
+  }
+})
+
+load()
+</script>
+</body>
+</html>
