@@ -94,6 +94,19 @@ export class PosReceiverController {
     return this.receiver.receiveEod(normalizeEod(body));
   }
 
+  /**
+   * 【S3】POS 上行会员钱包变动（积分 / 储值）事件。
+   * 路径名 'member-wallet-events' 需与 POS 侧 RealErpAdapter 的 upstreamPath 对齐。
+   * 幂等语义以 body.eventKey 为准（由上行侧生成），而非 HTTP 头 Idempotency-Key
+   * —— 后者每次重试 attempt 会变，不足以表达「同一业务事实」。
+   */
+  @Public()
+  @UseGuards(UpstreamTokenGuard)
+  @Post('member-wallet-events')
+  receiveWalletEvent(@Body() body: any) {
+    return this.receiver.receiveWalletEvent(body);
+  }
+
   /* ---------------- 补偿管理（ERP 内部运营，需授权） ---------------- */
 
   @NeedLogin()

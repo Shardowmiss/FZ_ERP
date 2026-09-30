@@ -27,6 +27,7 @@ import {
 } from '@server/database/schema';
 import { bulkInsert } from '@server/common/batch';
 import { randomUUID } from 'node:crypto';
+import { MemberWalletService } from '@server/modules/member/member-wallet.service';
 import type {
   PosSalesPayload,
   PosStocktakePayload,
@@ -75,7 +76,54 @@ export class PosReceiverService {
 
   constructor(
     @Inject(DRIZZLE_DATABASE) private readonly db: PostgresJsDatabase,
+    private readonly walletService: MemberWalletService,
   ) {}
+
+  /* ---------------- S3 会员钱包：POS 上行积分/储值事件入账 ---------------- */
+
+  /**
+   * 【S3】接收 POS 上行的会员钱包变动事件（积分 / 储值），由 ERP 统一入账。
+   *
+   * 为什么需要它：POS 销售单走 receiveSales 建的是 status='completed' 的 retail_order，
+   * **不经过 settleRetailOrder**，所以 ERP 侧根本不会为门店消费加积分；
+   * 而 POS 本地又各自累加一份 → 两端各记一套。此端点把门店每笔变动收编为幂等事件。
+   *
+   * 幂等：以 eventKey 唯一索引为准，同一事件重放/重试只入账一次（返回 duplicated=true）。
+   */
+  async receiveWalletEvent(body: {
+    eventKey: string;
+    memberId: string;
+    kind: string;
+    changeValue: number;
+    sourceType: string;
+    sourceNo?: string;
+    storeCode?: string;
+  }) {
+    if (!body?.eventKey) throw new BadRequestException('eventKey 必填（幂等键）');
+    if (!body?.memberId) throw new BadRequestException('memberId 必填（ERP 会员主键）');
+    if (body?.kind !== 'points' && body?.kind !== 'stored_value') {
+      throw new BadRequestException("kind 必须为 'points' 或 'stored_value'");
+    }
+    if (typeof body?.changeValue !== 'number' || Number.isNaN(body.changeValue)) {
+      throw new BadRequestException('changeValue 必须为数字（可为负）');
+    }
+
+    const r = await this.walletService.applyWalletEvent({
+      eventKey: body.eventKey,
+      memberId: body.memberId,
+      kind: body.kind,
+      changeValue: body.changeValue,
+      sourceType: body.sourceType ?? 'adjust',
+      sourceNo: body.sourceNo,
+      storeCode: body.storeCode,
+    });
+
+    // rejected 不是异常：业务上不可重试（会员未同步/储值透支），需由运营对账补单
+    if (r.status === 'rejected') {
+      this.logger.warn(`[S3] 钱包事件被拒 eventKey=${r.eventKey} reason=${r.message}`);
+    }
+    return r;
+  }
 
   /* ---------------- 门店解析：POS storeCode → ERP store / warehouse ---------------- */
 
