@@ -377,6 +377,7 @@ export class RbacService {
     { code: 'pos:cashier', name: 'POS-收银' },
     { code: 'pricing:manage', name: '价格-管理' },
     { code: 'member:manage', name: '会员-管理' },
+    { code: 'member:merge', name: '会员-合并（主数据去重，资金敏感）' },
     { code: 'omni:manage', name: '全渠道-管理' },
     { code: 'subcontract:manage', name: '委外-管理' },
   ];

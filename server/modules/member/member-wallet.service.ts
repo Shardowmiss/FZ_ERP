@@ -1,6 +1,7 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { DRIZZLE_DATABASE, type PostgresJsDatabase } from '@lark-apaas/fullstack-nestjs-core';
 import { desc, eq, sql } from 'drizzle-orm';
+import type { PostgresJsTransaction } from 'drizzle-orm/postgres-js';
 import { member, memberPoint, memberWalletEvent } from '@server/database/schema';
 
 /** POS 上行的一次钱包变动 */
@@ -63,8 +64,18 @@ export class MemberWalletService {
    * 入账一条 POS 上行事件（幂等）。
    * 同一 eventKey 重复调用永远只入账一次。
    */
-  async applyWalletEvent(dto: ApplyWalletEventDto): Promise<WalletEventResult> {
-    return this.db.transaction(async (tx) => {
+  /**
+   * 入账一条 POS 上行/合并转移事件（幂等）。
+   * 同一 eventKey 重复调用永远只入账一次。
+   *
+   * @param tx 可选外部事务。传入时在本事务内执行（用于 MemberMergeService 的合并单事务内
+   *           复用「账本事件 + 原子余额」范式，避免嵌套事务）；不传则自行开启事务。
+   */
+  async applyWalletEvent(
+    dto: ApplyWalletEventDto,
+    tx?: PostgresJsTransaction<any, any>,
+  ): Promise<WalletEventResult> {
+    const run = async (tx: PostgresJsTransaction<any, any>): Promise<WalletEventResult> => {
       // ① 幂等占位
       const [claimed] = await tx
         .insert(memberWalletEvent)
@@ -172,7 +183,8 @@ export class MemberWalletService {
         .where(eq(memberWalletEvent.id, claimed.id));
 
       return { eventKey: dto.eventKey, duplicated: false, status: 'applied', balanceAfter };
-    });
+    };
+    return tx ? run(tx) : this.db.transaction(run);
   }
 
   /**

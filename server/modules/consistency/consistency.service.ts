@@ -235,7 +235,8 @@ export class ConsistencyService {
       WITH d AS (
         SELECT id, phone, phone_hmac FROM member
         WHERE phone_hmac IS NOT NULL
-          AND EXISTS (SELECT 1 FROM member m2 WHERE m2.phone_hmac = member.phone_hmac AND m2.id <> member.id)
+          AND merged_into IS NULL
+          AND EXISTS (SELECT 1 FROM member m2 WHERE m2.phone_hmac = member.phone_hmac AND m2.id <> member.id AND m2.merged_into IS NULL)
       )
       SELECT
         (SELECT count(*)::int FROM d) AS c,

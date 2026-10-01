@@ -162,6 +162,10 @@ export const member = pgTable("member", {
   remark: text("remark"),
   // P0-c 主数据治理：会员储值余额（单位=分，与 POS posMember.storedValue 对齐，供上行回写落点）
   storedValue: numeric("stored_value").notNull().default('0'),
+  // P0-3 主数据合并：被合并指向（指向存活方 member.id）。被合并会员绝不删除，仅打标，规避 cascade 清空钱包流水。
+  mergedInto: uuid("merged_into"),
+  // P0-3 主数据合并：合并时间（打标用，非软删）
+  mergedAt: customTimestamptz("merged_at", { precision: 3 }),
   // System field: Creation time (auto-filled, do not modify)
   createdAt: customTimestamptz("_created_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
   // System field: Creator (auto-filled, do not modify)
@@ -175,6 +179,70 @@ export const member = pgTable("member", {
   index("idx_member_phone_hmac").on(table.phoneHmac),
   index("idx_member_level").on(table.level),
   index("idx_member_status").on(table.status),
+  index("idx_member_merged_into").on(table.mergedInto),
+  // 自愈引用：删除/改指 survivor 时把 mergedInto 置空（被合并方不会被级联删）
+  foreignKey({
+    columns: [table.mergedInto],
+    foreignColumns: [table.id],
+    name: "member_merged_into_fkey",
+  }).onDelete("set null"),
+]);
+
+/**
+ * P0-3 主数据合并：会员合并审计/回滚日志（迁移 0025）。
+ *
+ * 用途：会员去重合并时记录「谁被合并进谁、转移了多少积分/储值、由谁操作、为何合并」。
+ * 是合并操作的**唯一审计来源**，也是 reverse() 回滚的**唯一依据**。
+ *
+ * 资金安全设计（历史教训：曾发生储值清零资金事故）：
+ *   · 被合并会员**绝不删除**（member 无 _deleted_at，且 member_wallet_event/member_point 均 onDelete cascade，
+ *     删除会级联清空钱包流水 = 资金事故）。合并只改指依赖行到 survivor + 打标(mergedInto/mergedAt)。
+ *   · 积分/储值经 member_wallet_event 账本事件原子累加，不读-算-写。
+ *   · reverse() 依据本表 moved_points / moved_stored_value 精确回滚，避免双计或误冲。
+ */
+export const memberMergeLog = pgTable("member_merge_log", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  /** 同一次合并操作的批次号（一个 survivor 合并多个 merged 时共用），便于整批回滚 */
+  runId: varchar("run_id", { length: 40 }).notNull(),
+  survivorId: uuid("survivor_id").notNull(),
+  mergedId: uuid("merged_id").notNull(),
+  mergedMemberNo: varchar("merged_member_no", { length: 50 }),
+  mergedName: varchar("merged_name", { length: 100 }),
+  mergedPhoneHmac: varchar("merged_phone_hmac", { length: 64 }),
+  /** 本行从被合并方转移到 survivor 的积分（= 被合并方合并前 points） */
+  movedPoints: integer("moved_points").notNull().default(0),
+  /** 本行从被合并方转移到 survivor 的储值（单位=分，= 被合并方合并前 stored_value） */
+  movedStoredValue: numeric("moved_stored_value").notNull().default('0'),
+  /** 本行从被合并方转移到 survivor 的累计消费额（去重化展示计数器，= 合并前 total_spent） */
+  movedTotalSpent: numeric("moved_total_spent").notNull().default('0'),
+  /** 本行从被合并方转移到 survivor 的订单数（去重化展示计数器，= 合并前 order_count） */
+  movedOrderCount: integer("moved_order_count").notNull().default(0),
+  /** 合并原因（如「手机号重复」「门店录入重复」） */
+  reason: text("reason"),
+  /** 操作人（来自登录态 app.user_id，由上层传入） */
+  operator: varchar("operator", { length: 64 }),
+  /** 回滚时间：reverse() 成功回滚后置位，避免重复回滚 */
+  reversedAt: customTimestamptz("reversed_at", { precision: 3 }),
+  // System field: Creation time (auto-filled, do not modify)
+  createdAt: customTimestamptz("_created_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  createdBy: userProfile("_created_by"),
+  // System field: Update time (auto-filled, do not modify)
+  updatedAt: customTimestamptz("_updated_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedBy: userProfile("_updated_by"),
+}, (table) => [
+  index("idx_member_merge_log_run").on(table.runId),
+  index("idx_member_merge_log_survivor").on(table.survivorId),
+  index("idx_member_merge_log_merged").on(table.mergedId),
+  foreignKey({
+    columns: [table.survivorId],
+    foreignColumns: [member.id],
+    name: "member_merge_log_survivor_fkey",
+  }).onDelete("restrict"),
+  foreignKey({
+    columns: [table.mergedId],
+    foreignColumns: [member.id],
+    name: "member_merge_log_merged_fkey",
+  }).onDelete("restrict"),
 ]);
 
 /**
