@@ -19,6 +19,7 @@ import type {
   CampaignResult,
 } from '@shared/api.interface';
 import { maskMemberPii } from '@server/common/data-scope/pii';
+import { encryptField, hmacField } from '@server/common/crypto/field-encryption';
 
 
 @Injectable()
@@ -76,7 +77,8 @@ export class MemberService {
         .values({
           memberNo,
           name: body.name ?? '',
-          phone: body.phone,
+          phone: encryptField(body.phone),
+          phoneHmac: hmacField(body.phone),
           gender: body.gender ?? 'unknown',
           birthday: body.birthday as never,
           level: body.level ?? 'normal',
@@ -95,13 +97,16 @@ export class MemberService {
       .update(member)
       .set({
         name: body.name,
-        phone: body.phone,
         gender: body.gender,
         birthday: body.birthday as never,
         level: body.level,
         tagIds: body.tagIds ? ((body.tagIds as never) ?? undefined) : undefined,
         remark: body.remark,
         status: body.status,
+        // P0-2：仅在请求携带 phone 时重加密（PATCH 语义，不破坏既有密文/指纹）
+        ...(body.phone !== undefined
+          ? { phone: encryptField(body.phone), phoneHmac: hmacField(body.phone) }
+          : {}),
       })
       .where(eq(member.id, id))
       .returning();

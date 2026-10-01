@@ -9,12 +9,20 @@ import { join } from 'node:path';
  * HttpException（NotFoundException / BadRequestException 等），让具体文案与
  * 正确的状态码透传给前端。
  *
- * 唯一白名单：database/schema.ts 是 drizzle 自动生成、标注「do not edit」的
- * 自定义列类型转换错误，不在请求处理路径上，属内部校验错误，保持原状。
+ * 白名单：
+ *   · database/schema.ts 是 drizzle 自动生成、标注「do not edit」的自定义列类型
+ *     转换错误，不在请求处理路径上，属内部校验错误，保持原状。
+ *   · common/crypto/field-encryption.ts / common/crypto/secret-validation.ts 是
+ *     启动期密钥校验 guard（FIELD_ENC_KEY 缺失/弱即 fail-fast 中止启动），不在请求
+ *     处理路径上，裸 throw 是其有意设计（绝不能降级为 500 兜底）。
  */
 // vitest 从项目根目录运行，直接用 cwd 定位 server 目录（避免 import.meta 在 test tsconfig 下报错）
 const SERVER_ROOT = join(process.cwd(), 'server');
-const WHITELIST = new Set(['database/schema.ts']);
+const WHITELIST = new Set([
+  'database/schema.ts',
+  'common/crypto/field-encryption.ts',
+  'common/crypto/secret-validation.ts',
+]);
 
 function walk(dir: string): string[] {
   const out: string[] = [];

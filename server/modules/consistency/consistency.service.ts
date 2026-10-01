@@ -12,6 +12,8 @@ import {
   type ConsistencyReportSummary,
   type ConsistencyRunSummary,
 } from './consistency.types';
+import { decryptField } from '@server/common/crypto/field-encryption';
+import { maskPhone } from '@server/common/data-scope/pii';
 
 /**
  * 主数据一致性校验服务（P2-3）。
@@ -74,7 +76,7 @@ export class ConsistencyService {
                      COALESCE(md5(string_agg(concat(id::text,':',coalesce(sku_code,''),':',coalesce(style_no,''),':',coalesce(_updated_at::text,'')),'|' ORDER BY id)),'0') AS h
               FROM sku`,
     member: `SELECT count(*)::int AS c,
-                    COALESCE(md5(string_agg(concat(id::text,':',coalesce(phone,''),':',coalesce(level,''),':',coalesce(_updated_at::text,'')),'|' ORDER BY id)),'0') AS h
+                    COALESCE(md5(string_agg(concat(id::text,':',coalesce(phone_hmac,''),':',coalesce(level,''),':',coalesce(_updated_at::text,'')),'|' ORDER BY id)),'0') AS h
              FROM member`,
     price: `SELECT count(*)::int AS c,
                    COALESCE(md5(string_agg(concat(id::text,':',coalesce(sku_id::text,''),':',coalesce(price::text,''),':',coalesce(_updated_at::text,'')),'|' ORDER BY id)),'0') AS h
@@ -231,16 +233,17 @@ export class ConsistencyService {
 
     const dup = (await this.db.execute(sql.raw(`
       WITH d AS (
-        SELECT id, phone FROM member
-        WHERE phone IS NOT NULL AND phone <> ''
-          AND EXISTS (SELECT 1 FROM member m2 WHERE m2.phone = member.phone AND m2.id <> member.id)
+        SELECT id, phone, phone_hmac FROM member
+        WHERE phone_hmac IS NOT NULL
+          AND EXISTS (SELECT 1 FROM member m2 WHERE m2.phone_hmac = member.phone_hmac AND m2.id <> member.id)
       )
       SELECT
         (SELECT count(*)::int FROM d) AS c,
         COALESCE((SELECT array_agg(phone ORDER BY phone) FROM (SELECT DISTINCT phone FROM d LIMIT 20) p), array[]::text[]) AS samples
     `))) as any[];
     const mismatchCount = Number(dup[0]?.c ?? 0);
-    const samples = this.asStringArray(dup[0]?.samples);
+    // 密文无法人工辨认，解密后脱敏展示（P0-2：phone 已加密存储）
+    const samples = this.asStringArray(dup[0]?.samples).map((c) => maskPhone(decryptField(c)));
 
     const status: CheckStatus = mismatchCount > 0 ? 'warn' : 'pass';
     const detail =

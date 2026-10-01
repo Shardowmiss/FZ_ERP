@@ -1,4 +1,5 @@
 import { RequestContext, ALL_SCOPE, type DealerScope } from '@server/common/context/request-context';
+import { decryptField } from '@server/common/crypto/field-encryption';
 
 /**
  * 会员 PII 脱敏（P1 · member 品牌级全局下的可见性控制）。
@@ -33,8 +34,18 @@ export interface MemberPii {
   birthday?: string | null;
 }
 
-/** 对单条会员记录的敏感字段脱敏（仅受限作用域生效；超管原样返回）。 */
+/**
+ * 对单条会员记录的敏感字段脱敏（仅受限作用域生效；超管原样返回明文）。
+ *
+ * P0-2：phone 现已加密存储，必须先 decryptField 还原明文，再做脱敏/原样返回。
+ *   · 超管/全量作用域：解密后原样返回（否则超管也只见密文）。
+ *   · 受限作用域：解密后再脱敏。
+ * decryptField 对存量明文/空值向后兼容（原样返回），过渡期安全。
+ */
 export function maskMemberPii<T extends MemberPii>(row: T): T {
-  if (!isRestrictedScope()) return row;
-  return { ...row, phone: maskPhone(row.phone), birthday: maskBirthday(row.birthday) };
+  if (!isRestrictedScope()) {
+    return { ...row, phone: decryptField(row.phone) };
+  }
+  const phonePlain = decryptField(row.phone);
+  return { ...row, phone: maskPhone(phonePlain), birthday: maskBirthday(row.birthday) };
 }

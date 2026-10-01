@@ -10,12 +10,16 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { PosUpstreamCsrfBypassMiddleware } from './middleware/pos-upstream-csrf-bypass';
 import { requestLogMiddleware } from './middleware/request-log.middleware';
+import { validateSecrets } from './common/crypto/secret-validation';
 
 async function bootstrap() {
   // 云端部署兜底：未配置平台基础域名时给占位值，避免 lark-apaas PlatformModule 在
   // 依赖注入阶段即抛 “平台模式需要基础域名” 并中止引导（端口无人监听 → 外网“拒绝连接”）。
   // 仅影响非飞书/豆包原生集成场景的平台内部 HTTP 客户端，对本 ERP 业务无副作用。
   process.env.FORCE_AUTHN_INNERAPI_DOMAIN ??= 'https://placeholder.local';
+
+  // P0-2 启动期密钥校验：生产缺失/弱 FIELD_ENC_KEY 等必要密钥即中止启动（fail-fast）。
+  validateSecrets();
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     abortOnError: process.env.NODE_ENV !== 'development',

@@ -146,7 +146,10 @@ export const member = pgTable("member", {
   id: uuid("id").primaryKey().defaultRandom(),
   memberNo: varchar("member_no", { length: 50 }).notNull().unique(),
   name: varchar("name", { length: 100 }).notNull(),
-  phone: varchar("phone", { length: 50 }),
+  // P0-2 字段级加密：phone 改为存储 AES-256-GCM 密文（前缀 enc::），宽度加至 255。
+  phone: varchar("phone", { length: 255 }),
+  // P0-2 可搜索加密：手机号 HMAC-SHA256 确定性指纹，用于按手机号搜索/去重/一致性校验。
+  phoneHmac: varchar("phone_hmac", { length: 64 }),
   gender: varchar("gender", { length: 10 }).default('unknown'),
   birthday: date("birthday"),
   level: varchar("level", { length: 20 }).notNull().default('normal'),
@@ -169,7 +172,7 @@ export const member = pgTable("member", {
   updatedBy: userProfile("_updated_by"),
 }, (table) => [
   uniqueIndex("member_member_no_key").on(table.memberNo),
-  index("idx_member_phone").on(table.phone),
+  index("idx_member_phone_hmac").on(table.phoneHmac),
   index("idx_member_level").on(table.level),
   index("idx_member_status").on(table.status),
 ]);
