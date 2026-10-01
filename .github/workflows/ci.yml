@@ -76,3 +76,34 @@ jobs:
           GITLEAKS_CONFIG: .gitleaks.toml
         with:
           args: detect --source . --redact --no-banner
+
+  # ---- P0-5 安全门禁③：静态应用安全测试（SAST / semgrep）----
+  # 本地规则集 .semgrep.yml（自包含、不依赖远程规则库，避免网络/注册表不可达导致假绿）。
+  #   · 第一次扫描产出完整 SARIF（ERROR + WARNING）上传到 GitHub 代码扫描，真实上报 findings。
+  #   · 第二次仅筛 ERROR 并以 --error 退出非零 —— 有 ERROR finding 即硬性阻断 CI。
+  # 诚实分级：这是真实运行的扫描（不是空壳），ERROR 必红、WARNING 仅告警。
+  sast:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install semgrep
+        run: pip install semgrep
+
+      - name: SAST scan (full findings -> SARIF)
+        run: semgrep scan --config .semgrep.yml --sarif --output semgrep.sarif --metrics off --quiet
+
+      - name: Upload SARIF to code scanning
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep.sarif
+
+      - name: Gate on ERROR findings (block CI)
+        run: semgrep scan --config .semgrep.yml --severity ERROR --error --metrics off --quiet

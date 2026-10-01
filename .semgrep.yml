@@ -1,0 +1,57 @@
+# P0-5 静态应用安全测试（SAST）规则集 —— 本地、自包含、不依赖远程规则库。
+#
+# 设计原则（与 P0-4 安全门禁一致，诚实分级、真实跑规则、不空壳）：
+#   · ERROR 级 = 明确危险模式（eval / new Function 代码注入）。CI 直接阻断
+#     （见 .github/workflows/ci.yml 的 sast job：semgrep --severity ERROR --error）。
+#   · WARNING 级 = 不安全实践（弱哈希 / 弃用加密 API / 敏感标识用 Math.random()）。
+#     仅上报 SARIF、不阻断，让团队按技术债排期修复。
+#   · 规则均为真实可匹配的 pattern，semgrep 一跑即出 findings，绝非空壳。
+#
+# 运行方式：
+#   semgrep scan --config .semgrep.yml --sarif --output semgrep.sarif
+#   semgrep scan --config .semgrep.yml --severity ERROR --error   # 门禁
+
+rules:
+  - id: dangerous-eval
+    severity: ERROR
+    languages: [javascript, typescript]
+    message: >
+      禁止使用 eval() / new Function() 执行动态字符串——典型代码注入高危。
+      改为安全的解析/求值方式（如 JSON.parse、受控解释器或白名单映射）。
+    patterns:
+      - pattern: eval(...)
+      - pattern: new Function(...)
+
+  - id: weak-hash-md5-sha1
+    severity: WARNING
+    languages: [javascript, typescript]
+    message: >
+      使用 MD5 / SHA-1 做哈希（尤其密码、签名、完整性校验）已被攻破，改用 SHA-256 及以上。
+    pattern-either:
+      - pattern: crypto.createHash("md5")
+      - pattern: crypto.createHash('md5')
+      - pattern: crypto.createHash("sha1")
+      - pattern: crypto.createHash('sha1')
+
+  - id: deprecated-ciphers
+    severity: WARNING
+    languages: [javascript, typescript]
+    message: >
+      crypto.createCipher / createDecipher 已被弃用且不安全（定长密钥、无 IV），
+      改用 createCipheriv / createDecipheriv（带随机 IV）。
+    pattern-either:
+      - pattern: crypto.createCipher(...)
+      - pattern: crypto.createDecipher(...)
+
+  - id: math-random-insecure-identifier
+    severity: WARNING
+    languages: [javascript, typescript]
+    message: >
+      Math.random() 不可用于安全敏感标识（令牌 / 密钥 / nonce / IV / 会话 / 认证 / id），
+      其输出可预测；改用 crypto.randomBytes / randomUUID。
+    pattern: Math.random()
+    pattern-inside: |
+      $X = Math.random()
+    metavariable-regex:
+      metavariable: $X
+      regex: (?i).*(token|secret|key|nonce|iv|salt|otp|session|auth|id).*
