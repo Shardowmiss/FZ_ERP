@@ -11,6 +11,7 @@ import {
 } from '@server/database/schema';
 import { eq, or, ilike, count, and } from 'drizzle-orm';
 import { escapeLike } from '@server/common/utils/escape-like';
+import { encryptField, hmacField, decryptField } from '@server/common/crypto/field-encryption';
 import { BaseCrudService } from '@server/common/base/base-crud.service';
 import type { Supplier } from '@shared/api.interface';
 import { RequestContext, ALL_SCOPE } from '@server/common/context/request-context';
@@ -38,7 +39,7 @@ export class SupplierService extends BaseCrudService<
       code: row.code,
       name: row.name,
       contactPerson: row.contactPerson ?? undefined,
-      phone: row.phone ?? undefined,
+      phone: decryptField(row.phone) ?? undefined,
       address: row.address ?? undefined,
       supplyCategory: row.supplyCategory ?? undefined,
       remark: row.remark ?? undefined,
@@ -103,7 +104,8 @@ export class SupplierService extends BaseCrudService<
       code: dto.code,
       name: dto.name,
       contactPerson: dto.contactPerson ?? null,
-      phone: dto.phone ?? null,
+      phone: encryptField(dto.phone) ?? null,
+      phoneHmac: hmacField(dto.phone),
       address: dto.address ?? null,
       supplyCategory: dto.supplyCategory ?? null,
       remark: dto.remark ?? null,
@@ -137,7 +139,10 @@ export class SupplierService extends BaseCrudService<
       patch.name = dto.name;
     }
     if (dto.contactPerson !== undefined) patch.contactPerson = dto.contactPerson ?? null;
-    if (dto.phone !== undefined) patch.phone = dto.phone ?? null;
+    if (dto.phone !== undefined) {
+      patch.phone = encryptField(dto.phone) ?? null;
+      patch.phoneHmac = hmacField(dto.phone);
+    }
     if (dto.address !== undefined) patch.address = dto.address ?? null;
     if (dto.supplyCategory !== undefined) patch.supplyCategory = dto.supplyCategory ?? null;
     if (dto.remark !== undefined) patch.remark = dto.remark ?? null;

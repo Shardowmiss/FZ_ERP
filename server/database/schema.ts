@@ -1429,7 +1429,8 @@ export const rbacUser = pgTable("rbac_user", {
   username: varchar("username", { length: 50 }).notNull().unique(),
   name: varchar("name", { length: 50 }).notNull(),
   passwordHash: varchar("password_hash", { length: 255 }).notNull(),
-  phone: varchar("phone", { length: 20 }),
+  phone: varchar("phone", { length: 255 }),
+  phoneHmac: varchar("phone_hmac", { length: 64 }),
   department: varchar("department", { length: 100 }),
   status: varchar("status", { length: 20 }).notNull().default('active'),
   remark: varchar("remark", { length: 500 }),
@@ -1447,6 +1448,7 @@ export const rbacUser = pgTable("rbac_user", {
     WHEN (current_setting('app.user_id'::text, true) = ''::text) THEN NULL`),
 }, (table) => [
   uniqueIndex("rbac_user_username_key").on(table.username),
+  index("idx_rbac_user_phone_hmac").on(table.phoneHmac),
 ]);
 
 export const monthCloseLog = pgTable("month_close_log", {
@@ -1760,7 +1762,8 @@ export const store = pgTable("store", {
   dealerId: uuid("dealer_id"),
   warehouseId: uuid("warehouse_id"),
   contactPerson: varchar("contact_person", { length: 100 }),
-  phone: varchar("phone", { length: 50 }),
+  phone: varchar("phone", { length: 255 }),
+  phoneHmac: varchar("phone_hmac", { length: 64 }),
   address: text("address"),
   status: varchar("status", { length: 20 }).notNull().default('active'),
   remark: text("remark"),
@@ -1780,6 +1783,7 @@ export const store = pgTable("store", {
   index("idx_store_dealer").on(table.dealerId),
   index("idx_store_warehouse").on(table.warehouseId),
   index("idx_store_status").on(table.status),
+  index("idx_store_phone_hmac").on(table.phoneHmac),
 ]);
 
 export const dealer = pgTable("dealer", {
@@ -1787,7 +1791,8 @@ export const dealer = pgTable("dealer", {
   code: varchar("code", { length: 50 }).notNull().unique(),
   name: varchar("name", { length: 200 }).notNull(),
   contactPerson: varchar("contact_person", { length: 100 }),
-  phone: varchar("phone", { length: 50 }),
+  phone: varchar("phone", { length: 255 }),
+  phoneHmac: varchar("phone_hmac", { length: 64 }),
   address: text("address"),
   status: varchar("status", { length: 20 }).notNull().default('active'),
   remark: text("remark"),
@@ -1808,6 +1813,7 @@ export const dealer = pgTable("dealer", {
 }, (table) => [
   uniqueIndex("dealer_code_key").on(table.code),
   index("idx_dealer_status").on(table.status),
+  index("idx_dealer_phone_hmac").on(table.phoneHmac),
   index("idx_dealer_parent_id").on(table.parentId),
   index("idx_dealer_tree_path").on(table.treePath),
   foreignKey({
@@ -2814,7 +2820,8 @@ export const supplier = pgTable("supplier", {
   code: varchar("code", { length: 50 }).notNull().unique(),
   name: varchar("name", { length: 200 }).notNull(),
   contactPerson: varchar("contact_person", { length: 100 }),
-  phone: varchar("phone", { length: 50 }),
+  phone: varchar("phone", { length: 255 }),
+  phoneHmac: varchar("phone_hmac", { length: 64 }),
   address: text("address"),
   supplyCategory: varchar("supply_category", { length: 200 }),
   remark: text("remark"),
@@ -2832,6 +2839,7 @@ export const supplier = pgTable("supplier", {
   deletedAt: customTimestamptz("_deleted_at", { precision: 3 }),
 }, (table) => [
   uniqueIndex("supplier_code_key").on(table.code),
+  index("idx_supplier_phone_hmac").on(table.phoneHmac),
   index("idx_supplier_partner_id").on(table.partnerId),
   foreignKey({
     columns: [table.partnerId],

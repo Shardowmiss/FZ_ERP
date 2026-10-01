@@ -24,6 +24,7 @@ import { eq, and, count, desc, or, ilike, inArray, asc, isNull, lt, sql } from '
 import type { SQL } from 'drizzle-orm';
 import type { PgColumn } from 'drizzle-orm/pg-core';
 import { escapeLike } from '@server/common/utils/escape-like';
+import { encryptField, hmacField, decryptField } from '@server/common/crypto/field-encryption';
 import { TTL, cached, invalidate } from '@server/common/cache';
 import type { DealerScope } from '@server/common/context/request-context';
 import * as crypto from 'crypto';
@@ -187,7 +188,7 @@ export class RbacService {
       id: row.id,
       username: row.username,
       name: row.name,
-      phone: row.phone ?? undefined,
+      phone: decryptField(row.phone) ?? undefined,
       department: row.department ?? undefined,
       status: row.status,
       remark: row.remark ?? undefined,
@@ -656,7 +657,8 @@ export class RbacService {
       username: data.username,
       name: data.name,
       passwordHash,
-      phone: data.phone ?? null,
+      phone: encryptField(data.phone) ?? null,
+      phoneHmac: hmacField(data.phone),
       department: data.department ?? null,
       status: data.status ?? 'active',
       remark: data.remark ?? null,
@@ -721,7 +723,8 @@ export class RbacService {
       patch.passwordHash = this.hashPassword(data.password);
     }
     if (data.phone !== undefined) {
-      patch.phone = data.phone ?? null;
+      patch.phone = encryptField(data.phone) ?? null;
+      patch.phoneHmac = hmacField(data.phone);
     }
     if (data.department !== undefined) {
       patch.department = data.department ?? null;
