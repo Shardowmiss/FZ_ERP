@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Param, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { NeedLogin } from '@lark-apaas/fullstack-nestjs-core';
 import { CheckPermission } from '../../common/decorators/check-permission.decorator';
 import { RequestContext } from '../../common/context/request-context';
@@ -52,5 +52,24 @@ export class MasterDataMergeController {
       ...(body?.runId ? { runId: body.runId } : {}),
       operator: body?.operator ?? RequestContext.getUserId(),
     });
+  }
+
+  /**
+   * 查重候选发现：按归一名称 / 归一电话分组，排除已合并方，返回疑似重复组。
+   * 每组带成员列表与 relatedCount（依赖业务单据数合计），供运营判断谁是 survivor。
+   * 非热路径：SQL 侧完成归一+分组（与 configs.ts 的归一表达式严格同构，避免静默漏组），
+   * JS 侧仅做成员明细补全、关联单据计数、脱敏与推荐 survivor。
+   */
+  @CheckPermission('md:merge')
+  @Get(':entityType/candidates')
+  async candidates(
+    @Param('entityType') entityType: string,
+    @Query('limit') limit?: string,
+  ) {
+    if (!SUPPORTED.includes(entityType as MergeEntityType)) {
+      throw new BadRequestException(`不支持的 entityType：${entityType}`);
+    }
+    const lim = limit ? Math.min(parseInt(limit, 10) || 200, 500) : 200;
+    return this.svc.candidates(entityType, lim);
   }
 }

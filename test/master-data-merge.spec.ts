@@ -350,4 +350,75 @@ describe('P0-3 MasterDataMergeService（3b/3c 真库 erp_test）', () => {
       svc.merge({ entityType: 'store' as never, survivorId: randomUUID(), mergedIds: [randomUUID()] }),
     ).rejects.toThrow(/不支持/);
   });
+
+  it('9) candidates：同归一名称的客户被识别为重复组，按关联单据数推荐 survivor', async () => {
+    const base = `dupname-${randomUUID().slice(0, 8)}`;
+    const a = await makeCustomer(uniq('C-A9'));
+    const b = await makeCustomer(uniq('C-B9'));
+    // 强制同名（覆盖默认 name），触发归一名称分组
+    await db.update(customer).set({ name: base }).where(eq(customer.id, a.id));
+    await db.update(customer).set({ name: base }).where(eq(customer.id, b.id));
+
+    // a 有 2 张关联单据，b 有 1 张 → 推荐 a 为 survivor
+    await db.insert(salesReconciliation).values({
+      reconNo: uniq('r'),
+      customerId: a.id,
+      customerName: base,
+      startDate: '2026-01-01',
+      endDate: '2026-01-31',
+    });
+    await db.insert(receivable).values({
+      receivableNo: uniq('rn'),
+      customerId: a.id,
+      customerName: base,
+      bizType: 'sales_outbound',
+      bizNo: uniq('b'),
+      amount: '1',
+      balance: '1',
+    });
+    await db.insert(salesOrder).values({
+      orderNo: uniq('o'),
+      customerId: b.id,
+      customerName: base,
+      orderDate: '2026-01-15',
+    });
+
+    const groups = await svc.candidates('customer');
+    const hit = groups.filter(
+      (g) => g.keyType === 'name' && g.members.some((m) => m.id === a.id || m.id === b.id),
+    );
+    expect(hit.length).toBeGreaterThanOrEqual(1);
+    const g = hit[0];
+    expect(g.memberCount).toBe(2);
+    expect(g.members.map((m) => m.id).sort()).toEqual([a.id, b.id].sort());
+
+    const suggested = g.members.find((m) => m.suggested);
+    const other = g.members.find((m) => !m.suggested);
+    expect(suggested!.id).toBe(a.id); // a 关联单据更多
+    expect(suggested!.relatedCount).toBe(2);
+    expect(other!.relatedCount).toBe(1);
+  });
+
+  it('10) candidates：同归一电话的客户被识别为重复组，电话键脱敏展示（不泄露完整号码）', async () => {
+    // 每 run 唯一电话（避免跨 run 累积污染共享库 erp_test 导致组内成员数漂移）
+    const digits = randomUUID().replace(/-/g, '').replace(/[a-f]/g, '').slice(0, 8).padStart(8, '0');
+    const phone = `138${digits}`;
+    const a = await makeCustomer(uniq('C-PA'));
+    const b = await makeCustomer(uniq('C-PB'));
+    await db.update(customer).set({ name: uniq('pnA'), phone }).where(eq(customer.id, a.id));
+    await db.update(customer).set({ name: uniq('pnB'), phone }).where(eq(customer.id, b.id));
+
+    const groups = await svc.candidates('customer');
+    const pg = groups.find(
+      (g) => g.keyType === 'phone' && g.members.some((m) => m.id === a.id || m.id === b.id),
+    );
+    expect(pg).toBeDefined();
+    expect(pg!.memberCount).toBe(2);
+    expect(pg!.members.map((m) => m.id).sort()).toEqual([a.id, b.id].sort());
+    // 电话键脱敏展示：格式 138****XXXX，非完整号码
+    expect(pg!.key).toMatch(/^138\*{4}\d{4}$/);
+    expect(pg!.key).not.toBe(phone);
+    // 成员 phone 也应脱敏
+    expect(pg!.members.every((m) => m.phone === pg!.key)).toBe(true);
+  });
 });

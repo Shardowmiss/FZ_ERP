@@ -1,9 +1,18 @@
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { DRIZZLE_DATABASE, type PostgresJsDatabase } from '@lark-apaas/fullstack-nestjs-core';
-import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
+import { and, eq, inArray, isNull, or, sql } from 'drizzle-orm';
 import { masterDataMergeLog } from '@server/database/schema';
+import { maskPhone } from '@server/common/data-scope/pii';
 import { getMergeConfig } from './configs';
-import type { MergeEntityType, MergeRequest, MergeResult } from './types';
+import type {
+  MergeCandidateGroup,
+  MergeCandidateKeyType,
+  MergeCandidateMember,
+  MergeEntityConfig,
+  MergeEntityType,
+  MergeRequest,
+  MergeResult,
+} from './types';
 
 /**
  * P0-3 通用主数据合并引擎（3b/3c：商品 style / 客户 customer）。
@@ -179,5 +188,107 @@ export class MasterDataMergeService {
       }
       return { reversed };
     });
+  }
+
+  /**
+   * 查重候选发现（非热路径）。
+   *
+   * 设计要点：归一 + 分组完全由 configs.ts 的 SQL 表达式在数据库侧完成
+   * （与归一表达式严格同构，避免「SQL 判重复、JS 分不到同组」的静默漏组）；
+   * JS 侧只做成员明细补全、关联业务单据计数、脱敏与推荐 survivor。
+   * 一个实体若未在 configs 配置 candidate，则不支持候选发现（抛错）。
+   */
+  async candidates(entityType: string, limit = 200): Promise<MergeCandidateGroup[]> {
+    const cfg = getMergeConfig(entityType);
+    if (!cfg.candidate) {
+      throw new BadRequestException(`实体类型 ${entityType} 暂不支持查重候选发现`);
+    }
+    const cand = cfg.candidate;
+    const entityTable = cfg.table;
+    const mergedIntoCol = entityTable[cfg.mergedIntoKey];
+
+    const keyDefs: { keyType: MergeCandidateKeyType; expr: SQL<string> }[] = [
+      { keyType: 'name', expr: cand.nameExpr },
+    ];
+    if (cand.phoneExpr) keyDefs.push({ keyType: 'phone', expr: cand.phoneExpr });
+
+    const groups: MergeCandidateGroup[] = [];
+    for (const kd of keyDefs) {
+      // SQL 侧归一 + 分组，仅取成员数 >= 2 的疑似重复组；归一键非空才参与
+      const rows = await this.db
+        .select({
+          key: kd.expr.as('key'),
+          ids: sql`array_agg(${entityTable.id})`.as('ids'),
+          cnt: sql`count(*)::int`.as('cnt'),
+        })
+        .from(entityTable)
+        .where(
+          and(
+            isNull(mergedIntoCol),
+            sql`${kd.expr} is not null and ${kd.expr} <> ''`,
+          ),
+        )
+        .groupBy(kd.expr)
+        .having(sql`count(*) >= 2`);
+
+      for (const r of rows) {
+        const ids = (r.ids as string[]) ?? [];
+        if (ids.length < 2) continue;
+        const members = await this.buildCandidateMembers(cfg, ids);
+        groups.push({
+          keyType: kd.keyType,
+          // 电话键脱敏展示，避免泄露完整号码；名称键原样
+          key: kd.keyType === 'phone' ? maskPhone(r.key as string) : (r.key as string),
+          memberCount: members.length,
+          members,
+        });
+      }
+    }
+    return groups.slice(0, limit);
+  }
+
+  /** 补全候选组成员明细 + 关联业务单据计数 + 脱敏 + 推荐 survivor */
+  private async buildCandidateMembers(
+    cfg: MergeEntityConfig,
+    ids: string[],
+  ): Promise<MergeCandidateMember[]> {
+    const entityTable = cfg.table;
+    const memberRows = await this.db
+      .select({
+        id: entityTable.id,
+        code: entityTable[cfg.codeKey],
+        name: entityTable[cfg.displayKey],
+        // 仅 customer 配置了 candidate，其有 phone 列；其余实体不会走到此分支
+        phone: (entityTable as any).phone,
+      })
+      .from(entityTable)
+      .where(inArray(entityTable.id, ids));
+
+    const members: MergeCandidateMember[] = [];
+    for (const m of memberRows) {
+      let related = 0;
+      for (const dep of cfg.deps) {
+        const r = await this.db
+          .select({ n: sql<number>`count(*)::int` })
+          .from(dep.table)
+          .where(eq(dep.table[dep.idKey], m.id));
+        related += Number(r[0]?.n ?? 0);
+      }
+      members.push({
+        id: m.id as string,
+        code: m.code as string,
+        name: m.name as string,
+        phone: m.phone != null ? maskPhone(m.phone as string) : null,
+        relatedCount: related,
+        suggested: false,
+      });
+    }
+    // 推荐 survivor：关联单据最多；并列取 code 较小者
+    members.sort(
+      (a, b) =>
+        b.relatedCount - a.relatedCount || (a.code < b.code ? -1 : a.code > b.code ? 1 : 0),
+    );
+    if (members.length) members[0].suggested = true;
+    return members;
   }
 }

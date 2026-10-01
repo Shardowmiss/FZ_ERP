@@ -87,6 +87,12 @@ export const MERGE_ENTITY_CONFIGS: Record<string, MergeEntityConfig> = {
       { table: receivable, idKey: 'customerId', codeKey: 'customerName' },
       { table: salesOrder, idKey: 'customerId', codeKey: 'customerName' },
     ],
+    // 查重候选（MVP）：名称归一（去空白+小写）/ 电话归一（仅数字且 >=7 位，避免短号误并）。
+    // ⚠️ 这两个表达式必须与 service 内 JS 侧归一函数严格同构，否则会静默漏组。
+    candidate: {
+      nameExpr: sql<string>`lower(regexp_replace(coalesce(${customer.name}, ''), '[[:space:]]+', '', 'g'))`,
+      phoneExpr: sql<string>`case when length(regexp_replace(coalesce(${customer.phone}, ''), '[^0-9]', '', 'g')) >= 7 then regexp_replace(coalesce(${customer.phone}, ''), '[^0-9]', '', 'g') else null end`,
+    },
   },
 };
 

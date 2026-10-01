@@ -1,7 +1,22 @@
+import type { SQL } from 'drizzle-orm';
 import type { PostgresJsDatabase, PostgresJsTransaction } from 'drizzle-orm/postgres-js';
 
 /** 可合并的主数据实体类型（3b/3c 落地 style / customer；store 留待后续谨慎评估） */
 export type MergeEntityType = 'style' | 'customer';
+
+/** 查重分组依据（归一名称 / 归一电话） */
+export type MergeCandidateKeyType = 'name' | 'phone';
+
+/**
+ * 查重候选配置：SQL 侧归一表达式（与 service 内 JS 侧归一函数必须严格同构，
+ * 否则会出现「SQL 判为重复、JS 分不到同组」的静默漏组）。
+ */
+export interface MergeCandidateConfig {
+  /** 归一名称表达式：去空白 + 转小写 */
+  nameExpr: SQL<string>;
+  /** 归一电话表达式：仅保留数字，长度 < 7 视为无效（避免短号/区号误并） */
+  phoneExpr?: SQL<string>;
+}
 
 /**
  * 单个依赖改指配置：某张从属于主数据的业务表，合并时需把指向被合并方的行改指到 survivor。
@@ -31,6 +46,8 @@ export interface MergeEntityConfig {
   mergedAtKey: string;
   /** 需要改指的依赖表清单 */
   deps: MergeDepConfig[];
+  /** 查重候选配置（不配置 ⇒ 该实体暂不支持候选发现接口） */
+  candidate?: MergeCandidateConfig;
   /**
    * 实体特定预校验（合并执行前、事务内调用）。
    * 例如 style：sku 有唯一键 (style_id,color_id,size_id)，改指前校验被合并款的 sku
@@ -58,4 +75,25 @@ export interface MergeResult {
   survivorId: string;
   mergedCount: number;
   logs: { mergedId: string; logId: string }[];
+}
+
+/** 候选组内单条主数据（relatedCount 用于帮运营判断谁是 survivor） */
+export interface MergeCandidateMember {
+  id: string;
+  code: string;
+  name: string;
+  phone: string | null;
+  /** 关联业务单据数（依赖表行数合计）；运营据此判断保留哪条 */
+  relatedCount: number;
+  /** 组内推荐 survivor（关联单据最多；并列取编码较小者） */
+  suggested: boolean;
+}
+
+/** 一个疑似重复组（同归一名称 或 同归一电话，且成员数 >= 2） */
+export interface MergeCandidateGroup {
+  keyType: MergeCandidateKeyType;
+  /** 归一后的分组键（展示用；电话键已截断，不泄露完整号码） */
+  key: string;
+  memberCount: number;
+  members: MergeCandidateMember[];
 }
