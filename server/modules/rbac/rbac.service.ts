@@ -379,6 +379,7 @@ export class RbacService {
     { code: 'pricing:manage', name: '价格-管理' },
     { code: 'member:manage', name: '会员-管理' },
     { code: 'member:merge', name: '会员-合并（主数据去重，资金敏感）' },
+    { code: 'md:merge', name: '主数据-合并（商品/客户去重，泛化）' },
     { code: 'omni:manage', name: '全渠道-管理' },
     { code: 'subcontract:manage', name: '委外-管理' },
   ];

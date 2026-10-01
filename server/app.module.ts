@@ -29,6 +29,7 @@ import { ProductionModule } from './modules/production/production.module';
 import { SubcontractModule } from './modules/subcontract/subcontract.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { MemberModule } from './modules/member/member.module';
+import { MasterDataMergeModule } from './modules/master-data-merge/master-data-merge.module';
 import { OmniModule } from './modules/omni/omni.module';
 import { PosModule } from './modules/pos/pos.module';
 import { PosReceiverModule } from './modules/pos-receiver/pos-receiver.module';
@@ -69,6 +70,7 @@ import { ConsistencyModule } from './modules/consistency/consistency.module';
     SubcontractModule,
     AnalyticsModule,
     MemberModule,
+    MasterDataMergeModule,
     OmniModule,
     PosModule,
     PosReceiverModule,

@@ -246,6 +246,49 @@ export const memberMergeLog = pgTable("member_merge_log", {
 ]);
 
 /**
+ * P0-3 通用主数据合并审计/回滚日志（迁移 0027，3b/3c 泛化）。
+ *
+ * 用途：把 P0-3 会员合并（member_merge_log）的"审计+回滚"范式泛化到所有主数据合并
+ * （style / customer，未来 store），用 entity_type 区分。是合并操作的**唯一审计来源**，
+ * 也是 reverse() 回滚的**唯一依据**。
+ *
+ * 与 member 的差异：本日志**不记录资金/积分**（style/customer 无资金列，合并不涉及资金迁移），
+ * 仅记录"谁合并进谁、业务编码、操作人、原因"。
+ */
+export const masterDataMergeLog = pgTable("master_data_merge_log", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  /** 主数据实体类型：style / customer（未来 store） */
+  entityType: varchar("entity_type", { length: 20 }).notNull(),
+  /** 同一次合并操作的批次号（一个 survivor 合并多个 merged 时共用），便于整批回滚 */
+  runId: varchar("run_id", { length: 40 }).notNull(),
+  survivorId: uuid("survivor_id").notNull(),
+  mergedId: uuid("merged_id").notNull(),
+  /** 被合并方的业务唯一编码（style=style_no，customer=code） */
+  mergedCode: varchar("merged_code", { length: 50 }),
+  /** 被合并方展示名（style=style_no，customer=name） */
+  mergedName: varchar("merged_name", { length: 200 }),
+  /** 合并原因（如「重复录入」「门店误建」） */
+  reason: text("reason"),
+  /** 操作人（来自登录态 app.user_id，由上层传入） */
+  operator: varchar("operator", { length: 64 }),
+  /** 回滚时间：reverse() 成功回滚后置位，避免重复回滚 */
+  reversedAt: customTimestamptz("reversed_at", { precision: 3 }),
+  // System field: Creation time (auto-filled, do not modify)
+  createdAt: customTimestamptz("_created_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  createdBy: userProfile("_created_by"),
+  // System field: Update time (auto-filled, do not modify)
+  updatedAt: customTimestamptz("_updated_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedBy: userProfile("_updated_by"),
+}, (table) => [
+  index("idx_master_data_merge_log_entity").on(table.entityType),
+  index("idx_master_data_merge_log_run").on(table.runId),
+  index("idx_master_data_merge_log_survivor").on(table.survivorId),
+  index("idx_master_data_merge_log_merged").on(table.mergedId),
+  // run_id + merged_id 防同批重复记录（幂等）
+  uniqueIndex("uniq_master_data_merge_log_run_merged").on(table.runId, table.mergedId),
+]);
+
+/**
  * S3 会员钱包事件账本（迁移 0022）。
  *
  * 用途：POS 门店消费产生的积分/储值变动，以「幂等事件」上行到 ERP，由 ERP 统一入账。
@@ -2870,13 +2913,24 @@ export const customer = pgTable("customer", {
   updatedBy: userProfile("_updated_by"),
   // 软删除标记：非空表示已删除（BaseCrudService 软删逻辑据此过滤/置位）
   deletedAt: customTimestamptz("_deleted_at", { precision: 3 }),
+  // P0-3 泛化合并（3b/3c）：被合并客户指向存活方 customer.id（绝不删除被合并客户，仅打标）
+  mergedInto: uuid("merged_into"),
+  // P0-3 泛化合并：合并时间（打标用，非软删）
+  mergedAt: customTimestamptz("merged_at", { precision: 3 }),
 }, (table) => [
   uniqueIndex("customer_code_key").on(table.code),
   index("idx_customer_partner_id").on(table.partnerId),
+  index("idx_customer_merged_into").on(table.mergedInto),
   foreignKey({
     columns: [table.partnerId],
     foreignColumns: [dealer.id],
     name: "customer_partner_id_fkey",
+  }).onDelete("set null"),
+  // 自愈引用：删除/改指 survivor 时把 mergedInto 置空（被合并客户不会被级联删）
+  foreignKey({
+    columns: [table.mergedInto],
+    foreignColumns: [table.id],
+    name: "customer_merged_into_fkey",
   }).onDelete("set null"),
 ]);
 
@@ -2977,11 +3031,16 @@ export const style = pgTable("style", {
   updatedAt: customTimestamptz("_updated_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
   // System field: Updater (auto-filled, do not modify)
   updatedBy: userProfile("_updated_by"),
+  // P0-3 泛化合并（3b/3c）：被合并款式指向存活方 style.id（绝不删除被合并款式，仅打标）
+  mergedInto: uuid("merged_into"),
+  // P0-3 泛化合并：合并时间（打标用，非软删）
+  mergedAt: customTimestamptz("merged_at", { precision: 3 }),
 }, (table) => [
   uniqueIndex("style_style_no_key").on(table.styleNo),
   index("idx_style_status").on(table.status),
   index("idx_style_category").on(table.category),
   index("idx_style_brand").on(table.brand),
+  index("idx_style_merged_into").on(table.mergedInto),
   foreignKey({
     columns: [table.colorGroupId],
     foreignColumns: [colorGroup.id],
@@ -2992,6 +3051,12 @@ export const style = pgTable("style", {
     foreignColumns: [sizeGroup.id],
     name: "style_size_group_id_fkey",
   }),
+  // 自愈引用：删除/改指 survivor 时把 mergedInto 置空（被合并款式不会被级联删）
+  foreignKey({
+    columns: [table.mergedInto],
+    foreignColumns: [table.id],
+    name: "style_merged_into_fkey",
+  }).onDelete("set null"),
 ]);
 
 export const sizeGroup = pgTable("size_group", {
