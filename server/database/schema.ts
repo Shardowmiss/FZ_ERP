@@ -1129,6 +1129,66 @@ export const posMember = pgTable("pos_member", {
   uniqueIndex("idx_member_client").on(table.clientId),
 ]);
 
+/**
+ * 【S3】POS 侧会员钱包上行账本（outbox 模式）。
+ *
+ * 为什么必须有它：门店消费/退货原本在本地直接改 `pos_member.points / stored_value`
+ * （sales / returns / omnichannel 三处各自写），ERP 侧完全不知情 → 双轨。
+ * 收口后 POS 只「产出事件」，由 ERP 作为唯一账本方入账（见 ERP 侧
+ * member_wallet_event 表与 member-wallet.service.ts）。
+ *
+ * 为什么是「先写表再推送」而不是「事务里直接 HTTP」：
+ *   ① 原子性 —— 事件行与业务单据在同一个 DB 事务里落库，不会出现
+ *      「单已成立但没有对应钱包变动」的资金缺口；
+ *   ② 可重试 —— 门店网络常年抖动，推送失败由 flush 任务按行重推，
+ *      而不是让整笔交易失败；
+ *   ③ 幂等 —— event_key 唯一索引兜住离线补传/重放，同一业务事实只会有一行。
+ *
+ * ⚠ 与上述 scans same table 的铁律一致：新增列/索引必须同步
+ *   scripts/apply-pos-indexes.cjs 与 server/test-utils/pglite.ts。
+ */
+export const posWalletEvent = pgTable("pos_wallet_event", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  /** 幂等键：`{sourceType}:{sourceNo}:{kind}`，与 ERP member_wallet_event.event_key 同名同义 */
+  eventKey: varchar("event_key", { length: 200 }).notNull().unique(),
+  /** POS 本地会员主键（对账 / 定位门店侧档案） */
+  memberId: uuid("member_id").notNull(),
+  /**
+   * ERP 会员主键快照（来自 pos_member.erp_member_id）。
+   * 为什么冗余存：门店本地新建的会员没有锚点，而推送时 ERP 侧只认自己的主键。
+   * 落行时快照下来才能在补推时明确判断「这条能不能推」，不必回头 join。
+   */
+  erpMemberId: uuid("erp_member_id"),
+  /** points（积分，整数）| stored_value（储值，单位分） */
+  kind: varchar("kind", { length: 20 }).notNull(),
+  /** 增量，可为负（退货回冲为负） */
+  changeValue: bigint("change_value", { mode: 'number' }).notNull(),
+  /** sale | return | omnichannel | adjust */
+  sourceType: varchar("source_type", { length: 30 }).notNull(),
+  sourceNo: varchar("source_no", { length: 100 }),
+  storeId: varchar("store_id", { length: 50 }),
+  /** pending(待推送) | sent(已入账) | failed(重试超限) | skipped(无 ERP 锚点，待 S2 回填) */
+  status: varchar("status", { length: 20 }).notNull().default('pending'),
+  attemptCount: integer("attempt_count").notNull().default(0),
+  lastError: text("last_error"),
+  sentAt: customTimestamptz("sent_at", { precision: 3 }),
+  // System field: Creation time (auto-filled, do not modify)
+  createdAt: customTimestamptz("_created_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  // System field: Creator (auto-filled, do not modify)
+  createdBy: userProfile("_created_by").default(sql`CASE
+    WHEN (current_setting('app.user_id'::text, true) = ''::text) THEN NULL`),
+  // System field: Update time (auto-filled, do not modify)
+  updatedAt: customTimestamptz("_updated_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  // System field: Updater (auto-filled, do not modify)
+  updatedBy: userProfile("_updated_by").default(sql`CASE
+    WHEN (current_setting('app.user_id'::text, true) = ''::text) THEN NULL`),
+}, (table) => [
+  uniqueIndex("uniq_pos_wallet_event_key").on(table.eventKey),
+  // 补推扫描热路径：按状态挑 pending / failed 的早批次
+  index("idx_pos_wallet_event_status").on(table.status, table.createdAt),
+  index("idx_pos_wallet_event_member").on(table.memberId),
+]);
+
 export const posEmployee = pgTable("pos_employee", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: varchar("name", { length: 50 }).notNull(),
@@ -1305,6 +1365,7 @@ export const posStockTable = posStock;
 export const posStockAdjustTable = posStockAdjust;
 export const posStocktakeTable = posStocktake;
 export const posStocktakeItemTable = posStocktakeItem;
+export const posWalletEventTable = posWalletEvent;
 export const posStoreTable = posStore;
 export const posStoredLogTable = posStoredLog;
 export const posStyleTable = posStyle;

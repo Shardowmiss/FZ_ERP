@@ -1,6 +1,7 @@
-import { beforeAll, afterAll, describe, it, expect } from 'vitest';
+import { beforeAll, afterAll, describe, it, expect, vi } from 'vitest';
 import { setupTestDb, type TestDb } from '@server/test-utils/pglite';
 import { OmnichannelService } from './omnichannel.service';
+import type { MemberWalletUpstreamService } from './member-wallet-upstream.service';
 import {
   posStore,
   posMember,
@@ -30,7 +31,20 @@ describe('OmnichannelService 财务闭环 — P1-2', () => {
 
   beforeAll(async () => {
     t = await setupTestDb();
-    svc = new OmnichannelService(t.db as never);
+    // 本测试聚焦「全渠道履约的财务闭环 + 积分」，钱包上行（S3）由专属 spec 覆盖，
+    // 这里注入 hermetic stub：shadow 语义写本地积分、enabled=false 使其不触发 enqueue，
+    // 保持与原测试一致的行为，同时避免未注入依赖导致 this.walletUpstream 为 undefined。
+    const walletUpstreamStub = {
+      get erpAuthoritative() {
+        return false;
+      },
+      get enabled() {
+        return false;
+      },
+      enqueue: vi.fn(async () => 0),
+      kick: vi.fn(),
+    } as unknown as MemberWalletUpstreamService;
+    svc = new OmnichannelService(t.db as never, walletUpstreamStub);
     await t.db.insert(posStore).values({ id: 'ST1', name: '旗舰店', code: 'ST1' });
     await t.db.insert(posMember).values({
       // posMember.id 为 uuid 列（见 schema.ts），测试数据须为合法 UUID；

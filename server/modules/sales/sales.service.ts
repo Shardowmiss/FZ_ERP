@@ -15,6 +15,7 @@ import { auditAction } from '@server/common/audit';
 import { resolveStoreId, enforceStoreScope } from '@server/common/tenant';
 import { maskPhone } from '@server/common/pii';
 import { ErpIntegrationService } from '../erp-integration/erp-integration.service';
+import { MemberWalletUpstreamService, walletEventKey } from '../members/member-wallet-upstream.service';
 import { PromotionsService } from '../promotions/promotions.service';
 import { evaluatePromotions } from '../promotions/promotion-engine';
 import {
@@ -96,6 +97,8 @@ export class SalesService {
     @Inject(DRIZZLE_DATABASE) private readonly db: PostgresJsDatabase,
     private readonly erp: ErpIntegrationService,
     private readonly promotions: PromotionsService,
+    // S3：会员钱包上行。资金不再是门店本地裁决，而是「如实上报」。
+    private readonly walletUpstream: MemberWalletUpstreamService,
   ) {
     this.db = scopeDatabase(this.db);
   }
@@ -526,6 +529,10 @@ export class SalesService {
         }
         const member = memberRows[0];
 
+        // 本地（shadow 模式）会员余额计算口径：用前余额扣抵扣 + 加积分。
+        // strict 模式不在此处裁决余额（见下文 erpAuthoritative 分支）。
+        const newPoints = member.points - pointsUsed + pointsEarned;
+
         // 验证积分是否足够
         if (pointsUsed > member.points) {
           throw new BadRequestException(
@@ -551,21 +558,40 @@ export class SalesService {
           }
         }
 
-        // 更新会员统计
-        const newPoints = member.points - pointsUsed + pointsEarned;
+        // 【S3】ERP 是否作为会员钱包权威方（模式 POS_WALLET_UPSTREAM=strict）。
+        // shadow（默认）下本地照旧改余额 + 同时上报，用于线上双跑对账；
+        // strict 下本地**不再裁决**金额改动，只留非资金类的消费统计。
+        // 注意：ENOUGH Balance 的校验读的仍是本地 pos_member（ERP 下行的镜像），
+        // 这点两种模式一致 —— 否则收银员在 strict 下会因下发延迟而无法下单。
+        const erpAuthoritative = this.walletUpstream.erpAuthoritative;
 
-        await tx
-          .update(posMember)
-          .set({
-            totalSpent: sql`${posMember.totalSpent} + ${toCents(payAmount)}`,
-            totalCount: sql`${posMember.totalCount} + 1`,
-            points: newPoints,
-            storedValue: sql`GREATEST(0, ${posMember.storedValue} - ${toCents(storedDeduct)})`,
-            lastPurchaseAt: sql`CURRENT_TIMESTAMP`,
-          })
-          .where(eq(posMember.id, dto.memberId));
+        if (erpAuthoritative) {
+          // strict：资金列不在这里动。ERP 入账后再由下行链路把权威余额写回 pos_member。
+          // 消费统计仍本地累加：它们不是资金，且 S1 的下行 set 不含这几列（不会被覆盖）。
+          await tx
+            .update(posMember)
+            .set({
+              totalSpent: sql`${posMember.totalSpent} + ${toCents(payAmount)}`,
+              totalCount: sql`${posMember.totalCount} + 1`,
+              lastPurchaseAt: sql`CURRENT_TIMESTAMP`,
+            })
+            .where(eq(posMember.id, dto.memberId));
+        } else {
+          await tx
+            .update(posMember)
+            .set({
+              totalSpent: sql`${posMember.totalSpent} + ${toCents(payAmount)}`,
+              totalCount: sql`${posMember.totalCount} + 1`,
+              points: newPoints,
+              storedValue: sql`GREATEST(0, ${posMember.storedValue} - ${toCents(storedDeduct)})`,
+              lastPurchaseAt: sql`CURRENT_TIMESTAMP`,
+            })
+            .where(eq(posMember.id, dto.memberId));
+        }
 
         // 批量写入积分/储值日志（P1-5：收集后单次批量 insert，减少事务内写往返）
+        // strict 下**不写本地流水**：本地 balance 已不是权威余额，写进去只会
+        // 产生一份与 ERP member_point 不一致的「影子流水」，反而误导门店对账。
         const pointsLogValues: Array<{
           memberId: string;
           change: number;
@@ -613,11 +639,47 @@ export class SalesService {
             remark: '消费扣款',
           });
         }
-        if (pointsLogValues.length > 0) {
+        if (pointsLogValues.length > 0 && !erpAuthoritative) {
           await tx.insert(posPointsLog).values(pointsLogValues);
         }
-        if (storedLogValues.length > 0) {
+        if (storedLogValues.length > 0 && !erpAuthoritative) {
           await tx.insert(posStoredLog).values(storedLogValues);
+        }
+
+        // 【S3】产出钱包上行事件 —— 与销售单落在同一事务里，
+        // 保证「单成立 ⇒ 钱包事件必存在」，不会出现只对一半的资金缺口。
+        // 一个币种一个净增量（earn 与 used 合并）：ERP 侧 member_wallet_event
+        // 以 {sourceType}:{sourceNo}:{kind} 为幂等键，一个键只允许一个值。
+        if (this.walletUpstream.enabled) {
+          const walletEvents: Array<Parameters<MemberWalletUpstreamService['enqueue']>[1][number]> = [];
+          const pointsDelta = pointsEarned - pointsUsed;
+          if (pointsDelta !== 0) {
+            walletEvents.push({
+              eventKey: walletEventKey('sale', orderNo, 'points'),
+              memberId: dto.memberId,
+              erpMemberId: member.erpMemberId ?? null,
+              kind: 'points',
+              changeValue: pointsDelta,
+              sourceType: 'sale',
+              sourceNo: orderNo,
+              storeId,
+            });
+          }
+          if (storedDeduct > 0) {
+            walletEvents.push({
+              eventKey: walletEventKey('sale', orderNo, 'stored_value'),
+              memberId: dto.memberId,
+              erpMemberId: member.erpMemberId ?? null,
+              kind: 'stored_value',
+              changeValue: -toCents(storedDeduct),
+              sourceType: 'sale',
+              sourceNo: orderNo,
+              storeId,
+            });
+          }
+          if (walletEvents.length > 0) {
+            await this.walletUpstream.enqueue(tx, walletEvents);
+          }
         }
       }
 
@@ -641,6 +703,9 @@ export class SalesService {
     const order = await this.getOrderDetail(orderId);
     // 上行 ERP：开单完成后异步推送（不阻断本地业务；失败由 ErpIntegrationService 记 posSyncLog 并可重试）
     this.pushSalesUpstream(order).catch(() => {});
+    // S3：钱包事件已在事务内入队，这里顺手推一把；失败不影响本次开单，
+    // 积压由 MemberWalletUpstreamService 的定时补推自愈。
+    this.walletUpstream.kick();
     return order;
   }
 

@@ -13,6 +13,7 @@ import { round2, fromCents, toCents } from '@server/database/money';
 import { auditAction } from '@server/common/audit';
 import { maskPhone } from '@server/common/pii';
 import { ErpIntegrationService } from '../erp-integration/erp-integration.service';
+import { MemberWalletUpstreamService, walletEventKey } from '../members/member-wallet-upstream.service';
 import {
   posReturnOrder,
   posReturnItem,
@@ -42,6 +43,8 @@ export class ReturnsService {
   constructor(
     @Inject(DRIZZLE_DATABASE) private readonly db: PostgresJsDatabase,
     private readonly erp: ErpIntegrationService,
+    // S3：退货产生负向钱包事件，与销售单共用同一张 outbox
+    private readonly walletUpstream: MemberWalletUpstreamService,
   ) {
     this.db = scopeDatabase(this.db);
   }
@@ -389,16 +392,30 @@ export class ReturnsService {
           pointsRevert = Math.min(pointsRevert, member.points);
           storedRefund = Math.min(storedRefund, fromCents(member.storedValue));
 
-          await tx
-            .update(posMember)
-            .set({
-              totalSpent: sql`GREATEST(0, ${posMember.totalSpent} - ${toCents(refundAmount)}::numeric)`,
-              points: sql`GREATEST(0, ${posMember.points} - ${pointsRevert})`,
-              storedValue: sql`GREATEST(0, ${posMember.storedValue} + ${toCents(storedRefund)}::numeric)`,
-            })
-            .where(eq(posMember.id, memberId));
+          // 【S3】两种模式的分野（详见 member-wallet-upstream.service.ts 头部说明）：
+          // shadow —— 本地照旧改余额并存流水（零行为变化），同时上报；
+          // strict —— 本地不再裁决资金列，积分回冲与储值退回都由 ERP 入账。
+          const erpAuthoritative = this.walletUpstream.erpAuthoritative;
 
-          if (pointsRevert > 0) {
+          if (erpAuthoritative) {
+            await tx
+              .update(posMember)
+              .set({
+                totalSpent: sql`GREATEST(0, ${posMember.totalSpent} - ${toCents(refundAmount)}::numeric)`,
+              })
+              .where(eq(posMember.id, memberId));
+          } else {
+            await tx
+              .update(posMember)
+              .set({
+                totalSpent: sql`GREATEST(0, ${posMember.totalSpent} - ${toCents(refundAmount)}::numeric)`,
+                points: sql`GREATEST(0, ${posMember.points} - ${pointsRevert})`,
+                storedValue: sql`GREATEST(0, ${posMember.storedValue} + ${toCents(storedRefund)}::numeric)`,
+              })
+              .where(eq(posMember.id, memberId));
+          }
+
+          if (pointsRevert > 0 && !erpAuthoritative) {
             await tx.insert(posPointsLog).values({
               memberId,
               change: -pointsRevert,
@@ -408,7 +425,7 @@ export class ReturnsService {
               remark: `退货单 ${returnNo} 按比例回冲本次消费所获积分`,
             });
           }
-          if (storedRefund > 0) {
+          if (storedRefund > 0 && !erpAuthoritative) {
             await tx.insert(posStoredLog).values({
               memberId,
               change: toCents(storedRefund),
@@ -419,6 +436,39 @@ export class ReturnsService {
               sourceNo: returnNo,
               remark: `退货单 ${returnNo} 储值按原支付方式退回`,
             });
+          }
+
+          // 【S3】回报 ERP：退货是**负向**钱包变动，必须与销售单同一套口径上报，
+          // 否则门店退了货而 ERP 会员积分没回冲，会员端会「只涨不跌」。
+          if (this.walletUpstream.enabled) {
+            const walletEvents: Array<Parameters<MemberWalletUpstreamService['enqueue']>[1][number]> = [];
+            if (pointsRevert > 0) {
+              walletEvents.push({
+                eventKey: walletEventKey('return', returnNo, 'points'),
+                memberId,
+                erpMemberId: member.erpMemberId ?? null,
+                kind: 'points',
+                changeValue: -pointsRevert,
+                sourceType: 'return',
+                sourceNo: returnNo,
+                storeId: origin.storeId,
+              });
+            }
+            if (storedRefund > 0) {
+              walletEvents.push({
+                eventKey: walletEventKey('return', returnNo, 'stored_value'),
+                memberId,
+                erpMemberId: member.erpMemberId ?? null,
+                kind: 'stored_value',
+                changeValue: toCents(storedRefund),
+                sourceType: 'return',
+                sourceNo: returnNo,
+                storeId: origin.storeId,
+              });
+            }
+            if (walletEvents.length > 0) {
+              await this.walletUpstream.enqueue(tx, walletEvents);
+            }
           }
         }
       }
@@ -443,6 +493,8 @@ export class ReturnsService {
     const ret = await this.getReturnDetail(returnId);
     // 上行 ERP：退货完成后异步推送（不阻断本地业务；失败由 ErpIntegrationService 记 posSyncLog 并可重试）
     this.pushReturnsUpstream(ret).catch(() => {});
+    // S3：钱包事件已在事务内入队，这里顺手推一把；失败不影响本次退货落单。
+    this.walletUpstream.kick();
     return ret;
   }
 

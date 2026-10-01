@@ -373,6 +373,33 @@ CREATE TABLE IF NOT EXISTS pos_sync_log (
   _updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
   _updated_by user_profile DEFAULT NULL
 );
+
+-- 【S3】会员钱包上行的 outbox 表。必须在这里**建全真索引**（尤其 event_key 的唯一约束）：
+-- 历史上 apply-pos-indexes.cjs 曾用普通 CREATE INDEX 建唯一索引，导致
+-- 「pglite 单测全绿、真库 ON CONFLICT 直接失败」的假绿，坑不能重踩。
+CREATE TABLE IF NOT EXISTS pos_wallet_event (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  event_key varchar(200) NOT NULL UNIQUE,
+  member_id uuid NOT NULL,
+  erp_member_id uuid,
+  kind varchar(20) NOT NULL,
+  change_value bigint NOT NULL,
+  source_type varchar(30) NOT NULL,
+  source_no varchar(100),
+  store_id varchar(50),
+  status varchar(20) NOT NULL DEFAULT 'pending',
+  attempt_count integer NOT NULL DEFAULT 0,
+  last_error text,
+  sent_at timestamptz,
+  _created_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  _created_by user_profile DEFAULT NULL,
+  _updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  _updated_by user_profile DEFAULT NULL
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS uniq_pos_wallet_event_key ON pos_wallet_event (event_key);
+CREATE INDEX IF NOT EXISTS idx_pos_wallet_event_status ON pos_wallet_event (status, _created_at);
+CREATE INDEX IF NOT EXISTS idx_pos_wallet_event_member ON pos_wallet_event (member_id);
 `;
 
 export interface TestDb {

@@ -16,6 +16,8 @@
 //   pos_promotion        (erp_promotion_id) UNIQUE           Wave 4-C 促销下行幂等键
 //   pos_stock            (sku_id)                            单 SKU 维度查询
 //   pos_member           (erp_member_id)    UNIQUE           S2 会员下行身份锚点
+//   pos_wallet_event     (event_key)        UNIQUE           S3 钱包上行幂等键
+//   pos_wallet_event     (status,_created_at)/(member_id)    S3 outbox 补推热路径
 //
 // 说明：用 CONCURRENTLY 建索引，不锁表（门店 7×24 运行，禁止在运行时阻塞写）。
 //       CONCURRENTLY 不能放在事务块内，故每条独立执行。
@@ -70,6 +72,27 @@ const INDEXES = [
     ddl: '(erp_member_id)',
     unique: true,
     dupColumn: 'erp_member_id',
+  },
+  // 【S3】会员钱包上行 outbox。event_key 唯一索引是「同一业务事实只推一次」的唯一依赖
+  // （member-wallet-upstream.service.ts 的 enqueue 用 ON CONFLICT DO NOTHING 去重），
+  // 缺了它离线补传会把同一笔消费重复计入会员余额。
+  {
+    name: 'uniq_pos_wallet_event_key',
+    table: 'pos_wallet_event',
+    ddl: '(event_key)',
+    unique: true,
+    dupColumn: 'event_key',
+  },
+  // pending / failed 批次扫描热路径（flushPending 按 status + 时间排序取批次）
+  {
+    name: 'idx_pos_wallet_event_status',
+    table: 'pos_wallet_event',
+    ddl: '(status, _created_at)',
+  },
+  {
+    name: 'idx_pos_wallet_event_member',
+    table: 'pos_wallet_event',
+    ddl: '(member_id)',
   },
 ];
 

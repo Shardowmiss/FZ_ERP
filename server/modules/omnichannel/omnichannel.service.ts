@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { DRIZZLE_DATABASE, type PostgresJsDatabase } from '@server/database/drizzle-tokens';
 import { scopeDatabase } from '@server/database/soft-delete';
+import { MemberWalletUpstreamService, walletEventKey } from '../members/member-wallet-upstream.service';
 import {
   posOmnichannelOrder,
   posOmnichannelItem,
@@ -32,6 +33,8 @@ export class OmnichannelService {
 
   constructor(
     @Inject(DRIZZLE_DATABASE) private readonly db: PostgresJsDatabase,
+    // S3：全渠道履约产生的积分也要进同一张上行 outbox
+    private readonly walletUpstream: MemberWalletUpstreamService,
     ) {
     this.db = scopeDatabase(this.db);
   }
@@ -362,23 +365,55 @@ export class OmnichannelService {
     // 会员积分
     if (member && memberId) {
       const newPoints = member.points + pointsEarned;
-      await tx
-        .update(posMember)
-        .set({
-          points: newPoints,
-          totalSpent: sql`${posMember.totalSpent} + ${totalAmountCents}`,
-          totalCount: sql`${posMember.totalCount} + 1`,
-          lastPurchaseAt: sql`CURRENT_TIMESTAMP`,
-        })
-        .where(eq(posMember.id, memberId));
-      await tx.insert(posPointsLog).values({
-        memberId,
-        change: pointsEarned,
-        balance: newPoints,
-        type: 'earn',
-        sourceNo: saleOrderNo,
-        remark: '全渠道消费积分',
-      });
+      // 【S3】与 sales / returns 同口径：strict 模式下本地不裁决余额（详见 upstream 服务注释）
+      const erpAuthoritative = this.walletUpstream.erpAuthoritative;
+      if (erpAuthoritative) {
+        await tx
+          .update(posMember)
+          .set({
+            totalSpent: sql`${posMember.totalSpent} + ${totalAmountCents}`,
+            totalCount: sql`${posMember.totalCount} + 1`,
+            lastPurchaseAt: sql`CURRENT_TIMESTAMP`,
+          })
+          .where(eq(posMember.id, memberId));
+      } else {
+        await tx
+          .update(posMember)
+          .set({
+            points: newPoints,
+            totalSpent: sql`${posMember.totalSpent} + ${totalAmountCents}`,
+            totalCount: sql`${posMember.totalCount} + 1`,
+            lastPurchaseAt: sql`CURRENT_TIMESTAMP`,
+          })
+          .where(eq(posMember.id, memberId));
+      }
+      if (!erpAuthoritative) {
+        await tx.insert(posPointsLog).values({
+          memberId,
+          change: pointsEarned,
+          balance: newPoints,
+          type: 'earn',
+          sourceNo: saleOrderNo,
+          remark: '全渠道消费积分',
+        });
+      }
+
+      // 【S3】全渠道订单同样要上榜 ERP 会员钱包，否则会员在线上消费拿的积分
+      // 只在门店系统里存在，ERP 侧永远看不到 —— 与本轮机判定双轨同源。
+      if (this.walletUpstream.enabled && pointsEarned > 0) {
+        await this.walletUpstream.enqueue(tx, [
+          {
+            eventKey: walletEventKey('omnichannel', saleOrderNo, 'points'),
+            memberId,
+            erpMemberId: member.erpMemberId ?? null,
+            kind: 'points',
+            changeValue: pointsEarned,
+            sourceType: 'omnichannel',
+            sourceNo: saleOrderNo,
+            storeId: cur.storeId,
+          },
+        ]);
+      }
     }
 
     // 回写幂等标记 + 履约时间
