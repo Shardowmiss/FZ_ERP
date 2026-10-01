@@ -1,0 +1,38 @@
+title = "POS 密钥泄露扫描配置（P0-4 安全门禁）"
+
+# 继承 gitleaks 官方默认规则集（覆盖私钥 / AWS / GitHub / Stripe / JWT 等数百种规则）。
+[extend]
+useDefault = true
+
+# 仅放行「已知非生产密钥」。严禁在此写入真实生产密钥；
+# 新增真实密钥必须走部署密钥管理（KMS / 平台环境变量面板），绝不入库。
+# 每一项均经 detect-secrets + git 历史 pickaxe 核实为测试夹具 / 本地凭据 / 占位符。
+[allowlist]
+description = "仅放行已知非生产密钥：① 本地测试库凭据(erp:erp@localhost:5434，仅本地/测试库)；② .env.example 占位符模板；③ process.env.* 环境变量读取（非硬编码）；④ 联调/模拟脚本中的伪令牌与高熵测试数据。严禁在此写入真实生产密钥。"
+
+# ---- 内容级放行（匹配密钥正文）----
+regexes = [
+  # 本地测试库凭据（仅 localhost / 测试库，非生产环境）
+  '''erp:erp''',
+  '''postgres://erp:erp''',
+  '''postgresql://erp:erp''',
+  '''PGPASSWORD=erp''',
+  '''localhost:5434''',
+  # 测试夹具中的伪令牌（语义明确为测试用）
+  '''test-secret-123''',
+  '''test-token''',
+  # 环境变量读取（非硬编码密钥）
+  '''process\.env\.[A-Z_][A-Z0-9_]*''',
+]
+
+# ---- 路径级放行（整文件均为测试/联调/种子脚本，仅含本地凭据或伪令牌）----
+paths = [
+  '''\.env\.example$''',
+  '''docker-compose\.yml$''',
+  '''scripts/apply-pos-indexes\.cjs$''',
+  '''scripts/reconcile-wallet-shadow\.cjs$''',
+  '''server/database/id\.ts$''',
+  '''server/modules/erp-integration/(real-erp\.adapter|promotion-e2e\.spec)\.ts$''',
+  '''server/sql/pos-erp-schema-contract\.cjs$''',
+  '''verify-pos-p1b\.cjs$''',
+]
