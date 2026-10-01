@@ -11,9 +11,12 @@ import type { NextFunction, Request, Response } from 'express';
  * 根本没有浏览器会话 / cookie，因此需要在 CSRF 中间件之前为这类请求注入一对一致的 CSRF 凭据。
  *
  * 安全边界（双重保险，已对齐 UpstreamTokenGuard 的校验口径）：
- *  - 仅当路径以 /api/pos-receiver 开头、**且请求头 X-Erp-Upstream-Token 与
+ *  - 仅当路径以 ${CLIENT_BASE_PATH}/api/pos-receiver 开头、**且请求头 X-Erp-Upstream-Token 与
  *    ERP_UPSTREAM_TOKEN 时序安全一致**时才注入，否则不注入（CSRF 仍会 403，
  *    且即便绕过也由 UpstreamTokenGuard 判 401）——杜绝「无条件豁免 CSRF」的纵深缺口。
+ *  - 注意：平台用 process.env.CLIENT_BASE_PATH 作为全局前缀，机器对机器推送的 originalUrl
+ *    实际为 /client/api/pos-receiver/...，故匹配时必须带上该前缀，否则带前缀部署下
+ *    POS 上行会卡在 CSRF（403）——此前「黑盒验证」在空前缀下通过、生产带前缀必炸。
  *  - 真实鉴权由 UpstreamTokenGuard 完成（校验共享密钥 + 可选来源 IP 白名单），
  *    本中间件只负责让 CSRF 放行，不替代任何授权判断。
  */
@@ -25,7 +28,12 @@ export class PosUpstreamCsrfBypassMiddleware implements NestMiddleware {
     const path = (req as unknown as { originalUrl?: string; path?: string }).originalUrl
       ?? (req as unknown as { path?: string }).path
       ?? '';
-    if (!path.startsWith('/api/pos-receiver')) {
+    // 兼容全局前缀 CLIENT_BASE_PATH：平台把该前缀挂在 originalUrl 上，而控制器路由在
+    // /api/pos-receiver 之下。bypass 必须匹配「前缀 + /api/pos-receiver」，否则带前缀部署
+    // （如 CLIENT_BASE_PATH=/client）下 POS 机器推送会卡在 CSRF(403)，端点完全不可达。
+    const prefix = (process.env.CLIENT_BASE_PATH ?? '').replace(/\/+$/, '');
+    const target = `${prefix}/api/pos-receiver`;
+    if (!path.startsWith(target)) {
       return next();
     }
     // 机器对机器端点无浏览器会话：先用共享密钥（与 UpstreamTokenGuard 同一口径）校验，
