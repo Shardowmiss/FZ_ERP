@@ -2,8 +2,10 @@ import { NestFactory } from '@nestjs/core';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { configureApp } from '@lark-apaas/fullstack-nestjs-core';
 import { join } from 'path';
+import { existsSync } from 'fs';
 import { __express as hbsExpressEngine } from 'hbs';
 import helmet from 'helmet';
+import express from 'express';
 
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
@@ -25,6 +27,16 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     abortOnError: process.env.NODE_ENV !== 'development',
   });
+  // 本地裸连 node 的 SPA 静态资源服务：平台 configureApp 仅以 catch-all（@Render index）下发 SPA，
+  // 并不在本地 node 上真实服务 /client/assets/*（生产靠网关/CDN）。裸连时这些请求会落到 catch-all
+  // 被兜底成 index.html（Content-Type=text/html、体积=index.html），浏览器把 HTML 当 JS module 执行 → 白屏。
+  // 故在 configureApp 之前显式挂载 express.static(dist/client)，以 CLIENT_BASE_PATH 为前缀、关闭 index：
+  // 真资源先被命中带正确 MIME；非资源路径（含 /client/ 与 SPA 深链）继续走平台 catch-all 渲染 index.html。
+  const posClientDir = join(process.cwd(), 'dist', 'client');
+  const posClientBase = process.env.CLIENT_BASE_PATH || '';
+  if (existsSync(posClientDir)) {
+    app.use(posClientBase, express.static(posClientDir, { index: false, fallthrough: true }));
+  }
   // 本地裸连 node 的 SPA 模板占位符替换：早于 configureApp 注册，使视图引擎渲染后的
   // 最终 HTML 在 send 前被替换为本地值（appId/basename/csrfToken/__platform__），
   // 不受 build:client 覆盖影响，本地可正常渲染并登录（平台网关下无副作用）。
