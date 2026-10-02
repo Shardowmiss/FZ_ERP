@@ -68,7 +68,16 @@ const menuItems: MenuItem[] = [
     children: [
       { key: 'supplier', label: '供应商管理', path: '/base/supplier', permission: 'base:supplier' },
       { key: 'dealer', label: '经销商管理', path: '/base/dealer', permission: 'base:dealer' },
+      { key: 'customer', label: '客户管理', path: '/base/customer', permission: 'base:customer' },
       { key: 'store', label: '店仓管理', path: '/base/store', permission: 'base:store' },
+    ],
+  },
+  {
+    key: 'data-governance',
+    label: '数据治理',
+    icon: <ArrowLeftRight size={18} />,
+    children: [
+      { key: 'merge-audit', label: '合并审计', path: '/base/merge-audit', permission: 'md:merge' },
     ],
   },
   {

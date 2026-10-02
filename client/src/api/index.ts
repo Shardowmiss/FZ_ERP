@@ -10,6 +10,7 @@ export type {
   MergeCandidateMember,
   MergeCandidateGroup,
   MergeResult,
+  MergeLog,
 } from './base';
 export { bomApi } from './bom';
 export { purchaseApi } from './purchase';

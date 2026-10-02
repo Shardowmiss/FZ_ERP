@@ -97,3 +97,34 @@ export interface MergeCandidateGroup {
   memberCount: number;
   members: MergeCandidateMember[];
 }
+
+/**
+ * 合并审计日志行（master_data_merge_log）。供「合并审计」页展示与整批回滚。
+ * - 一行 = 一个被合并方的一次合并（同一次合并的多个被合并方共享 runId，可整批回滚）。
+ * - reversedAt 非空 ⇒ 已回滚（解标，依赖保持归属 survivor）。
+ */
+export interface MergeLog {
+  id: string;
+  entityType: MergeEntityType;
+  runId: string;
+  survivorId: string;
+  /** 保留方展示名（style=styleNo / customer=name），便于运营辨识 */
+  survivorName: string | null;
+  mergedId: string;
+  /** 被合并方业务编码（style=styleNo / customer=code） */
+  mergedCode: string | null;
+  /** 被合并方展示名（style=styleNo / customer=name） */
+  mergedName: string | null;
+  reason: string | null;
+  operator: string | null;
+  /** 回滚时间（ISO 字符串），null = 有效 */
+  reversedAt: string | null;
+  createdAt: string;
+}
+
+/** listLogs 过滤项 */
+export interface ListMergeLogsOptions {
+  /** true=仅已回滚 / false=仅有效 / undefined=全部 */
+  reversed?: boolean;
+  limit?: number;
+}

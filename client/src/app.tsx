@@ -27,6 +27,8 @@ const WarehousePage = React.lazy(() => import('./pages/base/WarehousePage'));
 const StyleAttrDefPage = React.lazy(() => import('./pages/base/StyleAttrDefPage'));
 const DealerPage = React.lazy(() => import('./pages/base/DealerPage'));
 const StorePage = React.lazy(() => import('./pages/base/StorePage'));
+const CustomerPage = React.lazy(() => import('./pages/base/CustomerPage'));
+const MergeAuditPage = React.lazy(() => import('./pages/base/MergeAuditPage'));
 const ColorPage = React.lazy(() => import('./pages/base/ColorPage'));
 const SizePage = React.lazy(() => import('./pages/base/SizePage'));
 const SizeGroupRelationPage = React.lazy(() => import('./pages/base/SizeGroupRelationPage'));
@@ -414,6 +416,14 @@ const RoutesComponent = () => {
           <Route
             path="base/store"
             element={protectedWith(<StorePage />, 'base:store')}
+          />
+          <Route
+            path="base/customer"
+            element={protectedWith(<CustomerPage />, 'base:customer')}
+          />
+          <Route
+            path="base/merge-audit"
+            element={protectedWith(<MergeAuditPage />, 'md:merge')}
           />
           <Route
             path="product/code-rule"

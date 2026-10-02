@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { DRIZZLE_DATABASE, type PostgresJsDatabase } from '@lark-apaas/fullstack-nestjs-core';
-import { and, eq, inArray, isNull, or, sql } from 'drizzle-orm';
+import { and, eq, inArray, isNull, or, sql, SQL } from 'drizzle-orm';
 import { masterDataMergeLog } from '@server/database/schema';
 import { maskPhone } from '@server/common/data-scope/pii';
 import { getMergeConfig } from './configs';
@@ -10,6 +10,7 @@ import type {
   MergeCandidateMember,
   MergeEntityConfig,
   MergeEntityType,
+  MergeLog,
   MergeRequest,
   MergeResult,
 } from './types';
@@ -188,6 +189,58 @@ export class MasterDataMergeService {
       }
       return { reversed };
     });
+  }
+
+  /**
+   * 列出合并审计日志（供「合并审计」页展示 + 整批回滚）。
+   * 按实体类型过滤（路径参数），可选仅有效/仅已回滚；默认按时间倒序、上限 200 行。
+   * 同时回填保留方(survivor)展示名，便于运营辨识。
+   */
+  async listLogs(
+    entityType: string,
+    opts: { reversed?: boolean; limit?: number } = {},
+  ): Promise<MergeLog[]> {
+    const cfg = getMergeConfig(entityType);
+    const entityTable = cfg.table;
+    const conds = [eq(masterDataMergeLog.entityType, cfg.type)];
+    if (opts.reversed === true) conds.push(sql`${masterDataMergeLog.reversedAt} is not null`);
+    else if (opts.reversed === false) conds.push(sql`${masterDataMergeLog.reversedAt} is null`);
+
+    const rows = await this.db
+      .select()
+      .from(masterDataMergeLog)
+      .where(and(...conds))
+      .orderBy(sql`${masterDataMergeLog.createdAt} desc`)
+      .limit(opts.limit ?? 200);
+
+    // 回填保留方展示名（style=styleNo / customer=name）
+    const survivorIds = Array.from(new Set(rows.map((r) => r.survivorId)));
+    const survMap = new Map<string, string | null>();
+    if (survivorIds.length) {
+      const survs = await this.db
+        .select({ id: entityTable.id, name: entityTable[cfg.displayKey] })
+        .from(entityTable)
+        .where(inArray(entityTable.id, survivorIds));
+      for (const s of survs) survMap.set(s.id as string, (s.name as string) ?? null);
+    }
+
+    const iso = (v: unknown): string | null =>
+      v == null ? null : v instanceof Date ? v.toISOString() : String(v);
+
+    return rows.map((r) => ({
+      id: r.id,
+      entityType: r.entityType as MergeEntityType,
+      runId: r.runId,
+      survivorId: r.survivorId,
+      survivorName: survMap.get(r.survivorId) ?? null,
+      mergedId: r.mergedId,
+      mergedCode: r.mergedCode,
+      mergedName: r.mergedName,
+      reason: r.reason,
+      operator: r.operator,
+      reversedAt: iso(r.reversedAt),
+      createdAt: iso(r.createdAt) ?? '',
+    }));
   }
 
   /**

@@ -13,6 +13,7 @@ const ColorGroupPage = React.lazy(() => import('@client/src/pages/base/ColorGrou
 const SizeGroupPage = React.lazy(() => import('@client/src/pages/base/SizeGroupPage'));
 const MaterialPage = React.lazy(() => import('@client/src/pages/base/MaterialPage'));
 const CustomerPage = React.lazy(() => import('@client/src/pages/base/CustomerPage'));
+const MergeAuditPage = React.lazy(() => import('@client/src/pages/base/MergeAuditPage'));
 const SupplierPage = React.lazy(() => import('@client/src/pages/base/SupplierPage'));
 const WarehousePage = React.lazy(() => import('@client/src/pages/base/WarehousePage'));
 const StyleAttrDefPage = React.lazy(() => import('@client/src/pages/base/StyleAttrDefPage'));
@@ -98,6 +99,7 @@ const routePermissions: Record<string, string> = {
   '/base/size-group': 'base:sku',
   '/base/material': 'base:material',
   '/base/customer': 'base:customer',
+  '/base/merge-audit': 'md:merge',
   '/base/supplier': 'base:supplier',
   '/base/warehouse': 'base:warehouse',
   '/base/style-attribute': 'base:style',
@@ -183,6 +185,8 @@ function getRouteComponent(pathname: string): React.ComponentType | null {
     '/base/style-attribute': StyleAttrDefPage,
     '/base/dealer': DealerPage,
     '/base/store': StorePage,
+    '/base/customer': CustomerPage,
+    '/base/merge-audit': MergeAuditPage,
     '/bom': BomPage,
     '/production/bom': ProductionBomPage,
     '/purchase/order': PurchaseOrderPage,

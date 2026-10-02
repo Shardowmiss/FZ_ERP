@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Download } from 'lucide-react';
 import { baseApi } from '@client/src/api';
 import type { MergeResult, MergeCandidateGroup } from '@client/src/api';
@@ -490,7 +491,7 @@ const CustomerPage: React.FC = () => {
                   <p className="font-medium mb-1">合并成功</p>
                   <p>批次号（runId）：<span className="font-mono">{mergeResult.runId}</span></p>
                   <p>已合并 {mergeResult.mergedCount} 个客户到保留客户（被合并方仅打标，未删除，关联业务已全部改指到保留方）。</p>
-                  <p className="text-gray-500 mt-1">如需撤销，可在「合并审计」页按批次号回滚。</p>
+                  <p className="text-gray-500 mt-1">如需撤销，可在<Link to="/base/merge-audit" className="text-primary hover:underline" onClick={closeMergeModal}>「合并审计」页</Link>按批次号回滚。</p>
                 </div>
               </div>
             ) : (

@@ -421,4 +421,35 @@ describe('P0-3 MasterDataMergeService（3b/3c 真库 erp_test）', () => {
     // 成员 phone 也应脱敏
     expect(pg!.members.every((m) => m.phone === pg!.key)).toBe(true);
   });
+
+  it('11) listLogs：合并后被列出(reversedAt=null)，回滚后状态翻转（reversed 过滤生效）', async () => {
+    const survivor = await makeCustomer(uniq('C-S11'));
+    const merged = await makeCustomer(uniq('C-M11'));
+    const res = await svc.merge({ entityType: 'customer', survivorId: survivor.id, mergedIds: [merged.id], reason: '测试' });
+
+    // 默认(全部)与 reversed:false 都应包含该批次，且 reversedAt 为空
+    const all = await svc.listLogs('customer');
+    const hitAll = all.filter((l) => l.runId === res.runId);
+    expect(hitAll.length).toBe(1);
+    expect(hitAll[0].survivorName).toBe(survivor.name);
+    expect(hitAll[0].mergedName).toBe(merged.name);
+    expect(hitAll[0].reason).toBe('测试');
+    expect(hitAll[0].reversedAt).toBeNull();
+
+    const activeOnly = await svc.listLogs('customer', { reversed: false });
+    expect(activeOnly.some((l) => l.runId === res.runId)).toBe(true);
+
+    const reversedOnly = await svc.listLogs('customer', { reversed: true });
+    expect(reversedOnly.some((l) => l.runId === res.runId)).toBe(false);
+
+    // 回滚后：reversed:true 能查到，且 reversedAt 非空
+    await svc.reverse({ logId: res.logs[0].logId });
+    const reversedNow = await svc.listLogs('customer', { reversed: true });
+    const hitRev = reversedNow.find((l) => l.runId === res.runId);
+    expect(hitRev).toBeDefined();
+    expect(hitRev!.reversedAt).not.toBeNull();
+
+    const activeAfter = await svc.listLogs('customer', { reversed: false });
+    expect(activeAfter.some((l) => l.runId === res.runId)).toBe(false);
+  });
 });

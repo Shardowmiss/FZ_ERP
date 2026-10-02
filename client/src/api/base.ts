@@ -200,6 +200,18 @@ export const baseApi = {
       entityType: string,
       data: { survivorId: string; mergedIds: string[]; reason?: string },
     ) => request<MergeResult>(`/api/md-merge/${entityType}/merge`, 'POST', data),
+    /** 合并审计日志列表：供「合并审计」页展示 + 整批回滚 */
+    mergeLogs: (entityType: string, opts?: { reversed?: boolean; limit?: number }) =>
+      request<MergeLog[]>(`/api/md-merge/${entityType}/merge-logs`, 'GET', null, {
+        ...(opts?.reversed !== undefined ? { reversed: String(opts.reversed) } : {}),
+        ...(opts?.limit !== undefined ? { limit: String(opts.limit) } : {}),
+      }),
+    /** 整批回滚一次合并（按 runId；被合并方解标，依赖保持归属 survivor，幂等） */
+    reverse: (entityType: string, runId: string, operator?: string) =>
+      request<{ reversed: number }>(`/api/md-merge/${entityType}/merge/${runId}/reverse`, 'POST', {
+        runId,
+        operator,
+      }),
   },
 };
 
@@ -267,4 +279,20 @@ export interface MergeResult {
   survivorId: string;
   mergedCount: number;
   logs: { mergedId: string; logId: string }[];
+}
+
+/** 合并审计日志行（与后端 types.ts MergeLog 严格对齐） */
+export interface MergeLog {
+  id: string;
+  entityType: MergeEntityType;
+  runId: string;
+  survivorId: string;
+  survivorName: string | null;
+  mergedId: string;
+  mergedCode: string | null;
+  mergedName: string | null;
+  reason: string | null;
+  operator: string | null;
+  reversedAt: string | null;
+  createdAt: string;
 }
