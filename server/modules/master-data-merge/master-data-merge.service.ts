@@ -311,8 +311,9 @@ export class MasterDataMergeService {
         id: entityTable.id,
         code: entityTable[cfg.codeKey],
         name: entityTable[cfg.displayKey],
-        // 仅 customer 配置了 candidate，其有 phone 列；其余实体不会走到此分支
-        phone: (entityTable as any).phone,
+        // 仅配置了 phoneExpr（有电话列的实体，如 customer）才选 phone；
+        // style 等无 phone 列的实体不能选该列，否则 SQL 报未知字段。
+        ...(cfg.candidate?.phoneExpr ? { phone: (entityTable as any).phone } : {}),
       })
       .from(entityTable)
       .where(inArray(entityTable.id, ids));

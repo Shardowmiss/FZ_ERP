@@ -8,6 +8,7 @@ const SUDA_CSRF = 'verify-perm';
 
 const SURVIVOR = process.env.SMOKE_SURVIVOR_ID;
 const MERGED = process.env.SMOKE_MERGED_ID;
+const ENTITY = process.env.SMOKE_ENTITY || 'customer';
 if (!SURVIVOR || !MERGED) {
   console.error('缺少 SMOKE_SURVIVOR_ID / SMOKE_MERGED_ID 环境变量');
   process.exit(2);
@@ -56,12 +57,13 @@ async function req(path, method, body, token) {
   if (!erpCsrf) { console.error('未抓到 erp-csrf cookie（写操作将 403）'); process.exit(3); }
 
   // 1) 候选发现（GET，无 CSRF 要求；修复前 403）
-  const cand = await req('/api/md-merge/customer/candidates?limit=50', 'GET', null, token);
-  console.log('[candidates]', cand.status, '(expect 200, NOT 403)');
+  const cand = await req(`/api/md-merge/${ENTITY}/candidates?limit=50`, 'GET', null, token);
+  const candCount = Array.isArray(cand.data) ? cand.data.length : 'n/a';
+  console.log('[candidates]', cand.status, '组数=', candCount, '(expect 200, NOT 403)');
 
   // 2) 执行合并（POST，需 erp-csrf）
   const merge = await req(
-    '/api/md-merge/customer/merge',
+    `/api/md-merge/${ENTITY}/merge`,
     'POST',
     { survivorId: SURVIVOR, mergedIds: [MERGED], reason: 'smoke-e2e' },
     token,
@@ -70,7 +72,7 @@ async function req(path, method, body, token) {
   console.log('[merge]', merge.status, 'runId=', runId, '(expect 201, NOT 403)');
 
   // 3) 审计日志列表（GET；修复前路由缺失→404，修复后 200）
-  const logs = await req('/api/md-merge/customer/merge-logs?reversed=false', 'GET', null, token);
+  const logs = await req(`/api/md-merge/${ENTITY}/merge-logs?reversed=false`, 'GET', null, token);
   const found = Array.isArray(logs.data) && logs.data.some((l) => l.runId === runId);
   console.log('[merge-logs]', logs.status, '命中批次?', found, '(expect 200 且命中)');
 
@@ -78,7 +80,7 @@ async function req(path, method, body, token) {
   let revStatus = 'skip';
   let revData = null;
   if (runId) {
-    const rev = await req(`/api/md-merge/customer/merge/${runId}/reverse`, 'POST', { runId }, token);
+    const rev = await req(`/api/md-merge/${ENTITY}/merge/${runId}/reverse`, 'POST', { runId }, token);
     revStatus = rev.status; revData = rev.data;
   }
   console.log('[reverse]', revStatus, JSON.stringify(revData), '(expect 200, reversed=1)');

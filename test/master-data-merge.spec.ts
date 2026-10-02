@@ -422,6 +422,28 @@ describe('P0-3 MasterDataMergeService（3b/3c 真库 erp_test）', () => {
     expect(pg!.members.every((m) => m.phone === pg!.key)).toBe(true);
   });
 
+  it('12) candidates：style 按归一款名识别重复组（无 phone 列不报错，锁 500 回归）', async () => {
+    // 锁回归：style 表无 phone 列，早期 candidates 硬选 style.phone 导致 500；
+    // 修复后仅在配置了 phoneExpr（有电话列实体）时才选该列。
+    const base = `dupstyle-${randomUUID().slice(0, 8)}`;
+    const a = await makeStyle(uniq('S-A12'));
+    const b = await makeStyle(uniq('S-B12'));
+    // 强制同款名，触发归一名称分组（款号 style_no 唯一，故按款名去重）
+    await db.update(style).set({ name: base }).where(eq(style.id, a.id));
+    await db.update(style).set({ name: base }).where(eq(style.id, b.id));
+
+    const groups = await svc.candidates('style');
+    const hit = groups.filter(
+      (g) => g.keyType === 'name' && g.members.some((m) => m.id === a.id || m.id === b.id),
+    );
+    expect(hit.length).toBeGreaterThanOrEqual(1);
+    const g = hit[0];
+    expect(g.memberCount).toBe(2);
+    expect(g.members.map((m) => m.id).sort()).toEqual([a.id, b.id].sort());
+    // style 无 phone 列：成员 phone 应为 null（验证未误取不存在的列）
+    expect(g.members.every((m) => m.phone === null)).toBe(true);
+  });
+
   it('11) listLogs：合并后被列出(reversedAt=null)，回滚后状态翻转（reversed 过滤生效）', async () => {
     const survivor = await makeCustomer(uniq('C-S11'));
     const merged = await makeCustomer(uniq('C-M11'));

@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { Download } from 'lucide-react';
 import { baseApi } from '@client/src/api';
+import type { MergeResult, MergeCandidateGroup } from '@client/src/api';
+import { useAuth } from '@client/src/contexts/AuthContext';
 import type { Style, ColorGroup, SizeGroup, PaginationResult, StyleCreateAutoRequest, StyleAttribute } from '@shared/api.interface';
 import { toast } from 'sonner';
 import { showConfirm } from '@lark-apaas/client-toolkit';
@@ -35,6 +38,18 @@ const StylePage: React.FC = () => {
   const [autoFormKey, setAutoFormKey] = useState(0);
   const autoFormRef = useRef<AutoCreateFormHandle>(null);
 
+  const { hasPermission } = useAuth();
+  const canMerge = hasPermission('md:merge');
+
+  // 合并相关状态
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [mergeModalOpen, setMergeModalOpen] = useState(false);
+  const [mergeLoading, setMergeLoading] = useState(false);
+  const [relatedCountMap, setRelatedCountMap] = useState<Record<string, number>>({});
+  const [survivorId, setSurvivorId] = useState<string>('');
+  const [reason, setReason] = useState('');
+  const [mergeResult, setMergeResult] = useState<MergeResult | null>(null);
+
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -46,6 +61,8 @@ const StylePage: React.FC = () => {
       });
       setList(res.items);
       setTotal(res.total);
+      // 单页选择：翻页/筛选后清空勾选，避免跨页误合并（防误操作）
+      setSelectedIds([]);
     } catch (e) {
       toast(errMsg(e, '加载失败'));
     } finally {
@@ -169,6 +186,71 @@ const StylePage: React.FC = () => {
     return `款号: ${item.styleNo}`;
   };
 
+  // ===== 多选 =====
+  const allOnPageSelected = list.length > 0 && list.every((c) => selectedIds.includes(c.id));
+  const toggleSelectAll = () => {
+    if (allOnPageSelected) {
+      setSelectedIds((prev) => prev.filter((id) => !list.some((c) => c.id === id)));
+    } else {
+      setSelectedIds((prev) => Array.from(new Set([...prev, ...list.map((c) => c.id)])));
+    }
+  };
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  };
+
+  // ===== 打开合并弹窗：拉取查重候选补全关联单据数（帮运营判断 survivor） =====
+  const openMergeModal = async () => {
+    if (selectedIds.length < 2) return;
+    setMergeLoading(true);
+    try {
+      // candidates 非必填：失败（如网络/权限）不阻断合并，仅失去 relatedCount 提示
+      const groups = (await baseApi.masterDataMerge
+        .candidates('style')
+        .catch(() => [] as MergeCandidateGroup[])) || [];
+      const map: Record<string, number> = {};
+      for (const g of groups) for (const m of g.members) map[m.id] = m.relatedCount;
+      setRelatedCountMap(map);
+      // 默认 survivor = 关联单据最多者（并列取先选）
+      const ranked = [...selectedIds].sort((a, b) => (map[b] ?? -1) - (map[a] ?? -1));
+      setSurvivorId(ranked[0]);
+      setReason('');
+      setMergeResult(null);
+      setMergeModalOpen(true);
+    } finally {
+      setMergeLoading(false);
+    }
+  };
+
+  const handleMergeConfirm = async () => {
+    if (!survivorId) { toast('请选择保留款号（survivor）'); return; }
+    const mergedIds = selectedIds.filter((id) => id !== survivorId);
+    if (mergedIds.length === 0) { toast('请至少勾选一个被合并款号'); return; }
+    setMergeLoading(true);
+    try {
+      const res = await baseApi.masterDataMerge.merge('style', {
+        survivorId,
+        mergedIds,
+        reason: reason.trim() || undefined,
+      });
+      setMergeResult(res);
+      toast.success(`合并成功，批次号 ${res.runId}`);
+      setSelectedIds([]);
+    } catch (e) {
+      toast(errMsg(e, '合并失败'));
+    } finally {
+      setMergeLoading(false);
+    }
+  };
+
+  const closeMergeModal = () => {
+    setMergeModalOpen(false);
+    setMergeResult(null);
+    fetchData();
+  };
+
+  const selectedStyles = list.filter((c) => selectedIds.includes(c.id));
+
   const dialogTitle = editingId ? '编辑款号' : (isAutoMode ? '自动编码新增款号' : '新增款号');
 
   const handleExport = () => {
@@ -188,6 +270,15 @@ const StylePage: React.FC = () => {
           >
             <Download size={16} /> 导出
           </button>
+          {canMerge && (
+            <button
+              className="px-4 py-2 bg-amber-600 text-white text-sm rounded hover:bg-amber-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={openMergeModal}
+              disabled={selectedIds.length < 2 || mergeLoading}
+            >
+              合并重复款号（{selectedIds.length}）
+            </button>
+          )}
           <div className="relative" onClick={e => e.stopPropagation()}>
             <button
               className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors flex items-center gap-1"
@@ -230,12 +321,26 @@ const StylePage: React.FC = () => {
            onClick={handleSearch}>查询</button>
         <button className="px-4 py-2 bg-gray-100 text-gray-700 text-sm rounded hover:bg-gray-200 transition-colors"
           onClick={handleReset}>重置</button>
+        {canMerge && selectedIds.length >= 2 && (
+          <span className="text-xs text-amber-700">
+            已选 {selectedIds.length} 个款号，点击「合并重复款号」选择保留方并完成合并
+          </span>
+        )}
       </div>
 
       <TableContainer>
         <table className="w-full text-sm border-collapse">
           <thead>
             <tr className="bg-gray-50 text-gray-600 font-medium">
+              <th className="w-10 px-2 py-3 border-b border-gray-200 text-center">
+                <input
+                  type="checkbox"
+                  checked={allOnPageSelected}
+                  onChange={toggleSelectAll}
+                  className="cursor-pointer"
+                  aria-label="全选本页"
+                />
+              </th>
               <th className="text-left px-4 py-3 border-b border-gray-200">款号</th>
               <th className="text-left px-4 py-3 border-b border-gray-200">款名</th>
               <th className="text-left px-4 py-3 border-b border-gray-200">品类</th>
@@ -250,11 +355,20 @@ const StylePage: React.FC = () => {
           </thead>
            <tbody>
              {loading ? (
-               <tr><td colSpan={10} className="text-center py-8 text-gray-400">加载中...</td></tr>
+               <tr><td colSpan={11} className="text-center py-8 text-gray-400">加载中...</td></tr>
              ) : !loading && list.length === 0 ? (
-              <tr><td colSpan={10} className="text-center py-8 text-gray-400">暂无数据</td></tr>
+              <tr><td colSpan={11} className="text-center py-8 text-gray-400">暂无数据</td></tr>
             ) : !loading && list.map(item => (
               <tr key={item.id} className="border-b border-gray-200 hover:bg-gray-50">
+                <td className="px-2 py-3 text-center border-b border-gray-200">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.includes(item.id)}
+                    onChange={() => toggleSelect(item.id)}
+                    className="cursor-pointer"
+                    aria-label={`选择 ${item.styleNo}`}
+                  />
+                </td>
                 <td className="px-4 py-3 font-medium" title={getStyleTooltip(item)}>{item.styleNo}</td>
                 <td className="px-4 py-3">{item.name}</td>
                 <td className="px-4 py-3 text-gray-600">{item.category || '-'}</td>
@@ -316,6 +430,99 @@ const StylePage: React.FC = () => {
                 onClick={() => setDialogOpen(false)}>取消</button>
               <button className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleSave} disabled={submitting}>{submitting ? '保存中...' : '保存'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {mergeModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded shadow-lg w-[680px] max-w-[95vw] max-h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200">
+              <h3 className="text-lg font-medium">合并重复款号</h3>
+              <button className="text-gray-400 hover:text-gray-600 text-xl" onClick={closeMergeModal}>×</button>
+            </div>
+
+            {mergeResult ? (
+              <div className="p-6 flex-1 overflow-y-auto">
+                <div className="rounded bg-green-50 border border-green-200 p-4 text-sm text-green-800">
+                  <p className="font-medium mb-1">合并成功</p>
+                  <p>批次号（runId）：<span className="font-mono">{mergeResult.runId}</span></p>
+                  <p>已合并 {mergeResult.mergedCount} 个款号到保留款号（被合并方仅打标，未删除，关联业务已全部改指到保留方）。</p>
+                  <p className="text-gray-500 mt-1">如需撤销，可在<Link to="/base/merge-audit" className="text-primary hover:underline" onClick={closeMergeModal}>「合并审计」页</Link>按批次号回滚。</p>
+                </div>
+              </div>
+            ) : (
+              <div className="p-5 flex-1 overflow-y-auto">
+                <div className="mb-3 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2">
+                  合并后，被合并款号<strong>不会被删除</strong>，仅打上「已合并」标记，其全部关联业务
+                  （SKU / BOM / 工单 / 采购明细 / 配货 / 预订单）将改指到下方选中的「保留款号」。
+                  该操作可经审计日志按批次回滚。
+                </div>
+
+                <p className="text-sm text-gray-600 mb-2">请选择保留款号（survivor）：</p>
+                <div className="space-y-2">
+                  {selectedStyles.map((c) => {
+                    const rc = relatedCountMap[c.id];
+                    return (
+                      <label
+                        key={c.id}
+                        className={`flex items-center gap-3 border rounded p-3 cursor-pointer transition-colors ${
+                          survivorId === c.id ? 'border-primary bg-blue-50' : 'border-gray-200 hover:bg-gray-50'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="survivor"
+                          checked={survivorId === c.id}
+                          onChange={() => setSurvivorId(c.id)}
+                          className="cursor-pointer"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium truncate">{c.name}</div>
+                          <div className="text-xs text-gray-500 truncate">
+                            {c.styleNo} · {c.brand || '无品牌'}
+                          </div>
+                        </div>
+                        <div className="text-right text-xs whitespace-nowrap">
+                          <div className="text-gray-500">关联单据</div>
+                          <div className="font-medium">{rc === undefined ? '—' : rc}</div>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-4">
+                  <label className="block text-sm text-gray-700 mb-1">合并原因（可选，写入审计日志）</label>
+                  <textarea
+                    value={reason}
+                    onChange={(e) => setReason(e.target.value)}
+                    rows={2}
+                    placeholder="如：重复建档，保留有交易的款号"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary resize-none"
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-2 px-5 py-3 border-t border-gray-200">
+              <button
+                className="px-4 py-2 bg-gray-100 text-gray-700 text-sm rounded hover:bg-gray-200 transition-colors"
+                onClick={closeMergeModal}
+                disabled={mergeLoading}
+              >
+                {mergeResult ? '关闭' : '取消'}
+              </button>
+              {!mergeResult && (
+                <button
+                  className="px-4 py-2 bg-amber-600 text-white text-sm rounded hover:bg-amber-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={handleMergeConfirm}
+                  disabled={mergeLoading || !survivorId}
+                >
+                  {mergeLoading ? '合并中...' : `确认合并（${selectedIds.length - (survivorId ? 1 : 0)} 个被合并）`}
+                </button>
+              )}
             </div>
           </div>
         </div>

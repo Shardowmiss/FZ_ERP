@@ -71,6 +71,10 @@ export const MERGE_ENTITY_CONFIGS: Record<string, MergeEntityConfig> = {
         );
       }
     },
+    // 查重候选：款名归一（去空白+小写）。款号 style_no 唯一，按款名去重更贴合运营重复建档场景。
+    candidate: {
+      nameExpr: sql<string>`lower(regexp_replace(coalesce(${style.name}, ''), '[[:space:]]+', '', 'g'))`,
+    },
   },
   customer: {
     type: 'customer',
