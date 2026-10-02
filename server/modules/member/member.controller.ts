@@ -119,4 +119,12 @@ export class MemberController {
       operator: body?.operator ?? RequestContext.getUserId(),
     });
   }
+
+  /** 会员合并审计日志列表（供运营审计与整批回滚）；reversed 可选 'true'/'false' */
+  @CheckPermission('member:merge')
+  @Get('merge-logs')
+  async mergeLogs(@Query('reversed') reversed?: string) {
+    const revOpt = reversed === undefined ? undefined : reversed === 'true';
+    return this.mergeService.listLogs({ reversed: revOpt });
+  }
 }

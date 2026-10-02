@@ -78,6 +78,7 @@ const menuItems: MenuItem[] = [
     icon: <ArrowLeftRight size={18} />,
     children: [
       { key: 'merge-audit', label: '合并审计', path: '/base/merge-audit', permission: 'md:merge' },
+      { key: 'member-merge-audit', label: '会员合并审计', path: '/base/member-merge-audit', permission: 'member:merge' },
     ],
   },
   {

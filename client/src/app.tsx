@@ -96,6 +96,7 @@ const OmniPage = React.lazy(() => import('./pages/omni/OmniPage'));
 const PosCashierPage = React.lazy(() => import('./pages/pos/CashierPage'));
 const PricingPage = React.lazy(() => import('./pages/pricing/PriceListPage'));
 const MemberPage = React.lazy(() => import('./pages/member/MemberPage'));
+const MemberMergeAuditPage = React.lazy(() => import('./pages/member/MemberMergeAuditPage'));
 const InventoryInboundEditPage = React.lazy(() => import('./pages/inventory/InventoryInboundEditPage'));
 const InventoryOutboundEditPage = React.lazy(() => import('./pages/inventory/InventoryOutboundEditPage'));
 const InventoryTransferEditPage = React.lazy(() => import('./pages/inventory/InventoryTransferEditPage'));
@@ -758,6 +759,10 @@ const RoutesComponent = () => {
           <Route
             path="member"
             element={protectedWith(<MemberPage />, 'retail:view')}
+          />
+          <Route
+            path="base/member-merge-audit"
+            element={protectedWith(<MemberMergeAuditPage />, 'member:merge')}
           />
           <Route
             path="inventory/inbound/new"

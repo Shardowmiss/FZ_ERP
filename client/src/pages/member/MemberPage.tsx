@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import SafeChart from '@client/src/components/SafeChart';
 import { toast } from 'sonner';
 import { memberApi } from '@client/src/api/member';
@@ -338,7 +339,13 @@ const MemberPage: React.FC = () => {
                     转移积分 {mergeResult.movedPoints} · 转移储值 ¥{(mergeResult.movedStoredValue / 100).toFixed(2)} ·
                     合并消费额 ¥{mergeResult.movedTotalSpent.toFixed(2)} · 合并订单数 {mergeResult.movedOrderCount}
                   </p>
-                  <p className="text-gray-500">该合并已写入 member_merge_log，如需回滚可凭批次号经「会员合并」审计入口操作。</p>
+                  <p className="text-gray-500">
+                    该合并已写入 member_merge_log。如需回滚，可前往{' '}
+                    <Link to="/base/member-merge-audit" className="text-primary hover:underline" onClick={closeMergeModal}>
+                      会员合并审计
+                    </Link>{' '}
+                    凭批次号整批回滚。
+                  </p>
                 </div>
               </div>
             ) : (

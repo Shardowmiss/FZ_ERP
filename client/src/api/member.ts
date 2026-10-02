@@ -40,6 +40,29 @@ export interface MemberMergeResult {
   logs: { mergedId: string; logId: string }[];
 }
 
+/** 会员合并审计日志（与 server/database/schema.ts member_merge_log 严格对齐） */
+export interface MemberMergeLog {
+  id: string;
+  runId: string;
+  survivorId: string;
+  mergedId: string;
+  mergedMemberNo: string | null;
+  mergedName: string | null;
+  mergedPhoneHmac: string | null;
+  /** 本行从被合并方转移到 survivor 的积分 */
+  movedPoints: number;
+  /** 转移的储值（单位=分，numeric 以字符串返回） */
+  movedStoredValue: string;
+  /** 转移的累计消费额（numeric 以字符串返回） */
+  movedTotalSpent: string;
+  /** 转移的订单数 */
+  movedOrderCount: number;
+  reason: string | null;
+  operator: string | null;
+  createdAt: string;
+  reversedAt: string | null;
+}
+
 export const memberApi = {
   list: (page = 1, pageSize = 20, keyword?: string, level?: string) =>
     request<{ list: Member[]; total: number }>('/api/member/list', 'GET', null, {
@@ -81,4 +104,8 @@ export const memberApi = {
   /** 回滚一次合并（按 merge_log.id）或整批（按 run_id，前缀 merge_） */
   reverseMerge: (id: string, body?: { runId?: string }) =>
     request<{ reversed: number }>(`/api/member/merge/${id}/reverse`, 'POST', body),
+  /** 会员合并审计日志列表（按时间倒序）；reversed 可选 true/false/undefined（全部） */
+  mergeLogs: (reversed?: boolean) =>
+    request<MemberMergeLog[]>('/api/member/merge-logs', 'GET', null,
+      reversed === undefined ? undefined : { reversed: reversed ? 'true' : 'false' }),
 };

@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { DRIZZLE_DATABASE, type PostgresJsDatabase } from '@lark-apaas/fullstack-nestjs-core';
-import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNull, sql, type SQL } from 'drizzle-orm';
 import type { PostgresJsTransaction } from 'drizzle-orm/postgres-js';
 import {
   member,
@@ -12,6 +12,9 @@ import {
 import { decryptField } from '@server/common/crypto/field-encryption';
 import { maskPhone } from '@server/common/data-scope/pii';
 import { MemberWalletService } from './member-wallet.service';
+
+/** member_merge_log 行类型（与 schema.ts 同源） */
+type MemberMergeLogRow = typeof memberMergeLog.$inferSelect;
 
 /** 候选会员（单条） */
 export interface MergeCandidate {
@@ -286,6 +289,27 @@ export class MemberMergeService {
         logs,
       };
     });
+  }
+
+  /**
+   * 审计列表：返回 member_merge_log（按时间倒序），供前端「会员合并审计」页展示与整批回滚。
+   * 资金敏感：仅展示，不修改；回滚走 reverse()。
+   */
+  async listLogs(opts?: { reversed?: boolean }): Promise<MemberMergeLogRow[]> {
+    const conditions: SQL[] = [];
+    if (opts?.reversed !== undefined) {
+      conditions.push(
+        opts.reversed
+          ? sql`${memberMergeLog.reversedAt} IS NOT NULL`
+          : isNull(memberMergeLog.reversedAt),
+      );
+    }
+    const rows = await this.db
+      .select()
+      .from(memberMergeLog)
+      .where(conditions.length ? and(...conditions) : undefined)
+      .orderBy(desc(memberMergeLog.createdAt));
+    return rows as MemberMergeLogRow[];
   }
 
   /**

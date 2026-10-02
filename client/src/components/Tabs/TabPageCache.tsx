@@ -75,6 +75,7 @@ const BIPage = React.lazy(() => import('@client/src/pages/analytics/BIPage'));
 const MobileDashboardPage = React.lazy(() => import('@client/src/pages/analytics/MobileDashboardPage'));
 const OmniPage = React.lazy(() => import('@client/src/pages/omni/OmniPage'));
 const MemberPage = React.lazy(() => import('@client/src/pages/member/MemberPage'));
+const MemberMergeAuditPage = React.lazy(() => import('@client/src/pages/member/MemberMergeAuditPage'));
 
 const CodeRulePage = React.lazy(() => import('@client/src/pages/system/CodeRulePage'));
 const UserManagePage = React.lazy(() => import('@client/src/pages/system/UserManagePage'));
@@ -192,6 +193,7 @@ const routePermissions: Record<string, string> = {
   '/analytics/bi': 'dashboard:view',
   '/omni': 'sales:view',
   '/member': 'retail:view',
+  '/base/member-merge-audit': 'member:merge',
 };
 
 function getPermissionForPath(pathname: string): string | null {
@@ -288,6 +290,7 @@ function getRouteComponent(pathname: string): React.ComponentType | null {
     '/analytics/mobile-dashboard': MobileDashboardPage,
     '/omni': OmniPage,
     '/member': MemberPage,
+    '/base/member-merge-audit': MemberMergeAuditPage,
   };
 
   const editPageMap: Record<string, () => Promise<{ default: React.ComponentType }>> = {

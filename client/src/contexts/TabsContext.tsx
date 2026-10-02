@@ -51,6 +51,7 @@ function getMenuLabelMap(): Record<string, string> {
     '/base/store': '店仓管理',
     '/base/customer': '客户管理',
     '/base/merge-audit': '合并审计',
+    '/base/member-merge-audit': '会员合并审计',
     '/base/style-attribute': '款号属性维护',
     '/bom': 'BOM管理',
     '/production/bom': 'BOM管理',
