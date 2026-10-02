@@ -515,6 +515,7 @@ export class RbacService {
       name: '店长',
       description: '门店日常运营：零售/销售/收银/会员/库存查询与预警',
       permissions: [
+        'base:store',
         'retail:view',
         'sales:view',
         'pos:cashier',
