@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { configureApp } from '@lark-apaas/fullstack-nestjs-core';
 import helmet from 'helmet';
+import express from 'express';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import { __express as hbsExpressEngine } from 'hbs';
@@ -31,6 +32,22 @@ async function bootstrap() {
   // 请求上下文与访问日志（Wave 4-A② / P2-c）：必须早于平台 CSRF / 鉴权，
   // 使 401/403/500 等被拒或失败的响应同样带 requestId，链路不被截断。
   app.use(requestLogMiddleware);
+  // 本地裸连 node 的 SPA 静态资源服务：平台 configureApp 仅以 catch-all（@Render index）下发 SPA，
+  // 并不在本地 node 上真实服务 /client/assets/*（生产靠网关/CDN）。裸连时这些请求会落到 catch-all
+  // 被兜底成 index.html（Content-Type=text/html、体积=index.html），浏览器把 HTML 当 JS module 执行 → 白屏。
+  // 故在 configureApp 之前显式挂载 express.static(dist/client)，以 CLIENT_BASE_PATH 为前缀、关闭 index：
+  // 真资源先被命中带正确 MIME；非资源路径（含 /client/ 与 SPA 深链）继续走平台 catch-all 渲染 index.html。
+  // 兼容两种构建产物布局（均相对 server 入口推导，不受 cwd 影响）。
+  // 必须以「含 assets 子目录」为准——build.sh 会在 dist/dist/client 留下仅含 index.html 的残缺目录，
+  // 若优先命中它，express.static 找不到真实 JS/CSS → 全走 catch-all 兜底成 index.html → 白屏。
+  const erpDistDir = join(__dirname, '..');
+  const erpClientCandidates = [join(erpDistDir, 'client'), join(erpDistDir, 'dist', 'client')];
+  const erpClientDir =
+    erpClientCandidates.find((p) => existsSync(join(p, 'index.html')) && existsSync(join(p, 'assets'))) ||
+    erpClientCandidates.find((p) => existsSync(p)) ||
+    erpClientCandidates[1];
+  const erpClientBase = process.env.CLIENT_BASE_PATH || '';
+  app.use(erpClientBase, express.static(erpClientDir, { index: false, fallthrough: true }));
   // 本地裸连 node 的 SPA 模板占位符替换：早于 configureApp 注册，使视图引擎渲染后的
   // 最终 HTML 在 send 前被替换为本地值（appId/basename/csrfToken/__platform__），
   // 不受 build:client 覆盖影响，本地可正常渲染并登录（平台网关下无副作用）。
