@@ -8,6 +8,7 @@ import helmet from 'helmet';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { requestLogMiddleware } from './middleware/request-log.middleware';
+import { spaTemplateMiddleware } from './middleware/spa-template.middleware';
 
 async function bootstrap() {
   // 本地/云端兜底：未配置平台基础域名时给占位值，避免 lark-apaas PlatformModule 在
@@ -24,7 +25,12 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     abortOnError: process.env.NODE_ENV !== 'development',
   });
-  await configureApp(app, { 
+  // 本地裸连 node 的 SPA 模板占位符替换：早于 configureApp 注册，使视图引擎渲染后的
+  // 最终 HTML 在 send 前被替换为本地值（appId/basename/csrfToken/__platform__），
+  // 不受 build:client 覆盖影响，本地可正常渲染并登录（平台网关下无副作用）。
+  // 取代原先仅改 window.csrfToken 的 pos-local-csrf 中间件，覆盖全部占位符。
+  app.use(spaTemplateMiddleware({ appId: 'pos-local-dev', appName: 'POS本地', basename: '/client/' }));
+  await configureApp(app, {
     disableSwagger: true,
   });
   // P0-5：基础安全头（防点击劫持/MIME 嗅探/窃听 referrer 等）。
