@@ -37,6 +37,16 @@ async function bootstrap() {
   if (existsSync(posClientDir)) {
     app.use(posClientBase, express.static(posClientDir, { index: false, fallthrough: true }));
   }
+  // 防呆重定向：SPA 挂在 CLIENT_BASE_PATH（/client）之下，裸根路径 / 会命中平台 catch-all 之外的
+  // 404 JSON（Cannot GET /）。GET / 一律 302 到 SPA 入口，避免「打开 localhost:3001 看到裸 404/空白」。
+  if (posClientBase) {
+    app.use((req, res, next) => {
+      if (req.method === 'GET' && (req.path === '/' || req.path === '')) {
+        return res.redirect(posClientBase.endsWith('/') ? posClientBase : `${posClientBase}/`);
+      }
+      next();
+    });
+  }
   // 本地裸连 node 的 SPA 模板占位符替换：早于 configureApp 注册，使视图引擎渲染后的
   // 最终 HTML 在 send 前被替换为本地值（appId/basename/csrfToken/__platform__），
   // 不受 build:client 覆盖影响，本地可正常渲染并登录（平台网关下无副作用）。
@@ -44,6 +54,30 @@ async function bootstrap() {
   app.use(spaTemplateMiddleware({ appId: 'pos-local-dev', appName: 'POS本地', basename: '/client/' }));
   await configureApp(app, {
     disableSwagger: true,
+  });
+  // SPA 入口(text/html)响应头加固：平台在渲染 SPA 时会在最终发送前重置自定义响应头
+  // （请求初期 / res.end 内层设的 Cache-Control 均被清空），故在此 configureApp **之后**注册，
+  // 成为最外层 res.end / res.writeHead 包裹，于真正序列化响应头前强制写入 Cache-Control: no-cache，
+  // 杜绝「旧 index.html 被浏览器缓存 → 引用已被重建清除的旧 hash 资源 → 兜底成 HTML → 白屏」复发
+  // （assets 走自身 ETag/协商缓存，不受此 no-cache 影响）。
+  app.use((_req, res, next) => {
+    const origEnd = res.end.bind(res);
+    const origWriteHead = res.writeHead.bind(res);
+    const forceNoCache = () => {
+      const ct = res.getHeader('Content-Type');
+      if (typeof ct === 'string' && ct.toLowerCase().includes('text/html')) {
+        res.setHeader('Cache-Control', 'no-cache');
+      }
+    };
+    res.writeHead = function (...args: unknown[]) {
+      forceNoCache();
+      return (origWriteHead as (...a: unknown[]) => unknown)(...args);
+    } as typeof res.writeHead;
+    res.end = function (chunk?: unknown, ...args: unknown[]) {
+      forceNoCache();
+      return (origEnd as (c?: unknown, ...a: unknown[]) => unknown)(chunk, ...args);
+    } as typeof res.end;
+    next();
   });
   // P0-5：基础安全头（防点击劫持/MIME 嗅探/窃听 referrer 等）。
   // CSP 放宽以兼容 SPA 内联脚本；如需更强防护，后续可收紧为 nonce 方案。
