@@ -4,6 +4,13 @@ import { axiosForBackend } from '@lark-apaas/client-toolkit/utils/getAxiosForBac
 import './request-interceptor';
 
 export { baseApi } from './base';
+export type {
+  MergeEntityType,
+  MergeCandidateKeyType,
+  MergeCandidateMember,
+  MergeCandidateGroup,
+  MergeResult,
+} from './base';
 export { bomApi } from './bom';
 export { purchaseApi } from './purchase';
 export { salesApi } from './sales';

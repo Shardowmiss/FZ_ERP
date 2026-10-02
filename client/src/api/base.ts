@@ -191,6 +191,16 @@ export const baseApi = {
     removeValue: (valueId: string) =>
       request<{ success: boolean; disabled?: boolean; message?: string }>(`/api/base/style-attr-def/values/${valueId}`, 'DELETE'),
   },
+  masterDataMerge: {
+    /** 查重候选发现：按归一名称/电话分组，返回疑似重复组（每组带 relatedCount 帮运营判断 survivor） */
+    candidates: (entityType: string, limit?: number) =>
+      request<MergeCandidateGroup[]>(`/api/md-merge/${entityType}/candidates`, 'GET', null, { limit }),
+    /** 执行合并：survivorId 吸收 mergedIds（被合并方仅打标、绝不删除，依赖改指到 survivor） */
+    merge: (
+      entityType: string,
+      data: { survivorId: string; mergedIds: string[]; reason?: string },
+    ) => request<MergeResult>(`/api/md-merge/${entityType}/merge`, 'POST', data),
+  },
 };
 
 export interface StyleAttribute {
@@ -226,4 +236,35 @@ export interface StyleAttrValue {
   status: string;
   remark?: string;
   createdAt: string;
+}
+
+// ===== 主数据合并（查重候选 + 合并）相关类型，与后端 types.ts 严格对齐 =====
+export type MergeEntityType = 'style' | 'customer';
+export type MergeCandidateKeyType = 'name' | 'phone';
+
+export interface MergeCandidateMember {
+  id: string;
+  code: string;
+  name: string;
+  phone: string | null;
+  /** 关联业务单据数（依赖表行数合计）；运营据此判断保留哪条 */
+  relatedCount: number;
+  /** 组内推荐 survivor（关联单据最多；并列取先选） */
+  suggested: boolean;
+}
+
+export interface MergeCandidateGroup {
+  keyType: MergeCandidateKeyType;
+  /** 归一后的分组键（展示用；电话键已截断，不泄露完整号码） */
+  key: string;
+  memberCount: number;
+  members: MergeCandidateMember[];
+}
+
+export interface MergeResult {
+  entityType: MergeEntityType;
+  runId: string;
+  survivorId: string;
+  mergedCount: number;
+  logs: { mergedId: string; logId: string }[];
 }
