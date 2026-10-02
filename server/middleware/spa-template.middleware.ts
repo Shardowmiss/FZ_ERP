@@ -48,6 +48,10 @@ export function spaTemplateMiddleware(opts: SpaTemplateOptions) {
         typeof ct === 'string' &&
         ct.toLowerCase().includes('text/html');
       if (isHtml) {
+        // SPA 入口(index.html)引用带内容 hash 的 assets；浏览器一旦缓存旧版入口，
+        // 旧 hash 资源被重建清除后会落到 catch-all 被兜底成 text/html → module 解析失败 → 白屏。
+        // 入口的 Cache-Control: no-cache 已在 main.ts 请求初期统一设置（早于任何响应写出），
+        // 此处仅做占位符替换。
         const html = Buffer.isBuffer(chunk) ? chunk.toString('utf8') : (chunk as string);
         const out = transformHtml(html, res, opts);
         chunk = out;
