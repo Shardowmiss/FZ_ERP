@@ -10,6 +10,7 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { PosUpstreamCsrfBypassMiddleware } from './middleware/pos-upstream-csrf-bypass';
 import { requestLogMiddleware } from './middleware/request-log.middleware';
+import { spaTemplateMiddleware } from './middleware/spa-template.middleware';
 import { validateSecrets } from './common/crypto/secret-validation';
 
 async function bootstrap() {
@@ -30,6 +31,10 @@ async function bootstrap() {
   // 请求上下文与访问日志（Wave 4-A② / P2-c）：必须早于平台 CSRF / 鉴权，
   // 使 401/403/500 等被拒或失败的响应同样带 requestId，链路不被截断。
   app.use(requestLogMiddleware);
+  // 本地裸连 node 的 SPA 模板占位符替换：早于 configureApp 注册，使视图引擎渲染后的
+  // 最终 HTML 在 send 前被替换为本地值（appId/basename/csrfToken/__platform__），
+  // 不受 build:client 覆盖影响，本地可正常渲染并登录（平台网关下无副作用）。
+  app.use(spaTemplateMiddleware({ appId: 'erp-local-dev', appName: 'ERP本地', basename: '/client/' }));
   await configureApp(app, { 
     disableSwagger: true,
   });
