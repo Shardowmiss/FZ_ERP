@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import SafeChart from '@client/src/components/SafeChart';
 import { toast } from 'sonner';
 import { memberApi } from '@client/src/api/member';
+import type { MemberMergeCandidate, MemberMergeCandidateGroup, MemberMergeResult } from '@client/src/api/member';
+import { useAuth } from '@client/src/contexts/AuthContext';
 import { errMsg } from '@/utils/errMsg';
 import type {
   Member,
@@ -16,6 +18,9 @@ const LEVEL_LABEL: Record<string, string> = {
 };
 
 const MemberPage: React.FC = () => {
+  const { hasPermission } = useAuth();
+  const canMerge = hasPermission('member:merge');
+
   const [list, setList] = useState<Member[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -30,10 +35,21 @@ const MemberPage: React.FC = () => {
   const [campaignTag, setCampaignTag] = useState('');
   const [campaignTitle, setCampaignTitle] = useState('');
 
+  // 合并相关状态
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [mergeModalOpen, setMergeModalOpen] = useState(false);
+  const [mergeLoading, setMergeLoading] = useState(false);
+  const [candMap, setCandMap] = useState<Record<string, MemberMergeCandidate>>({});
+  const [survivorId, setSurvivorId] = useState('');
+  const [reason, setReason] = useState('');
+  const [mergeResult, setMergeResult] = useState<MemberMergeResult | null>(null);
+
   const load = async () => {
     try {
       const r = await memberApi.list(page, 20, keyword || undefined);
       setList(r.list); setTotal(r.total);
+      // 单页选择：翻页/搜索后清空勾选，避免跨页误合并（防误操作）
+      setSelectedIds([]);
     } catch { toast('加载失败'); }
   };
   const loadTags = async () => {
@@ -79,6 +95,71 @@ const MemberPage: React.FC = () => {
     } catch (e) { toast(errMsg(e, '推送失败')); }
   };
 
+  // ===== 多选 =====
+  const allOnPageSelected = list.length > 0 && list.every((m) => selectedIds.includes(m.id));
+  const toggleSelectAll = () => {
+    if (allOnPageSelected) {
+      setSelectedIds((prev) => prev.filter((id) => !list.some((m) => m.id === id)));
+    } else {
+      setSelectedIds((prev) => Array.from(new Set([...prev, ...list.map((m) => m.id)])));
+    }
+  };
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  };
+
+  const selectedMembers = list.filter((m) => selectedIds.includes(m.id));
+
+  // ===== 打开合并弹窗：拉取查重候选补全手机号脱敏 + 以订单数辅助判断保留方 =====
+  const openMergeModal = async () => {
+    if (selectedIds.length < 2) return;
+    setMergeLoading(true);
+    try {
+      // candidates 非必填：失败（如网络/权限）不阻断合并，仅失去手机号脱敏与默认排序提示
+      const groups = (await memberApi.mergeCandidates().catch(() => [] as MemberMergeCandidateGroup[])) || [];
+      const map: Record<string, MemberMergeCandidate> = {};
+      for (const g of groups) for (const m of g.members) map[m.id] = m;
+      setCandMap(map);
+      // 默认 survivor = 订单数最多者（更多交易历史，作为保留方更合理；并列取先选）
+      const ranked = [...selectedMembers].sort(
+        (a, b) => (map[b.id]?.orderCount ?? b.orderCount ?? 0) - (map[a.id]?.orderCount ?? a.orderCount ?? 0),
+      );
+      setSurvivorId(ranked[0]?.id || '');
+      setReason('');
+      setMergeResult(null);
+      setMergeModalOpen(true);
+    } finally {
+      setMergeLoading(false);
+    }
+  };
+
+  const handleMergeConfirm = async () => {
+    if (!survivorId) { toast('请选择保留会员（survivor）'); return; }
+    const mergedIds = selectedIds.filter((id) => id !== survivorId);
+    if (mergedIds.length === 0) { toast('请至少勾选一个被合并会员'); return; }
+    setMergeLoading(true);
+    try {
+      const res = await memberApi.merge({
+        survivorId,
+        mergedIds,
+        reason: reason.trim() || undefined,
+      });
+      setMergeResult(res);
+      setSelectedIds([]);
+      toast.success(`合并成功，批次号 ${res.runId}`);
+    } catch (e) {
+      toast(errMsg(e, '合并失败'));
+    } finally {
+      setMergeLoading(false);
+    }
+  };
+
+  const closeMergeModal = () => {
+    setMergeModalOpen(false);
+    setMergeResult(null);
+    load();
+  };
+
   const catOption = {
     tooltip: { trigger: 'axis' as const, axisPointer: { type: 'shadow' as const } },
     grid: { left: 80, right: 20, top: 20, bottom: 30 },
@@ -98,9 +179,20 @@ const MemberPage: React.FC = () => {
       <div className="bg-white rounded-lg shadow-sm p-5">
         <div className="flex items-center justify-between mb-3">
           <h1 className="text-xl font-semibold text-gray-800">会员私域运营</h1>
-          <button onClick={() => { setForm({ name: '', phone: '', level: 'normal' }); setShowForm((v) => !v); }} className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600">
-            {showForm ? '收起' : '新增会员'}
-          </button>
+          <div className="flex items-center gap-2">
+            {canMerge && (
+              <button
+                onClick={openMergeModal}
+                disabled={selectedIds.length < 2 || mergeLoading}
+                className="px-4 py-2 bg-amber-600 text-white rounded text-sm hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                合并重复会员（{selectedIds.length}）
+              </button>
+            )}
+            <button onClick={() => { setForm({ name: '', phone: '', level: 'normal' }); setShowForm((v) => !v); }} className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600">
+              {showForm ? '收起' : '新增会员'}
+            </button>
+          </div>
         </div>
 
         {showForm && (
@@ -114,13 +206,27 @@ const MemberPage: React.FC = () => {
           </div>
         )}
 
-        <div className="flex gap-3 mb-3">
+        <div className="flex items-center gap-3 mb-3">
           <input placeholder="搜索会员名称" value={keyword} onChange={(e) => { setKeyword(e.target.value); setPage(1); }} className="px-3 py-2 border border-gray-300 rounded text-sm w-48" />
+          {canMerge && selectedIds.length >= 2 && (
+            <span className="text-xs text-amber-700">
+              已选 {selectedIds.length} 个会员，点击「合并重复会员」选择保留方并完成合并
+            </span>
+          )}
         </div>
 
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-gray-50 text-gray-600 border-b border-gray-200 font-medium">
+              <th className="w-8 px-2 py-2 text-center">
+                <input
+                  type="checkbox"
+                  checked={allOnPageSelected}
+                  onChange={toggleSelectAll}
+                  className="cursor-pointer"
+                  aria-label="全选本页"
+                />
+              </th>
               <th className="px-3 py-2 text-left">会员号</th>
               <th className="px-3 py-2 text-left">名称</th>
               <th className="px-3 py-2 text-left">等级</th>
@@ -132,10 +238,19 @@ const MemberPage: React.FC = () => {
           </thead>
           <tbody>
             {list.length === 0 ? (
-              <tr><td colSpan={7} className="py-8 text-center text-gray-400">暂无会员</td></tr>
+              <tr><td colSpan={8} className="py-8 text-center text-gray-400">暂无会员</td></tr>
             ) : (
               list.map((m) => (
                 <tr key={m.id} className="border-b border-gray-100 hover:bg-gray-50">
+                  <td className="px-2 py-2 text-center">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(m.id)}
+                      onChange={() => toggleSelect(m.id)}
+                      className="cursor-pointer"
+                      aria-label={`选择 ${m.name}`}
+                    />
+                  </td>
                   <td className="px-3 py-2 text-gray-700">{m.memberNo}</td>
                   <td className="px-3 py-2 text-gray-700">{m.name}</td>
                   <td className="px-3 py-2 text-gray-600">{LEVEL_LABEL[m.level] || m.level}</td>
@@ -204,6 +319,103 @@ const MemberPage: React.FC = () => {
           <button onClick={sendCampaign} className="px-4 py-2 bg-rose-500 text-white rounded text-sm hover:bg-rose-600">发起推送</button>
         </div>
       </div>
+
+      {mergeModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded shadow-lg w-[680px] max-w-[95vw] max-h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200">
+              <h3 className="text-lg font-medium">合并重复会员</h3>
+              <button className="text-gray-400 hover:text-gray-600 text-xl" onClick={closeMergeModal}>×</button>
+            </div>
+
+            {mergeResult ? (
+              <div className="p-6 flex-1 overflow-y-auto">
+                <div className="rounded bg-green-50 border border-green-200 p-4 text-sm text-green-800 space-y-1">
+                  <p className="font-medium">合并成功</p>
+                  <p>批次号（runId）：<span className="font-mono">{mergeResult.runId}</span></p>
+                  <p>已合并 {mergeResult.mergedCount} 个会员到保留会员（被合并方仅打标，未删除；积分/储值经账本事件安全转移，关联订单全部改指保留方）。</p>
+                  <p>
+                    转移积分 {mergeResult.movedPoints} · 转移储值 ¥{(mergeResult.movedStoredValue / 100).toFixed(2)} ·
+                    合并消费额 ¥{mergeResult.movedTotalSpent.toFixed(2)} · 合并订单数 {mergeResult.movedOrderCount}
+                  </p>
+                  <p className="text-gray-500">该合并已写入 member_merge_log，如需回滚可凭批次号经「会员合并」审计入口操作。</p>
+                </div>
+              </div>
+            ) : (
+              <div className="p-5 flex-1 overflow-y-auto">
+                <div className="mb-3 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2">
+                  合并后，被合并会员<strong>不会被删除</strong>，仅打上「已合并」标记；其积分/储值经账本事件安全转移给保留会员，
+                  关联零售订单全部改指保留方。该操作可经审计日志按批次回滚。
+                </div>
+
+                <p className="text-sm text-gray-600 mb-2">请选择保留会员（survivor）：</p>
+                <div className="space-y-2">
+                  {selectedMembers.map((m) => {
+                    const cand = candMap[m.id];
+                    const orderCount = cand?.orderCount ?? m.orderCount ?? 0;
+                    const storedYuan = cand?.storedValue != null ? (cand.storedValue / 100).toFixed(2) : '—';
+                    const phoneText = cand?.phoneMasked ? ` · ${cand.phoneMasked}` : '';
+                    return (
+                      <label
+                        key={m.id}
+                        className={`flex items-center gap-3 border rounded p-3 cursor-pointer transition-colors ${
+                          survivorId === m.id ? 'border-primary bg-blue-50' : 'border-gray-200 hover:bg-gray-50'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="survivor"
+                          checked={survivorId === m.id}
+                          onChange={() => setSurvivorId(m.id)}
+                          className="cursor-pointer"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium truncate">{m.name}</div>
+                          <div className="text-xs text-gray-500 truncate">{m.memberNo}{phoneText}</div>
+                        </div>
+                        <div className="text-right text-xs whitespace-nowrap">
+                          <div className="text-gray-500">订单数 / 储值</div>
+                          <div className="font-medium">{orderCount} · ¥{storedYuan}</div>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-4">
+                  <label className="block text-sm text-gray-700 mb-1">合并原因（可选，写入审计日志）</label>
+                  <textarea
+                    value={reason}
+                    onChange={(e) => setReason(e.target.value)}
+                    rows={2}
+                    placeholder="如：同一顾客重复注册，保留有交易的会员"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary resize-none"
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-2 px-5 py-3 border-t border-gray-200">
+              <button
+                className="px-4 py-2 bg-gray-100 text-gray-700 text-sm rounded hover:bg-gray-200 transition-colors"
+                onClick={closeMergeModal}
+                disabled={mergeLoading}
+              >
+                {mergeResult ? '关闭' : '取消'}
+              </button>
+              {!mergeResult && (
+                <button
+                  className="px-4 py-2 bg-amber-600 text-white text-sm rounded hover:bg-amber-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={handleMergeConfirm}
+                  disabled={mergeLoading || !survivorId}
+                >
+                  {mergeLoading ? '合并中...' : `确认合并（${selectedIds.length - (survivorId ? 1 : 0)} 个被合并）`}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
