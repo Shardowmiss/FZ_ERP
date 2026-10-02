@@ -58,6 +58,24 @@ const MonthClosePage = React.lazy(() => import('@client/src/pages/finance/MonthC
 
 const NotFound = React.lazy(() => import('@client/src/pages/NotFound/NotFound'));
 
+// 孤儿页面补接：菜单/路由已注册，但 exactMap 漏接会导致点菜单渲染 <NotFound/>。
+// 下列组件均为真实已构建页面，与 app.tsx 的 <Route> 一一对应（三处同步原则）。
+const ColorPage = React.lazy(() => import('@client/src/pages/base/ColorPage'));
+const SizePage = React.lazy(() => import('@client/src/pages/base/SizePage'));
+const SizeGroupRelationPage = React.lazy(() => import('@client/src/pages/base/SizeGroupRelationPage'));
+const ReplenishSuggestionPage = React.lazy(() => import('@client/src/pages/inventory/ReplenishSuggestionPage'));
+const ReplenishPlanPage = React.lazy(() => import('@client/src/pages/inventory/ReplenishPlanPage'));
+const ReplenishTemplatePage = React.lazy(() => import('@client/src/pages/inventory/ReplenishTemplatePage'));
+const BarcodePage = React.lazy(() => import('@client/src/pages/inventory/BarcodePage'));
+const MobileStocktakePage = React.lazy(() => import('@client/src/pages/inventory/MobileStocktakePage'));
+const SubcontractPage = React.lazy(() => import('@client/src/pages/subcontract/SubcontractPage'));
+const ForecastPage = React.lazy(() => import('@client/src/pages/analytics/ForecastPage'));
+const LifecyclePage = React.lazy(() => import('@client/src/pages/analytics/LifecyclePage'));
+const BIPage = React.lazy(() => import('@client/src/pages/analytics/BIPage'));
+const MobileDashboardPage = React.lazy(() => import('@client/src/pages/analytics/MobileDashboardPage'));
+const OmniPage = React.lazy(() => import('@client/src/pages/omni/OmniPage'));
+const MemberPage = React.lazy(() => import('@client/src/pages/member/MemberPage'));
+
 const CodeRulePage = React.lazy(() => import('@client/src/pages/system/CodeRulePage'));
 const UserManagePage = React.lazy(() => import('@client/src/pages/system/UserManagePage'));
 const RoleManagePage = React.lazy(() => import('@client/src/pages/system/RoleManagePage'));
@@ -161,6 +179,19 @@ const routePermissions: Record<string, string> = {
   '/report/transfer': 'report:transfer',
   '/report/stock-movement': 'report:stockmovement',
   '/report/pivot': 'report:pivot',
+  '/product/color': 'base:color',
+  '/product/size': 'base:size',
+  '/product/size-group-relation': 'base:size',
+  '/product/code-rule': 'system:permission',
+  '/inventory/replenish': 'inventory:warning',
+  '/inventory/barcode': 'inventory:query',
+  '/inventory/mobile-stocktake': 'inventory:stocktake',
+  '/subcontract': 'inventory:query',
+  '/analytics/forecast': 'dashboard:view',
+  '/analytics/lifecycle': 'dashboard:view',
+  '/analytics/bi': 'dashboard:view',
+  '/omni': 'sales:view',
+  '/member': 'retail:view',
 };
 
 function getPermissionForPath(pathname: string): string | null {
@@ -241,6 +272,22 @@ function getRouteComponent(pathname: string): React.ComponentType | null {
     '/report/inventory': InventoryReportPage,
     '/report/transfer': TransferReportPage,
     '/report/stock-movement': StockMovementPage,
+    '/product/color': ColorPage,
+    '/product/size': SizePage,
+    '/product/size-group-relation': SizeGroupRelationPage,
+    '/product/code-rule': CodeRulePage,
+    '/inventory/replenish': ReplenishSuggestionPage,
+    '/inventory/replenish-plan': ReplenishPlanPage,
+    '/inventory/replenish-template': ReplenishTemplatePage,
+    '/inventory/barcode': BarcodePage,
+    '/inventory/mobile-stocktake': MobileStocktakePage,
+    '/subcontract': SubcontractPage,
+    '/analytics/forecast': ForecastPage,
+    '/analytics/lifecycle': LifecyclePage,
+    '/analytics/bi': BIPage,
+    '/analytics/mobile-dashboard': MobileDashboardPage,
+    '/omni': OmniPage,
+    '/member': MemberPage,
   };
 
   const editPageMap: Record<string, () => Promise<{ default: React.ComponentType }>> = {
