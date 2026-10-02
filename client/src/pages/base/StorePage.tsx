@@ -164,6 +164,13 @@ const StorePage: React.FC = () => {
     return type;
   };
 
+  const renderWarehouse = (item: Store) => {
+    if (!item.warehouseName && !item.warehouseCode) return '-';
+    const typeLabel = item.warehouseType ? `（${item.warehouseType}）` : '';
+    const text = `${item.warehouseCode ?? ''} ${item.warehouseName ?? ''}${typeLabel}`.trim();
+    return text || '-';
+  };
+
   const renderStatus = (status: string) => {
     if (status === 'active') {
       return <span className="inline-block px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded">营业</span>;
@@ -182,7 +189,7 @@ const StorePage: React.FC = () => {
   return (
     <div className="bg-white rounded-lg shadow-sm p-5">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold">门店管理</h2>
+        <h2 className="text-xl font-semibold">店仓管理</h2>
         <div className="flex items-center gap-2">
           <button
             className="px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded hover:bg-gray-50 transition-colors flex items-center gap-1"
@@ -194,7 +201,7 @@ const StorePage: React.FC = () => {
             className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
             onClick={openAdd}
           >
-            + 新增门店
+            + 新增店仓
           </button>
         </div>
       </div>
@@ -246,6 +253,7 @@ const StorePage: React.FC = () => {
               <th className="text-left px-4 py-3 border-b border-gray-200">门店编码</th>
               <th className="text-left px-4 py-3 border-b border-gray-200">门店名称</th>
               <th className="text-left px-4 py-3 border-b border-gray-200">门店类型</th>
+              <th className="text-left px-4 py-3 border-b border-gray-200">绑定仓库</th>
               <th className="text-left px-4 py-3 border-b border-gray-200">所属经销商</th>
               <th className="text-left px-4 py-3 border-b border-gray-200">联系人</th>
               <th className="text-left px-4 py-3 border-b border-gray-200">电话</th>
@@ -256,15 +264,16 @@ const StorePage: React.FC = () => {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={9} className="text-center py-8 text-gray-400">加载中...</td></tr>
+              <tr><td colSpan={10} className="text-center py-8 text-gray-400">加载中...</td></tr>
             ) : list.length === 0 ? (
-              <tr><td colSpan={9} className="text-center py-8 text-gray-400">暂无数据</td></tr>
+              <tr><td colSpan={10} className="text-center py-8 text-gray-400">暂无数据</td></tr>
             ) : (
               list.map((item) => (
                 <tr key={item.id} className="border-b border-gray-200 hover:bg-gray-50">
                   <td className="px-4 py-3 font-medium">{item.code}</td>
                   <td className="px-4 py-3">{item.name}</td>
                   <td className="px-4 py-3 text-gray-600">{renderStoreType(item.storeType)}</td>
+                  <td className="px-4 py-3 text-gray-600">{renderWarehouse(item)}</td>
                   <td className="px-4 py-3 text-gray-600">{getDealerName(item.dealerId)}</td>
                   <td className="px-4 py-3 text-gray-600">{item.contactPerson || '-'}</td>
                   <td className="px-4 py-3 text-gray-600">{item.phone || '-'}</td>
@@ -293,7 +302,7 @@ const StorePage: React.FC = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded shadow-lg w-[600px] max-w-[95vw] max-h-[85vh] flex flex-col">
             <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200">
-              <h3 className="text-lg font-medium">{editingId ? '编辑门店' : '新增门店'}</h3>
+              <h3 className="text-lg font-medium">{editingId ? '编辑店仓' : '新增店仓'}</h3>
               <button className="text-gray-400 hover:text-gray-600 text-xl" onClick={() => setDialogOpen(false)}>×</button>
             </div>
             <div className="p-5 overflow-y-auto flex-1">
@@ -343,7 +352,7 @@ const StorePage: React.FC = () => {
                   </div>
                 )}
                 <div>
-                  <label className="block text-sm text-gray-700 mb-1">所属仓库</label>
+                  <label className="block text-sm text-gray-700 mb-1">绑定仓库</label>
                   <select
                     value={form.warehouseId || ''}
                     onChange={(e) => setForm({ ...form, warehouseId: e.target.value })}

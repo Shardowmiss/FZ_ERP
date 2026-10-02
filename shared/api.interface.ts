@@ -1016,6 +1016,14 @@ export interface Store {
   storeType: string;
   dealerId?: string;
   warehouseId?: string;
+  /** 绑定仓库编码（店仓逻辑统一视图：store LEFT JOIN warehouse） */
+  warehouseCode?: string;
+  /** 绑定仓库名称 */
+  warehouseName?: string;
+  /** 绑定仓库类型（如 main/store/transit，对应 warehouse.type） */
+  warehouseType?: string;
+  /** 绑定仓库自身携带的门店编码（店仓合一设计冗余字段） */
+  warehouseStoreCode?: string;
   contactPerson?: string;
   phone?: string;
   address?: string;

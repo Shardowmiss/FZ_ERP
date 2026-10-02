@@ -11,6 +11,7 @@ import { eq, and, count, desc, or, ilike, gt, sql } from 'drizzle-orm';
 import { escapeLike } from '@server/common/utils/escape-like';
 import {
   store,
+  warehouse,
   retailOrder,
   retailReturn,
   preOrder,
@@ -59,8 +60,27 @@ export class StoreService {
     const [countResult, rows] = await Promise.all([
       this.db.select({ count: count() }).from(store).where(where as any),
       this.db
-        .select()
+        .select({
+          id: store.id,
+          code: store.code,
+          name: store.name,
+          storeType: store.storeType,
+          dealerId: store.dealerId,
+          warehouseId: store.warehouseId,
+          contactPerson: store.contactPerson,
+          phone: store.phone,
+          address: store.address,
+          status: store.status,
+          remark: store.remark,
+          createdAt: store.createdAt,
+          // 店仓逻辑统一视图：LEFT JOIN 绑定仓库
+          warehouseCode: warehouse.code,
+          warehouseName: warehouse.name,
+          warehouseType: warehouse.type,
+          warehouseStoreCode: warehouse.storeCode,
+        })
         .from(store)
+        .leftJoin(warehouse, eq(store.warehouseId, warehouse.id))
         .where(where as any)
         .orderBy(desc(store.createdAt))
         .limit(pageSize)
@@ -81,6 +101,11 @@ export class StoreService {
       status: row.status,
       remark: row.remark ?? undefined,
       createdAt: row.createdAt.toISOString(),
+      // 店仓视图：绑定仓库信息（LEFT JOIN，可能为空）
+      warehouseCode: row.warehouseCode ?? undefined,
+      warehouseName: row.warehouseName ?? undefined,
+      warehouseType: row.warehouseType ?? undefined,
+      warehouseStoreCode: row.warehouseStoreCode ?? undefined,
     }));
 
     return { items, total, page, pageSize };
