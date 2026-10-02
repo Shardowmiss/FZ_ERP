@@ -138,5 +138,14 @@ export class AppModule implements OnModuleInit {
         }`,
       );
     }
+    // 幂等补全运营角色（数据治理/店长/财务/采购/仓储）并授予对应权限码，
+    // 使合并等资金敏感功能可灰度到运营角色（此前仅 super_admin 持有）。
+    try {
+      await this.rbacService.ensureOperationalRoles();
+    } catch (err) {
+      new Logger('AppModule').error(
+        `ensureOperationalRoles 失败（应用仍正常监听端口）：${err?.message ?? err}`,
+      );
+    }
   }
 }

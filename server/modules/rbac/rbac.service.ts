@@ -480,6 +480,207 @@ export class RbacService {
     );
   }
 
+  /**
+   * 运营角色定义（与 68 码权限目录对齐，按古茗零售业务划分）。
+   *
+   * 注意：本清单是“权限建议矩阵”，仅描述各角色应持有的权限码；实际是否启用、
+   * 是否拆分更细，由部署方在角色管理界面二次调整。种子只做“加法”——缺则建、
+   * 缺则授权，绝不删除既有授权（避免启动自愈冲掉管理员在界面上的手动调整）。
+   */
+  private static readonly OPERATIONAL_ROLES: {
+    code: string;
+    name: string;
+    description: string;
+    permissions: string[];
+  }[] = [
+    {
+      code: 'data_governor',
+      name: '数据治理员',
+      description: '主数据去重合并（会员/商品/客户），资金敏感操作需培训',
+      permissions: [
+        'md:merge',
+        'member:merge',
+        'member:manage',
+        'base:style',
+        'base:sku',
+        'base:customer',
+        'base:color',
+        'base:size',
+        'report:pivot',
+        'dashboard:view',
+      ],
+    },
+    {
+      code: 'store_manager',
+      name: '店长',
+      description: '门店日常运营：零售/销售/收银/会员/库存查询与预警',
+      permissions: [
+        'retail:view',
+        'sales:view',
+        'pos:cashier',
+        'member:manage',
+        'member:merge',
+        'inventory:query',
+        'inventory:flow',
+        'inventory:warning',
+        'pricing:manage',
+        'dashboard:view',
+        'report:retail',
+        'report:sales',
+        'report:stockmovement',
+      ],
+    },
+    {
+      code: 'finance',
+      name: '财务',
+      description: '应收应付/收款付款/利润与对账',
+      permissions: [
+        'finance:receivable',
+        'finance:payable',
+        'finance:receipt',
+        'finance:payment',
+        'finance:profit',
+        'sales:reconciliation',
+        'purchase:reconciliation',
+        'dashboard:view',
+        'report:garment_purchase',
+        'report:material_purchase',
+        'report:sales',
+        'report:inventory',
+      ],
+    },
+    {
+      code: 'purchasing',
+      name: '采购',
+      description: '采购订单/入库/退货与生产关系、物料与供应商主数据',
+      permissions: [
+        'purchase:order',
+        'purchase:inbound',
+        'purchase:return',
+        'purchase:reconciliation',
+        'production:bom',
+        'production:material_order',
+        'production:material_inbound',
+        'production:mrp',
+        'production:cost',
+        'production:work_order',
+        'production:material_issue',
+        'production:finish_receipt',
+        'base:material',
+        'base:supplier',
+        'inventory:query',
+        'report:material_purchase',
+        'report:garment_purchase',
+      ],
+    },
+    {
+      code: 'warehouse',
+      name: '仓储',
+      description: '库存流水/入库/出库/调拨/盘点/补货与预警',
+      permissions: [
+        'inventory:flow',
+        'inventory:query',
+        'inventory:inbound',
+        'inventory:outbound',
+        'inventory:transfer',
+        'inventory:stocktake',
+        'inventory:replenish-plan',
+        'inventory:replenish-template',
+        'inventory:warning',
+        'base:warehouse',
+        'sales:outbound',
+        'purchase:inbound',
+        'report:inventory',
+        'report:transfer',
+        'report:stockmovement',
+      ],
+    },
+  ];
+
+  /**
+   * 启动幂等补全运营角色（数据治理/店长/财务/采购/仓储）并授予对应权限码。
+   *
+   * 与 ensureRbacCatalog 同机制（按 code 反查 permission id），但采用“只增不删”
+   * 的追加授权：仅补登缺失的 role_permission，不删除既有授权，避免启动自愈把
+   * 管理员在界面上手动调过的授权冲掉。权限码若在目录中不存在（防御性）则跳过并告警。
+   *
+   * 由 AppModule.onModuleInit 在 ensureRbacCatalog 之后调用一次，随部署生效。
+   */
+  async ensureOperationalRoles(): Promise<void> {
+    // 一次性拉取 code->id 映射
+    const permRows = await this.db
+      .select({ id: rbacPermission.id, code: rbacPermission.code })
+      .from(rbacPermission);
+    const codeToId = new Map<string, string>();
+    for (const r of permRows) codeToId.set(r.code, r.id);
+
+    for (const def of RbacService.OPERATIONAL_ROLES) {
+      const existing = await this.db
+        .select({ id: rbacRole.id })
+        .from(rbacRole)
+        .where(eq(rbacRole.code, def.code))
+        .limit(1);
+      let roleId: string;
+      if (existing.length === 0) {
+        const created = await this.createRole({
+          code: def.code,
+          name: def.name,
+          description: def.description,
+          status: 'active',
+        });
+        roleId = created.id;
+      } else {
+        roleId = existing[0].id;
+      }
+
+      // 解析目标权限 id（跳过目录中不存在的码，防御性）
+      const targetIds: string[] = [];
+      const skipped: string[] = [];
+      for (const code of def.permissions) {
+        const pid = codeToId.get(code);
+        if (pid) targetIds.push(pid);
+        else skipped.push(code);
+      }
+      if (skipped.length > 0) {
+        this.logger.warn(
+          `ensureOperationalRoles: 角色 ${def.code} 跳过不存在的权限码: ${skipped.join(', ')}`,
+        );
+      }
+
+      // 既有的授权
+      const granted = await this.db
+        .select({ pid: rbacRolePermission.permissionId })
+        .from(rbacRolePermission)
+        .where(eq(rbacRolePermission.roleId, roleId));
+      const have = new Set(granted.map((g) => g.pid));
+      const toAdd = targetIds
+        .filter((pid) => !have.has(pid))
+        .map((pid) => ({ roleId, permissionId: pid }));
+      if (toAdd.length > 0) {
+        await this.db
+          .insert(rbacRolePermission)
+          .values(toAdd)
+          .onConflictDoNothing({
+            target: [rbacRolePermission.roleId, rbacRolePermission.permissionId],
+          });
+      }
+
+      // 失效该角色权限缓存（re-run 时确保立即生效）
+      await invalidate(this.cacheManager, RbacService.rolePermsKey(roleId));
+
+      this.logger.log(
+        `ensureOperationalRoles: 角色 ${def.code} 目标 ${targetIds.length} 码，新增授权 ${toAdd.length}`,
+      );
+    }
+
+    // 失效权限树/菜单树缓存，确保新增授权立即在界面/接口生效
+    await invalidate(
+      this.cacheManager,
+      RbacService.PERM_TREE_KEY,
+      RbacService.MENU_TREE_KEY,
+    );
+  }
+
   /** 校验 token 有效性并返回用户 ID（供 AuthGuard 调用） */
   async getUserIdByToken(token: string): Promise<string | null> {
     if (!token) return null;
