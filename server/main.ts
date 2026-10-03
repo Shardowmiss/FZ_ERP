@@ -61,7 +61,16 @@ async function bootstrap() {
   // 本地裸连 node 的 SPA 模板占位符替换：早于 configureApp 注册，使视图引擎渲染后的
   // 最终 HTML 在 send 前被替换为本地值（appId/basename/csrfToken/__platform__），
   // 不受 build:client 覆盖影响，本地可正常渲染并登录（平台网关下无副作用）。
-  app.use(spaTemplateMiddleware({ appId: 'erp-local-dev', appName: 'ERP本地', basename: '/client/' }));
+  // 品牌化：页签标题覆盖平台默认的「妙搭应用」；移除右下角「妙搭生成」平台水印。
+  app.use(
+    spaTemplateMiddleware({
+      appId: 'erp-local-dev',
+      appName: '我的服装ERP',
+      basename: '/client/',
+      title: '我的服装ERP',
+      removeWatermark: true,
+    }),
+  );
   await configureApp(app, { 
     disableSwagger: true,
   });

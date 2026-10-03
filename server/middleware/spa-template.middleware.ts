@@ -31,6 +31,16 @@ export interface SpaTemplateOptions {
   appName: string;
   /** 前端 API base，通常 '/client/' */
   basename: string;
+  /**
+   * 浏览器页签标题。平台默认把入口渲染成「妙搭应用」，本地/私有化部署需覆盖为自有品牌名。
+   * 不传则不改写 title。
+   */
+  title?: string;
+  /**
+   * 是否移除平台水印 —— 右下角「妙搭生成」悬浮徽标（`data-custom-element="*-watermark"`）。
+   * 默认 true（自有品牌部署不应出现平台徽标）。
+   */
+  removeWatermark?: boolean;
 }
 
 const SUD_CSRF_COOKIE = 'suda-csrf-token';
@@ -95,7 +105,80 @@ function transformHtml(html: string, res: Response, opts: SpaTemplateOptions): s
     /window\.__platform__\s*=\s*JSON\.parse\('[^']*'\)/,
     `window.__platform__ = JSON.parse('${platformJson}')`,
   );
+
+  // 5) 品牌化：页签标题 + 去除平台水印
+  //    水印由平台组件在 SPA 挂载后（甚至 Portal 到 body）异步插入，故同时给 CSS 兜底
+  //    （对后续插入的元素天然生效）与 MutationObserver 移除（应对 inline style / 层级更高者）。
+  out = applyBranding(out, opts);
   return out;
+}
+
+/**
+ * 品牌化改写：
+ * - 覆盖 `<title>`（平台默认渲染为「妙搭应用」），并用观察者钉死 SPA 运行期的动态改写；
+ * - 隐藏并移除右下角「妙搭生成」水印（`data-custom-element="*-watermark[-mobile]"`）。
+ */
+function applyBranding(html: string, opts: SpaTemplateOptions): string {
+  const wantTitle = !!opts.title;
+  const wantNoWatermark = opts.removeWatermark !== false;
+  if (!wantTitle && !wantNoWatermark) return html;
+
+  const parts: string[] = [];
+  if (wantNoWatermark) {
+    parts.push(
+      `<style data-spa-branding="1">` +
+        `[data-custom-element$="-watermark"],[data-custom-element$="-watermark-mobile"]` +
+        `{display:none!important;visibility:hidden!important;pointer-events:none!important}` +
+        `</style>`,
+    );
+  }
+  if (wantTitle || wantNoWatermark) {
+    const titleLiteral = JSON.stringify(opts.title ?? '');
+    parts.push(
+      `<script data-spa-branding="1">` +
+        `(function(){` +
+        (wantTitle
+          ? `var T=${titleLiteral};` +
+            `function setTitle(){if(document.title!==T){document.title=T;}}` +
+            `setTitle();`
+          : '') +
+        (wantNoWatermark
+          ? `var SEL='[data-custom-element$="-watermark"],[data-custom-element$="-watermark-mobile"]';` +
+            `function kill(){var n=document.querySelectorAll(SEL);for(var i=0;i<n.length;i++){var e=n[i];if(e.parentNode){e.parentNode.removeChild(e);}}}`
+          : '') +
+        `var mo=window.MutationObserver;if(mo){` +
+        `var cb=function(){` +
+        (wantTitle ? `setTitle();` : '') +
+        (wantNoWatermark ? `kill();` : '') +
+        `};` +
+        `new mo(cb).observe(document.documentElement,{childList:true,subtree:true,characterData:true});` +
+        `document.addEventListener('DOMContentLoaded',cb);}` +
+        `})();` +
+        `</script>`,
+    );
+  }
+
+  let out = html;
+  if (wantTitle) {
+    if (/<title>[\s\S]*?<\/title>/i.test(out)) {
+      out = out.replace(/<title>[\s\S]*?<\/title>/i, `<title>${escapeHtml(opts.title as string)}</title>`);
+    } else {
+      // 无 title 标签时补一个，保证页签不落回默认
+      out = out.replace(/<head[^>]*>/i, (m) => `${m}<title>${escapeHtml(opts.title as string)}</title>`);
+    }
+  }
+  const inject = parts.join('');
+  if (/<\/head>/i.test(out)) {
+    out = out.replace(/<\/head>/i, `${inject}</head>`);
+  } else {
+    out = inject + out;
+  }
+  return out;
+}
+
+/** 标题里的 & < > 需转义，避免破坏 HTML 结构 */
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 /**
