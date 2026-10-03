@@ -308,7 +308,7 @@ const CodeRulePage: React.FC = () => {
                     ))}
                   </SelectContent>
                 </Select>
-                <SegmentConfig segment={seg} onChange={(cfg) => updateSegment(seg.id, { config: cfg })} />
+                <SegmentConfig segment={seg} mapping={mapping} onChange={(cfg) => updateSegment(seg.id, { config: cfg })} />
                 <div className="flex-1" />
                 <div className="flex items-center gap-1">
                   <Button variant="ghost" size="icon" className="h-8 w-8"

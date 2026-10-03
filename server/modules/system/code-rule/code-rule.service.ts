@@ -62,6 +62,10 @@ const DEFAULT_FITS: FitCode[] = [
   { name: 'Oversize', code: 'O' },
 ];
 
+const DEFAULT_BRANDS: BrandCode[] = [
+  { name: '默认品牌', code: 'DEF', sortOrder: 0, status: 'active' },
+];
+
 const DEFAULT_COLORS: ColorCodeMap[] = [
   { name: '黑色', code: 'BLK' },
   { name: '白色', code: 'WHT' },
@@ -219,37 +223,39 @@ export class CodeRuleService {
       code: r.attrCode,
     }));
 
-    const seasons: SeasonCode[] = seasonsAttr.map((r) => ({
-      name: r.attrName,
-      code: r.attrCode,
-    }));
+    // 当「款号属性维护」尚未配置对应属性时，回退到内置默认编码，
+    // 保证编码映射配置页与款号生成不会因缺数据而整体空白（DEFAULT_* 原为死代码，现恢复为回退值）
+    const seasons: SeasonCode[] = seasonsAttr.length > 0
+      ? seasonsAttr.map((r) => ({ name: r.attrName, code: r.attrCode }))
+      : DEFAULT_SEASONS;
 
-    const brands: BrandCode[] = brandsAttr
-      .map((r) => ({
-        name: r.attrName,
-        code: r.attrCode,
-        sortOrder: r.sortOrder,
-        status: r.status,
-      }));
+    const brands: BrandCode[] = brandsAttr.length > 0
+      ? brandsAttr.map((r) => ({
+          name: r.attrName,
+          code: r.attrCode,
+          sortOrder: r.sortOrder,
+          status: r.status,
+        }))
+      : DEFAULT_BRANDS;
 
-    const categories: CategoryCode[] = categoriesAttr.map((r) => ({
-      name: r.attrName,
-      code: r.attrCode,
-    }));
+    const categories: CategoryCode[] = categoriesAttr.length > 0
+      ? categoriesAttr.map((r) => ({ name: r.attrName, code: r.attrCode }))
+      : DEFAULT_CATEGORIES;
 
     const catNameByCode = new Map<string, string>();
     for (const c of categoriesAttr) catNameByCode.set(c.attrCode, c.attrName);
 
-    const subCategories: SubCategoryCode[] = subCatsAttr.map((r) => ({
-      category: catNameByCode.get(r.parentCode ?? '') ?? '',
-      name: r.attrName,
-      code: r.attrCode,
-    }));
+    const subCategories: SubCategoryCode[] = subCatsAttr.length > 0
+      ? subCatsAttr.map((r) => ({
+          category: catNameByCode.get(r.parentCode ?? '') ?? '',
+          name: r.attrName,
+          code: r.attrCode,
+        }))
+      : DEFAULT_SUB_CATEGORIES;
 
-    const fits: FitCode[] = fitsAttr.map((r) => ({
-      name: r.attrName,
-      code: r.attrCode,
-    }));
+    const fits: FitCode[] = fitsAttr.length > 0
+      ? fitsAttr.map((r) => ({ name: r.attrName, code: r.attrCode }))
+      : DEFAULT_FITS;
 
     let attrValues: Record<string, Array<{ name: string; code: string }>> = {};
     if (attrDefs.length > 0) {

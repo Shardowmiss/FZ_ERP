@@ -8,15 +8,16 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@client/src/components/ui/table';
-import type { CodeRuleSegment, CodeRuleSegmentType, SubCategoryCode, BrandCode, StyleAttrDef } from '@shared/api.interface';
+import type { CodeRuleSegment, CodeRuleSegmentType, SubCategoryCode, BrandCode, StyleAttrDef, CodeMappingConfig } from '@shared/api.interface';
 
 // ===== 段配置组件 =====
 interface SegmentConfigProps {
   segment: CodeRuleSegment;
   onChange: (config: CodeRuleSegment['config']) => void;
+  mapping?: CodeMappingConfig;
 }
 
-export const SegmentConfig: React.FC<SegmentConfigProps> = ({ segment, onChange }) => {
+export const SegmentConfig: React.FC<SegmentConfigProps> = ({ segment, onChange, mapping }) => {
   const cfg = segment.config || {};
 
   if (segment.type === 'fixed') {
@@ -97,7 +98,7 @@ export const SegmentConfig: React.FC<SegmentConfigProps> = ({ segment, onChange 
             <SelectItem key={def.id} value={def.attrCode}>{def.attrName}（{def.attrCode}）</SelectItem>
           ))}
           {attrDefs.length === 0 && (
-            <SelectItem value="_loading" disabled>加载中...</SelectItem>
+            <SelectItem value="_empty" disabled>暂无可选属性（请先在「款号属性维护→动态属性」配置）</SelectItem>
           )}
         </SelectContent>
       </Select>
@@ -111,7 +112,21 @@ export const SegmentConfig: React.FC<SegmentConfigProps> = ({ segment, onChange 
     fit: '映射在下方「版型编码」Tab 配置',
     brand: '映射在下方「品牌编码」Tab 配置',
   };
-  return <span className="text-xs text-gray-400">{hintMap[segment.type] || ''}</span>;
+  const countMap: Record<string, number> = {
+    season: mapping?.seasons?.length ?? 0,
+    category: mapping?.categories?.length ?? 0,
+    subCategory: mapping?.subCategories?.length ?? 0,
+    fit: mapping?.fits?.length ?? 0,
+    brand: mapping?.brands?.length ?? 0,
+  };
+  const hint = hintMap[segment.type] || '';
+  const cnt = countMap[segment.type];
+  return (
+    <span className="text-xs text-gray-400">
+      {hint}
+      {hint && cnt > 0 ? `（已配置 ${cnt} 项）` : ''}
+    </span>
+  );
 };
 
 // ===== 映射表格组件 =====
