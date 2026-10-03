@@ -1,8 +1,8 @@
 import type { SQL } from 'drizzle-orm';
 import type { PostgresJsDatabase, PostgresJsTransaction } from 'drizzle-orm/postgres-js';
 
-/** 可合并的主数据实体类型（3b/3c 落地 style / customer；store 留待后续谨慎评估） */
-export type MergeEntityType = 'style' | 'customer';
+/** 可合并的主数据实体类型（3b/3c 落地 style；store / customer 已移除） */
+export type MergeEntityType = 'style';
 
 /** 查重分组依据（归一名称 / 归一电话） */
 export type MergeCandidateKeyType = 'name' | 'phone';
@@ -21,7 +21,7 @@ export interface MergeCandidateConfig {
 /**
  * 单个依赖改指配置：某张从属于主数据的业务表，合并时需把指向被合并方的行改指到 survivor。
  * - table   : drizzle 表对象（如 sku）
- * - idKey   : 指向主实体的 id 列属性名（如 'styleId' / 'customerId'）
+ * - idKey   : 指向主实体的 id 列属性名（如 'styleId' / 'dealerId'）
  * - codeKey : 与主实体同义的展示列属性名（如 'styleNo' / 'customerName'），可选
  */
 export interface MergeDepConfig {

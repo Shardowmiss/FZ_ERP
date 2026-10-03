@@ -17,7 +17,7 @@ import {
   retailOrderItem,
   inventoryStock,
   warehouse,
-  customer,
+  dealer,
   salesOrder,
   salesOrderItem,
   inventoryTransfer,
@@ -330,13 +330,12 @@ export class ReplenishPlanService {
         docType = 'sales_order';
         if (!s.dealerId)
           throw new BadRequestException('该加盟店未关联经销商，无法生成销售单');
-        const cust = await tx
+        const dealerRow = await tx
           .select()
-          .from(customer)
-          .where(eq(customer.partnerId, s.dealerId))
+          .from(dealer)
+          .where(eq(dealer.id, s.dealerId))
           .limit(1);
-        if (!cust.length)
-          throw new BadRequestException('该经销商未关联客户档案，无法生成销售单');
+        const dealerNameForOrder = dealerRow[0]?.name ?? s.dealerId;
         const orderNo = await this.numberGenerator.generateNextNo(
           tx,
           salesOrder,
@@ -348,8 +347,8 @@ export class ReplenishPlanService {
           .insert(salesOrder)
           .values({
             orderNo,
-            customerId: cust[0].id,
-            customerName: cust[0].name,
+            dealerId: s.dealerId,
+            customerName: dealerNameForOrder,
             orderDate: today,
             totalAmount: '0',
             status: 'draft',

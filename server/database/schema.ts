@@ -798,8 +798,8 @@ export const systemOperationLog = pgTable("system_operation_log", {
 export const salesReconciliation = pgTable("sales_reconciliation", {
   id: uuid("id").primaryKey().defaultRandom(),
   reconNo: varchar("recon_no", { length: 50 }).notNull().unique(),
-  customerId: uuid("customer_id").notNull(),
   customerName: varchar("customer_name", { length: 200 }),
+  dealerId: uuid("dealer_id"),
   startDate: date("start_date").notNull(),
   endDate: date("end_date").notNull(),
   outboundAmount: numeric("outbound_amount").notNull().default('0'),
@@ -819,9 +819,14 @@ export const salesReconciliation = pgTable("sales_reconciliation", {
     WHEN (current_setting('app.user_id'::text, true) = ''::text) THEN NULL`),
 }, (table) => [
   uniqueIndex("sales_reconciliation_recon_no_key").on(table.reconNo),
-  index("idx_sr_customer_id").on(table.customerId),
+  index("idx_sr_dealer_id").on(table.dealerId),
   index("idx_sr_status").on(table.status),
   index("idx_sr_start_date").on(table.startDate),
+  foreignKey({
+    columns: [table.dealerId],
+    foreignColumns: [dealer.id],
+    name: "sales_reconciliation_dealer_id_fkey",
+  }),
 ]);
 
 export const purchaseReconciliation = pgTable("purchase_reconciliation", {
@@ -915,8 +920,8 @@ export const financeReceipt = pgTable("finance_receipt", {
   id: uuid("id").primaryKey().defaultRandom(),
   receiptNo: varchar("receipt_no", { length: 50 }).notNull().unique(),
   receiptDate: date("receipt_date").notNull(),
-  customerId: uuid("customer_id").notNull(),
   customerName: varchar("customer_name", { length: 200 }),
+  dealerId: uuid("dealer_id"),
   amount: numeric("amount").notNull().default('0'),
   paymentMethod: varchar("payment_method", { length: 20 }).notNull().default('transfer'),
   handler: varchar("handler", { length: 100 }),
@@ -934,9 +939,14 @@ export const financeReceipt = pgTable("finance_receipt", {
     WHEN (current_setting('app.user_id'::text, true) = ''::text) THEN NULL`),
 }, (table) => [
   uniqueIndex("finance_receipt_receipt_no_key").on(table.receiptNo),
+  index("idx_fr_dealer_id").on(table.dealerId),
   index("idx_fr_status").on(table.status),
-  index("idx_fr_customer_id").on(table.customerId),
   index("idx_fr_receipt_date").on(table.receiptDate),
+  foreignKey({
+    columns: [table.dealerId],
+    foreignColumns: [dealer.id],
+    name: "finance_receipt_dealer_id_fkey",
+  }),
 ]);
 
 export const productionFinishReceiptItem = pgTable("production_finish_receipt_item", {
@@ -2009,8 +2019,8 @@ export const receivablePayment = pgTable("receivable_payment", {
 export const receivable = pgTable("receivable", {
   id: uuid("id").primaryKey().defaultRandom(),
   receivableNo: varchar("receivable_no", { length: 50 }).notNull().unique(),
-  customerId: uuid("customer_id").notNull(),
-  customerName: varchar("customer_name", { length: 200 }).notNull(),
+  customerName: varchar("customer_name", { length: 200 }),
+  dealerId: uuid("dealer_id"),
   bizType: varchar("biz_type", { length: 30 }).notNull(),
   bizNo: varchar("biz_no", { length: 50 }).notNull(),
   amount: numeric("amount").notNull().default('0'),
@@ -2029,10 +2039,11 @@ export const receivable = pgTable("receivable", {
   updatedBy: userProfile("_updated_by"),
 }, (table) => [
   uniqueIndex("receivable_receivable_no_key").on(table.receivableNo),
+  index("idx_receivable_dealer_id").on(table.dealerId),
   foreignKey({
-    columns: [table.customerId],
-    foreignColumns: [customer.id],
-    name: "receivable_customer_id_fkey",
+    columns: [table.dealerId],
+    foreignColumns: [dealer.id],
+    name: "receivable_dealer_id_fkey",
   }),
 ]);
 
@@ -2380,8 +2391,8 @@ export const salesReturn = pgTable("sales_return", {
   returnNo: varchar("return_no", { length: 50 }).notNull().unique(),
   outboundId: uuid("outbound_id").notNull(),
   outboundNo: varchar("outbound_no", { length: 50 }).notNull(),
-  customerId: uuid("customer_id").notNull(),
-  customerName: varchar("customer_name", { length: 200 }).notNull(),
+  customerName: varchar("customer_name", { length: 200 }),
+  dealerId: uuid("dealer_id"),
   warehouseId: uuid("warehouse_id").notNull(),
   warehouseName: varchar("warehouse_name", { length: 200 }).notNull(),
   returnDate: date("return_date").notNull(),
@@ -2404,6 +2415,7 @@ export const salesReturn = pgTable("sales_return", {
   deletedAt: customTimestamptz("_deleted_at", { precision: 3 }),
 }, (table) => [
   uniqueIndex("sales_return_return_no_key").on(table.returnNo),
+  index("idx_sales_return_dealer_id").on(table.dealerId),
   index("idx_sales_return_mirror_status").on(table.mirrorStatus),
   foreignKey({
     columns: [table.outboundId],
@@ -2414,6 +2426,11 @@ export const salesReturn = pgTable("sales_return", {
     columns: [table.warehouseId],
     foreignColumns: [warehouse.id],
     name: "sales_return_warehouse_id_fkey",
+  }),
+  foreignKey({
+    columns: [table.dealerId],
+    foreignColumns: [dealer.id],
+    name: "sales_return_dealer_id_fkey",
   }),
 ]);
 
@@ -2461,8 +2478,8 @@ export const salesOutbound = pgTable("sales_outbound", {
   outboundNo: varchar("outbound_no", { length: 50 }).notNull().unique(),
   orderId: uuid("order_id").notNull(),
   orderNo: varchar("order_no", { length: 50 }).notNull(),
-  customerId: uuid("customer_id").notNull(),
-  customerName: varchar("customer_name", { length: 200 }).notNull(),
+  customerName: varchar("customer_name", { length: 200 }),
+  dealerId: uuid("dealer_id"),
   warehouseId: uuid("warehouse_id").notNull(),
   warehouseName: varchar("warehouse_name", { length: 200 }).notNull(),
   outboundDate: date("outbound_date").notNull(),
@@ -2482,8 +2499,8 @@ export const salesOutbound = pgTable("sales_outbound", {
   deletedAt: customTimestamptz("_deleted_at", { precision: 3 }),
 }, (table) => [
   uniqueIndex("sales_outbound_outbound_no_key").on(table.outboundNo),
+  index("idx_sales_outbound_dealer_id").on(table.dealerId),
   index("idx_sales_outbound_outbound_date").on(table.outboundDate),
-  index("idx_sales_outbound_customer_id").on(table.customerId),
   index("idx_sales_outbound_status").on(table.status),
   index("idx_sales_outbound_order_id").on(table.orderId),
   foreignKey({
@@ -2495,6 +2512,11 @@ export const salesOutbound = pgTable("sales_outbound", {
     columns: [table.warehouseId],
     foreignColumns: [warehouse.id],
     name: "sales_outbound_warehouse_id_fkey",
+  }),
+  foreignKey({
+    columns: [table.dealerId],
+    foreignColumns: [dealer.id],
+    name: "sales_outbound_dealer_id_fkey",
   }),
 ]);
 
@@ -2539,8 +2561,8 @@ export const salesOrder = pgTable("sales_order", {
   // 软删除标记：非空表示已删除（BaseCrudService 软删逻辑据此过滤/置位）
   deletedAt: customTimestamptz("_deleted_at", { precision: 3 }),
   orderNo: varchar("order_no", { length: 50 }).notNull().unique(),
-  customerId: uuid("customer_id").notNull(),
-  customerName: varchar("customer_name", { length: 200 }).notNull(),
+  customerName: varchar("customer_name", { length: 200 }),
+  dealerId: uuid("dealer_id"),
   orderDate: date("order_date").notNull(),
   deliveryDate: date("delivery_date"),
   totalAmount: numeric("total_amount").notNull().default('0'),
@@ -2560,14 +2582,14 @@ export const salesOrder = pgTable("sales_order", {
   updatedBy: userProfile("_updated_by"),
 }, (table) => [
   uniqueIndex("sales_order_order_no_key").on(table.orderNo),
+  index("idx_sales_order_dealer_id").on(table.dealerId),
   index("idx_sales_order_mirror_status").on(table.mirrorStatus),
   index("idx_sales_order_order_date").on(table.orderDate),
-  index("idx_sales_order_customer_id").on(table.customerId),
   index("idx_sales_order_status").on(table.status),
   foreignKey({
-    columns: [table.customerId],
-    foreignColumns: [customer.id],
-    name: "sales_order_customer_id_fkey",
+    columns: [table.dealerId],
+    foreignColumns: [dealer.id],
+    name: "sales_order_dealer_id_fkey",
   }),
 ]);
 
@@ -2891,49 +2913,6 @@ export const supplier = pgTable("supplier", {
   }).onDelete("set null"),
 ]);
 
-export const customer = pgTable("customer", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  code: varchar("code", { length: 50 }).notNull().unique(),
-  name: varchar("name", { length: 200 }).notNull(),
-  contactPerson: varchar("contact_person", { length: 100 }),
-  phone: varchar("phone", { length: 50 }),
-  address: text("address"),
-  creditPeriod: integer("credit_period").default(0),
-  level: varchar("level", { length: 20 }),
-  remark: text("remark"),
-  partnerId: uuid("partner_id"),
-  status: varchar("status", { length: 20 }).notNull().default('active'),
-  // System field: Creation time (auto-filled, do not modify)
-  createdAt: customTimestamptz("_created_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
-  // System field: Creator (auto-filled, do not modify)
-  createdBy: userProfile("_created_by"),
-  // System field: Update time (auto-filled, do not modify)
-  updatedAt: customTimestamptz("_updated_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
-  // System field: Updater (auto-filled, do not modify)
-  updatedBy: userProfile("_updated_by"),
-  // 软删除标记：非空表示已删除（BaseCrudService 软删逻辑据此过滤/置位）
-  deletedAt: customTimestamptz("_deleted_at", { precision: 3 }),
-  // P0-3 泛化合并（3b/3c）：被合并客户指向存活方 customer.id（绝不删除被合并客户，仅打标）
-  mergedInto: uuid("merged_into"),
-  // P0-3 泛化合并：合并时间（打标用，非软删）
-  mergedAt: customTimestamptz("merged_at", { precision: 3 }),
-}, (table) => [
-  uniqueIndex("customer_code_key").on(table.code),
-  index("idx_customer_partner_id").on(table.partnerId),
-  index("idx_customer_merged_into").on(table.mergedInto),
-  foreignKey({
-    columns: [table.partnerId],
-    foreignColumns: [dealer.id],
-    name: "customer_partner_id_fkey",
-  }).onDelete("set null"),
-  // 自愈引用：删除/改指 survivor 时把 mergedInto 置空（被合并客户不会被级联删）
-  foreignKey({
-    columns: [table.mergedInto],
-    foreignColumns: [table.id],
-    name: "customer_merged_into_fkey",
-  }).onDelete("set null"),
-]);
-
 export const material = pgTable("material", {
   id: uuid("id").primaryKey().defaultRandom(),
   code: varchar("code", { length: 50 }).notNull().unique(),
@@ -3111,7 +3090,6 @@ export const bomItemTable = bomItem;
 export const codeMappingConfigTable = codeMappingConfig;
 export const codeRuleTable = codeRule;
 export const colorGroupTable = colorGroup;
-export const customerTable = customer;
 export const dealerTable = dealer;
 export const financePaymentTable = financePayment;
 export const financePaymentWriteoffTable = financePaymentWriteoff;

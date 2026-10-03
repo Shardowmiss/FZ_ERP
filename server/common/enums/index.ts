@@ -28,7 +28,6 @@ export const PriceListType = {
   STORE: 'store',
   CHANNEL: 'channel',
   MEMBER: 'member',
-  CUSTOMER: 'customer',
 } as const;
 
 export const PromotionType = {

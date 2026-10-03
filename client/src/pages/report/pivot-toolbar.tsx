@@ -13,7 +13,7 @@ interface ToolbarProps {
   storeIds: string[];
   keyword: string;
   showStoreFilter: boolean;
-  customer?: string;
+  dealer?: string;
   supplier?: string;
   warehouse?: string;
   onDataSourceChange: (ds: PivotDataSource) => void;
@@ -24,7 +24,7 @@ interface ToolbarProps {
   onBrandChange: (v: string) => void;
   onStoreIdsChange: (ids: string[]) => void;
   onKeywordChange: (v: string) => void;
-  onCustomerChange?: (v: string) => void;
+  onDealerChange?: (v: string) => void;
   onSupplierChange?: (v: string) => void;
   onWarehouseChange?: (v: string) => void;
   onSearch: () => void;
@@ -50,7 +50,7 @@ export function Toolbar({
   storeIds,
   keyword,
   showStoreFilter,
-  customer = '',
+  dealer = '',
   supplier = '',
   warehouse = '',
   onDataSourceChange,
@@ -61,7 +61,7 @@ export function Toolbar({
   onBrandChange,
   onStoreIdsChange,
   onKeywordChange,
-  onCustomerChange,
+  onDealerChange,
   onSupplierChange,
   onWarehouseChange,
   onSearch,
@@ -233,15 +233,15 @@ export function Toolbar({
                 </div>
               </div>
 
-              {/* Row 2: customer + supplier */}
+              {/* Row 2: dealer + supplier */}
               <div className="flex items-center gap-4">
                 <div className="flex items-center">
-                  <span className={labelCls}>客户</span>
+                  <span className={labelCls}>经销商</span>
                   <input
                     type="text"
-                    value={customer}
-                    onChange={(e) => onCustomerChange?.(e.target.value)}
-                    placeholder="客户名称"
+                    value={dealer}
+                    onChange={(e) => onDealerChange?.(e.target.value)}
+                    placeholder="经销商名称"
                     className={inputCls + ' w-36'}
                   />
                 </div>

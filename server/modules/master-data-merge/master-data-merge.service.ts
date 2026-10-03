@@ -16,13 +16,13 @@ import type {
 } from './types';
 
 /**
- * P0-3 通用主数据合并引擎（3b/3c：商品 style / 客户 customer）。
+ * P0-3 通用主数据合并引擎（3b/3c：商品 style）。
  *
  * 责任边界：
- *   · 把重复的主数据收敛为一个 survivor；被合并方**绝不删除**（style/customer 从表外键均
+ *   · 把重复的主数据收敛为一个 survivor；被合并方**绝不删除**（style 从表外键均
  *     RESTRICT/NO ACTION，删除被 FK 阻止；且历史业务依赖这些主数据）—— 仅改指依赖行到
  *     survivor + 打标(mergedInto/mergedAt)。
- *   · style/customer 无资金/积分列，合并不涉及资金迁移（比 member 简单、更安全的子集）。
+ *   · style 无资金/积分列，合并不涉及资金迁移（比 member 简单、更安全的子集）。
  *   · 依赖改指范围 = 实时从属于该主数据的业务表（见 configs.ts），历史交易行项目不改指。
  *   · 回滚 = 解除打标（不回指历史归属，与 member 一致：survivor 已拥有的依赖归属保持不变）。
  *
@@ -213,7 +213,7 @@ export class MasterDataMergeService {
       .orderBy(sql`${masterDataMergeLog.createdAt} desc`)
       .limit(opts.limit ?? 200);
 
-    // 回填保留方展示名（style=styleNo / customer=name）
+    // 回填保留方展示名（style=styleNo）
     const survivorIds = Array.from(new Set(rows.map((r) => r.survivorId)));
     const survMap = new Map<string, string | null>();
     if (survivorIds.length) {
@@ -311,7 +311,7 @@ export class MasterDataMergeService {
         id: entityTable.id,
         code: entityTable[cfg.codeKey],
         name: entityTable[cfg.displayKey],
-        // 仅配置了 phoneExpr（有电话列的实体，如 customer）才选 phone；
+        // 仅配置了 phoneExpr（有电话列的实体）才选 phone；
         // style 等无 phone 列的实体不能选该列，否则 SQL 报未知字段。
         ...(cfg.candidate?.phoneExpr ? { phone: (entityTable as any).phone } : {}),
       })

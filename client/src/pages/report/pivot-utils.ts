@@ -28,7 +28,7 @@ export const DIMENSION_FIELDS: PivotField[] = [
   { key: 'category', label: '大类', type: 'string', category: 'org' },
   { key: 'subCategory', label: '小类', type: 'string', category: 'org' },
   { key: 'store', label: '门店', type: 'string', category: 'org' },
-  { key: 'customer', label: '客户', type: 'string', category: 'org' },
+  { key: 'dealer', label: '经销商', type: 'string', category: 'org' },
   { key: 'supplier', label: '供应商', type: 'string', category: 'org' },
   { key: 'warehouse', label: '仓库', type: 'string', category: 'org' },
   { key: 'styleNo', label: '款号', type: 'string', category: 'product' },
@@ -56,7 +56,7 @@ export const DIMENSION_GROUPS: { key: string; label: string; fields: string[] }[
   {
     key: 'org',
     label: '组织维度',
-    fields: ['brand', 'category', 'subCategory', 'store', 'customer', 'supplier', 'warehouse'],
+    fields: ['brand', 'category', 'subCategory', 'store', 'dealer', 'supplier', 'warehouse'],
   },
   {
     key: 'product',

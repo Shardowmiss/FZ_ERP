@@ -47,9 +47,8 @@ DELETE FROM retail_order WHERE retail_no LIKE 'RO-REPL-%';
 DELETE FROM inventory_stock WHERE sku_code IN ('SKU-REPL-01','SKU-REPL-02');
 DELETE FROM sku WHERE sku_code IN ('SKU-REPL-01','SKU-REPL-02');
 
--- 7) 门店 / 客户 / 经销商 / 仓库
+-- 7) 门店 / 经销商 / 仓库
 DELETE FROM store WHERE code IN ('ST-REPL-DIR','ST-REPL-FRAN');
-DELETE FROM customer WHERE code='CU-REPL-01';
 DELETE FROM dealer WHERE code='DL-REPL-01';
 DELETE FROM warehouse WHERE code IN ('WH-REPL-MAIN','WH-REPL-DIR','WH-REPL-FRAN');
 

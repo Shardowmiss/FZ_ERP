@@ -3,7 +3,7 @@ import { useDefaultDocDate } from '@client/src/hooks/useDefaultDocDate';
 import { useNavigate } from 'react-router-dom';
 import { salesApi } from '@client/src/api/sales';
 import { baseApi } from '@client/src/api/base';
-import type { SalesOrder, Customer, PaginationResult } from '@shared/api.interface';
+import type { SalesOrder, Dealer, PaginationResult } from '@shared/api.interface';
 import { logger } from '@lark-apaas/client-toolkit/logger';
 import { toast } from 'sonner';
 import { showConfirm } from '@lark-apaas/client-toolkit';
@@ -32,14 +32,14 @@ export default function SalesOrderPage() {
   const [pageSize, setPageSize] = useState(20);
   const [loading, setLoading] = useState(false);
 
-  const [customerId, setCustomerId] = useState('');
+  const [dealerId, setDealerId] = useState('');
   const [status, setStatus] = useState('');
   const def = useDefaultDocDate();
   const [startDate, setStartDate] = useState(def.startDate);
   const [endDate, setEndDate] = useState(def.endDate);
   const [keyword, setKeyword] = useState('');
 
-  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [dealers, setDealers] = useState<Dealer[]>([]);
   const navigate = useNavigate();
 
   const [printOpen, setPrintOpen] = useState(false);
@@ -96,7 +96,7 @@ export default function SalesOrderPage() {
     setLoading(true);
     try {
       const params: any = { page, pageSize };
-      if (customerId) params.customerId = customerId;
+      if (dealerId) params.dealerId = dealerId;
       if (status) params.status = status;
       if (startDate) params.startDate = startDate;
       if (endDate) params.endDate = endDate;
@@ -112,18 +112,18 @@ export default function SalesOrderPage() {
     }
   };
 
-  const fetchCustomers = async () => {
+  const fetchDealers = async () => {
     try {
-      const res = await baseApi.customer.list({ page: 1, pageSize: 1000, status: 'active' });
-      setCustomers(res.items);
+      const res = await baseApi.dealer.list({ page: 1, pageSize: 1000, status: 'active' });
+      setDealers(res.items);
     } catch (e) {
-      logger.error('加载客户失败', e);
+      logger.error('加载经销商失败', e);
     }
   };
 
   useEffect(() => {
     fetchList();
-    fetchCustomers();
+    fetchDealers();
   }, [page]);
 
   const handleSearch = () => {
@@ -144,7 +144,7 @@ export default function SalesOrderPage() {
   const handleExport = async () => {
     try {
       const params: any = { page: 1, pageSize: 10000 };
-      if (customerId) params.customerId = customerId;
+      if (dealerId) params.dealerId = dealerId;
       if (status) params.status = status;
       if (startDate) params.startDate = startDate;
       if (endDate) params.endDate = endDate;
@@ -152,7 +152,7 @@ export default function SalesOrderPage() {
       const res: PaginationResult<SalesOrder> = await salesApi.order.list(params);
       exportTableToCSV('销售订单', res.items as unknown as Record<string, unknown>[], {
         orderNo: '订单编号',
-        customerName: '客户名称',
+        customerName: '经销商名称',
         orderDate: '订单日期',
         deliveryDate: '交期',
         totalAmount: '金额',
@@ -271,14 +271,14 @@ export default function SalesOrderPage() {
 
       <div className="bg-white rounded-lg shadow-sm p-4 mb-4 flex flex-wrap gap-3 items-end">
         <div className="flex flex-col">
-          <label className="text-xs text-gray-500 mb-1">客户</label>
+          <label className="text-xs text-gray-500 mb-1">经销商</label>
           <select
-            value={customerId}
-            onChange={(e) => setCustomerId(e.target.value)}
+            value={dealerId}
+            onChange={(e) => setDealerId(e.target.value)}
             className="border border-gray-300 rounded px-3 py-1.5 text-sm w-40"
           >
             <option value="">全部</option>
-            {customers.map((c: Customer) => (
+            {dealers.map((c: Dealer) => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
                       <option value="cancelled">已作废</option>
@@ -321,7 +321,7 @@ export default function SalesOrderPage() {
             type="text"
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
-            placeholder="单号/客户"
+            placeholder="单号/经销商"
             className="border border-gray-300 rounded px-3 py-1.5 text-sm w-40"
           />
         </div>
@@ -345,7 +345,7 @@ export default function SalesOrderPage() {
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
               <th className="text-left px-4 py-2.5 font-medium text-gray-600">单号</th>
-              <th className="text-left px-4 py-2.5 font-medium text-gray-600">客户</th>
+              <th className="text-left px-4 py-2.5 font-medium text-gray-600">经销商</th>
               <th className="text-left px-4 py-2.5 font-medium text-gray-600">订单日期</th>
               <th className="text-left px-4 py-2.5 font-medium text-gray-600">交期</th>
               <th className="text-right px-4 py-2.5 font-medium text-gray-600">金额</th>

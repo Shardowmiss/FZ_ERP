@@ -12,7 +12,6 @@ const SkuPage = React.lazy(() => import('@client/src/pages/base/SkuPage'));
 const ColorGroupPage = React.lazy(() => import('@client/src/pages/base/ColorGroupPage'));
 const SizeGroupPage = React.lazy(() => import('@client/src/pages/base/SizeGroupPage'));
 const MaterialPage = React.lazy(() => import('@client/src/pages/base/MaterialPage'));
-const CustomerPage = React.lazy(() => import('@client/src/pages/base/CustomerPage'));
 const MergeAuditPage = React.lazy(() => import('@client/src/pages/base/MergeAuditPage'));
 const SupplierPage = React.lazy(() => import('@client/src/pages/base/SupplierPage'));
 const WarehousePage = React.lazy(() => import('@client/src/pages/base/WarehousePage'));
@@ -117,7 +116,6 @@ const routePermissions: Record<string, string> = {
   '/base/color-group': 'base:style',
   '/base/size-group': 'base:sku',
   '/base/material': 'base:material',
-  '/base/customer': 'base:customer',
   '/base/merge-audit': 'md:merge',
   '/base/supplier': 'base:supplier',
   '/base/warehouse': 'base:warehouse',
@@ -191,7 +189,7 @@ const routePermissions: Record<string, string> = {
   '/analytics/forecast': 'dashboard:view',
   '/analytics/lifecycle': 'dashboard:view',
   '/analytics/bi': 'dashboard:view',
-  '/omni': 'sales:view',
+  '/omni': 'omni:manage',
   '/member': 'retail:view',
   '/base/member-merge-audit': 'member:merge',
 };
@@ -218,7 +216,6 @@ function getRouteComponent(pathname: string): React.ComponentType | null {
     '/base/style-attribute': StyleAttrDefPage,
     '/base/dealer': DealerPage,
     '/base/store': StorePage,
-    '/base/customer': CustomerPage,
     '/base/merge-audit': MergeAuditPage,
     '/bom': BomPage,
     '/production/bom': ProductionBomPage,

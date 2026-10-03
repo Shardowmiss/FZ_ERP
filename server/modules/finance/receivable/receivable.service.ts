@@ -30,7 +30,7 @@ interface PaymentDto {
 interface ListQuery {
   page: number;
   pageSize: number;
-  customerId?: string;
+  dealerId?: string;
   status?: string;
   keyword?: string;
 }
@@ -62,7 +62,7 @@ export class ReceivableService {
     return {
       id: row.id,
       receivableNo: row.receivableNo,
-      customerId: row.customerId,
+      dealerId: row.dealerId,
       customerName: row.customerName,
       bizType: row.bizType,
       bizNo: row.bizNo,
@@ -89,9 +89,9 @@ export class ReceivableService {
   }
 
   async list(query: ListQuery): Promise<PaginationResult<Receivable>> {
-    const { page, pageSize, customerId, status, keyword } = query;
+    const { page, pageSize, dealerId, status, keyword } = query;
     const conditions = [];
-    if (customerId) conditions.push(eq(receivable.customerId, customerId));
+    if (dealerId) conditions.push(eq(receivable.dealerId, dealerId));
     if (status) conditions.push(eq(receivable.status, status));
     if (keyword) {
       const escaped: string = escapeLike(keyword);

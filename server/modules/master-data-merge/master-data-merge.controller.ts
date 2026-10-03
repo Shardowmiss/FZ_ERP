@@ -5,14 +5,14 @@ import { RequestContext } from '../../common/context/request-context';
 import { MasterDataMergeService } from './master-data-merge.service';
 import type { MergeEntityType } from './types';
 
-const SUPPORTED: MergeEntityType[] = ['style', 'customer'];
+const SUPPORTED: MergeEntityType[] = ['style'];
 
 @NeedLogin()
 @Controller('api/md-merge')
 export class MasterDataMergeController {
   constructor(private readonly svc: MasterDataMergeService) {}
 
-  /** 执行合并：entityType ∈ {style,customer}；survivorId 吸收 mergedIds（绝不删除被合并方，仅打标+改指依赖） */
+  /** 执行合并：entityType ∈ {style}；survivorId 吸收 mergedIds（绝不删除被合并方，仅打标+改指依赖） */
   @CheckPermission('md:merge')
   @Post(':entityType/merge')
   async merge(

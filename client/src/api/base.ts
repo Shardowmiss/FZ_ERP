@@ -2,7 +2,7 @@ import { request } from './request';
 import type {
   PaginationParams, PaginationResult,
   Style, Sku, Color, ColorGroup, SizeGroup, Size, SizeGroupSize,
-  Material, Customer, Supplier, Warehouse,
+  Material, Supplier, Warehouse,
   Dealer, Store,
   StyleCreateAutoRequest,
 } from '@shared/api.interface';
@@ -92,17 +92,6 @@ export const baseApi = {
     remove: (id: string) => request<void>(`/api/base/material/${id}`, 'DELETE'),
 
     options: () => request<{ id: string; code: string; name: string; unit: string }[]>('/api/base/material/options'),
-  },
-  customer: {
-    list: (params: PaginationParams & { keyword?: string; status?: string }) =>
-      request<PaginationResult<Customer>>('/api/base/customer', 'GET', null, params),
-    get: (id: string) => request<Customer>(`/api/base/customer/${id}`),
-    create: (data: Partial<Customer>) => request<Customer>('/api/base/customer', 'POST', data),
-    update: (id: string, data: Partial<Customer>) =>
-      request<Customer>(`/api/base/customer/${id}`, 'PUT', data),
-    remove: (id: string) => request<void>(`/api/base/customer/${id}`, 'DELETE'),
-
-    options: () => request<{ id: string; code: string; name: string }[]>('/api/base/customer/options'),
   },
   supplier: {
     list: (params: PaginationParams & { keyword?: string; status?: string }) =>
@@ -251,7 +240,7 @@ export interface StyleAttrValue {
 }
 
 // ===== 主数据合并（查重候选 + 合并）相关类型，与后端 types.ts 严格对齐 =====
-export type MergeEntityType = 'style' | 'customer';
+export type MergeEntityType = 'style';
 export type MergeCandidateKeyType = 'name' | 'phone';
 
 export interface MergeCandidateMember {

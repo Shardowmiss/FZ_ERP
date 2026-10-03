@@ -22,7 +22,7 @@ export class SalesOrderController {
   async list(
     @Query('page') page = '1',
     @Query('pageSize') pageSize = '20',
-    @Query('customerId') customerId?: string,
+    @Query('dealerId') dealerId?: string,
     @Query('status') status?: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
@@ -31,7 +31,7 @@ export class SalesOrderController {
     return this.salesOrderService.list({
       page: parseInt(page, 10),
       pageSize: parseInt(pageSize, 10),
-      customerId,
+      dealerId,
       status,
       startDate,
       endDate,
@@ -49,7 +49,7 @@ export class SalesOrderController {
   async create(
     @Body()
     body: {
-      customerId: string;
+      dealerId: string;
       orderDate: string;
       deliveryDate?: string;
       remark?: string;
@@ -65,7 +65,7 @@ export class SalesOrderController {
     @Param('id') id: string,
     @Body()
     body: {
-      customerId: string;
+      dealerId: string;
       orderDate: string;
       deliveryDate?: string;
       remark?: string;

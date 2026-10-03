@@ -46,7 +46,7 @@ export default function SalesReportPage() {
         };
         if (filters.startDate) params.startDate = filters.startDate;
         if (filters.endDate) params.endDate = filters.endDate;
-        if (filters.partnerId) params.customerId = filters.partnerId;
+        if (filters.partnerId) params.dealerId = filters.partnerId;
         if (filters.partnerType) params.partnerType = filters.partnerType;
         if (filters.keyword) params.keyword = filters.keyword;
         if (filters.brand) params.brand = filters.brand;

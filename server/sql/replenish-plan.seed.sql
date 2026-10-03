@@ -16,7 +16,6 @@ DELETE FROM retail_order WHERE retail_no LIKE 'RO-REPL-%';
 DELETE FROM inventory_stock WHERE sku_code IN ('SKU-REPL-01','SKU-REPL-02');
 DELETE FROM sku WHERE sku_code IN ('SKU-REPL-01','SKU-REPL-02');
 DELETE FROM store WHERE code IN ('ST-REPL-DIR','ST-REPL-FRAN');
-DELETE FROM customer WHERE code='CU-REPL-01';
 DELETE FROM dealer WHERE code='DL-REPL-01';
 DELETE FROM warehouse WHERE code IN ('WH-REPL-MAIN','WH-REPL-DIR','WH-REPL-FRAN');
 
@@ -26,11 +25,9 @@ INSERT INTO warehouse (id, code, name, type, store_type) VALUES
   ('b2222222-2222-2222-2222-222222222222','WH-REPL-DIR','补货测试直营仓','store','direct'),
   ('b3333333-3333-3333-3333-333333333333','WH-REPL-FRAN','补货测试加盟仓','store','franchise');
 
--- 经销商 + 客户（partner_id 关联，供加盟店生成销售订单）
+-- 经销商（供加盟店生成销售订单，门店 dealer_id 直连）
 INSERT INTO dealer (id, code, name, status) VALUES
   ('c1111111-1111-1111-1111-111111111111','DL-REPL-01','补货测试经销商','active');
-INSERT INTO customer (id, code, name, partner_id, status) VALUES
-  ('c2222222-2222-2222-2222-222222222222','CU-REPL-01','补货测试客户','c1111111-1111-1111-1111-111111111111','active');
 
 -- 门店
 INSERT INTO store (id, code, name, store_type, warehouse_id, dealer_id, status) VALUES

@@ -20,14 +20,14 @@ export class ReceivableController {
   async list(
     @Query('page') page = '1',
     @Query('pageSize') pageSize = '20',
-    @Query('customerId') customerId?: string,
+    @Query('dealerId') dealerId?: string,
     @Query('status') status?: string,
     @Query('keyword') keyword?: string,
   ): Promise<PaginationResult<Receivable>> {
     return this.receivableService.list({
       page: parseInt(page, 10),
       pageSize: parseInt(pageSize, 10),
-      customerId,
+      dealerId,
       status,
       keyword,
     });

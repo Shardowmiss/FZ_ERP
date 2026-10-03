@@ -8,7 +8,7 @@ import { TableContainer } from '@client/src/components/ui';
 import { errMsg } from '@/utils/errMsg';
 import { useAuth } from '@client/src/contexts/AuthContext';
 
-type EntityFilter = 'all' | 'style' | 'customer';
+type EntityFilter = 'all' | 'style';
 type StatusFilter = 'all' | 'active' | 'reversed';
 
 /** 按批次(runId)聚合的展示结构 */
@@ -26,7 +26,6 @@ interface MergeRunGroup {
 
 const ENTITY_LABEL: Record<MergeLog['entityType'], string> = {
   style: '款号',
-  customer: '客户',
 };
 
 const MergeAuditPage: React.FC = () => {
@@ -44,7 +43,7 @@ const MergeAuditPage: React.FC = () => {
     setLoading(true);
     try {
       const types: MergeLog['entityType'][] =
-        entityFilter === 'all' ? ['style', 'customer'] : [entityFilter];
+        entityFilter === 'all' ? ['style'] : [entityFilter];
       const reversedOpt = statusFilter === 'all' ? undefined : statusFilter === 'reversed';
       const results = await Promise.all(
         types.map((t) => baseApi.masterDataMerge.mergeLogs(t, { reversed: reversedOpt, limit: 500 })),
@@ -119,7 +118,7 @@ const MergeAuditPage: React.FC = () => {
       <div className="mb-1 flex items-center justify-between">
         <h2 className="text-xl font-semibold">合并审计</h2>
         <span className="text-xs text-gray-400">
-          主数据合并（款号/客户）的审计与回滚 · 被合并方仅打标、绝不删除
+          主数据合并（款号）的审计与回滚 · 被合并方仅打标、绝不删除
         </span>
       </div>
 
@@ -131,7 +130,6 @@ const MergeAuditPage: React.FC = () => {
         >
           <option value="all">全部实体</option>
           <option value="style">款号</option>
-          <option value="customer">客户</option>
         </select>
         <select
           className="border rounded px-2 py-1.5 text-sm"
@@ -218,7 +216,7 @@ const MergeAuditPage: React.FC = () => {
 
       <div className="mt-6 text-xs text-gray-400">
         提示：合并操作不会删除被合并方，仅打标并改指其关联业务到保留方。如需撤销，可在此按批次整批回滚。
-        也可从 <Link to="/base/customer" className="text-primary hover:underline">客户管理</Link> 完成合并后回到本页处理。
+        合并操作在对应主数据页面（如款号管理）发起，完成后可回到本页按批次整批回滚。
       </div>
     </div>
   );

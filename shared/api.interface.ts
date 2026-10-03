@@ -115,20 +115,6 @@ export interface Material {
   createdAt: string;
 }
 
-export interface Customer {
-  id: string;
-  code: string;
-  name: string;
-  contactPerson?: string;
-  phone?: string;
-  address?: string;
-  creditPeriod: number;
-  level?: string;
-  remark?: string;
-  status: string;
-  createdAt: string;
-}
-
 export interface Supplier {
   id: string;
   code: string;
@@ -393,7 +379,7 @@ export interface PurchaseReturnItem {
 export interface SalesOrder {
   id: string;
   orderNo: string;
-  customerId: string;
+  dealerId: string;
   customerName: string;
   orderDate: string;
   deliveryDate?: string;
@@ -423,7 +409,7 @@ export interface SalesOutbound {
   outboundNo: string;
   orderId: string;
   orderNo: string;
-  customerId: string;
+  dealerId: string;
   customerName: string;
   warehouseId: string;
   warehouseName: string;
@@ -458,7 +444,7 @@ export interface SalesReturn {
   returnNo: string;
   outboundId: string;
   outboundNo: string;
-  customerId: string;
+  dealerId: string;
   customerName: string;
   warehouseId: string;
   warehouseName: string;
@@ -591,7 +577,7 @@ export interface InventoryStocktakeItem {
 export interface Receivable {
   id: string;
   receivableNo: string;
-  customerId: string;
+  dealerId: string;
   customerName: string;
   bizType: string;
   bizNo: string;
@@ -1751,7 +1737,7 @@ export interface FinanceReceipt {
   id: string;
   receiptNo: string;
   receiptDate: string;
-  customerId: string;
+  dealerId: string;
   customerName: string;
   amount: number;
   paymentMethod: string;
@@ -1821,7 +1807,7 @@ export interface PurchaseReconPreview {
 export interface SalesReconciliation {
   id: string;
   reconNo: string;
-  customerId: string;
+  dealerId: string;
   customerName?: string;
   startDate: string;
   endDate: string;

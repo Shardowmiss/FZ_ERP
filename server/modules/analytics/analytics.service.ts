@@ -14,7 +14,7 @@ import {
   buildAggregationScope,
 } from '@server/common/data-scope/aggregation-scope';
 import { RequestContext, ALL_SCOPE } from '@server/common/context/request-context';
-import { buildDealerScopeCondition } from '@server/common/data-scope/dealer-scope';
+import { buildDealerScopeCondition, type DealerPath } from '@server/common/data-scope/dealer-scope';
 import type {
   ForecastResult,
   ForecastPoint,
@@ -42,7 +42,7 @@ const BI_DIM_COLUMN: Record<string, string> = {
   style: 'soi.style_no',
   category: 'st.category',
   warehouse: 'so.warehouse_name',
-  customer: 'so.customer_name',
+  dealer: 'dl.name',
   month: "to_char(so.outbound_date, 'YYYY-MM')",
 };
 
@@ -74,7 +74,7 @@ export class AnalyticsService {
     }
 
     const scope = RequestContext.getDealerScope() ?? ALL_SCOPE;
-    const salesScope = buildDealerScopeCondition(scope, { kind: 'viaCustomer', column: sql`so.customer_id` });
+    const salesScope = buildDealerScopeCondition(scope, { kind: 'dealerColumn', column: sql`so.dealer_id` });
     const forecastWhere = [
       sql`so.status IN ('booked', 'accepted') AND soi.sku_id = ${skuId}`,
     ];
@@ -190,10 +190,7 @@ export class AnalyticsService {
   async forecastBatch(skuIds: string[]): Promise<BatchForecast[]> {
     if (!skuIds.length) return [];
     const scope = RequestContext.getDealerScope() ?? ALL_SCOPE;
-    const salesScope = buildDealerScopeCondition(scope, {
-      kind: 'viaCustomer',
-      column: sql`so.customer_id`,
-    });
+    const salesScope = buildDealerScopeCondition(scope, { kind: 'dealerColumn', column: sql`so.dealer_id` });
     const where = [
       sql`so.status IN ('booked', 'accepted') AND ${inArray(sql`soi.sku_id`, skuIds)}`,
     ];
@@ -291,7 +288,7 @@ export class AnalyticsService {
     )}`;
 
     const scope = RequestContext.getDealerScope() ?? ALL_SCOPE;
-    const lifeScope = buildDealerScopeCondition(scope, { kind: 'viaCustomer', column: sql`so.customer_id` });
+    const lifeScope = buildDealerScopeCondition(scope, { kind: 'dealerColumn', column: sql`so.dealer_id` });
     const lifeWhere = [
       sql`so.status IN ('booked', 'accepted') AND so.outbound_date >= ${sinceStr}`,
     ];
@@ -409,12 +406,13 @@ export class AnalyticsService {
     }
     if (to) whereParts.push(sql`so.outbound_date <= ${to}`);
     const scope = RequestContext.getDealerScope() ?? ALL_SCOPE;
-    const biScope = buildDealerScopeCondition(scope, { kind: 'viaCustomer', column: sql`so.customer_id` });
+    const biScope = buildDealerScopeCondition(scope, { kind: 'dealerColumn', column: sql`so.dealer_id` });
     if (biScope) whereParts.push(biScope);
     const whereSql = sql.join(whereParts, sql` AND `);
 
     const joinStyle =
-      dim === 'category' ? sql`JOIN style st ON soi.style_no = st.style_no` : sql``;
+      dim === 'category' ? sql`JOIN style st ON soi.style_no = st.style_no` :
+      dim === 'dealer' ? sql`JOIN dealer dl ON so.dealer_id = dl.id` : sql``;
 
     const rows = (await this.db.execute(sql`
       SELECT ${sql.raw(col)} AS dim_value,
@@ -559,17 +557,17 @@ export class AnalyticsService {
       { type: 'sales_outbound', no: 'outbound_no', date: 'outbound_date', pending: 'audited' },
       { type: 'purchase_inbound', no: 'inbound_no', date: 'inbound_date', pending: 'draft' },
     ];
-    const scopeMeta: Record<string, { kind: 'viaCustomer' | 'viaSupplier'; column: SQL }> = {
-      sales_order: { kind: 'viaCustomer', column: sql`sales_order.customer_id` },
+    const scopeMeta: Record<string, DealerPath> = {
+      sales_order: { kind: 'dealerColumn', column: sql`sales_order.dealer_id` },
       purchase_order: { kind: 'viaSupplier', column: sql`purchase_order.supplier_id` },
-      sales_outbound: { kind: 'viaCustomer', column: sql`sales_outbound.customer_id` },
+      sales_outbound: { kind: 'dealerColumn', column: sql`sales_outbound.dealer_id` },
       purchase_inbound: { kind: 'viaSupplier', column: sql`purchase_inbound.supplier_id` },
     };
     const result: PendingApproval[] = [];
     for (const m of map) {
       const scope = RequestContext.getDealerScope() ?? ALL_SCOPE;
       const meta = scopeMeta[m.type];
-      const scopeFrag = buildDealerScopeCondition(scope, { kind: meta.kind, column: meta.column });
+      const scopeFrag = buildDealerScopeCondition(scope, meta);
       const whereParts = [sql`status = ${m.pending}`];
       if (scopeFrag) whereParts.push(scopeFrag);
       const rows = (await this.db.execute(sql`

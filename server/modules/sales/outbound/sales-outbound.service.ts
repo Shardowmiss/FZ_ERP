@@ -57,7 +57,7 @@ interface CreateOutboundDto {
 interface ListQuery {
   page: number;
   pageSize: number;
-  customerId?: string;
+  dealerId?: string;
   status?: string;
   orderNo?: string;
   brand?: string;
@@ -95,7 +95,7 @@ export class SalesOutboundService {
       outboundNo: row.outboundNo,
       orderId: row.orderId,
       orderNo: row.orderNo,
-      customerId: row.customerId,
+      dealerId: row.dealerId,
       customerName: row.customerName,
       warehouseId: row.warehouseId,
       warehouseName: row.warehouseName,
@@ -128,9 +128,9 @@ export class SalesOutboundService {
   }
 
   async list(query: ListQuery): Promise<PaginationResult<SalesOutbound>> {
-    const { page, pageSize, customerId, status, orderNo, brand } = query;
+    const { page, pageSize, dealerId, status, orderNo, brand } = query;
     const conditions = [];
-    if (customerId) conditions.push(eq(salesOutbound.customerId, customerId));
+    if (dealerId) conditions.push(eq(salesOutbound.dealerId, dealerId));
     if (status) conditions.push(eq(salesOutbound.status, status));
     if (orderNo) conditions.push(eq(salesOutbound.orderNo, orderNo));
 
@@ -197,7 +197,7 @@ export class SalesOutboundService {
     // 行级数据权限：即使通过 ID 直查，也须落在当前用户可见经销商范围内，否则视为不存在
     const scopeCond = buildDealerScopeCondition(
       RequestContext.getDealerScope() ?? ALL_SCOPE,
-      { kind: 'viaCustomer', column: salesOutbound.customerId },
+      { kind: 'dealerColumn', column: salesOutbound.dealerId },
     );
     const where = scopeCond
       ? and(eq(salesOutbound.id, id), scopeCond, isNull(salesOutbound.deletedAt))
@@ -248,9 +248,9 @@ export class SalesOutboundService {
     }
     const wh = whRows[0];
 
-    // 写入端行级权限：被引用的客户/仓库必须属于当前账号可见经销商
+    // 写入端行级权限：被引用的经销商/仓库必须属于当前账号可见经销商
     await assertWriteWithinScope(this.db, {
-      customerId: order.customerId,
+      dealerId: order.dealerId,
       warehouseId: dto.warehouseId,
     });
 
@@ -350,7 +350,7 @@ export class SalesOutboundService {
           outboundNo,
           orderId: order.id,
           orderNo: order.orderNo,
-          customerId: order.customerId,
+          dealerId: order.dealerId,
           customerName: order.customerName,
           warehouseId: wh.id,
           warehouseName: wh.name,
@@ -472,7 +472,7 @@ export class SalesOutboundService {
       const receivableNo = generateReceivableNo(outbound.outboundNo);
       await tx.insert(receivable).values({
         receivableNo,
-        customerId: outbound.customerId,
+        dealerId: outbound.dealerId,
         customerName: outbound.customerName,
         bizType: 'sales_outbound',
         bizNo: outbound.outboundNo,

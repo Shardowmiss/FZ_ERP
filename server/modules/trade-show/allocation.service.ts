@@ -31,7 +31,6 @@ import {
   inventoryTransferItem,
   warehouse,
   store,
-  customer,
   dealer,
 } from '@server/database/schema';
 import type {
@@ -695,49 +694,7 @@ export class AllocationService {
       for (const [dealerId, items] of dealerGroups) {
         const dealerName = items[0].dealerName ?? '未知经销商';
 
-        // 统一伙伴模型：以经销商为分销节点，解析其"客户身份"（partner_id = dealerId）。
-        // 优先按 partner_id 定位稳定客户；兼容历史以经销商编码命名的孤儿客户（补登 partner_id）。
-        let customerId = '';
-        const [partnerCustomer] = await tx
-          .select()
-          .from(customer)
-          .where(eq(customer.partnerId, dealerId));
-
-        if (partnerCustomer) {
-          customerId = partnerCustomer.id;
-        } else {
-          const dealerRow = await tx
-            .select()
-            .from(dealer)
-            .where(eq(dealer.id, dealerId))
-            .then((r) => r[0]);
-          const dealerCode = dealerRow?.code ?? `DL${dealerId.slice(0, 8)}`;
-          const [byCodeCustomer] = await tx
-            .select()
-            .from(customer)
-            .where(eq(customer.code, dealerCode));
-          if (byCodeCustomer) {
-            // 历史孤儿客户（partner_id 为空），补登 partner_id 纳入伙伴模型，消除重复主数据
-            await tx
-              .update(customer)
-              .set({ partnerId: dealerId })
-              .where(eq(customer.id, byCodeCustomer.id));
-            customerId = byCodeCustomer.id;
-          } else {
-            const [newCustomer] = await tx
-              .insert(customer)
-              .values({
-                code: `CUST-${dealerCode}`,
-                name: dealerName,
-                creditPeriod: 0,
-                status: 'active',
-                partnerId: dealerId,
-                remark: `由订货会配货自动创建（经销商：${dealerName}）`,
-              })
-              .returning();
-            customerId = newCustomer.id;
-          }
-        }
+        // 客户主数据已移除：经销商即业务归属方，销售单/出库单/应收单直接挂 dealerId。
 
         const orderNo = await this.numberGenerator.generateNextNo(
           tx,
@@ -781,7 +738,7 @@ export class AllocationService {
           .insert(salesOrder)
           .values({
             orderNo,
-            customerId,
+            dealerId,
             customerName: dealerName,
             orderDate: today,
             totalAmount: String(round2(orderTotalAmount)),
@@ -849,7 +806,7 @@ export class AllocationService {
             outboundNo,
             orderId: orderRow.id,
             orderNo,
-            customerId,
+            dealerId,
             customerName: dealerName,
             warehouseId: hqWarehouse.id,
             warehouseName: hqWarehouse.name,
@@ -909,7 +866,7 @@ export class AllocationService {
         const receivableNo = generateReceivableNo(outboundNo);
         await tx.insert(receivable).values({
           receivableNo,
-          customerId,
+          dealerId,
           customerName: dealerName,
           bizType: 'sales_outbound',
           bizNo: outboundNo,

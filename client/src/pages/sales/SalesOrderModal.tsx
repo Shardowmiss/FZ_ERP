@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { baseApi } from '@client/src/api/base';
 import { salesApi } from '@client/src/api/sales';
-import type { SalesOrder, SalesOrderItem, Customer, Style, Sku } from '@shared/api.interface';
+import type { SalesOrder, SalesOrderItem, Dealer, Style, Sku } from '@shared/api.interface';
 import { logger } from '@lark-apaas/client-toolkit/logger';
 import { toast } from 'sonner';
 import { PrintDialog } from '@client/src/components/print/PrintDialog';
@@ -18,23 +18,23 @@ interface SalesOrderModalProps {
   visible: boolean;
   viewMode: boolean;
   editId: string | null;
-  customers: Customer[];
+  dealers: Dealer[];
   skus: Sku[];
   onClose: () => void;
   onSaved: () => void;
 }
 
 export default function SalesOrderModal({
-  visible, viewMode, editId, customers, onClose, onSaved,
+  visible, viewMode, editId, dealers, onClose, onSaved,
 }: SalesOrderModalProps) {
   // skus prop 保留以兼容父组件调用；矩阵模式下通过 baseApi.sku.byStyle 按款号加载
   const { hasPermission } = useAuth();
-  const [formCustomerId, setFormCustomerId] = useState('');
+  const [formDealerId, setFormDealerId] = useState('');
   const [formOrderDate, setFormOrderDate] = useState('');
   const [formDeliveryDate, setFormDeliveryDate] = useState('');
   const [formRemark, setFormRemark] = useState('');
   const [formOrderNo, setFormOrderNo] = useState('');
-  const [formCustomerName, setFormCustomerName] = useState('');
+  const [formDealerName, setFormDealerName] = useState('');
   const [loading, setLoading] = useState(false);
 
   const [blocks, setBlocks] = useState<StyleBlockData[]>([]);
@@ -74,12 +74,12 @@ export default function SalesOrderModal({
   };
 
   const resetForm = (): void => {
-    setFormCustomerId('');
+    setFormDealerId('');
     setFormOrderDate(new Date().toISOString().slice(0, 10));
     setFormDeliveryDate('');
     setFormRemark('');
     setFormOrderNo('');
-    setFormCustomerName('');
+    setFormDealerName('');
     setBlocks([]);
     setAddStyleId('');
   };
@@ -88,12 +88,12 @@ export default function SalesOrderModal({
     setLoading(true);
     try {
       const detail: SalesOrder = await salesApi.order.get(id);
-      setFormCustomerId(detail.customerId);
+      setFormDealerId(detail.dealerId);
       setFormOrderDate(detail.orderDate.slice(0, 10));
       setFormDeliveryDate(detail.deliveryDate?.slice(0, 10) || '');
       setFormRemark(detail.remark || '');
       setFormOrderNo(detail.orderNo);
-      setFormCustomerName(detail.customerName);
+      setFormDealerName(detail.customerName);
 
       const items = detail.items || [];
       if (items.length === 0) {
@@ -194,7 +194,7 @@ export default function SalesOrderModal({
     const flat = flattenToSkus(blocks);
     setPrintDocNo(formOrderNo);
     setPrintDocDate(formOrderDate);
-    setPrintPartnerName(formCustomerName);
+    setPrintPartnerName(formDealerName);
     setPrintTotalAmount(totals.totalAmount);
     setPrintRemark(formRemark);
     setPrintItems(
@@ -212,14 +212,14 @@ export default function SalesOrderModal({
 
   const handleSubmit = async (): Promise<void> => {
     if (submitting) return;
-    if (!formCustomerId) { toast('请选择客户'); return; }
+    if (!formDealerId) { toast('请选择经销商'); return; }
     if (!formOrderDate) { toast('请选择订单日期'); return; }
 
     const flatItems = flattenToSkus(blocks);
     if (flatItems.length === 0) { toast('请至少录入一条SKU数量'); return; }
 
     const data = {
-      customerId: formCustomerId,
+      dealerId: formDealerId,
       orderDate: formOrderDate,
       deliveryDate: formDeliveryDate || undefined,
       remark: formRemark,
@@ -275,15 +275,15 @@ export default function SalesOrderModal({
             <>
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div className="flex flex-col">
-                  <label className="text-xs text-gray-500 mb-1">客户 <span className="text-red-500">*</span></label>
+                  <label className="text-xs text-gray-500 mb-1">经销商 <span className="text-red-500">*</span></label>
                   <select
-                    value={formCustomerId}
-                    onChange={(e) => setFormCustomerId(e.target.value)}
+                    value={formDealerId}
+                    onChange={(e) => setFormDealerId(e.target.value)}
                     disabled={viewMode}
                     className="border border-gray-300 rounded px-3 py-1.5 text-sm disabled:bg-gray-100"
                   >
-                    <option value="">请选择客户</option>
-                    {customers.map((c: Customer) => (
+                    <option value="">请选择经销商</option>
+                    {dealers.map((c: Dealer) => (
                       <option key={c.id} value={c.id}>{c.name}</option>
                     ))}
                   </select>

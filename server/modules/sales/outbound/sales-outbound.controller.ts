@@ -21,7 +21,7 @@ export class SalesOutboundController {
   async list(
     @Query('page') page = '1',
     @Query('pageSize') pageSize = '20',
-    @Query('customerId') customerId?: string,
+    @Query('dealerId') dealerId?: string,
     @Query('status') status?: string,
     @Query('orderNo') orderNo?: string,
     @Query('brand') brand?: string,
@@ -29,7 +29,7 @@ export class SalesOutboundController {
     return this.salesOutboundService.list({
       page: parseInt(page, 10),
       pageSize: parseInt(pageSize, 10),
-      customerId,
+      dealerId,
       status,
       orderNo,
       brand,

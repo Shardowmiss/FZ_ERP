@@ -27,15 +27,15 @@ const SalesReconciliationPage: React.FC = () => {
   const [pageSize, setPageSize] = useState<number>(20);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const [filterCustomer, setFilterCustomer] = useState<string>('');
+  const [filterDealer, setFilterDealer] = useState<string>('');
   const [filterStatus, setFilterStatus] = useState<string>('');
   const [filterStartDate, setFilterStartDate] = useState<string>('');
   const [filterEndDate, setFilterEndDate] = useState<string>('');
 
-  const [customerOptions, setCustomerOptions] = useState<{ id: string; code: string; name: string }[]>([]);
+  const [dealerOptions, setDealerOptions] = useState<{ id: string; code: string; name: string }[]>([]);
 
   const [showModal, setShowModal] = useState<boolean>(false);
-  const [formCustomerId, setFormCustomerId] = useState<string>('');
+  const [formDealerId, setFormDealerId] = useState<string>('');
   const [formStartDate, setFormStartDate] = useState<string>('');
   const [formEndDate, setFormEndDate] = useState<string>('');
 
@@ -50,12 +50,12 @@ const SalesReconciliationPage: React.FC = () => {
       const params: {
         page: number;
         pageSize: number;
-        customerId?: string;
+        dealerId?: string;
         status?: string;
         startDate?: string;
         endDate?: string;
       } = { page, pageSize };
-      if (filterCustomer) params.customerId = filterCustomer;
+      if (filterDealer) params.dealerId = filterDealer;
       if (filterStatus) params.status = filterStatus;
       if (filterStartDate) params.startDate = filterStartDate;
       if (filterEndDate) params.endDate = filterEndDate;
@@ -71,13 +71,13 @@ const SalesReconciliationPage: React.FC = () => {
 
   useEffect(() => {
     fetchList();
-  }, [page, pageSize, filterCustomer, filterStatus, filterStartDate, filterEndDate]);
+  }, [page, pageSize, filterDealer, filterStatus, filterStartDate, filterEndDate]);
 
   useEffect(() => {
     const loadOpts = async (): Promise<void> => {
       try {
-        const customers = await baseApi.customer.options();
-        setCustomerOptions(customers);
+        const dealers = await baseApi.dealer.options();
+        setDealerOptions(dealers);
       } catch {
         // ignore
       }
@@ -86,7 +86,7 @@ const SalesReconciliationPage: React.FC = () => {
   }, []);
 
   const openAdd = (): void => {
-    setFormCustomerId('');
+    setFormDealerId('');
     setFormStartDate('');
     setFormEndDate('');
     setPreviewData(null);
@@ -97,7 +97,7 @@ const SalesReconciliationPage: React.FC = () => {
   const openView = async (id: string): Promise<void> => {
     try {
       const recon = await salesApi.reconciliation.get(id);
-      setFormCustomerId(recon.customerId);
+      setFormDealerId(recon.dealerId);
       setFormStartDate(recon.startDate.slice(0, 10));
       setFormEndDate(recon.endDate.slice(0, 10));
       setPreviewData({
@@ -114,13 +114,13 @@ const SalesReconciliationPage: React.FC = () => {
   };
 
   const handlePreview = async (): Promise<void> => {
-    if (!formCustomerId) { toast('请选择客户'); return; }
+    if (!formDealerId) { toast('请选择经销商'); return; }
     if (!formStartDate || !formEndDate) { toast('请选择对账期间'); return; }
     if (formStartDate > formEndDate) { toast('开始日期不能晚于结束日期'); return; }
     setPreviewLoading(true);
     try {
       const res = await salesApi.reconciliation.preview({
-        customerId: formCustomerId,
+        dealerId: formDealerId,
         startDate: formStartDate,
         endDate: formEndDate,
       });
@@ -138,7 +138,7 @@ const SalesReconciliationPage: React.FC = () => {
     setSubmitting(true);
     try {
       await salesApi.reconciliation.create({
-        customerId: formCustomerId,
+        dealerId: formDealerId,
         startDate: formStartDate,
         endDate: formEndDate,
         outboundAmount: previewData.outboundAmount,
@@ -166,7 +166,7 @@ const SalesReconciliationPage: React.FC = () => {
   };
 
   const handleReset = (): void => {
-    setFilterCustomer('');
+    setFilterDealer('');
     setFilterStatus('');
     setFilterStartDate('');
     setFilterEndDate('');
@@ -192,14 +192,14 @@ const SalesReconciliationPage: React.FC = () => {
         </div>
         <div className="flex flex-wrap items-center gap-3 text-sm">
           <div className="flex items-center gap-1">
-            <span className="text-gray-600">客户：</span>
+            <span className="text-gray-600">经销商：</span>
             <select
-              value={filterCustomer}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilterCustomer(e.target.value)}
+              value={filterDealer}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilterDealer(e.target.value)}
               className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
             >
               <option value="">全部</option>
-              {customerOptions.map((s) => (
+              {dealerOptions.map((s) => (
                 <option key={s.id} value={s.id}>{s.name}</option>
               ))}
             </select>
@@ -253,7 +253,7 @@ const SalesReconciliationPage: React.FC = () => {
             <thead>
               <tr className="border-b border-gray-200 text-gray-600 bg-gray-50">
                 <th className="text-left py-2.5 px-4 font-medium">对账单号</th>
-                <th className="text-left py-2.5 px-4 font-medium">客户</th>
+                <th className="text-left py-2.5 px-4 font-medium">经销商</th>
                 <th className="text-left py-2.5 px-4 font-medium">对账期间</th>
                 <th className="text-right py-2.5 px-4 font-medium">出库金额</th>
                 <th className="text-right py-2.5 px-4 font-medium">退货金额</th>
@@ -311,14 +311,14 @@ const SalesReconciliationPage: React.FC = () => {
             <div className="p-5 space-y-4 overflow-auto flex-1">
               <div className="grid grid-cols-3 gap-4 text-sm">
                 <div>
-                  <label className="block text-gray-700 mb-1">客户 *</label>
+                  <label className="block text-gray-700 mb-1">经销商 *</label>
                   <select
-                    value={formCustomerId}
-                    onChange={(e) => setFormCustomerId(e.target.value)}
+                    value={formDealerId}
+                    onChange={(e) => setFormDealerId(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-primary"
                   >
                     <option value="">请选择</option>
-                    {customerOptions.map((c) => (
+                    {dealerOptions.map((c) => (
                       <option key={c.id} value={c.id}>{c.name}</option>
                     ))}
                   </select>

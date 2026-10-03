@@ -254,7 +254,6 @@ export default function PricingPage() {
                   <option value="store">门店价</option>
                   <option value="channel">渠道价</option>
                   <option value="member">会员价</option>
-                  <option value="customer">客户价</option>
                 </select>
                 <input className="border rounded px-2 py-1.5" placeholder="适用对象ID(可选)" value={plForm.scopeId} onChange={(e) => setPlForm({ ...plForm, scopeId: e.target.value })} />
                 <input className="border rounded px-2 py-1.5" placeholder="优先级" type="number" value={plForm.priority} onChange={(e) => setPlForm({ ...plForm, priority: e.target.value })} />

@@ -12,7 +12,6 @@ import {
   SQL,
 } from 'drizzle-orm';
 import {
-  customer,
   dealer,
   garmentPurchaseOrder,
   garmentPurchaseReturn,
@@ -454,32 +453,22 @@ export class DistributionPortalService {
       .from(dealer)
       .where(visibleIds === null ? undefined : inArray(dealer.id, visibleIds));
 
-    // 一次性取出这些节点对应的 customer / supplier 身份
-    const customerRows = await this.db
-      .select({ partnerId: customer.partnerId, id: customer.id })
-      .from(customer)
-      .where(
-        visibleIds === null ? undefined : inArray(customer.partnerId, visibleIds),
-      );
+    // 应收直接按经销商维度统计（客户主数据已移除，应收挂 dealer_id）
     const supplierRows = await this.db
       .select({ partnerId: supplier.partnerId, id: supplier.id })
       .from(supplier)
       .where(
         visibleIds === null ? undefined : inArray(supplier.partnerId, visibleIds),
       );
-    const customerByPartner = new Map(customerRows.map((c) => [c.partnerId, c.id]));
     const supplierByPartner = new Map(supplierRows.map((s) => [s.partnerId, s.id]));
 
-    const customerIds = customerRows.map((c) => c.id);
     const supplierIds = supplierRows.map((s) => s.id);
 
-    // 批量取应收（按 customer_id）与应付（按 supplier_id）
-    const receivableRows = customerIds.length
-      ? await this.db
-          .select({ customerId: receivable.customerId, amount: receivable.amount })
-          .from(receivable)
-          .where(inArray(receivable.customerId, customerIds))
-      : [];
+    // 批量取应收（按 dealer_id）与应付（按 supplier_id）
+    const receivableRows = await this.db
+      .select({ dealerId: receivable.dealerId, amount: receivable.amount })
+      .from(receivable)
+      .where(visibleIds === null ? undefined : inArray(receivable.dealerId, visibleIds));
     const payableRows = supplierIds.length
       ? await this.db
           .select({ supplierId: payable.supplierId, amount: payable.amount })
@@ -487,11 +476,11 @@ export class DistributionPortalService {
           .where(inArray(payable.supplierId, supplierIds))
       : [];
 
-    const receivableByCustomer = new Map<string, number>();
+    const receivableByDealer = new Map<string, number>();
     for (const r of receivableRows) {
-      receivableByCustomer.set(
-        r.customerId,
-        (receivableByCustomer.get(r.customerId) ?? 0) + Number(r.amount),
+      receivableByDealer.set(
+        r.dealerId,
+        (receivableByDealer.get(r.dealerId) ?? 0) + Number(r.amount),
       );
     }
     const payableBySupplier = new Map<string, number>();
@@ -503,9 +492,8 @@ export class DistributionPortalService {
     }
 
     const nodes = dealerRows.map((d) => {
-      const custId = customerByPartner.get(d.id);
       const suppId = supplierByPartner.get(d.id);
-      const asBuyerReceivable = custId ? receivableByCustomer.get(custId) ?? 0 : 0;
+      const asBuyerReceivable = receivableByDealer.get(d.id) ?? 0;
       const asSellerPayable = suppId ? payableBySupplier.get(suppId) ?? 0 : 0;
       return {
         dealerId: d.id,

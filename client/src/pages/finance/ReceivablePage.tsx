@@ -24,7 +24,7 @@ const ReceivablePage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [keyword, setKeyword] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
-  const [customerFilter, setCustomerFilter] = useState('');
+  const [dealerFilter, setCustomerFilter] = useState('');
   const [showDetail, setShowDetail] = useState(false);
   const [currentItem, setCurrentItem] = useState<Receivable | null>(null);
   const [payments, setPayments] = useState<PaymentItem[]>([]);
@@ -46,7 +46,7 @@ const ReceivablePage: React.FC = () => {
       });
       if (keyword) params.append('keyword', keyword);
       if (statusFilter) params.append('status', statusFilter);
-      if (customerFilter) params.append('customerId', customerFilter);
+      if (dealerFilter) params.append('dealerId', dealerFilter);
 
       const res = await axiosForBackend.get(`/api/finance/receivable?${params.toString()}`);
       setList(res.data.items || []);
@@ -60,7 +60,7 @@ const ReceivablePage: React.FC = () => {
 
   useEffect(() => {
     loadList();
-  }, [page, pageSize, statusFilter, customerFilter]);
+  }, [page, pageSize, statusFilter, dealerFilter]);
 
   const handleSearch = () => {
     setPage(1);
@@ -88,7 +88,7 @@ const ReceivablePage: React.FC = () => {
       });
       if (keyword) params.append('keyword', keyword);
       if (statusFilter) params.append('status', statusFilter);
-      if (customerFilter) params.append('customerId', customerFilter);
+      if (dealerFilter) params.append('dealerId', dealerFilter);
 
       const res = await axiosForBackend.get(`/api/finance/receivable?${params.toString()}`);
       const items = res.data.items || [];

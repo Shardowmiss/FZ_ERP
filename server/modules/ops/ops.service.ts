@@ -472,9 +472,9 @@ export class OpsService {
 
     const salesRows = (await this.db.execute(sql`
       SELECT
-        so.customer_id AS party_id,
+        so.dealer_id AS party_id,
         so.customer_name AS party_name,
-        'customer' AS party_type,
+        'dealer' AS party_type,
         COUNT(DISTINCT so.id) AS order_count,
         COALESCE(SUM(soi.quantity), 0) AS total_qty,
         COALESCE(SUM(soi.amount), 0) AS total_amount
@@ -482,7 +482,7 @@ export class OpsService {
       JOIN sales_order_item soi ON soi.order_id = so.id
       WHERE so.status = 'booked'
         AND so.order_date >= (CURRENT_DATE - (${bulkWindowDays}) * interval '1 day')
-      GROUP BY so.customer_id, so.customer_name
+      GROUP BY so.dealer_id, so.customer_name
       HAVING COALESCE(SUM(soi.quantity), 0) > ${bulkQtyThreshold}
           OR COALESCE(SUM(soi.amount), 0) > ${bulkAmountThreshold}
       LIMIT 2000
@@ -517,11 +517,11 @@ export class OpsService {
         checkCode: 'BULK_PURCHASE',
         checkName: '短期大量购买',
         severity: 'warning',
-        entity: r.party_type === 'member' ? 'member' : 'customer',
+        entity: r.party_type === 'member' ? 'member' : 'dealer',
         entityId: String(r.party_id),
         expected: `窗口${bulkWindowDays}天内 数量<=${bulkQtyThreshold} 且 金额<=${bulkAmountThreshold}`,
         actual: `${hit}（${r.order_count}单）`,
-        description: `${r.party_type === 'member' ? '会员' : '客户'} ${r.party_name ?? r.party_id} 在最近 ${bulkWindowDays} 天内累计购买 ${qty} 件 / ${amt} 元，超阈值`,
+        description: `${r.party_type === 'member' ? '会员' : '经销商'} ${r.party_name ?? r.party_id} 在最近 ${bulkWindowDays} 天内累计购买 ${qty} 件 / ${amt} 元，超阈值`,
       });
     };
     salesRows.forEach(push);

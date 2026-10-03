@@ -50,7 +50,7 @@ export default function PivotAnalysisPage() {
   const [brand, setBrand] = useState('');
   const [storeIds, setStoreIds] = useState<string[]>([]);
   const [keyword, setKeyword] = useState('');
-  const [customer, setCustomer] = useState('');
+  const [dealer, setDealer] = useState('');
   const [supplier, setSupplier] = useState('');
   const [warehouse, setWarehouse] = useState('');
 
@@ -161,7 +161,7 @@ export default function PivotAnalysisPage() {
     setBrand('');
     setStoreIds([]);
     setKeyword('');
-    setCustomer('');
+    setDealer('');
     setSupplier('');
     setWarehouse('');
     setResponse(null);
@@ -378,7 +378,7 @@ export default function PivotAnalysisPage() {
             storeIds={storeIds}
             keyword={keyword}
             showStoreFilter={showStoreFilter}
-            customer={customer}
+            dealer={dealer}
             supplier={supplier}
             warehouse={warehouse}
             onDataSourceChange={handleDataSourceChange}
@@ -389,7 +389,7 @@ export default function PivotAnalysisPage() {
             onBrandChange={setBrand}
             onStoreIdsChange={setStoreIds}
             onKeywordChange={setKeyword}
-            onCustomerChange={setCustomer}
+            onDealerChange={setDealer}
             onSupplierChange={setSupplier}
             onWarehouseChange={setWarehouse}
             onSearch={fetchData}

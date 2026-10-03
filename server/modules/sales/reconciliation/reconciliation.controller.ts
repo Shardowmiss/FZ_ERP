@@ -26,7 +26,7 @@ export class SalesReconciliationController {
   async list(
     @Query('page') page = '1',
     @Query('pageSize') pageSize = '20',
-    @Query('customerId') customerId?: string,
+    @Query('dealerId') dealerId?: string,
     @Query('status') status?: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
@@ -34,7 +34,7 @@ export class SalesReconciliationController {
     return this.reconciliationService.list({
       page: parseInt(page, 10),
       pageSize: parseInt(pageSize, 10),
-      customerId,
+      dealerId,
       status,
       startDate,
       endDate,
@@ -55,7 +55,7 @@ export class SalesReconciliationController {
   @Post('preview')
   async preview(
     @Body() body: {
-      customerId: string;
+      dealerId: string;
       customerName: string;
       startDate: string;
       endDate: string;
@@ -69,7 +69,7 @@ export class SalesReconciliationController {
   async create(
     @Req() req: Request,
     @Body() body: {
-      customerId: string;
+      dealerId: string;
       customerName: string;
       startDate: string;
       endDate: string;

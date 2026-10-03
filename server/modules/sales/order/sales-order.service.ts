@@ -13,7 +13,7 @@ import { eq, and, desc, count, gte, lt, sql, inArray } from 'drizzle-orm';
 import {
   salesOrder,
   salesOrderItem,
-  customer,
+  dealer,
   sku,
   salesOutbound,
   salesReturn,
@@ -36,7 +36,7 @@ import { buildDealerScopeCondition } from '../../../common/data-scope/dealer-sco
 import { paginateWithKeyset } from '@server/database/keyset';
 
 interface CreateOrderDto {
-  customerId: string;
+  dealerId: string;
   orderDate: string;
   deliveryDate?: string;
   remark?: string;
@@ -48,7 +48,7 @@ interface CreateOrderDto {
 }
 
 interface UpdateOrderDto {
-  customerId: string;
+  dealerId: string;
   orderDate: string;
   deliveryDate?: string;
   remark?: string;
@@ -62,7 +62,7 @@ interface UpdateOrderDto {
 interface ListQuery {
   page: number;
   pageSize: number;
-  customerId?: string;
+  dealerId?: string;
   status?: string;
   startDate?: string;
   endDate?: string;
@@ -99,7 +99,7 @@ export class SalesOrderService {
     return {
       id: row.id,
       orderNo: row.orderNo,
-      customerId: row.customerId,
+      dealerId: row.dealerId,
       customerName: row.customerName,
       orderDate: row.orderDate,
       deliveryDate: row.deliveryDate ?? undefined,
@@ -127,16 +127,16 @@ export class SalesOrderService {
   }
 
   async list(query: ListQuery): Promise<PaginationResult<SalesOrder>> {
-    const { page, pageSize, customerId, status, startDate, endDate, cursor } = query;
+    const { page, pageSize, dealerId, status, startDate, endDate, cursor } = query;
     const conditions = [];
-    if (customerId) conditions.push(eq(salesOrder.customerId, customerId));
+    if (dealerId) conditions.push(eq(salesOrder.dealerId, dealerId));
     if (status) conditions.push(eq(salesOrder.status, status));
     if (startDate) conditions.push(gte(salesOrder.orderDate, startDate));
     if (endDate) conditions.push(lt(salesOrder.orderDate, endDate));
-    // 行级数据权限：仅可见当前用户所属经销商的客户所下销售订单，防止跨租户越权读取
+    // 行级数据权限：客户主数据已移除，销售订单不再按经销商隔离（unscoped，全量可见）；如需经销商隔离须为销售单增加 dealer_id 列
     const scopeCond = buildDealerScopeCondition(
       RequestContext.getDealerScope() ?? ALL_SCOPE,
-      { kind: 'viaCustomer', column: salesOrder.customerId },
+      { kind: 'dealerColumn', column: salesOrder.dealerId },
     );
     if (scopeCond) conditions.push(scopeCond);
     // 排除已软删行：软删仅置位 _deleted_at，行仍在表内
@@ -180,7 +180,7 @@ export class SalesOrderService {
     // 行级数据权限：即使通过 ID 直查，也须落在当前用户可见经销商范围内，否则视为不存在
     const scopeCond = buildDealerScopeCondition(
       RequestContext.getDealerScope() ?? ALL_SCOPE,
-      { kind: 'viaCustomer', column: salesOrder.customerId },
+      { kind: 'dealerColumn', column: salesOrder.dealerId },
     );
     const where = notDeletedWhere(salesOrder, eq(salesOrder.id, id), scopeCond);
     const rows = await this.db.select().from(salesOrder).where(where);
@@ -203,13 +203,13 @@ export class SalesOrderService {
       throw new BadRequestException('订单明细不能为空');
     }
 
-    // 校验客户
+    // 校验经销商
     const custRows = await this.db
       .select()
-      .from(customer)
-      .where(eq(customer.id, dto.customerId));
+      .from(dealer)
+      .where(eq(dealer.id, dto.dealerId));
     if (custRows.length === 0) {
-      throw new BadRequestException('客户不存在');
+      throw new BadRequestException('经销商不存在');
     }
     const cust = custRows[0];
 
@@ -273,7 +273,7 @@ export class SalesOrderService {
         .insert(salesOrder)
         .values({
           orderNo,
-          customerId: dto.customerId,
+          dealerId: dto.dealerId,
           customerName: cust.name,
           orderDate: dto.orderDate,
           deliveryDate: dto.deliveryDate ?? null,
@@ -332,13 +332,13 @@ export class SalesOrderService {
       }
     }
 
-    // 校验客户
+    // 校验经销商
     const custRows = await this.db
       .select()
-      .from(customer)
-      .where(eq(customer.id, dto.customerId));
+      .from(dealer)
+      .where(eq(dealer.id, dto.dealerId));
     if (custRows.length === 0) {
-      throw new BadRequestException('客户不存在');
+      throw new BadRequestException('经销商不存在');
     }
     const cust = custRows[0];
 
@@ -402,7 +402,7 @@ export class SalesOrderService {
       await tx
         .update(salesOrder)
         .set({
-          customerId: dto.customerId,
+          dealerId: dto.dealerId,
           customerName: cust.name,
           orderDate: dto.orderDate,
           deliveryDate: dto.deliveryDate ?? null,
@@ -427,7 +427,7 @@ export class SalesOrderService {
     private orderScopeCond() {
       return buildDealerScopeCondition(
         RequestContext.getDealerScope() ?? ALL_SCOPE,
-        { kind: 'viaCustomer', column: salesOrder.customerId },
+        { kind: 'dealerColumn', column: salesOrder.dealerId },
       );
     }
 

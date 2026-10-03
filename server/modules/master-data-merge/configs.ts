@@ -2,7 +2,6 @@ import { BadRequestException } from '@nestjs/common';
 import { and, eq, sql } from 'drizzle-orm';
 import {
   style,
-  customer,
   sku,
   bom,
   productionWorkOrder,
@@ -23,13 +22,12 @@ import type { MergeEntityConfig } from './types';
  * 通用主数据合并实体配置（3b/3c）。
  *
  * 设计要点（与 P0-3 会员合并保持一致、但更简单的子集）：
- *   · 被合并方**绝不删除**（style/customer 的从表外键均为 RESTRICT/NO ACTION，删除被 FK 阻止；
+ *   · 被合并方**绝不删除**（style 的从表外键均为 RESTRICT/NO ACTION，删除被 FK 阻止；
  *     且历史业务依赖这些主数据，删除破坏历史）—— 合并只改指依赖行到 survivor + 打标(mergedInto/mergedAt)。
- *   · style/customer **无资金/积分列**，合并不涉及资金迁移（比 member 简单、更安全的子集）。
- *   · 依赖改指范围 = 实时从属于该主数据的业务表（sku/bom/工单/采购明细/配货/预购 等；
- *     客户侧 = 对账/收款/退货/出库/应收/订单）。历史交易行项目（retail_order_item 等仅存 style_no
- *     字符串副本）**不**改指，因其是历史快照，且一致性校验域(product/member/price)不覆盖
- *     style/customer，不会引起误报。
+ *   · style **无资金/积分列**，合并不涉及资金迁移（比 member 简单、更安全的子集）。
+ *   · 依赖改指范围 = 实时从属于该主数据的业务表（sku/bom/工单/采购明细/配货/预购 等）。
+ *     历史交易行项目（retail_order_item 等仅存 style_no 字符串副本）**不**改指，因其是历史快照，
+ *     且一致性校验域(product/member/price)不覆盖 style，不会引起误报。
  *   · 回滚 = 解除打标（不回指历史归属，与 member 一致：survivor 已拥有的依赖归属保持不变，避免误伤
  *     survivor 合并后自身产生的业务记录）。
  */
@@ -74,28 +72,6 @@ export const MERGE_ENTITY_CONFIGS: Record<string, MergeEntityConfig> = {
     // 查重候选：款名归一（去空白+小写）。款号 style_no 唯一，按款名去重更贴合运营重复建档场景。
     candidate: {
       nameExpr: sql<string>`lower(regexp_replace(coalesce(${style.name}, ''), '[[:space:]]+', '', 'g'))`,
-    },
-  },
-  customer: {
-    type: 'customer',
-    table: customer,
-    codeKey: 'code',
-    displayKey: 'name',
-    mergedIntoKey: 'mergedInto',
-    mergedAtKey: 'mergedAt',
-    deps: [
-      { table: salesReconciliation, idKey: 'customerId', codeKey: 'customerName' },
-      { table: financeReceipt, idKey: 'customerId', codeKey: 'customerName' },
-      { table: salesReturn, idKey: 'customerId', codeKey: 'customerName' },
-      { table: salesOutbound, idKey: 'customerId', codeKey: 'customerName' },
-      { table: receivable, idKey: 'customerId', codeKey: 'customerName' },
-      { table: salesOrder, idKey: 'customerId', codeKey: 'customerName' },
-    ],
-    // 查重候选（MVP）：名称归一（去空白+小写）/ 电话归一（仅数字且 >=7 位，避免短号误并）。
-    // ⚠️ 这两个表达式必须与 service 内 JS 侧归一函数严格同构，否则会静默漏组。
-    candidate: {
-      nameExpr: sql<string>`lower(regexp_replace(coalesce(${customer.name}, ''), '[[:space:]]+', '', 'g'))`,
-      phoneExpr: sql<string>`case when length(regexp_replace(coalesce(${customer.phone}, ''), '[^0-9]', '', 'g')) >= 7 then regexp_replace(coalesce(${customer.phone}, ''), '[^0-9]', '', 'g') else null end`,
     },
   },
 };

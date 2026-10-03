@@ -62,17 +62,11 @@ export default function ReportFilter({
   const loadPartners = async () => {
     setLoadingPartners(true);
     try {
-      const [customers, dealers, stores] = await Promise.all([
-        baseApi.customer.options(),
+      const [dealers, stores] = await Promise.all([
         baseApi.dealer.options(),
         baseApi.store.options(),
       ]);
       const merged: { id: string; name: string; type: string }[] = [
-        ...customers.map((c: { id: string; name: string }) => ({
-          id: c.id,
-          name: `客户 - ${c.name}`,
-          type: 'customer',
-        })),
         ...dealers.map((d: { id: string; name: string }) => ({
           id: d.id,
           name: `经销商 - ${d.name}`,

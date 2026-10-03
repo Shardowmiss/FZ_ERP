@@ -25,7 +25,6 @@ export interface DbConstraintError {
  */
 const TABLE_LABELS: Record<string, string> = {
   supplier: '供应商',
-  customer: '客户',
   dealer: '经销商',
   warehouse: '仓库',
   store: '门店',

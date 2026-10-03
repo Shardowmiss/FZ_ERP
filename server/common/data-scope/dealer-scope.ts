@@ -4,22 +4,22 @@ import type { DealerScope } from '../context/request-context';
 /**
  * 经销商隔离的关联路径描述。
  *
- * 核心单据表（sales_order / purchase_order / inventory_*）本身没有 dealerId 列，但可通过
- * 关联表反查到经销商：
- * - viaCustomer：sales_order.customer_id → customer.partner_id（外键指向 dealer）
+ * 核心单据表（sales_order / sales_outbound / sales_return / receivable / finance_receipt /
+ * sales_reconciliation）现已直连 dealerId 列（客户主数据已移除，经销商即业务归属方）：
+ * - dealerColumn：表自身带 dealerId 列，直接 IN 过滤
  * - viaSupplier：purchase_order.supplier_id → supplier.partner_id
  * - viaWarehouse：inventory_*.warehouse_id → warehouse.dealer_id
  * - viaWarehouseEither：调拨单的 from/to 仓库任一归属该经销商即可见
  * - viaStore：门店零售/退货单 store_id → store.dealer_id
- * - dealerColumn：表自身带 dealerId 列（未来路线一 denormalize 后可用）
+ * - unscoped：该单据已无经销商归属列，不加行级限制（全量可见）
  */
 export type DealerPath =
   | { kind: 'dealerColumn'; column: SQL | Column }
-  | { kind: 'viaCustomer'; column: SQL | Column }
   | { kind: 'viaSupplier'; column: SQL | Column }
   | { kind: 'viaWarehouse'; column: SQL | Column }
   | { kind: 'viaWarehouseEither'; from: SQL | Column; to: SQL | Column }
-  | { kind: 'viaStore'; column: SQL | Column };
+  | { kind: 'viaStore'; column: SQL | Column }
+  | { kind: 'unscoped' };
 
 function idList(ids: string[]): SQL {
   return sql.join(
@@ -57,8 +57,6 @@ export function buildDealerScopeCondition(
   switch (path.kind) {
     case 'dealerColumn':
       return sql`${path.column} IN (${idList(scope.dealerIds)})`;
-    case 'viaCustomer':
-      return viaLookup(path.column, 'customer', 'partner_id', scope.dealerIds);
     case 'viaSupplier':
       return viaLookup(path.column, 'supplier', 'partner_id', scope.dealerIds);
     case 'viaWarehouse':
@@ -78,6 +76,9 @@ export function buildDealerScopeCondition(
     }
     case 'viaStore':
       return viaLookup(path.column, 'store', 'dealer_id', scope.dealerIds);
+    case 'unscoped':
+      // 该单据已无经销商归属列：不加行级限制，全量可见。
+      return undefined;
     default:
       return undefined;
   }

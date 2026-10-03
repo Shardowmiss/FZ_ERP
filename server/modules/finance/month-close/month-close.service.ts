@@ -371,11 +371,11 @@ export class MonthCloseService {
 
     // 应收/应付发生额
     const { start, end } = getMonthRange(record.month);
-    // 受限经销商：应收经 receivable→customer→partner(dealer) 反查过滤；
+    // 受限经销商：应收（客户主数据已移除，不再按经销商隔离，unscoped 全量可见）；
     // 应付经 payable→supplier→partner(dealer) 反查过滤；超管/单租户不加限制
     const recvCond =
       scope && scope.type !== 'all'
-        ? buildDealerScopeCondition(scope, { kind: 'viaCustomer', column: receivable.customerId })
+        ? buildDealerScopeCondition(scope, { kind: 'dealerColumn', column: receivable.dealerId })
         : undefined;
     const payCond =
       scope && scope.type !== 'all'

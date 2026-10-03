@@ -34,9 +34,9 @@ export class ReportSalesService {
       conditions.push(lt(salesOutbound.outboundDate, win.endExclusive));
     }
     if (partnerIds) {
-      const customerIds: string[] = partnerIds.split(',').filter(Boolean);
-      if (customerIds.length > 0) {
-        conditions.push(inArray(salesOutbound.customerId, customerIds));
+      const dealerIds: string[] = partnerIds.split(',').filter(Boolean);
+      if (dealerIds.length > 0) {
+        conditions.push(inArray(salesOutbound.dealerId, dealerIds));
       }
     }
     if (keyword) {

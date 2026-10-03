@@ -27,7 +27,7 @@ export class ReceiptController {
   async list(
     @Query('page') page = '1',
     @Query('pageSize') pageSize = '20',
-    @Query('customerId') customerId?: string,
+    @Query('dealerId') dealerId?: string,
     @Query('status') status?: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
@@ -36,7 +36,7 @@ export class ReceiptController {
     return this.receiptService.list({
       page: parseInt(page, 10),
       pageSize: parseInt(pageSize, 10),
-      customerId,
+      dealerId,
       status,
       startDate,
       endDate,
@@ -74,7 +74,7 @@ export class ReceiptController {
     @Body()
     body: {
       receiptDate: string;
-      customerId: string;
+      dealerId: string;
       customerName: string;
       amount: number;
       paymentMethod: string;
@@ -117,7 +117,7 @@ export class ReceiptController {
     @Body()
     body: {
       receiptDate?: string;
-      customerId?: string;
+      dealerId?: string;
       customerName?: string;
       amount?: number;
       paymentMethod?: string;

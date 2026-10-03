@@ -319,7 +319,6 @@ export class RbacService {
     { code: 'base:style', name: '基础-款式' },
     { code: 'base:sku', name: '基础-SKU' },
     { code: 'base:material', name: '基础-物料' },
-    { code: 'base:customer', name: '基础-客户' },
     { code: 'base:color', name: '基础-颜色' },
     { code: 'base:size', name: '基础-尺码' },
     { code: 'base:supplier', name: '基础-供应商' },
@@ -496,14 +495,13 @@ export class RbacService {
     {
       code: 'data_governor',
       name: '数据治理员',
-      description: '主数据去重合并（会员/商品/客户），资金敏感操作需培训',
+      description: '主数据去重合并（会员/商品），资金敏感操作需培训',
       permissions: [
         'md:merge',
         'member:merge',
         'member:manage',
         'base:style',
         'base:sku',
-        'base:customer',
         'base:color',
         'base:size',
         'report:pivot',
@@ -1035,7 +1033,8 @@ export class RbacService {
   // ─── Data scope (dealer-level multi-tenant isolation) ─────────────
   //
   // 与上面的 store 维度数据域不同，本系统核心单据表（sales_order / purchase_order /
-  // inventory_*）本身没有 dealerId 列，但通过 customer.partner_id / supplier.partner_id
+  // inventory_*）多数已直接持有 dealerId 列（sales_order / sales_outbound / sales_return /
+  // receivable / finance_receipt / sales_reconciliation），其余通过 supplier.partner_id
   // （外键指向 dealer）以及 warehouse.dealer_id 可反查到经销商。因此“经销商作用域”以
   // dealerIds 表达，由用户可见门店（rbac_user_store → store.dealer_id）反查得到。
   //

@@ -62,8 +62,8 @@ const menuItems: MenuItem[] = [
   },
   {
     key: 'channel',
-    // 原名「渠道管理」，与「渠道铺货」（实为下游补货）语义无关却同名，易误入，故更名
-    label: '客商与门店',
+    // 用户明确要求：菜单名称改回「渠道管理」（供应商/经销商/店仓统一归入渠道）
+    label: '渠道管理',
     icon: <Truck size={18} />,
     children: [
       { key: 'supplier', label: '供应商管理', path: '/base/supplier', permission: 'base:supplier' },

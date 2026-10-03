@@ -7,7 +7,6 @@ import { DRIZZLE_DATABASE, type PostgresJsDatabase } from '@lark-apaas/fullstack
 import { and, eq, inArray } from 'drizzle-orm';
 import {
   dealer,
-  customer,
   supplier,
   sku,
   salesOrder,
@@ -48,7 +47,7 @@ interface MirrorContext {
  * source_doc_type / downstream_org_id 双向追溯。
  *
  * 设计要点：
- *  - 仅对"分销客户"（customer.partner_id 非空且存在上级）生效；普通客户、顶层总部不镜像。
+ *  - 仅对"分销经销商"（存在上级经销商）生效；顶层总部不镜像。
  *  - 幂等：按 source_doc_id + source_doc_type 去重，book 重复调用不会产生重复单据。
  *  - 安全：任一环节缺失（上级无供应商主数据 / 下游未入库等）则静默跳过，并吞掉异常，
  *    绝不阻断销售侧主流程。
@@ -64,15 +63,12 @@ export class DistributionMirrorService {
   ) {}
 
   /**
-   * 由"客户ID"定位分销镜像上下文：
-   *   客户 -> 分销伙伴(下级经销商) -> 上级经销商 -> 上级的供应商身份
-   * 任一环节不满足（非分销客户 / 顶层无上级 / 上级无供应商主数据）返回 null。
+   * 由"经销商ID"定位分销镜像上下文：
+   *   经销商(下级) -> 上级经销商 -> 上级的供应商身份
+   * 任一环节不满足（顶层无上级 / 上级无供应商主数据）返回 null。
    */
-  private async resolveMirrorContext(customerId: string): Promise<MirrorContext | null> {
-    const custRows = await this.db.select().from(customer).where(eq(customer.id, customerId));
-    if (custRows.length === 0 || !custRows[0].partnerId) return null;
-
-    const dealerRows = await this.db.select().from(dealer).where(eq(dealer.id, custRows[0].partnerId));
+  private async resolveMirrorContext(dealerId: string): Promise<MirrorContext | null> {
+    const dealerRows = await this.db.select().from(dealer).where(eq(dealer.id, dealerId));
     if (dealerRows.length === 0) return null;
     const downstreamDealer = dealerRows[0];
 
@@ -144,7 +140,7 @@ export class DistributionMirrorService {
       if (soRows.length === 0) return;
       const so = soRows[0];
 
-      const ctx = await this.resolveMirrorContext(so.customerId);
+      const ctx = await this.resolveMirrorContext(so.dealerId);
       if (!ctx) {
         // 非分销客户 / 顶层总部：无需镜像
         await this.markSalesOrderMirror(salesOrderId, 'skipped', null, null);
@@ -247,7 +243,7 @@ export class DistributionMirrorService {
       if (srRows.length === 0) return;
       const sr = srRows[0];
 
-      const ctx = await this.resolveMirrorContext(sr.customerId);
+      const ctx = await this.resolveMirrorContext(sr.dealerId);
       if (!ctx) {
         await this.markSalesReturnMirror(salesReturnId, 'skipped', null, null);
         return;

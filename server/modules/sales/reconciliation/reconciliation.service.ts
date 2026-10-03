@@ -26,21 +26,21 @@ import { assertWriteWithinScope } from '@server/common/data-scope/write-scope';
 interface ListQuery {
   page: number;
   pageSize: number;
-  customerId?: string;
+  dealerId?: string;
   status?: string;
   startDate?: string;
   endDate?: string;
 }
 
 interface PreviewParams {
-  customerId: string;
+  dealerId: string;
   customerName: string;
   startDate: string;
   endDate: string;
 }
 
 interface CreateReconDto {
-  customerId: string;
+  dealerId: string;
   customerName: string;
   startDate: string;
   endDate: string;
@@ -64,7 +64,7 @@ export class SalesReconciliationService {
     return {
       id: row.id,
       reconNo: row.reconNo,
-      customerId: row.customerId,
+      dealerId: row.dealerId,
       customerName: row.customerName ?? undefined,
       startDate: row.startDate,
       endDate: row.endDate,
@@ -78,16 +78,16 @@ export class SalesReconciliationService {
   }
 
   async list(query: ListQuery): Promise<PaginationResult<SalesReconciliation>> {
-    const { page, pageSize, customerId, status, startDate, endDate } = query;
+    const { page, pageSize, dealerId, status, startDate, endDate } = query;
     const conditions = [];
-    if (customerId) conditions.push(eq(salesReconciliation.customerId, customerId));
+    if (dealerId) conditions.push(eq(salesReconciliation.dealerId, dealerId));
     if (status) conditions.push(eq(salesReconciliation.status, status));
     if (startDate) conditions.push(gte(salesReconciliation.startDate, startDate));
     if (endDate) conditions.push(lt(salesReconciliation.startDate, endDate));
 
     const dealerScope = RequestContext.getDealerScope() ?? ALL_SCOPE;
     const scopeCond = buildDealerScopeCondition(dealerScope, {
-      kind: 'viaCustomer', column: salesReconciliation.customerId,
+      kind: 'dealerColumn', column: salesReconciliation.dealerId,
     });
     if (scopeCond) conditions.push(scopeCond);
 
@@ -118,7 +118,7 @@ export class SalesReconciliationService {
   async get(id: string): Promise<SalesReconciliation> {
     const dealerScope = RequestContext.getDealerScope() ?? ALL_SCOPE;
     const scopeCond = buildDealerScopeCondition(dealerScope, {
-      kind: 'viaCustomer', column: salesReconciliation.customerId,
+      kind: 'dealerColumn', column: salesReconciliation.dealerId,
     });
     const rows = await this.db
       .select()
@@ -135,7 +135,7 @@ export class SalesReconciliationService {
   }
 
   async preview(params: PreviewParams): Promise<SalesReconPreview> {
-    const { customerId, startDate, endDate } = params;
+    const { dealerId, startDate, endDate } = params;
 
     const [outboundRows, returnRows] = await Promise.all([
       this.db
@@ -148,7 +148,7 @@ export class SalesReconciliationService {
         .from(salesOutbound)
         .where(
           and(
-            eq(salesOutbound.customerId, customerId),
+            eq(salesOutbound.dealerId, dealerId),
             inArray(salesOutbound.status, ['booked', 'accepted']),
             gte(salesOutbound.outboundDate, startDate),
             lt(salesOutbound.outboundDate, endDate),
@@ -165,7 +165,7 @@ export class SalesReconciliationService {
         .from(salesReturn)
         .where(
           and(
-            eq(salesReturn.customerId, customerId),
+            eq(salesReturn.dealerId, dealerId),
             inArray(salesReturn.status, ['booked', 'accepted']),
             gte(salesReturn.returnDate, startDate),
             lt(salesReturn.returnDate, endDate),
@@ -204,7 +204,7 @@ export class SalesReconciliationService {
 
   async create(dto: CreateReconDto, userId: string): Promise<SalesReconciliation> {
     // 写入端行级权限：被引用的客户必须属于当前账号可见经销商
-    await assertWriteWithinScope(this.db, { customerId: dto.customerId });
+    await assertWriteWithinScope(this.db, { dealerId: dto.dealerId });
 
     const prefix = `SR${dto.startDate.replace(/-/g, '').slice(0, 6)}`;
 
@@ -221,7 +221,7 @@ export class SalesReconciliationService {
         .insert(salesReconciliation)
         .values({
           reconNo,
-          customerId: dto.customerId,
+          dealerId: dto.dealerId,
           customerName: dto.customerName,
           startDate: dto.startDate,
           endDate: dto.endDate,

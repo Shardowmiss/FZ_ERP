@@ -87,7 +87,7 @@ export class SalesReturnService {
       returnNo: row.returnNo,
       outboundId: row.outboundId,
       outboundNo: row.outboundNo,
-      customerId: row.customerId,
+      dealerId: row.dealerId,
       customerName: row.customerName,
       warehouseId: row.warehouseId,
       warehouseName: row.warehouseName,
@@ -123,7 +123,7 @@ export class SalesReturnService {
     // 行级数据权限：仅可见当前用户所属经销商的客户关联销售退货单
     const scopeCond = buildDealerScopeCondition(
       RequestContext.getDealerScope() ?? ALL_SCOPE,
-      { kind: 'viaCustomer', column: salesReturn.customerId },
+      { kind: 'dealerColumn', column: salesReturn.dealerId },
     );
     if (scopeCond) conditions.push(scopeCond);
 
@@ -158,7 +158,7 @@ export class SalesReturnService {
     // 行级数据权限：即使通过 ID 直查，也须落在当前用户可见经销商范围内
     const scopeCond = buildDealerScopeCondition(
       RequestContext.getDealerScope() ?? ALL_SCOPE,
-      { kind: 'viaCustomer', column: salesReturn.customerId },
+      { kind: 'dealerColumn', column: salesReturn.dealerId },
     );
     const where = scopeCond
       ? and(eq(salesReturn.id, id), scopeCond, isNull(salesReturn.deletedAt))
@@ -265,7 +265,7 @@ export class SalesReturnService {
     }
     const outbound = outboundRows[0];
 
-    await assertWriteWithinScope(this.db, { customerId: outbound.customerId });
+    await assertWriteWithinScope(this.db, { dealerId: outbound.dealerId });
 
     // 校验退货明细 SKU 和数量
     await this.validateReturnItems(dto.outboundId, dto.items);
@@ -358,7 +358,7 @@ export class SalesReturnService {
           returnNo,
           outboundId: outbound.id,
           outboundNo: outbound.outboundNo,
-          customerId: outbound.customerId,
+          dealerId: outbound.dealerId,
           customerName: outbound.customerName,
           warehouseId: outbound.warehouseId,
           warehouseName: outbound.warehouseName,

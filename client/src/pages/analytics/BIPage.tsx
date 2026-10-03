@@ -10,7 +10,7 @@ const DIMS: { value: string; label: string }[] = [
   { value: 'style', label: '按款号' },
   { value: 'category', label: '按类目' },
   { value: 'warehouse', label: '按仓库' },
-  { value: 'customer', label: '按客户' },
+  { value: 'dealer', label: '按经销商' },
   { value: 'month', label: '按月份' },
 ];
 

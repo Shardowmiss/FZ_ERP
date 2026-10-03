@@ -36,9 +36,9 @@ const ReceiptEditPage: React.FC = () => {
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [docData, setDocData] = useState<FinanceReceipt | null>(null);
 
-  const [customerOptions, setCustomerOptions] = useState<{ id: string; code: string; name: string }[]>([]);
+  const [dealerOptions, setDealerOptions] = useState<{ id: string; code: string; name: string }[]>([]);
 
-  const [formCustomerId, setFormCustomerId] = useState<string>('');
+  const [formDealerId, setFormDealerId] = useState<string>('');
   const [formReceiptDate, setFormReceiptDate] = useState<string>('');
   const [formAmount, setFormAmount] = useState<number>(0);
   const [formPaymentMethod, setFormPaymentMethod] = useState<string>('bank');
@@ -56,8 +56,8 @@ const ReceiptEditPage: React.FC = () => {
   useEffect(() => {
     const loadOpts = async (): Promise<void> => {
       try {
-        const customers = await baseApi.customer.options();
-        setCustomerOptions(customers);
+        const dealers = await baseApi.dealer.options();
+        setDealerOptions(dealers);
       } catch {
         // ignore
       }
@@ -75,7 +75,7 @@ const ReceiptEditPage: React.FC = () => {
       try {
         const receipt = await financeApi.receipt.get(id as string);
         setDocData(receipt);
-        setFormCustomerId(receipt.customerId);
+        setFormDealerId(receipt.dealerId);
         setFormReceiptDate(receipt.receiptDate.slice(0, 10));
         setFormAmount(receipt.amount);
         setFormPaymentMethod(receipt.paymentMethod);
@@ -100,9 +100,9 @@ const ReceiptEditPage: React.FC = () => {
     loadDoc();
   }, [id, isNew]);
 
-  const loadCustomerReceivables = async (): Promise<void> => {
-    if (!formCustomerId) {
-      toast('请先选择客户');
+  const loadDealerReceivables = async (): Promise<void> => {
+    if (!formDealerId) {
+      toast('请先选择经销商');
       return;
     }
     setReceivableLoading(true);
@@ -110,7 +110,7 @@ const ReceiptEditPage: React.FC = () => {
       const res = await financeApi.receivable.list({
         page: 1,
         pageSize: 100,
-        customerId: formCustomerId,
+        dealerId: formDealerId,
         status: '',
       });
       const pending = res.items.filter((r: Receivable) => r.balance > 0.001);
@@ -172,7 +172,7 @@ const ReceiptEditPage: React.FC = () => {
   }, [formWriteoffs, viewOnly]);
 
   const validate = (): boolean => {
-    if (!formCustomerId) { toast('请选择客户'); return false; }
+    if (!formDealerId) { toast('请选择经销商'); return false; }
     if (!formReceiptDate) { toast('请选择收款日期'); return false; }
     if (!formAmount || formAmount <= 0) { toast('收款金额必须大于0'); return false; }
     if (formWriteoffs.length === 0) { toast('请添加核销明细'); return false; }
@@ -189,7 +189,7 @@ const ReceiptEditPage: React.FC = () => {
     if (!validate()) return;
     setSaving(true);
     const data = {
-      customerId: formCustomerId,
+      dealerId: formDealerId,
       receiptDate: formReceiptDate,
       amount: Number(formAmount),
       paymentMethod: formPaymentMethod,
@@ -239,17 +239,17 @@ const ReceiptEditPage: React.FC = () => {
         </div>
       )}
       <div>
-        <label className="block text-gray-700 mb-1">客户 *</label>
+        <label className="block text-gray-700 mb-1">经销商 *</label>
         {viewOnly ? (
-          <div className="text-gray-800">{customerOptions.find((c) => c.id === formCustomerId)?.name ?? '-'}</div>
+          <div className="text-gray-800">{dealerOptions.find((c) => c.id === formDealerId)?.name ?? '-'}</div>
         ) : (
           <select
-            value={formCustomerId}
-            onChange={(e) => setFormCustomerId(e.target.value)}
+            value={formDealerId}
+            onChange={(e) => setFormDealerId(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-primary"
           >
             <option value="">请选择</option>
-            {customerOptions.map((c) => (
+            {dealerOptions.map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>
@@ -323,7 +323,7 @@ const ReceiptEditPage: React.FC = () => {
           <label className="block text-gray-700 font-medium">核销明细</label>
           {!viewOnly && (
             <button
-              onClick={loadCustomerReceivables}
+              onClick={loadDealerReceivables}
               className="text-sm text-primary hover:text-blue-600"
             >
               + 添加核销单
@@ -415,7 +415,7 @@ const ReceiptEditPage: React.FC = () => {
               {receivableLoading ? (
                 <div className="py-12 text-center text-gray-400">加载中...</div>
               ) : receivableOptions.length === 0 ? (
-                <div className="py-12 text-center text-gray-400">该客户暂无待核销应收单</div>
+                <div className="py-12 text-center text-gray-400">该经销商暂无待核销应收单</div>
               ) : (
                 <table className="w-full text-sm border border-gray-200">
                   <thead>

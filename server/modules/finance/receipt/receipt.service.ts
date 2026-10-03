@@ -32,7 +32,7 @@ interface WriteoffDto {
 interface ListQuery {
   page: number;
   pageSize: number;
-  customerId?: string;
+  dealerId?: string;
   status?: string;
   startDate?: string;
   endDate?: string;
@@ -41,7 +41,7 @@ interface ListQuery {
 
 interface CreateReceiptDto {
   receiptDate: string;
-  customerId: string;
+  dealerId: string;
   customerName: string;
   amount: number;
   paymentMethod: string;
@@ -52,7 +52,7 @@ interface CreateReceiptDto {
 
 interface UpdateReceiptDto {
   receiptDate?: string;
-  customerId?: string;
+  dealerId?: string;
   customerName?: string;
   amount?: number;
   paymentMethod?: string;
@@ -80,7 +80,7 @@ export class ReceiptService {
       id: row.id,
       receiptNo: row.receiptNo,
       receiptDate: row.receiptDate,
-      customerId: row.customerId,
+      dealerId: row.dealerId,
       customerName: row.customerName ?? '',
       amount: Number(row.amount),
       paymentMethod: row.paymentMethod,
@@ -103,9 +103,9 @@ export class ReceiptService {
   }
 
   async list(query: ListQuery): Promise<PaginationResult<FinanceReceipt>> {
-    const { page, pageSize, customerId, status, startDate, endDate, keyword } = query;
+    const { page, pageSize, dealerId, status, startDate, endDate, keyword } = query;
     const conditions = [];
-    if (customerId) conditions.push(eq(financeReceipt.customerId, customerId));
+    if (dealerId) conditions.push(eq(financeReceipt.dealerId, dealerId));
     if (status) conditions.push(eq(financeReceipt.status, status));
     if (startDate) conditions.push(gte(financeReceipt.receiptDate, startDate));
     if (endDate) conditions.push(lt(financeReceipt.receiptDate, endDate));
@@ -197,7 +197,7 @@ export class ReceiptService {
         .values({
           receiptNo,
           receiptDate: dto.receiptDate,
-          customerId: dto.customerId,
+          dealerId: dto.dealerId,
           customerName: dto.customerName,
           amount: amountStr,
           paymentMethod: dto.paymentMethod,
@@ -244,7 +244,7 @@ export class ReceiptService {
 
     const patch: Partial<typeof financeReceipt.$inferInsert> = {};
     if (dto.receiptDate !== undefined) patch.receiptDate = dto.receiptDate;
-    if (dto.customerId !== undefined) patch.customerId = dto.customerId;
+    if (dto.dealerId !== undefined) patch.dealerId = dto.dealerId;
     if (dto.customerName !== undefined) patch.customerName = dto.customerName;
     if (dto.amount !== undefined) patch.amount = Number(dto.amount).toFixed(2);
     if (dto.paymentMethod !== undefined) patch.paymentMethod = dto.paymentMethod;

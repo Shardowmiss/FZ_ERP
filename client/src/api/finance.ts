@@ -10,7 +10,7 @@ import type {
 
 export const financeApi = {
   receivable: {
-    list: (params: PaginationParams & { customerId?: string; status?: string; keyword?: string }) =>
+    list: (params: PaginationParams & { dealerId?: string; status?: string; keyword?: string }) =>
       request<PaginationResult<Receivable>>('/api/finance/receivable', 'GET', null, params),
     get: (id: string) => request<Receivable & { payments: any[] }>(`/api/finance/receivable/${id}`),
     payment: (id: string, data: { paymentDate: string; amount: number; paymentMethod?: string; remark?: string }) =>
@@ -39,7 +39,7 @@ export const financeApi = {
   },
   receipt: {
     list: (params: PaginationParams & {
-      customerId?: string;
+      dealerId?: string;
       status?: string;
       startDate?: string;
       endDate?: string;

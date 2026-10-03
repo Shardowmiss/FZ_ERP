@@ -20,13 +20,13 @@ import {
  *
  * 这些端点聚合全量经营数据，在（多租户）受限用户视角下必须按经销商过滤，否则会向
  * 受限用户泄露其它经销商的经营/财务数据。各域的核心表与经销商的归属关系：
- * - sales / profit   ：sales_outbound / sales_order 经 customer_id → customer.partner_id
+ * - sales / profit   ：sales_outbound / sales_order 直连 dealer_id 列
  * - purchase         ：purchase_inbound 经 supplier_id → supplier.partner_id
  * - retail           ：retail_order 经 store_id → store.dealer_id
  * - inventory        ：inventory_stock 经 warehouse_id → warehouse.dealer_id
  * - transfer         ：inventory_transfer 的 from/to 仓库任一归属即可见
  * - finPayment/payable：finance_payment / payable 经 supplier_id → supplier.partner_id
- * - finReceipt/receivable：finance_receipt / receivable 经 customer_id → customer.partner_id
+ * - finReceipt/receivable：finance_receipt / receivable 直连 dealer_id 列
  */
 export type AggregationDomain =
   | 'sales'
@@ -55,9 +55,9 @@ export function buildAggregationScope(domain: AggregationDomain): SQL | undefine
   const scope = RequestContext.getDealerScope() ?? ALL_SCOPE;
   switch (domain) {
     case 'sales':
-      return buildDealerScopeCondition(scope, { kind: 'viaCustomer', column: salesOutbound.customerId });
+      return buildDealerScopeCondition(scope, { kind: 'dealerColumn', column: salesOutbound.dealerId });
     case 'profit':
-      return buildDealerScopeCondition(scope, { kind: 'viaCustomer', column: salesOrder.customerId });
+      return buildDealerScopeCondition(scope, { kind: 'dealerColumn', column: salesOrder.dealerId });
     case 'purchase':
       return buildDealerScopeCondition(scope, { kind: 'viaSupplier', column: purchaseInbound.supplierId });
     case 'retail':
@@ -75,7 +75,7 @@ export function buildAggregationScope(domain: AggregationDomain): SQL | undefine
       return buildDealerScopeCondition(scope, { kind: 'viaSupplier', column: domain === 'finPayment' ? financePayment.supplierId : payable.supplierId });
     case 'finReceipt':
     case 'receivable':
-      return buildDealerScopeCondition(scope, { kind: 'viaCustomer', column: domain === 'finReceipt' ? financeReceipt.customerId : receivable.customerId });
+      return buildDealerScopeCondition(scope, { kind: 'dealerColumn', column: domain === 'finReceipt' ? financeReceipt.dealerId : receivable.dealerId });
     case 'purchaseOrder':
       return buildDealerScopeCondition(scope, { kind: 'viaSupplier', column: purchaseOrder.supplierId });
     default:

@@ -40,14 +40,14 @@ const ReceiptPage: React.FC = () => {
   const [pageSize, setPageSize] = useState<number>(20);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const [filterCustomer, setFilterCustomer] = useState<string>('');
+  const [filterDealer, setFilterDealer] = useState<string>('');
   const [filterStatus, setFilterStatus] = useState<string>('');
   const def = useDefaultDocDate();
   const [filterStartDate, setFilterStartDate] = useState<string>(def.startDate);
   const [filterEndDate, setFilterEndDate] = useState<string>(def.endDate);
   const [keyword, setKeyword] = useState<string>('');
 
-  const [customerOptions, setCustomerOptions] = useState<{ id: string; code: string; name: string }[]>([]);
+  const [dealerOptions, setDealerOptions] = useState<{ id: string; code: string; name: string }[]>([]);
 
   const fetchList = async (): Promise<void> => {
     setLoading(true);
@@ -55,13 +55,13 @@ const ReceiptPage: React.FC = () => {
       const params: {
         page: number;
         pageSize: number;
-        customerId?: string;
+        dealerId?: string;
         status?: string;
         startDate?: string;
         endDate?: string;
         keyword?: string;
       } = { page, pageSize };
-      if (filterCustomer) params.customerId = filterCustomer;
+      if (filterDealer) params.dealerId = filterDealer;
       if (filterStatus) params.status = filterStatus;
       if (filterStartDate) params.startDate = filterStartDate;
       if (filterEndDate) params.endDate = filterEndDate;
@@ -78,13 +78,13 @@ const ReceiptPage: React.FC = () => {
 
   useEffect(() => {
     fetchList();
-  }, [page, pageSize, filterCustomer, filterStatus, filterStartDate, filterEndDate, keyword]);
+  }, [page, pageSize, filterDealer, filterStatus, filterStartDate, filterEndDate, keyword]);
 
   useEffect(() => {
     const loadOpts = async (): Promise<void> => {
       try {
-        const customers = await baseApi.customer.options();
-        setCustomerOptions(customers);
+        const dealers = await baseApi.dealer.options();
+        setDealerOptions(dealers);
       } catch {
         // ignore
       }
@@ -143,7 +143,7 @@ const ReceiptPage: React.FC = () => {
   };
 
   const handleReset = (): void => {
-    setFilterCustomer('');
+    setFilterDealer('');
     setFilterStatus('');
     setFilterStartDate('');
     setFilterEndDate('');
@@ -170,14 +170,14 @@ const ReceiptPage: React.FC = () => {
         </div>
         <div className="flex flex-wrap items-center gap-3 text-sm">
           <div className="flex items-center gap-1">
-            <span className="text-gray-600">客户：</span>
+            <span className="text-gray-600">经销商：</span>
             <select
-              value={filterCustomer}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilterCustomer(e.target.value)}
+              value={filterDealer}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilterDealer(e.target.value)}
               className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
             >
               <option value="">全部</option>
-              {customerOptions.map((s) => (
+              {dealerOptions.map((s) => (
                 <option key={s.id} value={s.id}>{s.name}</option>
               ))}
             </select>
@@ -245,7 +245,7 @@ const ReceiptPage: React.FC = () => {
               <tr className="border-b border-gray-200 text-gray-600 bg-gray-50">
                 <th className="text-left py-2.5 px-4 font-medium">收款单号</th>
                 <th className="text-left py-2.5 px-4 font-medium">收款日期</th>
-                <th className="text-left py-2.5 px-4 font-medium">客户</th>
+                <th className="text-left py-2.5 px-4 font-medium">经销商</th>
                 <th className="text-right py-2.5 px-4 font-medium">收款金额</th>
                 <th className="text-left py-2.5 px-4 font-medium">收款方式</th>
                 <th className="text-left py-2.5 px-4 font-medium">经办人</th>

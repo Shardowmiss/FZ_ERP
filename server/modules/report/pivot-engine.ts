@@ -136,7 +136,7 @@ function getPivotFieldWhitelist(dataSource: PivotDataSource): PivotFieldWhitelis
   if (dataSource === 'sales') {
     // sales 数据源维度（出库 + 零售的并集）
     const salesDims = [
-      'brand', 'category', 'subCategory', 'customer', 'warehouse',
+      'brand', 'category', 'subCategory', 'dealer', 'warehouse',
       'styleNo', 'styleName', 'color', 'size', 'outboundNo',
       'store',
     ];
@@ -195,7 +195,7 @@ function getSalesDimColName(dim: string, source: 'outbound' | 'retail'): string 
     brand: 'st.brand',
     category: 'st.category',
     subCategory: 'st.sub_category',
-    customer: 'so.customer_name',
+    dealer: 'so.dealer_id',
     warehouse: 'so.warehouse_name',
     styleNo: 'soi.style_no',
     styleName: 'st.name',
@@ -520,7 +520,7 @@ export class PivotEngineService {
         }
       }
     }
-    const salesScope = buildDealerScopeCondition(scope, { kind: 'viaCustomer', column: sql`so.customer_id` });
+    const salesScope = buildDealerScopeCondition(scope, { kind: 'dealerColumn', column: sql`so.dealer_id` });
     if (salesScope) salesWhereParts.push(salesScope);
     const salesWhere = sql.join(salesWhereParts, sql` AND `);
 

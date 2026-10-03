@@ -3,7 +3,7 @@ import type { PaginationParams, PaginationResult, SalesOrder, SalesOutbound, Sal
 
 export const salesApi = {
   order: {
-    list: (params: PaginationParams & { customerId?: string; status?: string; startDate?: string; endDate?: string }) =>
+    list: (params: PaginationParams & { dealerId?: string; status?: string; startDate?: string; endDate?: string }) =>
       request<PaginationResult<SalesOrder>>('/api/sales/order', 'GET', null, params),
     get: (id: string) => request<SalesOrder>(`/api/sales/order/${id}`),
     create: (data: any) => request<SalesOrder>('/api/sales/order', 'POST', data),
@@ -16,7 +16,7 @@ export const salesApi = {
     book: (id: string) => request<void>(`/api/sales/order/${id}/book`, 'POST'),
   },
   outbound: {
-    list: (params: PaginationParams & { customerId?: string; status?: string; orderNo?: string; brand?: string }) =>
+    list: (params: PaginationParams & { dealerId?: string; status?: string; orderNo?: string; brand?: string }) =>
       request<PaginationResult<SalesOutbound>>('/api/sales/outbound', 'GET', null, params),
     get: (id: string) => request<SalesOutbound>(`/api/sales/outbound/${id}`),
     create: (data: any) => request<SalesOutbound>('/api/sales/outbound', 'POST', data),
@@ -43,7 +43,7 @@ export const salesApi = {
   },
   reconciliation: {
     list: (params: PaginationParams & {
-      customerId?: string;
+      dealerId?: string;
       status?: string;
       startDate?: string;
       endDate?: string;
@@ -54,7 +54,7 @@ export const salesApi = {
       `/api/sales/reconciliation/${id}`),
     create: (data: any) => request<SalesReconciliation>(
       '/api/sales/reconciliation', 'POST', data),
-    preview: (data: { customerId: string; startDate: string; endDate: string }) =>
+    preview: (data: { dealerId: string; startDate: string; endDate: string }) =>
       request<SalesReconPreview>(
         '/api/sales/reconciliation/preview', 'POST', data),
     confirm: (id: string) => request<void>(

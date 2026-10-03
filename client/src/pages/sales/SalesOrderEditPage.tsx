@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { baseApi } from '@client/src/api/base';
 import { salesApi } from '@client/src/api/sales';
-import type { SalesOrder, SalesOrderItem, Customer, Style } from '@shared/api.interface';
+import type { SalesOrder, SalesOrderItem, Dealer, Style } from '@shared/api.interface';
 import { logger } from '@lark-apaas/client-toolkit/logger';
 import { toast } from 'sonner';
 import { PrintDialog } from '@client/src/components/print/PrintDialog';
@@ -25,13 +25,13 @@ export default function SalesOrderEditPage() {
   const viewOnly = searchParams.get('view') === '1';
 
   const { hasPermission } = useAuth();
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [formCustomerId, setFormCustomerId] = useState('');
+  const [dealers, setDealers] = useState<Dealer[]>([]);
+  const [formDealerId, setFormDealerId] = useState('');
   const [formOrderDate, setFormOrderDate] = useState('');
   const [formDeliveryDate, setFormDeliveryDate] = useState('');
   const [formRemark, setFormRemark] = useState('');
   const [orderNo, setOrderNo] = useState('');
-  const [formCustomerName, setFormCustomerName] = useState('');
+  const [formDealerName, setFormDealerName] = useState('');
   const [status, setStatus] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -53,7 +53,7 @@ export default function SalesOrderEditPage() {
 
   useEffect(() => {
     const init = async (): Promise<void> => {
-      await Promise.all([loadCustomers(), loadStyleOptions()]);
+      await Promise.all([loadDealers(), loadStyleOptions()]);
       if (isNew) {
         setFormOrderDate(new Date().toISOString().slice(0, 10));
       } else {
@@ -63,12 +63,12 @@ export default function SalesOrderEditPage() {
     void init();
   }, [id, isNew]);
 
-  const loadCustomers = async (): Promise<void> => {
+  const loadDealers = async (): Promise<void> => {
     try {
-      const res = await baseApi.customer.list({ page: 1, pageSize: 1000, status: 'active' });
-      setCustomers(res.items);
+      const res = await baseApi.dealer.list({ page: 1, pageSize: 1000, status: 'active' });
+      setDealers(res.items);
     } catch (e: unknown) {
-      logger.error('加载客户失败', e);
+      logger.error('加载经销商失败', e);
     }
   };
 
@@ -85,12 +85,12 @@ export default function SalesOrderEditPage() {
     setLoading(true);
     try {
       const detail: SalesOrder = await salesApi.order.get(detailId);
-      setFormCustomerId(detail.customerId);
+      setFormDealerId(detail.dealerId);
       setFormOrderDate(detail.orderDate.slice(0, 10));
       setFormDeliveryDate(detail.deliveryDate?.slice(0, 10) || '');
       setFormRemark(detail.remark || '');
       setOrderNo(detail.orderNo);
-      setFormCustomerName(detail.customerName);
+      setFormDealerName(detail.customerName);
       setStatus(detail.status);
 
       const items = detail.items || [];
@@ -204,7 +204,7 @@ export default function SalesOrderEditPage() {
     const flat = flattenToSkus(blocks);
     setPrintDocNo(orderNo);
     setPrintDocDate(formOrderDate);
-    setPrintPartnerName(formCustomerName);
+    setPrintPartnerName(formDealerName);
     setPrintTotalAmount(totals.totalAmount);
     setPrintRemark(formRemark);
     setPrintItems(
@@ -219,14 +219,14 @@ export default function SalesOrderEditPage() {
   };
 
   const doSave = async (): Promise<boolean> => {
-    if (!formCustomerId) { toast('请选择客户'); return false; }
+    if (!formDealerId) { toast('请选择经销商'); return false; }
     if (!formOrderDate) { toast('请选择订单日期'); return false; }
 
     const flatItems = flattenToSkus(blocks);
     if (flatItems.length === 0) { toast('请至少录入一条SKU数量'); return false; }
 
     const data = {
-      customerId: formCustomerId,
+      dealerId: formDealerId,
       orderDate: formOrderDate,
       deliveryDate: formDeliveryDate || undefined,
       remark: formRemark,
@@ -287,15 +287,15 @@ export default function SalesOrderEditPage() {
   const headerContent = (
     <div className="grid grid-cols-2 gap-4">
       <div className="flex flex-col">
-        <label className="text-xs text-gray-500 mb-1">客户 <span className="text-red-500">*</span></label>
+        <label className="text-xs text-gray-500 mb-1">经销商 <span className="text-red-500">*</span></label>
         <select
-          value={formCustomerId}
-          onChange={(e) => setFormCustomerId(e.target.value)}
+          value={formDealerId}
+          onChange={(e) => setFormDealerId(e.target.value)}
           disabled={viewOnly}
           className="border border-gray-300 rounded px-3 py-1.5 text-sm disabled:bg-gray-100"
         >
-          <option value="">请选择客户</option>
-          {customers.map((c: Customer) => (
+          <option value="">请选择经销商</option>
+          {dealers.map((c: Dealer) => (
             <option key={c.id} value={c.id}>{c.name}</option>
           ))}
         </select>
