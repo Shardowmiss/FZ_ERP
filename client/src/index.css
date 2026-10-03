@@ -5,6 +5,10 @@
 
 @config "../../tailwind.config.ts";
 
+/* Tailwind v4 自动探测未覆盖 shared/ 下的组件（如 shared/ui/switch.tsx），
+   显式声明源码目录，确保其中工具类（开关尺寸/状态色/滑块位移）进入生产 CSS */
+@source "../../shared";
+
 /* 全局业务表格样式：网格线 + 斑马纹 + 悬停高亮
    作用范围：main 主内容区、弹窗内、卡片内的所有 table
 */
