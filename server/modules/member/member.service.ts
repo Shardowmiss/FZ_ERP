@@ -1,6 +1,7 @@
-import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { DRIZZLE_DATABASE, type PostgresJsDatabase } from '@lark-apaas/fullstack-nestjs-core';
-import { eq, sql, desc, and, like } from 'drizzle-orm';
+import { eq, sql, desc, and, like, isNull } from 'drizzle-orm';
+import { randomUUID } from 'crypto';
 import {
   member,
   memberTag,
@@ -20,6 +21,7 @@ import type {
 } from '@shared/api.interface';
 import { maskMemberPii } from '@server/common/data-scope/pii';
 import { encryptField, hmacField } from '@server/common/crypto/field-encryption';
+import { MemberWalletService } from './member-wallet.service';
 
 
 @Injectable()
@@ -29,7 +31,18 @@ export class MemberService {
   constructor(
     @Inject(DRIZZLE_DATABASE) private readonly db: PostgresJsDatabase,
     private readonly numberGenerator: NumberGeneratorService,
+    private readonly walletService: MemberWalletService,
   ) {}
+
+  /** 将数据库行转为前端 Member 视图：解密脱敏 + 数值字段归一（storedValue 单位=分 → number） */
+  private toMember(r: typeof member.$inferSelect): Member {
+    const base = maskMemberPii(r);
+    return {
+      ...base,
+      email: base.email ?? undefined,
+      storedValue: Number(base.storedValue ?? 0),
+    } as unknown as Member;
+  }
 
   async list(params: {
     page?: number;
@@ -39,7 +52,7 @@ export class MemberService {
   }): Promise<{ list: Member[]; total: number }> {
     const page = Math.max(1, params.page ?? 1);
     const pageSize = Math.min(200, Math.max(1, params.pageSize ?? 20));
-    const conditions: ReturnType<typeof eq>[] = [];
+    const conditions: ReturnType<typeof eq>[] = [isNull(member.deletedAt)];
     if (params.keyword)
       conditions.push(like(member.name, `%${params.keyword}%`));
     if (params.level) conditions.push(eq(member.level, params.level));
@@ -57,7 +70,7 @@ export class MemberService {
     ]);
 
     return {
-      list: rows.map((r) => maskMemberPii(r)) as unknown as Member[],
+      list: rows.map((r) => this.toMember(r)),
       total: Number(countRows[0]?.c ?? 0),
     };
   }
@@ -83,13 +96,14 @@ export class MemberService {
           birthday: body.birthday as never,
           level: body.level ?? 'normal',
           tagIds: (body.tagIds ?? []) as never,
+          email: body.email ? String(body.email) : null,
           remark: body.remark,
           status: body.status ?? 'active',
         })
         .returning();
       return r;
     });
-    return maskMemberPii(row as unknown as Member);
+    return this.toMember(row);
   }
 
   async update(id: string, body: Partial<Member>): Promise<Member> {
@@ -101,6 +115,7 @@ export class MemberService {
         birthday: body.birthday as never,
         level: body.level,
         tagIds: body.tagIds ? ((body.tagIds as never) ?? undefined) : undefined,
+        email: body.email === undefined ? undefined : String(body.email),
         remark: body.remark,
         status: body.status,
         // P0-2：仅在请求携带 phone 时重加密（PATCH 语义，不破坏既有密文/指纹）
@@ -110,7 +125,55 @@ export class MemberService {
       })
       .where(eq(member.id, id))
       .returning();
-    return maskMemberPii(row as unknown as Member);
+    return this.toMember(row);
+  }
+
+  /** #10 软删除：仅置位 _deleted_at（member.status 约束不含 deleted，且钱包流水 cascade 禁止硬删） */
+  async deleteMember(id: string): Promise<void> {
+    const [row] = await this.db
+      .select({ id: member.id })
+      .from(member)
+      .where(eq(member.id, id))
+      .limit(1);
+    if (!row) throw new NotFoundException('会员不存在');
+
+    await this.db
+      .update(member)
+      .set({ deletedAt: new Date(), status: 'disabled', updatedAt: new Date() })
+      .where(eq(member.id, id));
+    this.logger.log(`软删除会员成功: id=${id}`);
+  }
+
+  /**
+   * #10 储值调整：复用 MemberWalletService 的钱包账本范式（幂等事件 + SQL 层原子余额 + 防透支）。
+   * 每次手工调整使用唯一 eventKey，确保逐笔入账、不重复、不读-算-写。
+   */
+  async adjustStoredValue(memberId: string, changeValue: number, operator?: string) {
+    return this.db.transaction(async (tx) => {
+      const [m] = await tx
+        .select({ id: member.id })
+        .from(member)
+        .where(eq(member.id, memberId))
+        .limit(1);
+      if (!m) throw new NotFoundException('会员不存在');
+
+      const eventKey = `adjust-sv:${memberId}:${randomUUID()}`;
+      const res = await this.walletService.applyWalletEvent(
+        {
+          eventKey,
+          memberId,
+          kind: 'stored_value',
+          changeValue,
+          sourceType: 'adjust',
+          sourceNo: operator,
+        },
+        tx,
+      );
+      if (res.status === 'rejected') {
+        throw new BadRequestException(res.message ?? '储值调整被拒');
+      }
+      return res;
+    });
   }
 
   async adjustPoints(

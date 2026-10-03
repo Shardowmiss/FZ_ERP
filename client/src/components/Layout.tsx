@@ -179,6 +179,7 @@ const menuItems: MenuItem[] = [
     label: '订货会管理',
     icon: <CalendarDays size={18} />,
     children: [
+      { key: 'trade-show-theme', label: '订货会主题', path: '/trade-show/theme', permission: 'tradeshow:theme' },
       { key: 'trade-show-list', label: '订货会主单', path: '/trade-show/list', permission: 'tradeshow:preorder' },
       { key: 'pre-order', label: '预订单', path: '/trade-show/pre-order', permission: 'tradeshow:preorder' },
       { key: 'pre-order-summary', label: '预订汇总', path: '/trade-show/summary', permission: 'tradeshow:preorder' },
@@ -191,6 +192,8 @@ const menuItems: MenuItem[] = [
     icon: <Users size={18} />,
     children: [
       { key: 'member-main', label: '会员运营', path: '/member', permission: 'retail:view' },
+      { key: 'member-manage', label: '会员管理', path: '/member/manage', permission: 'member:manage' },
+      { key: 'member-level', label: '会员等级', path: '/member/level', permission: 'member:level' },
     ],
   },
   {
@@ -453,6 +456,7 @@ const Layout: React.FC = () => {
           ) : (
             <div className="h-full p-5">
               <ErrorBoundary
+            key={location.pathname}
             fallbackRender={({ error, resetErrorBoundary }) => (
               <div style={{ padding: 20 }}>
                 <h2 style={{ color: '#dc2626', fontSize: 18, marginBottom: 10 }}>

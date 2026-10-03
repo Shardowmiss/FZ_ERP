@@ -15,7 +15,7 @@ import type {
 import { CHART_PRIMARY, CHART_POSITIVE } from '@client/src/lib/chart-colors';
 
 const LEVEL_LABEL: Record<string, string> = {
-  normal: '普通', silver: '银卡', gold: '金卡', vip: 'VIP',
+  normal: '会员卡', silver: '银卡', gold: '金卡', diamond: '钻石卡', vip: 'VIP',
 };
 
 const MemberPage: React.FC = () => {
@@ -48,7 +48,7 @@ const MemberPage: React.FC = () => {
   const load = async () => {
     try {
       const r = await memberApi.list(page, 20, keyword || undefined);
-      setList(r.list); setTotal(r.total);
+      setList(r?.list ?? []); setTotal(r?.total ?? 0);
       // 单页选择：翻页/搜索后清空勾选，避免跨页误合并（防误操作）
       setSelectedIds([]);
     } catch { toast('加载失败'); }
@@ -255,7 +255,7 @@ const MemberPage: React.FC = () => {
                   <td className="px-3 py-2 text-gray-700">{m.memberNo}</td>
                   <td className="px-3 py-2 text-gray-700">{m.name}</td>
                   <td className="px-3 py-2 text-gray-600">{LEVEL_LABEL[m.level] || m.level}</td>
-                  <td className="px-3 py-2 text-right text-gray-700">¥{m.totalSpent.toFixed(2)}</td>
+                  <td className="px-3 py-2 text-right text-gray-700">¥{(m.totalSpent ?? 0).toFixed(2)}</td>
                   <td className="px-3 py-2 text-right text-gray-600">{m.orderCount}</td>
                   <td className="px-3 py-2 text-right text-gray-600">{m.points}</td>
                   <td className="px-3 py-2 text-center"><button onClick={() => openProfile(m)} className="text-primary text-xs">画像</button></td>

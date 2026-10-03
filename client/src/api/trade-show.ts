@@ -3,6 +3,7 @@ import type {
   PaginationParams,
   PaginationResult,
   TradeShow,
+  TradeShowTheme,
   PreOrder,
   PreOrderSummary,
   PreOrderSkuSummary,
@@ -37,6 +38,36 @@ export const tradeShowApi = {
   end: (id: string) => request<void>(`/api/trade-show/${id}/end`, 'POST'),
   close: (id: string) =>
     request<void>(`/api/trade-show/${id}/close`, 'POST'),
+
+  // #8 订货会主题主数据（其它引用均来自此）
+  theme: {
+    list: (
+      params: PaginationParams & {
+        keyword?: string;
+        year?: string;
+        season?: string;
+        status?: string;
+      },
+    ) =>
+      request<PaginationResult<TradeShowTheme>>(
+        '/api/trade-show/theme',
+        'GET',
+        null,
+        params,
+      ),
+    get: (id: string) =>
+      request<TradeShowTheme>(`/api/trade-show/theme/${id}`),
+    create: (data: Partial<TradeShowTheme>) =>
+      request<TradeShowTheme>('/api/trade-show/theme', 'POST', data),
+    update: (id: string, data: Partial<TradeShowTheme>) =>
+      request<TradeShowTheme>(`/api/trade-show/theme/${id}`, 'PUT', data),
+    remove: (id: string) =>
+      request<void>(`/api/trade-show/theme/${id}`, 'DELETE'),
+    options: () =>
+      request<{ id: string; themeCode: string; themeName: string }[]>(
+        '/api/trade-show/theme/options',
+      ),
+  },
 
   preOrder: {
      list: (

@@ -896,6 +896,38 @@ export interface TradeShow {
   createdAt: string;
 }
 
+/** #8 订货会主题主数据（迁移 0029 / server/modules/trade-show/theme.service.ts） */
+export interface TradeShowTheme {
+  id: string;
+  themeCode: string;
+  themeName: string;
+  year?: string;
+  season?: string;
+  sortOrder: number;
+  status: string;
+  remark?: string;
+  createdAt: string;
+}
+
+/** #11 会员等级主数据（迁移 0031 / server/modules/member/member-level.service.ts） */
+export interface MemberLevel {
+  id: string;
+  code: string;
+  name: string;
+  /** cumulative | monthly | quarterly */
+  conditionType: string;
+  /** 对应周期累计消费金额门槛 */
+  thresholdAmount: number;
+  /** 正常折扣（0.85 = 8.5 折） */
+  discount: number;
+  /** 是否支持折上折 */
+  discountOnPromo: boolean;
+  sortOrder: number;
+  status: string;
+  remark?: string;
+  createdAt: string;
+}
+
 export interface PreOrderItem {
   id: string;
   preOrderId: string;
@@ -2311,6 +2343,10 @@ export interface Member {
   totalSpent: number;
   orderCount: number;
   points: number;
+  /** 资金余额（储值，单位=分）；#10 会员管理维护 */
+  storedValue?: number;
+  /** 邮箱；#10 会员管理维护 */
+  email?: string;
   lastPurchaseDate?: string;
   status: string;
   remark?: string;

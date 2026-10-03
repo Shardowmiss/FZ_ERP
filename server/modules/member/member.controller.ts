@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Query } from '@nestjs/common';
 import { NeedLogin } from '@lark-apaas/fullstack-nestjs-core';
 import { MemberService } from './member.service';
 import { MemberMergeService } from './member-merge.service';
@@ -40,6 +40,26 @@ export class MemberController {
     const id = body?.id as string;
     if (!id) throw new BadRequestException('id 必填');
     return this.memberService.update(id, body as never);
+  }
+
+  @CheckPermission('member:manage')
+  @Delete(':id')
+  async remove(@Param('id') id: string) {
+    return this.memberService.deleteMember(id);
+  }
+
+  /** #10 储值调整：走钱包账本（幂等 + 原子余额 + 防透支），仅对储值生效 */
+  @CheckPermission('member:manage')
+  @Post('adjust-stored-value')
+  async adjustStoredValue(
+    @Body() body: { memberId: string; changeValue: number; remark?: string },
+  ) {
+    if (!body?.memberId) throw new BadRequestException('memberId 必填');
+    return this.memberService.adjustStoredValue(
+      body.memberId,
+      Number(body.changeValue) || 0,
+      body.remark,
+    );
   }
 
   @CheckPermission('member:manage')

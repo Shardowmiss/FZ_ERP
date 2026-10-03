@@ -160,12 +160,16 @@ export const member = pgTable("member", {
   lastPurchaseDate: date("last_purchase_date"),
   status: varchar("status", { length: 20 }).notNull().default('active'),
   remark: text("remark"),
+  // #10 会员管理：邮箱（可选 PII，维护用）
+  email: varchar("email", { length: 255 }),
   // P0-c 主数据治理：会员储值余额（单位=分，与 POS posMember.storedValue 对齐，供上行回写落点）
   storedValue: numeric("stored_value").notNull().default('0'),
   // P0-3 主数据合并：被合并指向（指向存活方 member.id）。被合并会员绝不删除，仅打标，规避 cascade 清空钱包流水。
   mergedInto: uuid("merged_into"),
   // P0-3 主数据合并：合并时间（打标用，非软删）
   mergedAt: customTimestamptz("merged_at", { precision: 3 }),
+  // #10 软删除：删除置位时间戳，list 过滤 IS NULL。member.status 约束不含 'deleted'，且 member_wallet_event/member_point 均 cascade，硬删会清空钱包流水 = 资金事故。
+  deletedAt: customTimestamptz("_deleted_at", { precision: 3 }),
   // System field: Creation time (auto-filled, do not modify)
   createdAt: customTimestamptz("_created_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
   // System field: Creator (auto-filled, do not modify)
@@ -180,12 +184,49 @@ export const member = pgTable("member", {
   index("idx_member_level").on(table.level),
   index("idx_member_status").on(table.status),
   index("idx_member_merged_into").on(table.mergedInto),
+  // #10 软删加速：list 仅取未删除行（与迁移 0030 同名部分索引对应）
+  index("idx_member_not_deleted").on(table.deletedAt),
   // 自愈引用：删除/改指 survivor 时把 mergedInto 置空（被合并方不会被级联删）
   foreignKey({
     columns: [table.mergedInto],
     foreignColumns: [table.id],
     name: "member_merged_into_fkey",
   }).onDelete("set null"),
+]);
+
+/**
+ * #11 会员等级主数据（迁移 0031）。
+ *
+ * 会员等级的权威来源：会员表 member.level 持有本表 code。
+ * condition_type 限定 'cumulative' | 'monthly' | 'quarterly'（达标周期）；
+ * threshold_amount 为对应周期的累计消费金额门槛；
+ * discount 为正常折扣（0.85 = 8.5 折）；discount_on_promo 标记是否支持折上折。
+ */
+export const memberLevel = pgTable("member_level", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  code: varchar("code", { length: 30 }).notNull().unique(),
+  name: varchar("name", { length: 100 }).notNull(),
+  conditionType: varchar("condition_type", { length: 20 }).notNull().default('cumulative'),
+  thresholdAmount: numeric("threshold_amount").notNull().default('0'),
+  discount: numeric("discount").notNull().default('1'),
+  discountOnPromo: boolean("discount_on_promo").notNull().default(false),
+  sortOrder: integer("sort_order").notNull().default(0),
+  status: varchar("status", { length: 20 }).notNull().default('active'),
+  remark: text("remark"),
+  // System field: Creation time (auto-filled, do not modify)
+  createdAt: customTimestamptz("_created_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  // System field: Creator (auto-filled, do not modify)
+  createdBy: userProfile("_created_by").default(sql`CASE
+    WHEN (current_setting('app.user_id'::text, true) = ''::text) THEN NULL`),
+  // System field: Update time (auto-filled, do not modify)
+  updatedAt: customTimestamptz("_updated_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  // System field: Updater (auto-filled, do not modify)
+  updatedBy: userProfile("_updated_by").default(sql`CASE
+    WHEN (current_setting('app.user_id'::text, true) = ''::text) THEN NULL`),
+}, (table) => [
+  uniqueIndex("member_level_code_key").on(table.code),
+  index("idx_member_level_status").on(table.status),
+  index("idx_member_level_sort").on(table.sortOrder),
 ]);
 
 /**
@@ -1805,6 +1846,32 @@ export const tradeShow = pgTable("trade_show", {
 }, (table) => [
   uniqueIndex("trade_show_show_no_key").on(table.showNo),
   index("idx_trade_show_status").on(table.status),
+]);
+
+export const tradeShowTheme = pgTable("trade_show_theme", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  themeCode: varchar("theme_code", { length: 50 }).notNull().unique(),
+  themeName: varchar("theme_name", { length: 200 }).notNull(),
+  year: varchar("year", { length: 10 }),
+  season: varchar("season", { length: 20 }),
+  sortOrder: integer("sort_order").notNull().default(0),
+  status: varchar("status", { length: 20 }).notNull().default('active'),
+  remark: text("remark"),
+  // System field: Creation time (auto-filled, do not modify)
+  createdAt: customTimestamptz("_created_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  // System field: Creator (auto-filled, do not modify)
+  createdBy: userProfile("_created_by").default(sql`CASE
+    WHEN (current_setting('app.user_id'::text, true) = ''::text) THEN NULL`),
+  // System field: Update time (auto-filled, do not modify)
+  updatedAt: customTimestamptz("_updated_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  // System field: Updater (auto-filled, do not modify)
+  updatedBy: userProfile("_updated_by").default(sql`CASE
+    WHEN (current_setting('app.user_id'::text, true) = ''::text) THEN NULL`),
+}, (table) => [
+  uniqueIndex("trade_show_theme_theme_code_key").on(table.themeCode),
+  index("idx_trade_show_theme_status").on(table.status),
+  index("idx_trade_show_theme_year").on(table.year),
+  index("idx_trade_show_theme_sort").on(table.sortOrder),
 ]);
 
 export const store = pgTable("store", {

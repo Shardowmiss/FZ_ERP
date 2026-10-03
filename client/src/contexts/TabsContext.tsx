@@ -109,6 +109,21 @@ function getMenuLabelMap(): Record<string, string> {
     '/report/transfer': '调拨查询',
     '/report/stock-movement': '进销存查询',
     '/report/pivot': '透视分析',
+    // 以下路径此前漏接，标签回退为原始英文路径名
+    '/inventory/barcode': '条码/批次',
+    '/inventory/mobile-stocktake': '移动盘点',
+    '/inventory/replenish': '补货建议',
+    '/inventory/replenish-plan': '补货计划',
+    '/inventory/replenish-template': '补货模板',
+    '/omni': '全渠道订单',
+    '/subcontract': '委外管理',
+    '/member': '会员运营',
+    '/analytics/forecast': 'AI销量预测',
+    '/analytics/lifecycle': '商品生命周期',
+    '/analytics/bi': '自助BI钻取',
+    '/analytics/mobile-dashboard': '移动看板',
+    '/pos/cashier': 'POS收银',
+    '/pricing': '价格管理',
   };
 }
 

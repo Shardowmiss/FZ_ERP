@@ -95,6 +95,8 @@ const OmniPage = React.lazy(() => import('./pages/omni/OmniPage'));
 const PosCashierPage = React.lazy(() => import('./pages/pos/CashierPage'));
 const PricingPage = React.lazy(() => import('./pages/pricing/PriceListPage'));
 const MemberPage = React.lazy(() => import('./pages/member/MemberPage'));
+const MemberManagePage = React.lazy(() => import('./pages/member/MemberManagePage'));
+const MemberLevelPage = React.lazy(() => import('./pages/member/MemberLevelPage'));
 const MemberMergeAuditPage = React.lazy(() => import('./pages/member/MemberMergeAuditPage'));
 const InventoryInboundEditPage = React.lazy(() => import('./pages/inventory/InventoryInboundEditPage'));
 const InventoryOutboundEditPage = React.lazy(() => import('./pages/inventory/InventoryOutboundEditPage'));
@@ -120,6 +122,7 @@ const TradeShowPage = React.lazy(() => import('./pages/trade-show/TradeShowPage'
 const PreOrderPage = React.lazy(() => import('./pages/trade-show/PreOrderPage'));
 const PreOrderSummaryPage = React.lazy(() => import('./pages/trade-show/PreOrderSummaryPage'));
 const AllocationPage = React.lazy(() => import('./pages/trade-show/AllocationPage'));
+const ThemePage = React.lazy(() => import('./pages/trade-show/ThemePage'));
 const RetailOrderPage = React.lazy(() => import('./pages/retail/RetailOrderPage'));
 const RetailOrderEditPage = React.lazy(() => import('./pages/retail/RetailOrderEditPage'));
 const RetailReturnPage = React.lazy(() => import('./pages/retail/RetailReturnPage'));
@@ -423,7 +426,7 @@ const RoutesComponent = () => {
           />
           <Route
             path="product/code-rule"
-            element={protectedWith(<CodeRulePage />, 'system:permission')}
+            element={protectedWith(<CodeRulePage />, 'base:style')}
           />
           <Route
             path="product/color"
@@ -756,6 +759,14 @@ const RoutesComponent = () => {
             element={protectedWith(<MemberPage />, 'retail:view')}
           />
           <Route
+            path="member/manage"
+            element={protectedWith(<MemberManagePage />, 'member:manage')}
+          />
+          <Route
+            path="member/level"
+            element={protectedWith(<MemberLevelPage />, 'member:level')}
+          />
+          <Route
             path="base/member-merge-audit"
             element={protectedWith(<MemberMergeAuditPage />, 'member:merge')}
           />
@@ -854,6 +865,10 @@ const RoutesComponent = () => {
             element={protectedWith(<SystemConfigPage />, 'system:config')}
           />
 
+          <Route
+            path="trade-show/theme"
+            element={protectedWith(<ThemePage />, 'tradeshow:theme')}
+          />
           <Route
             path="trade-show/list"
             element={protectedWith(<TradeShowPage />, 'tradeshow:preorder')}

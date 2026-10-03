@@ -58,12 +58,12 @@ const BIPage: React.FC = () => {
     xAxis: { type: 'value' as const },
     yAxis: {
       type: 'category' as const,
-      data: [...data.rows].reverse().map((r) => r.dimValue),
+      data: [...(data?.rows ?? [])].reverse().map((r) => r.dimValue),
       axisLabel: { fontSize: 10 },
     },
     series: [{
       type: 'bar' as const,
-      data: [...data.rows].reverse().map((r) => (metric === 'quantity' ? r.quantity : r.amount)),
+      data: [...(data?.rows ?? [])].reverse().map((r) => (metric === 'quantity' ? r.quantity : r.amount)),
       itemStyle: { color: isDrill ? CHART_POSITIVE : CHART_PRIMARY, borderRadius: [0, 4, 4, 0] },
       barWidth: 14,
     }],

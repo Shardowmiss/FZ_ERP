@@ -75,6 +75,26 @@ export const memberApi = {
     request<Member>('/api/member/create', 'POST', body),
   update: (body: Partial<Member>) =>
     request<Member>('/api/member/update', 'POST', body),
+  // #10 软删除
+  remove: (id: string) =>
+    request<void>(`/api/member/${id}`, 'DELETE'),
+  // #10 储值调整（走钱包账本，返回余额变动结果）
+  adjustStoredValue: (
+    memberId: string,
+    changeValue: number,
+    remark?: string,
+  ) =>
+    request<{
+      eventKey: string;
+      duplicated: boolean;
+      status: 'applied' | 'rejected';
+      balanceAfter: number;
+      message?: string;
+    }>('/api/member/adjust-stored-value', 'POST', {
+      memberId,
+      changeValue,
+      remark,
+    }),
   adjustPoints: (memberId: string, changeType: string, changeValue: number, remark?: string) =>
     request<MemberPoint>('/api/member/points', 'POST', {
       memberId,

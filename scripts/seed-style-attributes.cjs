@@ -1,27 +1,23 @@
 #!/usr/bin/env node
 'use strict';
 /**
- * 款号属性维护（style_attribute）默认编码种子化。
+ * 款号属性维护（style_attr_def + style_attr_value）默认编码种子化。
  *
- * 背景：款号编码规则的「编码映射配置」页 season/category/subCategory/fit/brand 长期空白，
- * 根因是 style_attribute 全空且无种子数据；服务端 getMappingConfig() 此前对这些类型
- * 缺少默认回退（DEFAULT_* 成死代码），已在前序提交 0ba722a 中恢复为回退值。
+ * ⚠️ 历史坑（已在 2026-10-03 纠正）：早期版本把种子写进了 `style_attribute` 表，
+ * 但「款号属性维护」页（StyleAttrDefController → style-attr-def.service.ts）实际读取的是
+ * `style_attr_def`（属性定义）与 `style_attr_value`（属性值，FK → style_attr_def.id）。
+ * 两表不一致导致该页长期空白、且与「款号编码规则」的编码映射配置对不上。
+ * 本脚本写对表，使两页共享同一份数据。
  *
- * 本脚本把与代码 DEFAULT_* 完全一致的默认编码**物理写入** style_attribute，
- * 使「款号属性维护」页可直接看到并编辑这些数据；写入后 getMappingConfig() 将读取
- * DB 数据（不再走回退），与默认值等价但可被运营维护。
- *
- * 幂等：唯一约束 uk_style_attr_type_code (attr_type, attr_code)，
- *       INSERT ... ON CONFLICT (attr_type, attr_code) DO NOTHING → 已存在则跳过，可重复执行。
- *
- * 注：years 默认即为空数组，无需种子；colors/sizes 不在本表（存于 code_mapping_config，
- * 由「编码映射配置」页维护），不在本脚本范围。
+ * 幂等：
+ *   - style_attr_def 唯一约束在 attr_code → ON CONFLICT (attr_code) DO NOTHING
+ *   - style_attr_value 唯一约束在 (attr_def_id, value_code)
+ *       → ON CONFLICT (attr_def_id, value_code) DO NOTHING
+ * 可重复执行，已存在行跳过。
  *
  * 用法：
  *   node --env-file=.env scripts/seed-style-attributes.cjs
  *   node --env-file=.env scripts/seed-style-attributes.cjs --dry-run
- *
- * 前置：.env 含 SUDA_DATABASE_URL；erp_db 已启动（端口见连接串）。
  */
 
 const { execFileSync } = require('child_process');
@@ -80,76 +76,85 @@ function esc(s) {
   return String(s).replace(/'/g, "''");
 }
 
-// [attrType, attrCode, attrName, sortOrder, parentCode|null, remark|null]
-// 数据与 code-rule.service.ts 的 DEFAULT_* 完全一致。
-const SEED = [
-  // season
-  ['season', 'SP', '春', 1, null, null],
-  ['season', 'SU', '夏', 2, null, null],
-  ['season', 'AW', '秋', 3, null, null],
-  ['season', 'WI', '冬', 4, null, null],
-  // category
-  ['category', 'SY', '上衣', 1, null, null],
-  ['category', 'KZ', '裤装', 2, null, null],
-  ['category', 'QZ', '裙装', 3, null, null],
-  ['category', 'WT', '外套', 4, null, null],
-  // sub_category（parent_code 指向 category 的 attr_code）
-  ['sub_category', 'TX', 'T恤', 1, 'SY', null],
-  ['sub_category', 'CS', '衬衫', 2, 'SY', null],
-  ['sub_category', 'NZ', '牛仔裤', 3, 'KZ', null],
-  ['sub_category', 'XK', '休闲裤', 4, 'KZ', null],
-  ['sub_category', 'LQ', '连衣裙', 5, 'QZ', null],
-  ['sub_category', 'JK', '夹克', 6, 'WT', null],
-  // fit
-  ['fit', 'X', '修身', 1, null, null],
-  ['fit', 'B', '常规', 2, null, null],
-  ['fit', 'K', '宽松', 3, null, null],
-  ['fit', 'O', 'Oversize', 4, null, null],
-  // brand
-  ['brand', 'DEF', '默认品牌', 0, null, '系统默认品牌'],
+// [attrCode, attrName, sortOrder]
+const DEFS = [
+  ['SEASON', '季节', 1],
+  ['CATEGORY', '品类', 2],
+  ['SUBCATEGORY', '小类', 3],
+  ['FIT', '版型', 4],
+  ['BRAND', '品牌', 5],
 ];
 
-const TYPES = ['season', 'category', 'sub_category', 'fit', 'brand'];
+// [defCode, valueCode, valueName, sortOrder]
+const VALUES = [
+  ['SEASON', 'SP', '春', 1],
+  ['SEASON', 'SU', '夏', 2],
+  ['SEASON', 'AW', '秋', 3],
+  ['SEASON', 'WI', '冬', 4],
+  ['CATEGORY', 'SY', '上衣', 1],
+  ['CATEGORY', 'KZ', '裤装', 2],
+  ['CATEGORY', 'QZ', '裙装', 3],
+  ['CATEGORY', 'WT', '外套', 4],
+  ['SUBCATEGORY', 'TX', 'T恤', 1],
+  ['SUBCATEGORY', 'CS', '衬衫', 2],
+  ['SUBCATEGORY', 'NZ', '牛仔裤', 3],
+  ['SUBCATEGORY', 'XK', '休闲裤', 4],
+  ['SUBCATEGORY', 'LQ', '连衣裙', 5],
+  ['SUBCATEGORY', 'JK', '夹克', 6],
+  ['FIT', 'X', '修身', 1],
+  ['FIT', 'B', '常规', 2],
+  ['FIT', 'K', '宽松', 3],
+  ['FIT', 'O', 'Oversize', 4],
+  ['BRAND', 'DEF', '默认品牌', 0],
+];
 
-function countByType(attrType) {
-  const out = psqlQuery(
-    `SELECT COUNT(*) FROM style_attribute WHERE attr_type = '${esc(attrType)}'`,
-  ).trim();
-  return parseInt(out, 10) || 0;
+function countDefs() {
+  return parseInt(psqlQuery(`SELECT COUNT(*) FROM style_attr_def`).trim() || '0', 10);
+}
+function countValues() {
+  return parseInt(psqlQuery(`SELECT COUNT(*) FROM style_attr_value`).trim() || '0', 10);
 }
 
 console.log('[seed] 数据库连接: %s:%s/%s user=%s', HOST, PORT, DB, USER);
 console.log('[seed] 模式: %s', DRY ? 'DRY-RUN（不写入）' : 'REAL');
-console.log('[seed] 各类型种子前存量:');
-for (const t of TYPES) {
-  console.log('        ' + t.padEnd(12) + ' ' + countByType(t));
-}
+console.log('[seed] 种子前存量: style_attr_def=%d, style_attr_value=%d', countDefs(), countValues());
 
-const values = SEED.map(
-  ([type, code, name, sort, parent, remark]) =>
-    `('${esc(type)}','${esc(code)}','${esc(name)}',${sort},` +
-    `${parent ? `'${esc(parent)}'` : 'NULL'},` +
-    `${remark ? `'${esc(remark)}'` : 'NULL'},'active')`,
+// 1) 写属性定义
+const defRows = DEFS.map(
+  ([code, name, sort]) =>
+    `(gen_random_uuid(), '${esc(code)}', '${esc(name)}', ${sort}, 'active')`,
 ).join(',\n');
-
-const sql = `INSERT INTO style_attribute
-  (attr_type, attr_code, attr_name, sort_order, parent_code, remark, status)
+const defSql = `INSERT INTO style_attr_def (id, attr_code, attr_name, sort_order, status)
 VALUES
-${values}
-ON CONFLICT (attr_type, attr_code) DO NOTHING;`;
+${defRows}
+ON CONFLICT (attr_code) DO NOTHING;`;
+
+// 2) 写属性值（FK 通过 attr_code 子查询定位 def.id）
+const valStmts = VALUES.map(([defCode, vCode, vName, sort]) => {
+  return `INSERT INTO style_attr_value (id, attr_def_id, value_code, value_name, sort_order, status)
+SELECT gen_random_uuid(),
+       (SELECT id FROM style_attr_def WHERE attr_code = '${esc(defCode)}'),
+       '${esc(vCode)}', '${esc(vName)}', ${sort}, 'active'
+ON CONFLICT (attr_def_id, value_code) DO NOTHING;`;
+}).join('\n');
 
 if (DRY) {
-  console.log('\n[seed] ---- DRY-RUN SQL ----\n%s\n[seed] ---- END ----\n', sql);
-  console.log('[seed] dry-run 完成，未写入数据库');
+  console.log('\n[seed] ---- DRY-RUN def SQL ----\n%s\n', defSql);
+  console.log('[seed] ---- DRY-RUN value SQL (节选前 2 条) ----\n%s\n[seed] ---- END ----\n',
+    valStmts.split('\n').slice(0, 3).join('\n'));
   process.exit(0);
 }
 
-psqlQuery(sql);
-console.log('[seed] 写入完成（已存在行按唯一约束跳过）。');
+psqlQuery(defSql);
+psqlQuery(valStmts);
 
-console.log('[seed] 各类型种子后存量:');
-for (const t of TYPES) {
-  console.log('        ' + t.padEnd(12) + ' ' + countByType(t));
-}
+console.log('[seed] 写入完成（已存在行按唯一约束跳过）。');
+console.log('[seed] 种子后存量: style_attr_def=%d, style_attr_value=%d', countDefs(), countValues());
+
+// 校验：子类别值是否都挂到了存在的 def
+const orphan = psqlQuery(
+  `SELECT COUNT(*) FROM style_attr_value v LEFT JOIN style_attr_def d ON v.attr_def_id = d.id WHERE d.id IS NULL`,
+).trim();
+console.log('[seed] 孤儿属性值（def 不存在）= %s', orphan);
 
 process.exit(0);

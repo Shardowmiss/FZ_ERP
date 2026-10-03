@@ -181,7 +181,7 @@ const routePermissions: Record<string, string> = {
   '/product/color': 'base:color',
   '/product/size': 'base:size',
   '/product/size-group-relation': 'base:size',
-  '/product/code-rule': 'system:permission',
+  '/product/code-rule': 'base:style',
   '/inventory/replenish': 'inventory:warning',
   '/inventory/barcode': 'inventory:query',
   '/inventory/mobile-stocktake': 'inventory:stocktake',
