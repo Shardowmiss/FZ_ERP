@@ -110,7 +110,7 @@ export default function SettingsPage() {
   const [newEmp, setNewEmp] = useState({ name: '', phone: '', role: '导购' });
   const [payments, setPayments] = useState<PaymentMethod[]>([]);
   const [pointForm, setPointForm] = useState({ pointsPerYuan: 1, pointsPerDollar: 100, birthdayDouble: false, validMonths: 12 });
-  const [receiptForm, setReceiptForm] = useState({ title: `云裁POS · ${STORE_NAME}`, welcome: '感谢您的惠顾，期待下次光临！', printQr: true, returnTip: '7天内凭小票可退换货' });
+  const [receiptForm, setReceiptForm] = useState({ title: `我的POS · ${STORE_NAME}`, welcome: '感谢您的惠顾，期待下次光临！', printQr: true, returnTip: '7天内凭小票可退换货' });
   const [logs, setLogs] = useState<OperationLog[]>([]);
   const [logsTotal, setLogsTotal] = useState(0);
   const [logsPage, setLogsPage] = useState(1);
@@ -143,7 +143,7 @@ export default function SettingsPage() {
     (async () => {
       try { setErr('staff', null); setLoading((l) => ({ ...l, staff: true }));
         const d = await getEmployees({ page: empPage, pageSize: 10, keyword: empKw });
-        setEmployees(applyEmployeeOverrides(d.items)); setEmpTotal(d.total);
+        setEmployees(applyEmployeeOverrides(d.items ?? [])); setEmpTotal(d.total);
       } catch (e) { logger.error('loadEmployees failed', e as Error); setErr('staff', errMsg(e, '加载员工列表失败')); }
       finally { setLoading((l) => ({ ...l, staff: false })); }
     })();
@@ -172,7 +172,7 @@ export default function SettingsPage() {
     (async () => {
       try { setErr('logs', null); setLoading((l) => ({ ...l, logs: true }));
         const d = await getOpLogs({ page: logsPage, pageSize: 10 });
-        setLogs(d.items); setLogsTotal(d.total);
+        setLogs(d.items ?? []); setLogsTotal(d.total);
       } catch (e) { logger.error('loadLogs failed', e as Error); setErr('logs', errMsg(e, '加载操作日志失败')); }
       finally { setLoading((l) => ({ ...l, logs: false })); }
     })();

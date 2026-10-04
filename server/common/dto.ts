@@ -403,6 +403,56 @@ export class CreateTransferRequestDto {
   items!: TransferRequestItemDto[];
 }
 
+export class CreateTransferItemDto {
+  @IsString()
+  @IsNotEmpty()
+  skuId!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  styleId!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  colorId!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  sizeId!: string;
+
+  /** 计划调出数量必须为正整数 */
+  @IsInt()
+  @Min(1)
+  plannedQty!: number;
+}
+
+export class CreateTransferDto {
+  @IsString()
+  storeId!: string;
+
+  @IsOptional()
+  @IsString()
+  fromLocation?: string;
+
+  @IsOptional()
+  @IsString()
+  toLocation?: string;
+
+  @IsOptional()
+  @IsString()
+  employeeId?: string;
+
+  @IsOptional()
+  @IsString()
+  remark?: string;
+
+  @IsArray()
+  @ArrayMinSize(1)
+  @ValidateNested({ each: true })
+  @Type(() => CreateTransferItemDto)
+  items!: CreateTransferItemDto[];
+}
+
 export class StocktakeItemDto {
   @IsString()
   @IsNotEmpty()

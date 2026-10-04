@@ -73,7 +73,7 @@ export default function ErpSyncPage() {
     try {
       const params = logDirection !== 'all' ? { direction: logDirection, pageSize: 50 } : { pageSize: 50 };
       const data = await erpApi.getSyncLogs(params);
-      setLogs(data.items);
+      setLogs(data.items ?? []);
     } catch (err) {
       logger.error('loadLogs error', err as Error);
       throw err;

@@ -23,7 +23,7 @@ const LEVEL_NAMES: Record<string, string> = {
 };
 
 interface PosSidebarProps {
-  hotStyles: Style[];
+  hotStyles?: Style[];
   member: Member | null;
   employee: Employee | null;
   isOffline?: boolean;
@@ -39,7 +39,7 @@ interface PosSidebarProps {
 }
 
 export default function PosSidebar({
-  hotStyles,
+  hotStyles = [],
   member,
   employee,
   isOffline = false,
@@ -93,7 +93,7 @@ export default function PosSidebar({
             return;
           }
           const styles = await masterData.getStyles({ keyword: sku.styleId, page: 1, pageSize: 1 });
-          const style = styles.items.find((s) => s.id === sku.styleId);
+          const style = (styles.items ?? []).find((s) => s.id === sku.styleId);
           if (style) {
             const matrix = await stockApi.getStockMatrix(style.id, STORE_ID);
             onSelectStyle(style, matrix);
@@ -110,7 +110,7 @@ export default function PosSidebar({
     setSearching(true);
     try {
       const res = await masterData.getStyles({ keyword: kw, page: 1, pageSize: 20 });
-      setSearchResults(res.items);
+      setSearchResults(res.items ?? []);
     } catch (err) {
       logger.error('search styles failed', err as Error);
     } finally {

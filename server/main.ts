@@ -51,7 +51,16 @@ async function bootstrap() {
   // 最终 HTML 在 send 前被替换为本地值（appId/basename/csrfToken/__platform__），
   // 不受 build:client 覆盖影响，本地可正常渲染并登录（平台网关下无副作用）。
   // 取代原先仅改 window.csrfToken 的 pos-local-csrf 中间件，覆盖全部占位符。
-  app.use(spaTemplateMiddleware({ appId: 'pos-local-dev', appName: 'POS本地', basename: '/client/' }));
+  // 品牌化：页签标题覆盖平台默认的「妙搭应用」；移除右下角「妙搭生成」平台水印。
+  app.use(
+    spaTemplateMiddleware({
+      appId: 'pos-local-dev',
+      appName: '我的POS',
+      basename: '/client/',
+      title: '我的POS',
+      removeWatermark: true,
+    }),
+  );
   await configureApp(app, {
     disableSwagger: true,
   });

@@ -77,7 +77,7 @@ export default function MembersPage() {
         page,
         pageSize: PAGE_SIZE,
       });
-      setMembers(res.items);
+      setMembers(res.items ?? []);
       setTotal(res.total);
     } catch (error) {
       logger.error('fetchMembers failed', error as Error);

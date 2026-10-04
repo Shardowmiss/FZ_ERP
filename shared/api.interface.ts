@@ -571,6 +571,25 @@ export interface CreateTransferRequestDto {
   items: TransferRequestItem[];
 }
 
+/** 调拨出库单明细（门店发起向其他门店/仓库调出） */
+export interface CreateTransferItemDto {
+  skuId: string;
+  styleId: string;
+  colorId: string;
+  sizeId: string;
+  plannedQty: number;
+}
+
+/** 创建调拨出库单（type 固定为 out，由服务端写入） */
+export interface CreateTransferDto {
+  storeId: string;
+  fromLocation?: string;
+  toLocation?: string;
+  employeeId?: string;
+  remark?: string;
+  items: CreateTransferItemDto[];
+}
+
 export interface Stocktake {
   id: string;
   stocktakeNo: string;

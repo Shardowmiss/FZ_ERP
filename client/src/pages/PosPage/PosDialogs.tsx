@@ -31,7 +31,7 @@ export function EmployeeDialog({
     setLoading(true);
     settingsApi
       .getEmployees({ role: 'sales', status: 'active', page: 1, pageSize: 50 })
-      .then((res) => setList(res.items))
+      .then((res) => setList(res.items ?? []))
       .catch((err) => logger.error('get employees failed', err as Error))
       .finally(() => setLoading(false));
   }, [open, list.length]);

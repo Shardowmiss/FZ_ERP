@@ -80,10 +80,10 @@ export default function MemberDetailPanel({
           membersApi.getMemberOrders(memberId, 1, 5),
         ]);
         setMember(m);
-        setPointsLog(p.items);
-        setStoredLog(s.items);
+        setPointsLog(p.items ?? []);
+        setStoredLog(s.items ?? []);
         setCoupons(c.filter((cp: Coupon) => cp.status === 'available'));
-        setOrders(o.items);
+        setOrders(o.items ?? []);
       } catch (error) {
         logger.error('load member detail failed', error as Error);
       } finally {

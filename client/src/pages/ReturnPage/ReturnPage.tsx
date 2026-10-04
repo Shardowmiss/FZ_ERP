@@ -91,7 +91,7 @@ export default function ReturnPage() {
     setOrdersError(null);
     try {
       const res = await salesApi.getOrders({ keyword: kw.trim(), page: 1, pageSize: 20, storeId: STORE_ID });
-      setOrders(res.items);
+      setOrders(res.items ?? []);
     } catch (e) {
       logger.error('searchOrders failed', e as Error);
       toast.error(errMsg(e, '搜索单据失败'));
@@ -176,7 +176,7 @@ export default function ReturnPage() {
         setRecords(list);
       } else {
         const res = await returnsApi.getReturns({ storeId: STORE_ID, page: 1, pageSize: 20 });
-        setRecords(res.items);
+        setRecords(res.items ?? []);
       }
     } catch (e) {
       logger.error('loadRecords failed', e as Error);

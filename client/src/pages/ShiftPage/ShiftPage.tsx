@@ -79,7 +79,7 @@ export default function ShiftPage() {
     setErrHistory(null);
     try {
       const data = await shiftApi.getShiftHistory({ storeId: STORE_ID, page: 1, pageSize: 20 });
-      setHistoryList(data.items);
+      setHistoryList(data.items ?? []);
     } catch (err) {
       logger.error('fetchHistory failed', err as Error);
       setErrHistory(errMsg(err, '加载历史班次失败'));
@@ -90,7 +90,7 @@ export default function ShiftPage() {
     setErrEod(null);
     try {
       const data = await shiftApi.getEodList({ storeId: STORE_ID, startDate: zDate, endDate: zDate, page: 1, pageSize: 5 });
-      setEodList(data.items);
+      setEodList(data.items ?? []);
     } catch (err) {
       logger.error('fetchEod failed', err as Error);
       setErrEod(errMsg(err, '加载日结报表失败'));

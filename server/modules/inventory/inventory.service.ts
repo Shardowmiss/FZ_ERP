@@ -25,6 +25,7 @@ import type {
   ListResponse,
   TransferRequest,
   CreateTransferRequestDto,
+  CreateTransferDto,
   Stocktake,
   StocktakeQuery,
   CreateStocktakeDto,
@@ -154,6 +155,53 @@ export class InventoryService {
     });
 
     return this.getTransferDetail(id);
+  }
+
+  /**
+   * 创建调拨出库单（type='out'）：当前门店向其他门店/仓库调出商品。
+   * P0-1：门店归属服务端权威推导（忽略客户端 storeId），fromLocation 取当前门店名、toLocation 由客户端指定目标。
+   * 与「收货入库」(receiveTransfer) 对称：本方法只建单，不改动库存；库存扣减在对方收货确认时发生。
+   */
+  async createTransfer(dto: CreateTransferDto, principal?: AuthPrincipal | null): Promise<Transfer> {
+    if (!dto.items || dto.items.length === 0) {
+      throw new BadRequestException('调拨明细不能为空');
+    }
+
+    const storeId = resolveStoreId(principal, dto.storeId);
+    const transferNo = generateDocNo('TF');
+    const totalQty = dto.items.reduce((sum, it) => sum + it.plannedQty, 0);
+
+    let tfId = '';
+    await this.db.transaction(async (tx) => {
+      const [result] = await tx
+        .insert(posTransfer)
+        .values({
+          transferNo,
+          type: 'out',
+          storeId,
+          fromLocation: dto.fromLocation,
+          toLocation: dto.toLocation,
+          totalQty,
+          status: 'pending',
+          source: 'pos',
+        })
+        .returning({ id: posTransfer.id });
+      tfId = result.id;
+
+      for (const item of dto.items) {
+        await tx.insert(posTransferItem).values({
+          transferId: result.id,
+          skuId: item.skuId,
+          styleId: item.styleId,
+          colorId: item.colorId,
+          sizeId: item.sizeId,
+          plannedQty: item.plannedQty,
+          receivedQty: 0,
+        });
+      }
+    });
+
+    return this.getTransferDetail(tfId);
   }
 
   async getTransferDetail(id: string): Promise<Transfer> {

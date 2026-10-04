@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import {
   Search,
   ArrowDownToLine,
+  ArrowUpFromLine,
   FileText,
   ClipboardList,
   SlidersHorizontal,
@@ -31,13 +32,14 @@ import ListTable, {
   formatDateTime,
   getStatusLabel,
 } from './InventoryListTable';
-import { CreateReqDialog, CreateStocktakeDialog } from './InventoryDialogs';
+import { CreateReqDialog, CreateStocktakeDialog, CreateTransferDialog } from './InventoryDialogs';
 
 const tabs = [
   { key: 'query', label: '库存查询', icon: Search },
   { key: 'receive', label: '收货入库', icon: ArrowDownToLine },
   { key: 'requisition', label: '要货申请', icon: FileText },
   { key: 'stocktake', label: '盘点', icon: ClipboardList },
+  { key: 'outbound', label: '调拨出库', icon: ArrowUpFromLine },
   { key: 'adjust', label: '库存调整', icon: SlidersHorizontal },
 ];
 
@@ -68,12 +70,17 @@ export default function InventoryPage() {
   const [stocktakeDialogOpen, setStocktakeDialogOpen] = useState(false);
   const [adjustments, setAdjustments] = useState<StockAdjustment[]>([]);
   const [adjustmentsLoading, setAdjustmentsLoading] = useState(false);
+  // 调拨出库（type='out'）列表
+  const [outbounds, setOutbounds] = useState<Transfer[]>([]);
+  const [outboundsLoading, setOutboundsLoading] = useState(false);
+  const [outboundDialogOpen, setOutboundDialogOpen] = useState(false);
   // 四个列表各自的加载失败原因：此前 catch 只写日志，失败时表格落到空态，
   // 与「真的没有单据」不可区分，也没有重试入口。
   const [transfersError, setTransfersError] = useState<string | null>(null);
   const [transferReqsError, setTransferReqsError] = useState<string | null>(null);
   const [stocktakesError, setStocktakesError] = useState<string | null>(null);
   const [adjustmentsError, setAdjustmentsError] = useState<string | null>(null);
+  const [outboundsError, setOutboundsError] = useState<string | null>(null);
 
   // Tab1: 搜索款式（防抖）
   useEffect(() => {
@@ -91,7 +98,7 @@ export default function InventoryPage() {
           page: 1,
           pageSize: 20,
         });
-        setSearchResults(res.items);
+        setSearchResults(res.items ?? []);
         setShowDropdown(true);
       } catch (error) {
         logger.error('search styles failed', error as Error);
@@ -133,6 +140,7 @@ export default function InventoryPage() {
     if (activeTab === 'receive') loadTransfers();
     if (activeTab === 'requisition') loadTransferRequests();
     if (activeTab === 'stocktake') loadStocktakes();
+    if (activeTab === 'outbound') loadOutbounds();
     if (activeTab === 'adjust') loadAdjustments();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
@@ -143,7 +151,7 @@ export default function InventoryPage() {
     setTransfersError(null);
     try {
       const res = await inventoryApi.getTransfers(LIST_PARAMS);
-      setTransfers(res.items);
+      setTransfers(res.items ?? []);
     } catch (e) {
       logger.error('load transfers failed', e as Error);
       setTransfersError(errMsg(e, '收货单加载失败'));
@@ -154,7 +162,7 @@ export default function InventoryPage() {
     setTransferReqsError(null);
     try {
       const res = await inventoryApi.getTransferRequests(LIST_PARAMS);
-      setTransferReqs(res.items);
+      setTransferReqs(res.items ?? []);
     } catch (e) {
       logger.error('load transfer requests failed', e as Error);
       setTransferReqsError(errMsg(e, '要货申请加载失败'));
@@ -165,7 +173,7 @@ export default function InventoryPage() {
     setStocktakesError(null);
     try {
       const res = await inventoryApi.getStocktakes(LIST_PARAMS);
-      setStocktakes(res.items);
+      setStocktakes(res.items ?? []);
     } catch (e) {
       logger.error('load stocktakes failed', e as Error);
       setStocktakesError(errMsg(e, '盘点单加载失败'));
@@ -176,11 +184,23 @@ export default function InventoryPage() {
     setAdjustmentsError(null);
     try {
       const res = await inventoryApi.getAdjustments(LIST_PARAMS);
-      setAdjustments(res.items);
+      setAdjustments(res.items ?? []);
     } catch (e) {
       logger.error('load adjustments failed', e as Error);
       setAdjustmentsError(errMsg(e, '调整单加载失败'));
     } finally { setAdjustmentsLoading(false); }
+  };
+
+  const loadOutbounds = async () => {
+    setOutboundsLoading(true);
+    setOutboundsError(null);
+    try {
+      const res = await inventoryApi.getTransfers({ ...LIST_PARAMS, type: 'out' });
+      setOutbounds(res.items ?? []);
+    } catch (e) {
+      logger.error('load outbounds failed', e as Error);
+      setOutboundsError(errMsg(e, '调拨出库单加载失败'));
+    } finally { setOutboundsLoading(false); }
   };
 
   const handleSelectStyle = (style: Style) => {
@@ -432,6 +452,47 @@ export default function InventoryPage() {
     />
   );
 
+  const renderOutboundTab = () => (
+    <ListTable<Transfer>
+      title="调拨出库单"
+      items={outbounds}
+      loading={outboundsLoading}
+      error={outboundsError}
+      onRetry={() => void loadOutbounds()}
+      emptyText="暂无调拨出库单"
+      headerKeys={[
+        { key: '单号' },
+        { key: '调出至', align: 'left' as const },
+        { key: '数量', align: 'right' as const },
+        { key: '时间' },
+        { key: '状态' },
+      ]}
+      onCreate={() => setOutboundDialogOpen(true)}
+      createLabel="新建调拨出库"
+      renderRow={(item) => (
+        <>
+          <td className="px-4 py-3 font-medium text-pos-ink">
+            {item.transferNo}
+          </td>
+          <td className="px-4 py-3 text-pos-ink-2">
+            {item.toLocation || item.fromLocation || '-'}
+          </td>
+          <td className="px-4 py-3 text-right text-pos-ink tabular-nums">
+            {item.totalQty}
+          </td>
+          <td className="px-4 py-3 text-pos-ink-3">
+            {formatDateTime(item.createdAt)}
+          </td>
+          <td className="px-4 py-3">
+            <span className={`text-xs ${getStatusClass(item.status)}`}>
+              {getStatusLabel(item.status)}
+            </span>
+          </td>
+        </>
+      )}
+    />
+  );
+
   const renderAdjustTab = () => (
     <ListTable<StockAdjustment>
       title="库存调整单"
@@ -519,6 +580,7 @@ export default function InventoryPage() {
         {activeTab === 'receive' && renderReceiveTab()}
         {activeTab === 'requisition' && renderRequisitionTab()}
         {activeTab === 'stocktake' && renderStocktakeTab()}
+        {activeTab === 'outbound' && renderOutboundTab()}
         {activeTab === 'adjust' && renderAdjustTab()}
       </div>
 
@@ -531,6 +593,11 @@ export default function InventoryPage() {
         open={stocktakeDialogOpen}
         onOpenChange={setStocktakeDialogOpen}
         onCreated={loadStocktakes}
+      />
+      <CreateTransferDialog
+        open={outboundDialogOpen}
+        onOpenChange={setOutboundDialogOpen}
+        onCreated={loadOutbounds}
       />
     </div>
   );

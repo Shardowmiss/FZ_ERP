@@ -105,7 +105,7 @@ export default function PosPage() {
     } else {
       masterData
         .getStyles({ status: 'active', page: 1, pageSize: 4 })
-        .then((res) => setHotStyles(res.items))
+        .then((res) => setHotStyles(res.items ?? []))
         .catch((e) => logger.error('get hot styles failed', e as Error));
     }
   }, [isOffline]);
@@ -560,7 +560,7 @@ export default function PosPage() {
   };
 
   const handleRestoreSuspended = (order: SuspendedOrder) => {
-    setCart(order.items);
+    setCart(order.items ?? []);
     if (order.memberId) {
       membersApi
         .getMemberById(order.memberId)
@@ -644,7 +644,7 @@ export default function PosPage() {
 
       <div className="flex-1 flex overflow-hidden">
         <PosSidebar
-          hotStyles={isOffline ? (offline.masterData.styles as unknown as Style[]).slice(0, 4) : hotStyles}
+          hotStyles={isOffline ? ((offline.masterData.styles?.slice(0, 4) ?? []) as unknown as Style[]) : hotStyles}
           member={member}
           employee={employee}
           isOffline={isOffline}

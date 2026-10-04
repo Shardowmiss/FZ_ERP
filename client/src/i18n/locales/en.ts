@@ -36,10 +36,10 @@ export const en: Record<string, string> = {
   'settings.breadcrumb': 'System / Settings',
 
   // ─── App shell ───────────────────────────────────────────────────
-  'app.title': 'Yuncai POS',
+  'app.title': 'My POS',
 
   // ─── Login ───────────────────────────────────────────────────────
-  'login.title': 'Yuncai Smart Store POS',
+  'login.title': 'My POS',
   'login.code': 'Employee ID',
   'login.pin': 'PIN',
   'login.submit': 'Sign In',

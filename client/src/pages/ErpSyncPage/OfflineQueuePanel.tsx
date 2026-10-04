@@ -93,7 +93,7 @@ export default function OfflineQueuePanel({ compact = false }: OfflineQueuePanel
         getOfflineQueue(statusFilter === 'all' ? {} : { status: statusFilter }),
         getMasterDataVersion(),
       ]);
-      setItems(res.items);
+      setItems(res.items ?? []);
       setVersion(ver);
     } catch (err) {
       logger.error('load offline queue failed', err as Error);

@@ -47,7 +47,7 @@ export default function MemberDialog({
         page: 1,
         pageSize: 20,
       });
-      setResults(res.items);
+      setResults(res.items ?? []);
     } catch (err) {
       logger.error('search members failed', err as Error);
     } finally {

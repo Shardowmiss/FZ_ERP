@@ -126,7 +126,7 @@ const Layout = () => {
               <ScanLine size={18} className="text-white" />
             </div>
             <div>
-              <div className="font-serif font-bold text-base leading-tight text-pos-ink">云裁POS</div>
+              <div className="font-serif font-bold text-base leading-tight text-pos-ink">我的POS</div>
               <div className="text-[10px] text-pos-ink-3 leading-tight">智慧门店</div>
             </div>
           </div>

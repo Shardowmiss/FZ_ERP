@@ -5,6 +5,7 @@ import type {
   TransferQuery,
   TransferRequest,
   CreateTransferRequestDto,
+  CreateTransferDto,
   Stocktake,
   StocktakeQuery,
   CreateStocktakeDto,
@@ -40,6 +41,21 @@ export async function receiveTransfer(
     return response.data;
   } catch (error) {
     logger.error('receiveTransfer failed', error as Error);
+    throw error;
+  }
+}
+
+export async function createTransfer(
+  data: CreateTransferDto,
+): Promise<Transfer> {
+  try {
+    const response = await axiosForBackend.post(
+      '/api/inventory/transfers',
+      data,
+    );
+    return response.data;
+  } catch (error) {
+    logger.error('createTransfer failed', error as Error);
     throw error;
   }
 }

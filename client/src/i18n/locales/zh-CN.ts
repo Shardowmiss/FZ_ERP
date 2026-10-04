@@ -36,10 +36,10 @@ export const zhCN = {
   'settings.breadcrumb': '系统 / 系统设置',
 
   // ─── 应用外壳 ───────────────────────────────────────────────────
-  'app.title': '云裁POS',
+  'app.title': '我的POS',
 
   // ─── 登录页 ─────────────────────────────────────────────────────
-  'login.title': '云裁智慧门店 POS',
+  'login.title': '我的POS',
   'login.code': '工号',
   'login.pin': 'PIN 码',
   'login.submit': '登 录',

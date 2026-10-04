@@ -31,6 +31,16 @@ export interface SpaTemplateOptions {
   appName: string;
   /** 前端 API base，通常 '/client/' */
   basename: string;
+  /**
+   * 浏览器页签标题。平台默认把入口渲染成「妙搭应用」，本地/私有化部署需覆盖为自有品牌名。
+   * 不传则不改写 title。
+   */
+  title?: string;
+  /**
+   * 是否移除平台水印 —— 右下角「妙搭生成」悬浮徽标（`data-custom-element="*-watermark"`）。
+   * 默认 true（自有品牌部署不应出现平台徽标）。
+   */
+  removeWatermark?: boolean;
 }
 
 const SUD_CSRF_COOKIE = 'suda-csrf-token';
@@ -53,7 +63,7 @@ export function spaTemplateMiddleware(opts: SpaTemplateOptions) {
         // 入口的 Cache-Control: no-cache 已在 main.ts 请求初期统一设置（早于任何响应写出），
         // 此处仅做占位符替换。
         const html = Buffer.isBuffer(chunk) ? chunk.toString('utf8') : (chunk as string);
-        const out = transformHtml(html, res, opts);
+        const out = transformHtml(html, res, opts, _req);
         chunk = out;
         // 重写后字节数变化，刷新 Content-Length 防止客户端按旧长度截断
         res.set('Content-Length', String(Buffer.byteLength(out, 'utf8')));
@@ -64,9 +74,9 @@ export function spaTemplateMiddleware(opts: SpaTemplateOptions) {
   };
 }
 
-function transformHtml(html: string, res: Response, opts: SpaTemplateOptions): string {
+function transformHtml(html: string, res: Response, opts: SpaTemplateOptions, req: Request): string {
   // 1) 解析/生成 csrf token，保证与前端「头/cookie 双提交」一致
-  const token = resolveCsrfToken(res);
+  const token = resolveCsrfToken(req, res);
 
   // 2) 平台上下文 JSON（覆盖 __platform__ 中的 appId/appName/basename/csrfToken）
   const platform = {
@@ -95,24 +105,114 @@ function transformHtml(html: string, res: Response, opts: SpaTemplateOptions): s
     /window\.__platform__\s*=\s*JSON\.parse\('[^']*'\)/,
     `window.__platform__ = JSON.parse('${platformJson}')`,
   );
+
+  // 5) 品牌化：页签标题 + 去除平台水印
+  //    水印由平台组件在 SPA 挂载后（甚至 Portal 到 body）异步插入，故同时给 CSS 兜底
+  //    （对后续插入的元素天然生效）与 MutationObserver 移除（应对 inline style / 层级更高者）。
+  out = applyBranding(out, opts);
   return out;
 }
 
 /**
- * 从响应已下发的 `Set-Cookie: suda-csrf-token` 取令牌；若平台未下发（极少见），
- * 本地生成一个并随响应下发，确保 HTML 中的 window.csrfToken 与 cookie 完全一致。
+ * 品牌化改写：
+ * - 覆盖 `<title>`（平台默认渲染为「妙搭应用」），并用观察者钉死 SPA 运行期的动态改写；
+ * - 隐藏并移除右下角「妙搭生成」水印（`data-custom-element="*-watermark[-mobile]"`）。
  */
-function resolveCsrfToken(res: Response): string {
-  const setCookie = res.getHeader('Set-Cookie');
-  const cookies = Array.isArray(setCookie) ? setCookie : setCookie ? [setCookie] : [];
-  for (const c of cookies) {
-    if (typeof c === 'string') {
-      const m = c.match(new RegExp(SUD_CSRF_COOKIE + '=([^;]+)'));
-      if (m) return decodeURIComponent(m[1]);
+function applyBranding(html: string, opts: SpaTemplateOptions): string {
+  const wantTitle = !!opts.title;
+  const wantNoWatermark = opts.removeWatermark !== false;
+  if (!wantTitle && !wantNoWatermark) return html;
+
+  const parts: string[] = [];
+  if (wantNoWatermark) {
+    parts.push(
+      `<style data-spa-branding="1">` +
+        `[data-custom-element$="-watermark"],[data-custom-element$="-watermark-mobile"]` +
+        `{display:none!important;visibility:hidden!important;pointer-events:none!important}` +
+        `</style>`,
+    );
+  }
+  if (wantTitle || wantNoWatermark) {
+    const titleLiteral = JSON.stringify(opts.title ?? '');
+    parts.push(
+      `<script data-spa-branding="1">` +
+        `(function(){` +
+        (wantTitle
+          ? `var T=${titleLiteral};` +
+            `function setTitle(){if(document.title!==T){document.title=T;}}` +
+            `setTitle();`
+          : '') +
+        (wantNoWatermark
+          ? `var SEL='[data-custom-element$="-watermark"],[data-custom-element$="-watermark-mobile"]';` +
+            `function kill(){var n=document.querySelectorAll(SEL);for(var i=0;i<n.length;i++){var e=n[i];if(e.parentNode){e.parentNode.removeChild(e);}}}`
+          : '') +
+        `var mo=window.MutationObserver;if(mo){` +
+        `var cb=function(){` +
+        (wantTitle ? `setTitle();` : '') +
+        (wantNoWatermark ? `kill();` : '') +
+        `};` +
+        `new mo(cb).observe(document.documentElement,{childList:true,subtree:true,characterData:true});` +
+        `document.addEventListener('DOMContentLoaded',cb);}` +
+        `})();` +
+        `</script>`,
+    );
+  }
+
+  let out = html;
+  if (wantTitle) {
+    if (/<title>[\s\S]*?<\/title>/i.test(out)) {
+      out = out.replace(/<title>[\s\S]*?<\/title>/i, `<title>${escapeHtml(opts.title as string)}</title>`);
+    } else {
+      // 无 title 标签时补一个，保证页签不落回默认
+      out = out.replace(/<head[^>]*>/i, (m) => `${m}<title>${escapeHtml(opts.title as string)}</title>`);
     }
   }
+  const inject = parts.join('');
+  if (/<\/head>/i.test(out)) {
+    out = out.replace(/<\/head>/i, `${inject}</head>`);
+  } else {
+    out = inject + out;
+  }
+  return out;
+}
+
+/** 标题里的 & < > 需转义，避免破坏 HTML 结构 */
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+/**
+ * 解析/生成 csrf token，保证与前端「头/cookie 双提交」一致。
+ *
+ * - https（生产/平台网关）：平台下发的 `suda-csrf-token` 带 `Secure`，浏览器会在
+ *   https 下回传，直接用平台令牌即可，本函数无副作用。
+ * - http（本地裸连 node）：`Secure` cookie 浏览器在 http 下**不会回传**，导致
+ *   「头/cookie 双提交」永远不匹配 → 全接口 403 "csrf token not found in cookie"。
+ *   故本地强制自签一张**非 Secure** 的 `suda-csrf-token` cookie（HttpOnly/SameSite=Lax），
+ *   并以其值注入 `window.csrfToken`，使前端可正常补发 `x-suda-csrf-token` 头完成双提交。
+ */
+function resolveCsrfToken(req: Request, res: Response): string {
+  const setCookie = res.getHeader('Set-Cookie');
+  const cookies = Array.isArray(setCookie) ? setCookie : setCookie ? [setCookie] : [];
+  const isHttps =
+    req.secure || String(req.headers['x-forwarded-proto'] || '').toLowerCase().startsWith('https');
+
+  if (isHttps) {
+    // 生产/平台：优先用平台下发的令牌（Secure cookie 可正常回传）
+    for (const c of cookies) {
+      if (typeof c === 'string') {
+        const m = c.match(new RegExp(SUD_CSRF_COOKIE + '=([^;]+)'));
+        if (m) return decodeURIComponent(m[1]);
+      }
+    }
+  }
+
+  // 本地 http：自签非 Secure 本地令牌，覆盖平台下发的 Secure 令牌
   const token = 'local-csrf-' + randomBytes(12).toString('hex');
-  const newCookie = `${SUD_CSRF_COOKIE}=${token}; Path=/; HttpOnly; SameSite=Lax`;
-  res.setHeader('Set-Cookie', cookies.length ? [...cookies, newCookie] : newCookie);
+  const localCookie = `${SUD_CSRF_COOKIE}=${token}; Path=/; HttpOnly; SameSite=Lax`;
+  const others = cookies.filter(
+    (c) => typeof c === 'string' && !c.startsWith(SUD_CSRF_COOKIE),
+  );
+  res.setHeader('Set-Cookie', others.length ? [...others, localCookie] : localCookie);
   return token;
 }

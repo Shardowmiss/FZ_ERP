@@ -22,6 +22,7 @@ import type {
 import {
   CreateTransferRequestDto,
   CreateStocktakeDto,
+  CreateTransferDto,
 } from '@server/common/dto';
 
 @NeedLogin()
@@ -51,6 +52,16 @@ export class InventoryController {
       type,
       keyword,
     });
+  }
+
+  @Roles('admin', 'manager')
+  @Post('transfers')
+  async createTransfer(
+    @Body() dto: CreateTransferDto,
+    @Req() req: Request,
+  ): Promise<Transfer> {
+    // P0-1：门店归属由服务端权威推导（忽略 Body.storeId）；店长/管理员方可发起调拨出库
+    return this.inventoryService.createTransfer(dto, principalFromReq(req));
   }
 
   @Get('transfers/:id')
