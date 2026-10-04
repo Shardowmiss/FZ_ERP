@@ -133,7 +133,7 @@ const SupplierPage: React.FC = () => {
   return (
     <div className="bg-white rounded-lg shadow-sm p-5">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold">供应商档案</h2>
+        <h2 className="text-xl font-semibold">供应商管理</h2>
         <div className="flex items-center gap-2">
           <button
             className="px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded hover:bg-gray-50 transition-colors flex items-center gap-1"
