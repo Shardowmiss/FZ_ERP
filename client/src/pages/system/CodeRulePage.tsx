@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Plus, Trash2, ChevronUp, ChevronDown, Settings } from 'lucide-react';
 import { Button } from '@client/src/components/ui/button';
@@ -7,7 +6,6 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@client/src/components/ui/select';
 import { Switch } from '@client/src/components/ui/switch';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@client/src/components/ui/tabs';
 import { Card } from '@client/src/components/ui/card';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -16,8 +14,7 @@ import { systemApi } from '@client/src/api';
 import { baseApi } from '@client/src/api/base';
 import { errMsg } from '@/utils/errMsg';
 import {
-  SegmentConfig, MappingTable, SEGMENT_TYPE_OPTIONS, SEGMENT_NAMES,
-  ReadOnlyMapping, ReadOnlySubCategoryMapping, BrandMappingTable,
+  SegmentConfig, SEGMENT_NAMES, SEGMENT_TYPE_OPTIONS,
 } from './CodeRuleComponents';
 import type {
   CodeRule,
@@ -279,24 +276,6 @@ const CodeRulePage: React.FC = () => {
     }
   };
 
-  const updateMappingItem = (key: keyof CodeMappingConfig, index: number, patch: Record<string, string>) => {
-    const arr = [...(mapping[key] as unknown as Record<string, string>[])];
-    arr[index] = { ...arr[index], ...patch };
-    setMapping({ ...mapping, [key]: arr as never });
-  };
-
-  const addMappingItem = (key: keyof CodeMappingConfig) => {
-    const empty: Record<string, string> = { name: '', code: '' };
-    if (key === 'subCategories') empty.category = '';
-    setMapping({ ...mapping, [key]: [...(mapping[key] as unknown[]), empty as never] });
-  };
-
-  const removeMappingItem = (key: keyof CodeMappingConfig, index: number) => {
-    const arr = [...(mapping[key] as unknown[])];
-    arr.splice(index, 1);
-    setMapping({ ...mapping, [key]: arr as never });
-  };
-
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between flex-wrap gap-3">
@@ -434,93 +413,6 @@ const CodeRulePage: React.FC = () => {
            )}
         </Card>
       </div>
-
-      {/* 底部：映射配置 */}
-      <Card className="p-5">
-        <h2 className="text-base font-medium text-gray-800 mb-4">编码映射配置</h2>
-        <Tabs defaultValue="season">
-          <TabsList>
-            <TabsTrigger value="season">季节编码</TabsTrigger>
-            <TabsTrigger value="category">品类编码</TabsTrigger>
-            <TabsTrigger value="subCategory">小类编码</TabsTrigger>
-             <TabsTrigger value="fit">版型编码</TabsTrigger>
-             <TabsTrigger value="brand">品牌编码</TabsTrigger>
-             <TabsTrigger value="color">颜色编码</TabsTrigger>
-            <TabsTrigger value="size">尺码编码</TabsTrigger>
-            <TabsTrigger value="dynamic">动态属性编码</TabsTrigger>
-          </TabsList>
-          <TabsContent value="season">
-            <div className="text-sm text-gray-500 mb-3">
-              季节编码已统一从「款号属性维护」读取，请到 <Link to="/base/style-attribute" className="text-primary hover:underline">基础档案→款号属性维护</Link> 页面管理
-            </div>
-            <ReadOnlyMapping columns={['名称', '代码']} data={mapping.seasons} />
-          </TabsContent>
-          <TabsContent value="category">
-            <div className="text-sm text-gray-500 mb-3">
-              品类编码已统一从「款号属性维护」读取，请到 <Link to="/base/style-attribute" className="text-primary hover:underline">基础档案→款号属性维护</Link> 页面管理
-            </div>
-            <ReadOnlyMapping columns={['名称', '代码']} data={mapping.categories} />
-          </TabsContent>
-          <TabsContent value="subCategory">
-            <div className="text-sm text-gray-500 mb-3">
-              小类编码已统一从「款号属性维护」读取，请到 <Link to="/base/style-attribute" className="text-primary hover:underline">基础档案→款号属性维护</Link> 页面管理
-            </div>
-            <ReadOnlySubCategoryMapping data={mapping.subCategories} />
-          </TabsContent>
-           <TabsContent value="fit">
-             <div className="text-sm text-gray-500 mb-3">
-               版型编码已统一从「款号属性维护」读取，请到 <Link to="/base/style-attribute" className="text-primary hover:underline">基础档案→款号属性维护</Link> 页面管理
-             </div>
-             <ReadOnlyMapping columns={['名称', '代码']} data={mapping.fits} />
-           </TabsContent>
-           <TabsContent value="brand">
-             <div className="text-sm text-gray-500 mb-3">
-               品牌编码已统一从「款号属性维护」读取，请到 <Link to="/base/style-attribute" className="text-primary hover:underline">基础档案→款号属性维护→品牌</Link> 页面管理
-             </div>
-             <BrandMappingTable data={brandOptions.length > 0 ? brandOptions : mapping.brands} />
-           </TabsContent>
-          <TabsContent value="color">
-            <MappingTable columns={['名称', '代码']} data={mapping.colors}
-              onAdd={() => addMappingItem('colors')}
-              onRemove={(i) => removeMappingItem('colors', i)}
-              onUpdate={(i, p) => updateMappingItem('colors', i, p as Record<string, string>)} />
-          </TabsContent>
-          <TabsContent value="size">
-            <MappingTable columns={['名称', '代码']} data={mapping.sizes}
-              onAdd={() => addMappingItem('sizes')}
-              onRemove={(i) => removeMappingItem('sizes', i)}
-              onUpdate={(i, p) => updateMappingItem('sizes', i, p as Record<string, string>)} />
-          </TabsContent>
-          {/* 四大改造 A：动态属性编码 —— 数据来自「款号属性维护」，
-              新增一个动态属性时此处自动出现对应分组，只读展示 */}
-          <TabsContent value="dynamic">
-            <div className="text-sm text-gray-500 mb-3">
-              动态属性编码已统一从「款号属性维护」读取，新增一个款号属性即在此自动出现对应分组。
-              请到 <Link to="/base/style-attribute" className="text-primary hover:underline">基础档案→款号属性维护</Link> 页面管理
-            </div>
-            {Object.keys(mapping.attrValues || {}).length === 0 ? (
-              <div className="text-sm text-gray-400 py-6 text-center">暂无动态属性编码</div>
-            ) : (
-              <div className="space-y-5">
-                {Object.entries(mapping.attrValues || {}).map(([code, values]) => {
-                  const def = attrDefs.find(
-                    (d: StyleAttrDef) => (d.attrCode || '').toLowerCase() === code.toLowerCase(),
-                  );
-                  return (
-                    <div key={code}>
-                      <div className="text-sm font-medium text-gray-700 mb-2">
-                        {def?.attrName || code}
-                        <span className="text-xs text-gray-400 ml-2">{code}</span>
-                      </div>
-                      <ReadOnlyMapping columns={['名称', '代码']} data={values as never} />
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
-      </Card>
     </div>
   );
 };
