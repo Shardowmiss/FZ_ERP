@@ -213,6 +213,9 @@ export const memberLevel = pgTable("member_level", {
   sortOrder: integer("sort_order").notNull().default(0),
   status: varchar("status", { length: 20 }).notNull().default('active'),
   remark: text("remark"),
+  // 会员等级升级设定：达到本等级后升级到的目标等级 code。
+  // 业务链：会员卡(normal)→银卡(silver)→金卡(gold)→钻石卡(diamond)；空表示顶级不再升级。
+  upgradeTo: varchar("upgrade_to", { length: 30 }),
   // System field: Creation time (auto-filled, do not modify)
   createdAt: customTimestamptz("_created_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
   // System field: Creator (auto-filled, do not modify)
@@ -2362,6 +2365,10 @@ export const inventoryStock = pgTable("inventory_stock", {
   warehouseName: varchar("warehouse_name", { length: 200 }).notNull(),
   quantity: numeric("quantity").notNull().default('0'),
   inTransitQty: numeric("in_transit_qty").notNull().default('0'),
+  // 库存成本价（盘盈/盘亏金额计算基准，由盘点记账回填；历史默认 0）
+  unitPrice: numeric("unit_price").notNull().default('0'),
+  // 库存金额 = quantity * unitPrice（盘点记账后维护，其余出入库暂不维护）
+  amount: numeric("amount").notNull().default('0'),
   // System field: Creation time (auto-filled, do not modify)
   createdAt: customTimestamptz("_created_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
   // System field: Creator (auto-filled, do not modify)
@@ -2407,6 +2414,8 @@ export const inventoryFlow = pgTable("inventory_flow", {
   unitPrice: numeric("unit_price"),
   operator: varchar("operator", { length: 100 }),
   remark: text("remark"),
+  // 单据业务日期（独立于 _created_at 的过账日期）：出库单筛"单据日期"，入库单筛"单据日期"
+  bizDate: date("biz_date").default(sql`CURRENT_DATE`),
   // System field: Creation time (auto-filled, do not modify)
   createdAt: customTimestamptz("_created_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
   // System field: Creator (auto-filled, do not modify)

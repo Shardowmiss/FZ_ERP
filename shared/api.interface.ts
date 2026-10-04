@@ -979,6 +979,8 @@ export interface MemberLevel {
   sortOrder: number;
   status: string;
   remark?: string;
+  /** 达到本等级后升级到的目标等级 code（normal→silver→gold→diamond；空=顶级不再升级） */
+  upgradeTo?: string;
   createdAt: string;
 }
 

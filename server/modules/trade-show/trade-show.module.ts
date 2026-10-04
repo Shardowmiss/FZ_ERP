@@ -15,8 +15,11 @@ import { AllocationService } from './allocation.service';
   controllers: [
     AllocationController,
     PreOrderController,
-    TradeShowController,
+    // 必须先注册 ThemeController：其前缀 api/trade-show/theme 与 TradeShowController
+    // 的 @Get(':id') 在 GET /api/trade-show/theme 上冲突（id='theme'）。Express 按注册顺序
+    // 匹配，ThemeController 在前才能命中其 @Get()（精确路由），否则被 :id 抢先 → 404。
     ThemeController,
+    TradeShowController,
   ],
   providers: [
     TradeShowService,

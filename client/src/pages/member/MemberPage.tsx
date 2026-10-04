@@ -26,6 +26,13 @@ const MemberPage: React.FC = () => {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [keyword, setKeyword] = useState('');
+  // 会员运营增强筛选：手机号 / 等级 / 累计消费范围 / 最后消费日期区间
+  const [phone, setPhone] = useState('');
+  const [filterLevel, setFilterLevel] = useState('');
+  const [totalSpentStart, setTotalSpentStart] = useState('');
+  const [totalSpentEnd, setTotalSpentEnd] = useState('');
+  const [lastPurchaseDateStart, setLastPurchaseDateStart] = useState('');
+  const [lastPurchaseDateEnd, setLastPurchaseDateEnd] = useState('');
   const [tags, setTags] = useState<MemberTag[]>([]);
   const [profile, setProfile] = useState<MemberProfile | null>(null);
   const [points, setPoints] = useState<MemberPoint[]>([]);
@@ -47,7 +54,17 @@ const MemberPage: React.FC = () => {
 
   const load = async () => {
     try {
-      const r = await memberApi.list(page, 20, keyword || undefined);
+      const r = await memberApi.list({
+        page,
+        pageSize: 20,
+        keyword: keyword || undefined,
+        level: filterLevel || undefined,
+        phone: phone || undefined,
+        totalSpentStart: totalSpentStart ? Number(totalSpentStart) : undefined,
+        totalSpentEnd: totalSpentEnd ? Number(totalSpentEnd) : undefined,
+        lastPurchaseDateStart: lastPurchaseDateStart || undefined,
+        lastPurchaseDateEnd: lastPurchaseDateEnd || undefined,
+      });
       setList(r?.list ?? []); setTotal(r?.total ?? 0);
       // 单页选择：翻页/搜索后清空勾选，避免跨页误合并（防误操作）
       setSelectedIds([]);
@@ -57,7 +74,17 @@ const MemberPage: React.FC = () => {
     try { setTags(await memberApi.tags()); } catch { /* noop */ }
   };
 
-  useEffect(() => { load(); }, [page, keyword]);
+  const resetFilters = () => {
+    setKeyword(''); setPhone(''); setFilterLevel('');
+    setTotalSpentStart(''); setTotalSpentEnd('');
+    setLastPurchaseDateStart(''); setLastPurchaseDateEnd('');
+    setPage(1);
+  };
+
+  useEffect(() => { load(); }, [
+    page, keyword, filterLevel, phone,
+    totalSpentStart, totalSpentEnd, lastPurchaseDateStart, lastPurchaseDateEnd,
+  ]);
   useEffect(() => { loadTags(); }, []);
 
   const saveMember = async () => {
@@ -190,7 +217,7 @@ const MemberPage: React.FC = () => {
                 合并重复会员（{selectedIds.length}）
               </button>
             )}
-            <button onClick={() => { setForm({ name: '', phone: '', level: 'normal' }); setShowForm((v) => !v); }} className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600">
+            <button onClick={() => { setForm({ name: '', phone: '', level: 'normal' }); setShowForm((v) => !v); }} className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-primary">
               {showForm ? '收起' : '新增会员'}
             </button>
           </div>
@@ -207,8 +234,18 @@ const MemberPage: React.FC = () => {
           </div>
         )}
 
-        <div className="flex items-center gap-3 mb-3">
-          <input placeholder="搜索会员名称" value={keyword} onChange={(e) => { setKeyword(e.target.value); setPage(1); }} className="px-3 py-2 border border-gray-300 rounded text-sm w-48" />
+        <div className="flex items-center gap-3 mb-3 flex-wrap">
+          <input placeholder="搜索会员名称" value={keyword} onChange={(e) => { setKeyword(e.target.value); setPage(1); }} className="px-3 py-2 border border-gray-300 rounded text-sm w-44" />
+          <input placeholder="手机号" value={phone} onChange={(e) => { setPhone(e.target.value); setPage(1); }} className="px-3 py-2 border border-gray-300 rounded text-sm w-36" />
+          <select value={filterLevel} onChange={(e) => { setFilterLevel(e.target.value); setPage(1); }} className="px-3 py-2 border border-gray-300 rounded text-sm">
+            <option value="">全部等级</option>
+            {Object.entries(LEVEL_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+          </select>
+          <input type="number" placeholder="累计消费≥" value={totalSpentStart} onChange={(e) => { setTotalSpentStart(e.target.value); setPage(1); }} className="px-3 py-2 border border-gray-300 rounded text-sm w-28" />
+          <input type="number" placeholder="累计消费≤" value={totalSpentEnd} onChange={(e) => { setTotalSpentEnd(e.target.value); setPage(1); }} className="px-3 py-2 border border-gray-300 rounded text-sm w-28" />
+          <input type="date" value={lastPurchaseDateStart} onChange={(e) => { setLastPurchaseDateStart(e.target.value); setPage(1); }} className="px-3 py-2 border border-gray-300 rounded text-sm" title="最后一次消费日期起" />
+          <input type="date" value={lastPurchaseDateEnd} onChange={(e) => { setLastPurchaseDateEnd(e.target.value); setPage(1); }} className="px-3 py-2 border border-gray-300 rounded text-sm" title="最后一次消费日期止" />
+          <button onClick={resetFilters} className="px-3 py-2 border border-gray-300 rounded text-sm text-gray-500 hover:bg-gray-50">重置</button>
           {canMerge && selectedIds.length >= 2 && (
             <span className="text-xs text-amber-700">
               已选 {selectedIds.length} 个会员，点击「合并重复会员」选择保留方并完成合并
@@ -234,12 +271,13 @@ const MemberPage: React.FC = () => {
               <th className="px-3 py-2 text-right">累计消费</th>
               <th className="px-3 py-2 text-right">订单数</th>
               <th className="px-3 py-2 text-right">积分</th>
+              <th className="px-3 py-2 text-left">最后消费</th>
               <th className="px-3 py-2 text-center">操作</th>
             </tr>
           </thead>
           <tbody>
             {list.length === 0 ? (
-              <tr><td colSpan={8} className="py-8 text-center text-gray-400">暂无会员</td></tr>
+              <tr><td colSpan={9} className="py-8 text-center text-gray-400">暂无会员</td></tr>
             ) : (
               list.map((m) => (
                 <tr key={m.id} className="border-b border-gray-100 hover:bg-gray-50">
@@ -258,6 +296,7 @@ const MemberPage: React.FC = () => {
                   <td className="px-3 py-2 text-right text-gray-700">¥{Number(m.totalSpent ?? 0).toFixed(2)}</td>
                   <td className="px-3 py-2 text-right text-gray-600">{m.orderCount}</td>
                   <td className="px-3 py-2 text-right text-gray-600">{m.points}</td>
+                  <td className="px-3 py-2 text-gray-600">{m.lastPurchaseDate || '—'}</td>
                   <td className="px-3 py-2 text-center"><button onClick={() => openProfile(m)} className="text-primary text-xs">画像</button></td>
                 </tr>
               ))
@@ -299,7 +338,7 @@ const MemberPage: React.FC = () => {
           <div className="flex gap-3 flex-wrap items-end border-t border-gray-100 pt-3">
             <input type="number" placeholder="积分变动" value={pointDelta} onChange={(e) => setPointDelta(Number(e.target.value))} className="px-3 py-2 border border-gray-300 rounded text-sm w-28" />
             <input placeholder="备注" value={pointRemark} onChange={(e) => setPointRemark(e.target.value)} className="px-3 py-2 border border-gray-300 rounded text-sm w-40" />
-            <button onClick={adjustPoints} className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600">调整积分</button>
+            <button onClick={adjustPoints} className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-primary">调整积分</button>
           </div>
         </div>
       )}

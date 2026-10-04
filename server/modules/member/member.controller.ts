@@ -19,12 +19,24 @@ export class MemberController {
     @Query('pageSize') pageSize = '20',
     @Query('keyword') keyword?: string,
     @Query('level') level?: string,
+    @Query('phone') phone?: string,
+    @Query('totalSpentStart') totalSpentStart?: string,
+    @Query('totalSpentEnd') totalSpentEnd?: string,
+    @Query('lastPurchaseDateStart') lastPurchaseDateStart?: string,
+    @Query('lastPurchaseDateEnd') lastPurchaseDateEnd?: string,
   ) {
+    const num = (v?: string): number | undefined =>
+      v === undefined || v === '' ? undefined : Number(v);
     return this.memberService.list({
       page: parseInt(page, 10),
       pageSize: parseInt(pageSize, 10),
       keyword,
       level,
+      phone,
+      totalSpentStart: num(totalSpentStart),
+      totalSpentEnd: num(totalSpentEnd),
+      lastPurchaseDateStart,
+      lastPurchaseDateEnd,
     });
   }
 

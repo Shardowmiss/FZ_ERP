@@ -1,6 +1,6 @@
 import { Inject, Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { DRIZZLE_DATABASE, type PostgresJsDatabase } from '@lark-apaas/fullstack-nestjs-core';
-import { eq, sql, desc, and, like, isNull } from 'drizzle-orm';
+import { eq, sql, desc, and, like, isNull, gte, lte } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 import {
   member,
@@ -49,6 +49,16 @@ export class MemberService {
     pageSize?: number;
     keyword?: string;
     level?: string;
+    /** 手机号精确匹配：走可搜索加密 phone_hmac（不可明文 like） */
+    phone?: string;
+    /** 累计消费范围（元，单位与 total_spent 一致）：大于等于 */
+    totalSpentStart?: number;
+    /** 累计消费范围（元）：小于等于 */
+    totalSpentEnd?: number;
+    /** 最后一次消费日期区间（YYYY-MM-DD）：大于等于 */
+    lastPurchaseDateStart?: string;
+    /** 最后一次消费日期区间（YYYY-MM-DD）：小于等于 */
+    lastPurchaseDateEnd?: string;
   }): Promise<{ list: Member[]; total: number }> {
     const page = Math.max(1, params.page ?? 1);
     const pageSize = Math.min(200, Math.max(1, params.pageSize ?? 20));
@@ -56,6 +66,18 @@ export class MemberService {
     if (params.keyword)
       conditions.push(like(member.name, `%${params.keyword}%`));
     if (params.level) conditions.push(eq(member.level, params.level));
+    // 手机号按确定性 HMAC 指纹精确匹配（密文不可 like）
+    if (params.phone) conditions.push(eq(member.phoneHmac, hmacField(params.phone)));
+    // 累计消费范围（numeric 列，用 gte/lte 半开闭区间）
+    if (params.totalSpentStart !== undefined && params.totalSpentStart !== null)
+      conditions.push(gte(member.totalSpent, String(params.totalSpentStart)));
+    if (params.totalSpentEnd !== undefined && params.totalSpentEnd !== null)
+      conditions.push(lte(member.totalSpent, String(params.totalSpentEnd)));
+    // 最后一次消费日期范围（date 列）
+    if (params.lastPurchaseDateStart)
+      conditions.push(gte(member.lastPurchaseDate, params.lastPurchaseDateStart));
+    if (params.lastPurchaseDateEnd)
+      conditions.push(lte(member.lastPurchaseDate, params.lastPurchaseDateEnd));
     const where = conditions.length ? and(...conditions) : undefined;
 
     const [rows, countRows] = await Promise.all([

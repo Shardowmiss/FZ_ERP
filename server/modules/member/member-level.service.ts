@@ -15,6 +15,8 @@ interface CreateMemberLevelDto {
   sortOrder?: number;
   status?: string;
   remark?: string;
+  /** 达到本等级后升级到的目标等级 code（会员卡→银卡→金卡→钻石卡；空=顶级） */
+  upgradeTo?: string;
 }
 
 interface UpdateMemberLevelDto {
@@ -26,6 +28,8 @@ interface UpdateMemberLevelDto {
   sortOrder?: number;
   status?: string;
   remark?: string;
+  /** 达到本等级后升级到的目标等级 code（会员卡→银卡→金卡→钻石卡；空=顶级） */
+  upgradeTo?: string;
 }
 
 interface ListQuery {
@@ -54,6 +58,7 @@ export class MemberLevelService {
       sortOrder: row.sortOrder ?? 0,
       status: row.status,
       remark: row.remark ?? undefined,
+      upgradeTo: row.upgradeTo ?? undefined,
       createdAt: row.createdAt.toISOString(),
     };
   }
@@ -115,6 +120,7 @@ export class MemberLevelService {
         sortOrder: dto.sortOrder ?? 0,
         status: dto.status ?? 'active',
         remark: dto.remark ?? null,
+        upgradeTo: dto.upgradeTo ?? null,
       })
       .returning();
 
@@ -138,6 +144,7 @@ export class MemberLevelService {
     if (dto.sortOrder !== undefined) patch.sortOrder = dto.sortOrder;
     if (dto.status !== undefined) patch.status = dto.status;
     if (dto.remark !== undefined) patch.remark = dto.remark;
+    if (dto.upgradeTo !== undefined) patch.upgradeTo = dto.upgradeTo;
 
     if (Object.keys(patch).length === 0) throw new BadRequestException('未提供可更新字段');
     patch.updatedAt = new Date();

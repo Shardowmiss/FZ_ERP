@@ -11,6 +11,13 @@ const CONDITION_LABEL: Record<string, string> = {
   monthly: '月度消费',
   quarterly: '季度消费',
 };
+// 升级链：会员卡(normal)→银卡(silver)→金卡(gold)→钻石卡(diamond)；空=顶级不再升级
+const UPGRADE_CHAIN: Record<string, string> = {
+  normal: '会员卡',
+  silver: '银卡',
+  gold: '金卡',
+  diamond: '钻石卡',
+};
 
 const MemberLevelPage: React.FC = () => {
   const { hasPermission } = useAuth();
@@ -31,6 +38,7 @@ const MemberLevelPage: React.FC = () => {
     discountOnPromo: false,
     sortOrder: 0,
     status: 'active',
+    upgradeTo: '',
   });
 
   const load = useCallback(async () => {
@@ -58,6 +66,7 @@ const MemberLevelPage: React.FC = () => {
       discountOnPromo: false,
       sortOrder: 0,
       status: 'active',
+      upgradeTo: '',
     });
     setShowForm(true);
   };
@@ -74,6 +83,7 @@ const MemberLevelPage: React.FC = () => {
       sortOrder: row.sortOrder,
       status: row.status,
       remark: row.remark,
+      upgradeTo: row.upgradeTo ?? '',
     });
     setShowForm(true);
   };
@@ -111,6 +121,14 @@ const MemberLevelPage: React.FC = () => {
   };
 
   const totalPages = Math.max(1, Math.ceil(total / 20));
+  // 升级后目标等级的可读名称（取当前列表中的等级名；缺失时回退业务链中文）
+  const levelNameMap: Record<string, string> = Object.fromEntries(
+    list.map((l) => [l.code, l.name]),
+  );
+  const upgradeLabel = (code?: string) =>
+    !code ? '顶级（不升级）' : (levelNameMap[code] ?? UPGRADE_CHAIN[code] ?? code);
+  // 升级后下拉：排除自身，避免自引用形成死环
+  const upgradeOptions = list.filter((l) => l.code !== form.code);
 
   return (
     <div className="p-4">
@@ -119,7 +137,7 @@ const MemberLevelPage: React.FC = () => {
         {canEdit && (
           <button
             onClick={openCreate}
-            className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600"
+            className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-primary"
           >
             新增等级
           </button>
@@ -153,6 +171,7 @@ const MemberLevelPage: React.FC = () => {
             <th className="px-3 py-2">排序</th>
             <th className="px-3 py-2">状态</th>
             <th className="px-3 py-2">备注</th>
+            <th className="px-3 py-2">升级后</th>
             {canEdit && <th className="px-3 py-2">操作</th>}
           </tr>
         </thead>
@@ -178,9 +197,10 @@ const MemberLevelPage: React.FC = () => {
                 </span>
               </td>
               <td className="px-3 py-2 text-gray-500 max-w-xs truncate">{r.remark ?? '-'}</td>
+              <td className="px-3 py-2 text-gray-600">{upgradeLabel(r.upgradeTo)}</td>
               {canEdit && (
                 <td className="px-3 py-2 whitespace-nowrap">
-                  <button onClick={() => openEdit(r)} className="text-blue-600 hover:underline mr-3">编辑</button>
+                  <button onClick={() => openEdit(r)} className="text-primary hover:underline mr-3">编辑</button>
                   <button onClick={() => remove(r.id)} className="text-red-600 hover:underline">删除</button>
                 </td>
               )}
@@ -188,7 +208,7 @@ const MemberLevelPage: React.FC = () => {
           ))}
           {list.length === 0 && (
             <tr>
-              <td colSpan={canEdit ? 10 : 9} className="px-3 py-6 text-center text-gray-400">
+              <td colSpan={canEdit ? 11 : 10} className="px-3 py-6 text-center text-gray-400">
                 暂无等级数据
               </td>
             </tr>
@@ -304,6 +324,19 @@ const MemberLevelPage: React.FC = () => {
                     <option value="inactive">停用</option>
                   </select>
                 </div>
+                <div className="flex-1">
+                  <label className="block text-gray-500 mb-1">升级后等级</label>
+                  <select
+                    value={form.upgradeTo ?? ''}
+                    onChange={(e) => setForm({ ...form, upgradeTo: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded"
+                  >
+                    <option value="">顶级（不升级）</option>
+                    {upgradeOptions.map((l) => (
+                      <option key={l.code} value={l.code}>{l.name}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
               <div>
                 <label className="block text-gray-500 mb-1">备注</label>
@@ -324,7 +357,7 @@ const MemberLevelPage: React.FC = () => {
               </button>
               <button
                 onClick={submit}
-                className="px-4 py-2 bg-primary text-white rounded hover:bg-blue-600"
+                className="px-4 py-2 bg-primary text-white rounded hover:bg-primary"
               >
                 保存
               </button>

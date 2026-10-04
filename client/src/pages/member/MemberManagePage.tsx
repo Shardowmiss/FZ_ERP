@@ -35,6 +35,7 @@ const MemberManagePage: React.FC = () => {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [keyword, setKeyword] = useState('');
+  const [phone, setPhone] = useState('');
   const [levelOptions, setLevelOptions] = useState<{ code: string; name: string }[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -47,13 +48,18 @@ const MemberManagePage: React.FC = () => {
 
   const load = useCallback(async () => {
     try {
-      const res = await memberApi.list(page, 20, keyword || undefined);
+      const res = await memberApi.list({
+        page,
+        pageSize: 20,
+        keyword: keyword || undefined,
+        phone: phone || undefined,
+      });
       setList(res.list ?? []);
       setTotal(res.total ?? 0);
     } catch (e) {
       toast.error(errMsg(e));
     }
-  }, [page, keyword]);
+  }, [page, keyword, phone]);
 
   useEffect(() => {
     void load();
@@ -161,7 +167,7 @@ const MemberManagePage: React.FC = () => {
         {canEdit && (
           <button
             onClick={openCreate}
-            className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600"
+            className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-primary"
           >
             新增会员
           </button>
@@ -174,6 +180,12 @@ const MemberManagePage: React.FC = () => {
           onChange={(e) => setKeyword(e.target.value)}
           placeholder="搜索姓名"
           className="px-3 py-2 border border-gray-300 rounded text-sm"
+        />
+        <input
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          placeholder="手机号"
+          className="px-3 py-2 border border-gray-300 rounded text-sm w-40"
         />
         <button
           onClick={() => { setPage(1); void load(); }}
@@ -222,9 +234,9 @@ const MemberManagePage: React.FC = () => {
               </td>
               {canEdit && (
                 <td className="px-3 py-2 whitespace-nowrap">
-                  <button onClick={() => openEdit(r)} className="text-blue-600 hover:underline mr-2">编辑</button>
-                  <button onClick={() => adjustPoints(r)} className="text-blue-600 hover:underline mr-2">积分</button>
-                  <button onClick={() => adjustStored(r)} className="text-blue-600 hover:underline mr-2">储值</button>
+                  <button onClick={() => openEdit(r)} className="text-primary hover:underline mr-2">编辑</button>
+                  <button onClick={() => adjustPoints(r)} className="text-primary hover:underline mr-2">积分</button>
+                  <button onClick={() => adjustStored(r)} className="text-primary hover:underline mr-2">储值</button>
                   <button onClick={() => remove(r.id)} className="text-red-600 hover:underline">删除</button>
                 </td>
               )}
@@ -365,7 +377,7 @@ const MemberManagePage: React.FC = () => {
               </button>
               <button
                 onClick={submit}
-                className="px-4 py-2 bg-primary text-white rounded hover:bg-blue-600"
+                className="px-4 py-2 bg-primary text-white rounded hover:bg-primary"
               >
                 保存
               </button>

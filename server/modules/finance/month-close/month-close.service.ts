@@ -139,9 +139,7 @@ export class MonthCloseService {
       .limit(1);
 
     if (rows.length > 0 && rows[0].status === 'closed') {
-      throw new BadRequestException(
-        `【${month}】已月结，不能修改。如需调整请先到财务管理→月结管理进行反月结`,
-      );
+      throw new BadRequestException('已月结的单据不允许操作');
     }
   }
 

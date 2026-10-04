@@ -63,13 +63,33 @@ export interface MemberMergeLog {
   reversedAt: string | null;
 }
 
+export interface MemberListParams {
+  page?: number;
+  pageSize?: number;
+  keyword?: string;
+  level?: string;
+  /** 手机号（精确匹配，后端走 phone_hmac 指纹） */
+  phone?: string;
+  /** 累计消费范围（元） */
+  totalSpentStart?: number;
+  totalSpentEnd?: number;
+  /** 最后一次消费日期区间（YYYY-MM-DD） */
+  lastPurchaseDateStart?: string;
+  lastPurchaseDateEnd?: string;
+}
+
 export const memberApi = {
-  list: (page = 1, pageSize = 20, keyword?: string, level?: string) =>
+  list: (params: MemberListParams = {}) =>
     request<{ list: Member[]; total: number }>('/api/member/list', 'GET', null, {
-      page,
-      pageSize,
-      keyword,
-      level,
+      page: params.page ?? 1,
+      pageSize: params.pageSize ?? 20,
+      keyword: params.keyword,
+      level: params.level,
+      phone: params.phone,
+      totalSpentStart: params.totalSpentStart,
+      totalSpentEnd: params.totalSpentEnd,
+      lastPurchaseDateStart: params.lastPurchaseDateStart,
+      lastPurchaseDateEnd: params.lastPurchaseDateEnd,
     }),
   create: (body: Partial<Member>) =>
     request<Member>('/api/member/create', 'POST', body),
