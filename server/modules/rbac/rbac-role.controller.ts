@@ -85,9 +85,8 @@ export class RbacRoleController {
   }
 
   @Get(':id/permissions')
-  async getPermissions(@Param('id') id: string): Promise<{ permissionIds: string[] }> {
-    const permissionIds = await this.rbacService.getRolePermissions(id);
-    return { permissionIds };
+  async getPermissions(@Param('id') id: string): Promise<string[]> {
+    return this.rbacService.getRolePermissions(id);
   }
 
   @CheckPermission('system:role')
