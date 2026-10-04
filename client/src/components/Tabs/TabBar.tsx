@@ -1,8 +1,21 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, ChevronLeft, ChevronRight, LogOut, User } from 'lucide-react';
+import {
+  X, ChevronLeft, ChevronRight, LogOut,
+  MoreHorizontal, ListX, ArrowRightToLine, Trash2,
+} from 'lucide-react';
 import { useTabs, type TabItem } from '@client/src/contexts/TabsContext';
 import { useAuth } from '@client/src/contexts/AuthContext';
+import { getMenuIconByPath } from '@client/src/config/menuConfig';
+import { LanguageSwitcher } from '@client/src/components/LanguageSwitcher';
 import { useLocation, useNavigate } from 'react-router-dom';
+
+/** 极简 className 拼接：过滤 falsy，避免长三元里出现 "undefined" */
+const cx = (...parts: Array<string | false | null | undefined>) =>
+  parts.filter(Boolean).join(' ');
+
+/** 右键菜单尺寸，用于视口内定位钳制（避免菜单被窗口边缘截断） */
+const CTX_MENU_W = 176;
+const CTX_MENU_H = 196;
 
 const TabBar: React.FC = () => {
   const { tabs, activeKey, switchTab, closeTab, closeOthers, closeAll, closeRight } = useTabs();
@@ -18,7 +31,9 @@ const TabBar: React.FC = () => {
     tabKey: string;
   } | null>(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [overflowOpen, setOverflowOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const overflowRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -37,6 +52,8 @@ const TabBar: React.FC = () => {
     };
   }, [tabs.length]);
 
+  // 激活页签自动滚入可视区。滚动容器自身需是定位元素（relative），
+  // 子项的 offsetLeft 才是「内容坐标系」而非相对整个页签栏，否则滚动判定会失准。
   useEffect(() => {
     const activeEl = document.querySelector<HTMLElement>(`[data-tab-key="${activeKey}"]`);
     if (activeEl && scrollRef.current) {
@@ -56,8 +73,12 @@ const TabBar: React.FC = () => {
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       setContextMenu(null);
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (userMenuRef.current && !userMenuRef.current.contains(target)) {
         setUserMenuOpen(false);
+      }
+      if (overflowRef.current && !overflowRef.current.contains(target)) {
+        setOverflowOpen(false);
       }
     };
     window.addEventListener('click', handleClick);
@@ -76,7 +97,10 @@ const TabBar: React.FC = () => {
   const handleContextMenu = (e: React.MouseEvent, tabKey: string) => {
     e.preventDefault();
     e.stopPropagation();
-    setContextMenu({ x: e.clientX, y: e.clientY, tabKey });
+    // 钳制到视口内，避免菜单贴边时被截断
+    const x = Math.min(e.clientX, window.innerWidth - CTX_MENU_W - 8);
+    const y = Math.min(e.clientY, window.innerHeight - CTX_MENU_H - 8);
+    setContextMenu({ x: Math.max(8, x), y: Math.max(8, y), tabKey });
   };
 
   const handleLogout = async () => {
@@ -88,13 +112,34 @@ const TabBar: React.FC = () => {
     closeOthers(activeKey);
   };
 
+  /** 中键（滚轮键）关闭页签 —— 主流编辑器/浏览器页签的通用交互 */
+  const handleAuxClick = (e: React.MouseEvent, tab: TabItem) => {
+    if (e.button === 1 && tab.closable) {
+      e.preventDefault();
+      closeTab(tab.key);
+    }
+  };
+
+  const renderTabIcon = (tab: TabItem) => (
+    <span
+      className={cx(
+        'flex items-center justify-center flex-shrink-0 transition-colors [&>svg]:h-3.5 [&>svg]:w-3.5',
+        tab.key === activeKey
+          ? 'text-primary'
+          : 'text-muted-foreground/70 group-hover:text-foreground/70',
+      )}
+    >
+      {getMenuIconByPath(tab.path)}
+    </span>
+  );
+
   return (
-    <div className="hidden md:flex items-center h-9 bg-gray-50 border-b border-gray-200 flex-shrink-0 relative">
+    <div className="hidden md:flex items-center h-10 bg-white border-b border-border flex-shrink-0 relative select-none">
       {showLeftArrow && (
         <button
           type="button"
           onClick={() => scroll('left')}
-          className="flex items-center justify-center w-6 h-9 text-gray-400 hover:text-gray-600 hover:bg-gray-100 flex-shrink-0"
+          className="flex items-center justify-center w-6 h-7 ml-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted flex-shrink-0 transition-colors"
           title="向左滚动"
         >
           <ChevronLeft size={14} />
@@ -103,27 +148,30 @@ const TabBar: React.FC = () => {
 
       <div
         ref={scrollRef}
-        className="flex-1 flex items-center overflow-x-auto scrollbar-hide px-1"
+        className="relative flex-1 flex items-center gap-0.5 h-full overflow-x-auto scrollbar-hide px-2"
         style={{ scrollbarWidth: 'none' }}
       >
-        {tabs.map((tab: TabItem, index: number) => {
+        {tabs.map((tab: TabItem) => {
           const isActive = tab.key === activeKey;
-          const isFirst = index === 0;
           return (
             <div
               key={tab.key}
               data-tab-key={tab.key}
-              onClick={() => switchTab(tab.key)}
-              onContextMenu={(e) => handleContextMenu(e, tab.key)}
+              role="tab"
+              aria-selected={isActive}
               title={tab.label}
-              className={`group relative flex items-center h-7 px-3 text-xs cursor-pointer select-none flex-shrink-0 transition-colors ${
+              onClick={() => switchTab(tab.key)}
+              onAuxClick={(e) => handleAuxClick(e, tab)}
+              onContextMenu={(e) => handleContextMenu(e, tab.key)}
+              className={cx(
+                'group relative inline-flex items-center h-full pl-2.5 pr-1.5 text-[13px] leading-none whitespace-nowrap cursor-pointer flex-shrink-0 transition-colors duration-150',
                 isActive
-                  ? 'bg-white text-gray-800 border border-b-0 border-gray-200 rounded-t font-medium'
-                  : 'bg-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-              } ${!isFirst && !isActive ? 'border-l border-gray-200 last:border-r' : ''}`}
-              style={{ minWidth: 0 }}
+                  ? 'text-primary font-medium bg-primary/10'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/70',
+              )}
             >
-              <span className="truncate max-w-[120px]">{tab.label}</span>
+              {renderTabIcon(tab)}
+              <span className="ml-1.5 truncate max-w-[140px]">{tab.label}</span>
               {tab.closable && (
                 <button
                   type="button"
@@ -131,18 +179,20 @@ const TabBar: React.FC = () => {
                     e.stopPropagation();
                     closeTab(tab.key);
                   }}
-                  className={`ml-1.5 flex-shrink-0 rounded-sm transition-opacity ${
+                  className={cx(
+                    'ml-1 flex items-center justify-center w-4 h-4 rounded-[3px] flex-shrink-0 transition-all duration-150',
                     isActive
-                      ? 'opacity-60 hover:opacity-100 hover:bg-gray-200'
-                      : 'opacity-0 group-hover:opacity-60 hover:bg-gray-200'
-                  }`}
+                      ? 'text-primary/60 hover:text-primary hover:bg-primary/15'
+                      : 'opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-foreground hover:bg-foreground/10',
+                  )}
                   title="关闭"
                 >
-                  <X size={12} />
+                  <X size={12} strokeWidth={2.5} />
                 </button>
               )}
+              {/* 激活指示条：贴齐页签栏底边 */}
               {isActive && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary pointer-events-none" />
+                <span className="pointer-events-none absolute bottom-0 left-2 right-2 h-[2px] rounded-t-full bg-primary" />
               )}
             </div>
           );
@@ -153,21 +203,89 @@ const TabBar: React.FC = () => {
         <button
           type="button"
           onClick={() => scroll('right')}
-          className="flex items-center justify-center w-6 h-9 text-gray-400 hover:text-gray-600 hover:bg-gray-100 flex-shrink-0"
+          className="flex items-center justify-center w-6 h-7 mr-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted flex-shrink-0 transition-colors"
           title="向右滚动"
         >
           <ChevronRight size={14} />
         </button>
       )}
 
-      <div className="flex items-center h-full flex-shrink-0 border-l border-gray-200 pl-1 pr-2">
+      {/* 右侧操作区：溢出页签列表 / 关闭其他 / 用户 */}
+      <div className="flex items-center h-full flex-shrink-0 gap-0.5 pl-1 pr-2 border-l border-border ml-1">
+        <div className="relative" ref={overflowRef}>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setOverflowOpen(!overflowOpen);
+            }}
+            className="flex items-center justify-center w-7 h-7 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            title="全部页签"
+          >
+            <MoreHorizontal size={15} />
+          </button>
+
+          {overflowOpen && (
+            <div className="absolute right-0 top-full mt-1 w-56 bg-popover border border-border rounded-lg shadow-lg py-1 z-50 max-h-[320px] overflow-y-auto">
+              <div className="px-3 py-1.5 text-[11px] text-muted-foreground border-b border-border">
+                全部页签（{tabs.length}）
+              </div>
+              {tabs.map((tab) => (
+                <div
+                  key={tab.key}
+                  className={cx(
+                    'group flex items-center gap-2 px-2.5 py-1.5 text-[13px] cursor-pointer transition-colors',
+                    tab.key === activeKey
+                      ? 'text-primary bg-primary/10'
+                      : 'text-foreground/80 hover:bg-muted',
+                  )}
+                  onClick={() => {
+                    switchTab(tab.key);
+                    setOverflowOpen(false);
+                  }}
+                >
+                  <span className="flex items-center justify-center flex-shrink-0 [&>svg]:h-3.5 [&>svg]:w-3.5">
+                    {getMenuIconByPath(tab.path)}
+                  </span>
+                  <span className="flex-1 truncate">{tab.label}</span>
+                  {tab.closable && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        closeTab(tab.key);
+                      }}
+                      className="flex items-center justify-center w-4 h-4 rounded-[3px] text-muted-foreground/60 hover:text-foreground hover:bg-foreground/10 flex-shrink-0"
+                      title="关闭"
+                    >
+                      <X size={12} />
+                    </button>
+                  )}
+                </div>
+              ))}
+              <div className="border-t border-border my-1" />
+              <button
+                type="button"
+                className="w-full text-left px-3 py-1.5 text-[13px] text-destructive hover:bg-destructive/10 flex items-center gap-2"
+                onClick={() => {
+                  closeAll();
+                  setOverflowOpen(false);
+                }}
+              >
+                <Trash2 size={13} />
+                关闭全部
+              </button>
+            </div>
+          )}
+        </div>
+
         <button
           type="button"
           onClick={handleCloseOthers}
-          className="flex items-center justify-center w-7 h-7 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded"
+          className="flex items-center justify-center w-7 h-7 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
           title="关闭其他标签"
         >
-          <X size={14} />
+          <ListX size={15} />
         </button>
 
         <div className="relative" ref={userMenuRef}>
@@ -177,30 +295,40 @@ const TabBar: React.FC = () => {
               e.stopPropagation();
               setUserMenuOpen(!userMenuOpen);
             }}
-            className="flex items-center gap-2 px-2 py-1 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
+            className="flex items-center gap-2 h-7 pl-1 pr-2 rounded text-foreground/80 hover:text-foreground hover:bg-muted transition-colors"
           >
-            <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs font-medium">
+            <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-[11px] font-medium flex-shrink-0">
               {(user?.name || user?.username || 'U').charAt(0).toUpperCase()}
-            </div>
-            <span className="text-xs max-w-[80px] truncate">
+            </span>
+            <span className="text-[13px] max-w-[88px] truncate">
               {user?.name || user?.username || '用户'}
             </span>
           </button>
 
           {userMenuOpen && (
-            <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded shadow-lg py-1 text-xs min-w-[120px] z-50">
-              <div className="px-3 py-2 text-gray-400 border-b border-gray-100">
-                <div className="text-gray-700 font-medium truncate">
-                  {user?.name || user?.username}
+            <div className="absolute right-0 top-full mt-1 w-[168px] bg-popover border border-border rounded-lg shadow-lg py-1 z-50">
+              <div className="px-3 py-2 border-b border-border">
+                <div className="flex items-center gap-2">
+                  <span className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium flex-shrink-0">
+                    {(user?.name || user?.username || 'U').charAt(0).toUpperCase()}
+                  </span>
+                  <div className="min-w-0">
+                    <div className="text-[13px] font-medium text-foreground truncate">
+                      {user?.name || user?.username}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground truncate">
+                      {user?.username || ''}
+                    </div>
+                  </div>
                 </div>
-                <div className="text-[11px] truncate">{user?.username || ''}</div>
               </div>
+              <LanguageSwitcher />
               <button
                 type="button"
-                className="w-full text-left px-3 py-1.5 hover:bg-gray-50 text-gray-600 flex items-center gap-2"
+                className="w-full text-left px-3 py-1.5 text-[13px] text-foreground/80 hover:bg-muted flex items-center gap-2 transition-colors"
                 onClick={handleLogout}
               >
-                <LogOut size={12} />
+                <LogOut size={13} />
                 退出登录
               </button>
             </div>
@@ -210,36 +338,40 @@ const TabBar: React.FC = () => {
 
       {contextMenu && (
         <div
-          className="fixed z-50 bg-white border border-gray-200 rounded shadow-lg py-1 text-xs min-w-[120px]"
-          style={{ left: contextMenu.x, top: contextMenu.y }}
+          className="fixed z-50 bg-popover border border-border rounded-lg shadow-lg py-1 min-w-[160px] overflow-hidden"
+          style={{ left: contextMenu.x, top: contextMenu.y, width: CTX_MENU_W }}
         >
           <button
             type="button"
-            className="w-full text-left px-3 py-1.5 hover:bg-blue-50 hover:text-blue-600"
+            className="w-full text-left px-3 py-1.5 text-[13px] text-foreground/80 hover:bg-muted flex items-center gap-2 transition-colors"
             onClick={() => closeTab(contextMenu.tabKey)}
           >
+            <X size={13} />
             关闭当前
           </button>
           <button
             type="button"
-            className="w-full text-left px-3 py-1.5 hover:bg-blue-50 hover:text-blue-600"
+            className="w-full text-left px-3 py-1.5 text-[13px] text-foreground/80 hover:bg-muted flex items-center gap-2 transition-colors"
             onClick={() => closeOthers(contextMenu.tabKey)}
           >
+            <ListX size={13} />
             关闭其他
           </button>
           <button
             type="button"
-            className="w-full text-left px-3 py-1.5 hover:bg-blue-50 hover:text-blue-600"
+            className="w-full text-left px-3 py-1.5 text-[13px] text-foreground/80 hover:bg-muted flex items-center gap-2 transition-colors"
             onClick={() => closeRight(contextMenu.tabKey)}
           >
+            <ArrowRightToLine size={13} />
             关闭右侧
           </button>
-          <div className="border-t border-gray-100 my-1" />
+          <div className="border-t border-border my-1" />
           <button
             type="button"
-            className="w-full text-left px-3 py-1.5 hover:bg-red-50 hover:text-red-600"
+            className="w-full text-left px-3 py-1.5 text-[13px] text-destructive hover:bg-destructive/10 flex items-center gap-2 transition-colors"
             onClick={closeAll}
           >
+            <Trash2 size={13} />
             关闭全部
           </button>
         </div>

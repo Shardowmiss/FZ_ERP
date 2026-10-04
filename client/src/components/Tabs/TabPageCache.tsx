@@ -368,6 +368,14 @@ const TabPageCache: React.FC = () => {
 
   const activeTabInfo = getTabInfoFromPath(location.pathname);
 
+  // 互斥判定激活页签：优先按 activeKey 命中，未命中才回退到「由当前 location 解析出的页签」。
+  // 原因：activeKey 由 TabsProvider 在 effect 中推进，会比 location 滞后一拍；
+  // 若两个条件各自命中不同页签，会出现两个页签同时 display:block 叠加，
+  // 后挂载的旧页盖住新页，表现为「点了菜单没切换」。这里强制只有一个激活项。
+  const effectiveActiveKey =
+    tabs.find((t) => t.key === activeKey)?.key ??
+    tabs.find((t) => t.key === activeTabInfo.key && t.path === location.pathname)?.key;
+
   const renderPage = (tabKey: string, tabPath: string) => {
     const perm = getPermissionForPath(tabPath);
     if (perm && !hasPermission(perm)) {
@@ -400,7 +408,7 @@ const TabPageCache: React.FC = () => {
         </div>
       )}
       {tabs.map((tab) => {
-        const isActive = tab.key === activeKey || (tab.key === activeTabInfo.key && tab.path === location.pathname);
+        const isActive = tab.key === effectiveActiveKey;
         const shouldMount = mountedKeys.has(tab.key);
         if (!shouldMount) return null;
         return (

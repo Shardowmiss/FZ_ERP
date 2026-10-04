@@ -223,6 +223,12 @@ export const TabsProvider = ({ children }: { children: ReactNode }) => {
   const initial = useRef(loadTabsFromStorage(rememberTabs));
   const [tabs, setTabs] = useState<TabItem[]>(initial.current.tabs);
   const activeKeyRef = useRef<string>(initial.current.activeKey);
+  // BUG FIX（单击不切换）：activeKey 原先只由 activeKeyRef.current 推导，而 ref 在
+  // useEffect 内被改写时不会触发重渲染 —— 点击菜单导航后，若目标页签已存在且
+  // path/label 未变（needsUpdate=false，setTabs 不调用），整个树不会重渲染，
+  // 画面就停在旧页签上；只有再点一次（router 产生新 location 触发渲染）才切换。
+  // 因此改用 state 作为渲染真相源，ref 仅保留给回调/setTabs updater 内同步读取。
+  const [activeKeyState, setActiveKeyState] = useState<string>(initial.current.activeKey);
   const isInitial = useRef(true);
 
   useEffect(() => {
@@ -260,6 +266,8 @@ export const TabsProvider = ({ children }: { children: ReactNode }) => {
         });
       }
       activeKeyRef.current = tabInfo.key;
+      // 关键：必须驱动 state，否则「页签已存在且无字段变更」时不会重渲染
+      setActiveKeyState(tabInfo.key);
     } else {
       const newTab: TabItem = {
         ...tabInfo,
@@ -276,6 +284,7 @@ export const TabsProvider = ({ children }: { children: ReactNode }) => {
         return next;
       });
       activeKeyRef.current = tabInfo.key;
+      setActiveKeyState(tabInfo.key);
     }
     isInitial.current = false;
   }, [location.pathname, maxTabs]);
@@ -284,11 +293,18 @@ export const TabsProvider = ({ children }: { children: ReactNode }) => {
     saveTabsToStorage(tabs, activeKeyRef.current);
   }, [tabs]);
 
+  // 兜底同步：关闭页签等操作在 setTabs updater 内只改了 ref（updater 必须是纯函数，
+  // 不能在里面 setState）。tabs 变化后把 ref 镜像回 state，保证 activeKey 一定驱动重渲染。
+  useEffect(() => {
+    setActiveKeyState((prev) => (prev === activeKeyRef.current ? prev : activeKeyRef.current));
+  }, [tabs]);
+
   const switchTab = useCallback(
     (key: string) => {
       const tab = tabs.find((t) => t.key === key);
       if (tab) {
         activeKeyRef.current = key;
+        setActiveKeyState(key);
         saveTabsToStorage(tabs, key);
         navigate(tab.path);
       }
@@ -301,6 +317,7 @@ export const TabsProvider = ({ children }: { children: ReactNode }) => {
       const existing = tabs.find((t) => t.key === tab.key);
       if (existing) {
         activeKeyRef.current = tab.key;
+        setActiveKeyState(tab.key);
         saveTabsToStorage(tabs, tab.key);
         navigate(existing.path);
         return;
@@ -322,6 +339,7 @@ export const TabsProvider = ({ children }: { children: ReactNode }) => {
         return next;
       });
       activeKeyRef.current = tab.key;
+      setActiveKeyState(tab.key);
       navigate(tab.path);
     },
     [tabs, navigate, maxTabs],
@@ -357,6 +375,7 @@ export const TabsProvider = ({ children }: { children: ReactNode }) => {
         const tab = tabs.find((t) => t.key === key);
         if (tab) {
           activeKeyRef.current = key;
+          setActiveKeyState(key);
           navigate(tab.path);
         }
       }
@@ -405,7 +424,7 @@ export const TabsProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const activeKey =
-    tabs.find((t) => t.key === activeKeyRef.current)?.key ||
+    tabs.find((t) => t.key === activeKeyState)?.key ||
     (tabs[0]?.key ?? DASHBOARD_KEY);
 
   return (
