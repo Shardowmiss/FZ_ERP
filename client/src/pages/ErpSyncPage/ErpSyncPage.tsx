@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { logger } from '@lark-apaas/client-toolkit/logger';
 import {
   Wifi, WifiOff, RefreshCw, Download, Upload, FileText,
-  ListChecks, Clock, Store as StoreIcon, RotateCcw, AlertCircle, HardDriveUpload,
+  ListChecks, Store as StoreIcon, RotateCcw, AlertCircle, HardDriveUpload,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import * as erpApi from '@client/src/api/erp-integration';
@@ -52,7 +52,7 @@ export default function ErpSyncPage() {
   const loadDownstream = useCallback(async () => {
     try {
       const data = await erpApi.getDownstreamSyncStatus();
-      setDownList(data);
+      setDownList(Array.isArray(data) ? data : []);
     } catch (err) {
       logger.error('loadDownstream error', err as Error);
       throw err;
@@ -62,7 +62,7 @@ export default function ErpSyncPage() {
   const loadUpstream = useCallback(async () => {
     try {
       const data = await erpApi.getUpstreamSyncStatus();
-      setUpList(data);
+      setUpList(Array.isArray(data) ? data : []);
     } catch (err) {
       logger.error('loadUpstream error', err as Error);
       throw err;
@@ -201,9 +201,6 @@ export default function ErpSyncPage() {
             className="text-xs px-3 py-1.5 border border-pos-line rounded-md text-pos-ink-2 hover:bg-pos-paper transition-colors flex items-center gap-1"
           >
             <RefreshCw size={12} className={loading ? 'animate-spin' : ''} /> 刷新
-          </button>
-          <button className="text-xs px-3 py-1.5 border border-pos-line rounded-md text-pos-ink-2 hover:bg-pos-paper transition-colors flex items-center gap-1">
-            <Clock size={12} /> 同步设置
           </button>
         </div>
       </header>

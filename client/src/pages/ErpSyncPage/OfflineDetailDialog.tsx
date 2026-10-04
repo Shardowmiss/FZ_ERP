@@ -6,6 +6,7 @@ import {
   DialogTitle,
 } from '@client/src/components/ui/dialog';
 import type { OfflineQueueItem } from '@client/src/api/offline-sync';
+import { StatusBadge, type StatusTone } from '@client/src/components/ui/status-badge';
 
 const TYPE_MAP: Record<string, string> = {
   sale: '销售单',
@@ -27,12 +28,12 @@ const PAY_METHOD_LABEL: Record<string, string> = {
   stored: '储值卡',
 };
 
-const STATUS_MAP: Record<string, { label: string; className: string }> = {
-  pending: { label: '待同步', className: 'bg-pos-ink-3/10 text-pos-ink-3' },
-  syncing: { label: '同步中', className: 'bg-pos-info-bg text-pos-info' },
-  synced: { label: '已同步', className: 'bg-pos-ok-bg text-pos-ok' },
-  failed: { label: '失败', className: 'bg-pos-danger-bg text-pos-danger' },
-  conflict: { label: '冲突', className: 'bg-pos-warn-bg text-pos-warn' },
+const STATUS_MAP: Record<string, { label: string; tone: StatusTone }> = {
+  pending: { label: '待同步', tone: 'neutral' },
+  syncing: { label: '同步中', tone: 'info' },
+  synced: { label: '已同步', tone: 'ok' },
+  failed: { label: '失败', tone: 'danger' },
+  conflict: { label: '冲突', tone: 'warn' },
 };
 
 interface OfflineDetailDialogProps {
@@ -85,11 +86,7 @@ export default function OfflineDetailDialog({
             </div>
             <div>
               <div className="text-xs text-pos-ink-3 mb-1">状态</div>
-              <span
-                className={`text-xs px-2 py-0.5 rounded-md font-medium inline-flex items-center gap-1 ${statusInfo.className}`}
-              >
-                {statusInfo.label}
-              </span>
+              <StatusBadge tone={statusInfo.tone}>{statusInfo.label}</StatusBadge>
             </div>
             <div>
               <div className="text-xs text-pos-ink-3 mb-1">支付方式</div>

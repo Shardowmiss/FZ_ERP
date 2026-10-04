@@ -3,13 +3,14 @@ import {
   Crown,
   Phone,
   CalendarDays,
-  Sparkles,
+  PieChart,
   Wallet,
   Ticket,
   Receipt,
   TrendingUp,
   ShoppingBag,
   User,
+  Coins,
 } from 'lucide-react';
 import { logger } from '@lark-apaas/client-toolkit/logger';
 import * as membersApi from '@client/src/api/members';
@@ -210,7 +211,7 @@ export default function MemberDetailPanel({
         {/* Preference Analysis */}
         <section>
           <h3 className="text-sm font-medium text-pos-ink mb-3 flex items-center gap-1.5">
-            <Sparkles size={14} className="text-pos-accent" />
+            <PieChart size={14} className="text-pos-accent" />
             偏好分析
           </h3>
           <div className="bg-pos-paper rounded-lg p-3 space-y-2 text-xs">
@@ -239,7 +240,7 @@ export default function MemberDetailPanel({
             <TabButton
               active={activeTab === 'points'}
               onClick={() => setActiveTab('points')}
-              icon={<Sparkles size={12} />}
+              icon={<Coins size={12} />}
               label={`积分 ${member.points.toLocaleString()}`}
             />
             <TabButton

@@ -15,6 +15,7 @@ import {
 import { logger } from '@lark-apaas/client-toolkit/logger';
 import { toast } from 'sonner';
 import AsyncState from '@client/src/components/AsyncState';
+import { StatusBadge, type StatusTone } from '@client/src/components/ui/status-badge';
 import { errMsg } from '@client/src/lib/errMsg';
 import OfflineDetailDialog from './OfflineDetailDialog';
 import {
@@ -28,12 +29,12 @@ import {
 import { getSyncEngine } from '@client/src/lib/offline/sync-engine';
 import type { PendingItem } from '@client/src/lib/offline/db';
 
-const STATUS_MAP: Record<string, { label: string; className: string; dotClass: string }> = {
-  pending: { label: '待同步', className: 'bg-pos-ink-3/10 text-pos-ink-3', dotClass: 'bg-pos-ink-3' },
-  syncing: { label: '同步中', className: 'bg-pos-info-bg text-pos-info', dotClass: 'bg-pos-info' },
-  synced: { label: '已同步', className: 'bg-pos-ok-bg text-pos-ok', dotClass: 'bg-pos-ok' },
-  failed: { label: '失败', className: 'bg-pos-danger-bg text-pos-danger', dotClass: 'bg-pos-danger' },
-  conflict: { label: '冲突', className: 'bg-pos-warn-bg text-pos-warn', dotClass: 'bg-pos-warn' },
+const STATUS_MAP: Record<string, { label: string; tone: StatusTone }> = {
+  pending: { label: '待同步', tone: 'neutral' },
+  syncing: { label: '同步中', tone: 'info' },
+  synced: { label: '已同步', tone: 'ok' },
+  failed: { label: '失败', tone: 'danger' },
+  conflict: { label: '冲突', tone: 'warn' },
 };
 
 const TYPE_MAP: Record<string, string> = {
@@ -385,12 +386,9 @@ export default function OfflineQueuePanel({ compact = false }: OfflineQueuePanel
                         {item.createdAt.replace('T', ' ').slice(0, 16)}
                       </td>
                       <td className="px-4 py-2.5 text-center">
-                        <span
-                          className={`text-xs px-2 py-0.5 rounded-md font-medium inline-flex items-center gap-1 ${statusInfo.className}`}
-                        >
-                          <span className={`w-1.5 h-1.5 rounded-full ${statusInfo.dotClass} ${item.status === 'syncing' ? 'animate-pulse' : ''}`} />
+                        <StatusBadge tone={statusInfo.tone} dot dotPulse={item.status === 'syncing'}>
                           {statusInfo.label}
-                        </span>
+                        </StatusBadge>
                       </td>
                       <td className="px-4 py-2.5 text-center text-pos-ink-2 tabular-nums">
                         {item.retryCount}

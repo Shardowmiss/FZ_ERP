@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   Search, Tag, Percent, Gift, ShoppingBag, Users, Ticket,
-  Calendar, Clock, Plus, X, Loader2,
+  Calendar, Clock, X, Loader2,
 } from 'lucide-react';
 import { logger } from '@lark-apaas/client-toolkit/logger';
 import AsyncState from '@client/src/components/AsyncState';
@@ -124,9 +124,6 @@ export default function PromotionsPage() {
           <h1 className="text-lg font-semibold text-pos-ink">促销管理</h1>
           <p className="text-xs text-pos-ink-3 mt-0.5">运营 / 促销管理</p>
         </div>
-        <button className="h-9 px-4 bg-pos-accent text-white rounded-lg text-sm font-medium hover:bg-pos-accent-hover transition-colors flex items-center gap-1.5">
-          <Plus size={16} /> 新建促销
-        </button>
       </header>
 
       <div className="px-5 py-3 bg-white border-b border-pos-line flex items-center gap-4 flex-shrink-0">
@@ -195,12 +192,6 @@ export default function PromotionsPage() {
                 <div className="mt-3 pt-3 border-t border-pos-line-soft flex items-center justify-between">
                   <button onClick={() => setDetailId(promo.id)}
                     className="text-xs text-pos-accent hover:text-pos-accent-hover transition-colors">查看详情</button>
-                  {promo.status === 'active' && (
-                    <button className="text-xs text-pos-ink-3 hover:text-pos-danger transition-colors">终止活动</button>
-                  )}
-                  {promo.status === 'upcoming' && (
-                    <button className="text-xs text-pos-ink-3 hover:text-pos-ink transition-colors">编辑</button>
-                  )}
                 </div>
               </div>
             ))}

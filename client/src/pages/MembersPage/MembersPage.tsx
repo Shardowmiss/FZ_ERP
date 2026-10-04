@@ -12,6 +12,7 @@ import {
 } from '@client/src/components/ui/dialog';
 import { useOffline } from '@client/src/contexts/OfflineContext';
 import AsyncState from '@client/src/components/AsyncState';
+import { StatusBadge } from '@client/src/components/ui/status-badge';
 import { errMsg } from '@client/src/lib/errMsg';
 import * as membersApi from '@client/src/api/members';
 import type { Member, LevelCount } from '@shared/api.interface';
@@ -126,7 +127,7 @@ export default function MembersPage() {
   const fetchLevelCounts = useCallback(async () => {
     try {
       const res = await membersApi.getLevelCounts();
-      setLevelCounts(res);
+      setLevelCounts(Array.isArray(res) ? res : []);
     } catch (error) {
       logger.error('fetchLevelCounts failed', error as Error);
     }
@@ -370,16 +371,16 @@ export default function MembersPage() {
                         </span>
                       </td>
                       <td className="px-4 py-3 text-right text-pos-ink tabular-nums">
-                        {member.points.toLocaleString()}
+                        {(member.points ?? 0).toLocaleString()}
                       </td>
                       <td className="px-4 py-3 text-right text-pos-ink tabular-nums">
-                        ¥{member.storedValue.toFixed(2)}
+                        ¥{(member.storedValue ?? 0).toFixed(2)}
                       </td>
                       <td className="px-4 py-3 text-right text-pos-ink font-medium tabular-nums">
-                        ¥{member.totalSpent.toLocaleString()}
+                        ¥{(member.totalSpent ?? 0).toLocaleString()}
                       </td>
                       <td className="px-4 py-3 text-center text-pos-ink tabular-nums">
-                        {member.totalCount}
+                        {(member.totalCount ?? 0)}
                       </td>
                       <td className="px-4 py-3 text-pos-ink-2 text-xs">
                         {member.lastPurchaseAt
@@ -388,7 +389,7 @@ export default function MembersPage() {
                           : '—'}
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <span className="text-xs px-2 py-0.5 rounded bg-pos-ok-bg text-pos-ok">正常</span>
+                        <StatusBadge tone="ok">正常</StatusBadge>
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-center gap-2 text-xs">

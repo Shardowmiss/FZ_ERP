@@ -154,8 +154,18 @@ export class DashboardService {
 
   async getSalesTrend(query: SalesTrendQuery): Promise<SalesTrendPoint[]> {
     const { storeId, startDate, endDate, granularity } = query;
-    const start = this.toShanghaiDayStart(startDate);
-    const end = this.toShanghaiDayEnd(endDate);
+
+    // P0-3：无日期参数时注入默认回看窗口，避免 toShanghaiDayStart(undefined) 崩溃 500。
+    // 默认 90 天，可由 DASHBOARD_LOOKBACK_DAYS 覆盖；显式传参时与改造前完全等价。
+    const lookbackDays = Math.max(1, Number(process.env.DASHBOARD_LOOKBACK_DAYS ?? '90') || 90);
+    const now = new Date();
+    const fmtShanghai = (d: Date) =>
+      d.toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' }).replace(/\//g, '-');
+    const effStartDate = startDate ?? fmtShanghai(new Date(now.getTime() - lookbackDays * 86400000));
+    const effEndDate = endDate ?? fmtShanghai(now);
+
+    const start = this.toShanghaiDayStart(effStartDate);
+    const end = this.toShanghaiDayEnd(effEndDate);
 
     const dateTrunc = granularity === 'hour' ? 'hour' : 'day';
 

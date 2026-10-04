@@ -88,4 +88,22 @@ BEGIN
       EXECUTE format('ALTER TABLE %I ADD COLUMN _updated_by user_profile', r.t);
     END IF;
   END LOOP;
+
+  -- pos_sync_log 已建表时带 created_at/updated_at 与 _created_at/_updated_at（见 pglite.ts DDL），
+  -- 但缺 _created_by/_updated_by（drizzle 全表 select 报 42703 → erp 对接日志接口 500）。
+  -- 此表不重命名、不加 deleted_at，仅补两个 _by 列。
+  FOR r IN
+    SELECT unnest(ARRAY['pos_sync_log']) AS t
+  LOOP
+    SELECT EXISTS(SELECT 1 FROM information_schema.columns WHERE table_name=r.t AND column_name='_created_by')
+      INTO has_by;
+    IF NOT has_by THEN
+      EXECUTE format('ALTER TABLE %I ADD COLUMN _created_by user_profile', r.t);
+    END IF;
+    SELECT EXISTS(SELECT 1 FROM information_schema.columns WHERE table_name=r.t AND column_name='_updated_by')
+      INTO has_by;
+    IF NOT has_by THEN
+      EXECUTE format('ALTER TABLE %I ADD COLUMN _updated_by user_profile', r.t);
+    END IF;
+  END LOOP;
 END $$;

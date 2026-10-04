@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Search, RefreshCw, ChevronRight, ArrowLeftRight, SearchX, Loader2, Package, WifiOff } from 'lucide-react';
+import { Search, RefreshCw, ChevronRight, SearchX, Loader2, Package, WifiOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { logger } from '@lark-apaas/client-toolkit/logger';
 import AsyncState from '@client/src/components/AsyncState';
@@ -354,11 +354,6 @@ export default function ReturnPage() {
               <div className="bg-white rounded-xl border border-pos-line shadow-sm flex-1 flex flex-col overflow-hidden">
                 <div className="px-4 py-3 border-b border-pos-line flex items-center justify-between">
                   <span className="text-sm font-medium text-pos-ink">{detail ? `单据明细 · ${detail.orderNo}` : '请选择单据'}</span>
-                  {detail && (
-                    <button className="text-xs text-pos-accent hover:text-pos-accent-hover transition-colors flex items-center gap-1">
-                      <ArrowLeftRight size={12} /> 申请换货
-                    </button>
-                  )}
                 </div>
                 {detailLoading ? (
                   <div className="flex-1 flex items-center justify-center"><Loader2 size={24} className="animate-spin text-pos-ink-3" /></div>

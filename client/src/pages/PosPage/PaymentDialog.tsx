@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { logger } from '@lark-apaas/client-toolkit/logger';
-import { WifiOff } from 'lucide-react';
+import { WifiOff, Banknote, Smartphone, CreditCard, Landmark, Wallet, Coins } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -31,13 +31,14 @@ export interface PaymentInput {
   changeAmount: number;
 }
 
+// 支付方式图标统一使用 lucide 线性图标（P0-4：移除 emoji 玩具感写法）
 const PAYMENT_METHODS = [
-  { code: 'cash', name: '现金', icon: '💵', needMember: false, onlineOnly: false },
-  { code: 'wechat', name: '微信支付', icon: '💚', needMember: false, onlineOnly: true },
-  { code: 'alipay', name: '支付宝', icon: '💙', needMember: false, onlineOnly: true },
-  { code: 'bank_card', name: '银行卡', icon: '💳', needMember: false, onlineOnly: true },
-  { code: 'stored_value', name: '储值余额', icon: '💰', needMember: true, onlineOnly: false },
-  { code: 'points', name: '积分抵扣', icon: '⭐', needMember: true, onlineOnly: false },
+  { code: 'cash', name: '现金', icon: <Banknote size={20} />, needMember: false, onlineOnly: false },
+  { code: 'wechat', name: '微信支付', icon: <Smartphone size={20} />, needMember: false, onlineOnly: true },
+  { code: 'alipay', name: '支付宝', icon: <CreditCard size={20} />, needMember: false, onlineOnly: true },
+  { code: 'bank_card', name: '银行卡', icon: <Landmark size={20} />, needMember: false, onlineOnly: true },
+  { code: 'stored_value', name: '储值余额', icon: <Wallet size={20} />, needMember: true, onlineOnly: false },
+  { code: 'points', name: '积分抵扣', icon: <Coins size={20} />, needMember: true, onlineOnly: false },
 ];
 
 export default function PaymentDialog({
@@ -235,7 +236,7 @@ export default function PaymentDialog({
                           : 'border-pos-line text-pos-ink-2 hover:border-pos-accent/40'
                       }`}
                     >
-                      <div className="text-xl mb-1">{m.icon}</div>
+                      <div className="mb-1 flex justify-center">{m.icon}</div>
                       <div className="text-xs font-medium">{m.name}</div>
                       {m.needMember && !member && (
                         <div className="text-[10px] text-pos-ink-3/50 mt-0.5">

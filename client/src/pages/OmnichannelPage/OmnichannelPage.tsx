@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Search, Truck, Package, User, Clock, ShoppingBag, X, MapPin, Phone, Info } from 'lucide-react';
+import { StatusBadge, type StatusTone } from '@client/src/components/ui/status-badge';
 import { logger } from '@lark-apaas/client-toolkit/logger';
 import AsyncState from '@client/src/components/AsyncState';
 import { errMsg } from '@client/src/lib/errMsg';
@@ -14,12 +15,12 @@ const TABS = [
   { key: 'all', label: '全部' },
 ];
 
-const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
-  pending: { label: '待发货', cls: 'bg-pos-warn-bg text-pos-warn border-pos-warn/30' },
-  paid: { label: '待发货', cls: 'bg-pos-warn-bg text-pos-warn border-pos-warn/30' },
-  ready: { label: '待自提', cls: 'bg-pos-info-bg text-pos-info border-pos-info/30' },
-  shipped: { label: '已发货', cls: 'bg-pos-ok-bg text-pos-ok border-pos-ok/30' },
-  completed: { label: '已完成', cls: 'bg-pos-paper text-pos-ink-3 border-pos-line-soft' },
+const STATUS_BADGE: Record<string, { label: string; tone: StatusTone }> = {
+  pending: { label: '待发货', tone: 'warn' },
+  paid: { label: '待发货', tone: 'warn' },
+  ready: { label: '待自提', tone: 'info' },
+  shipped: { label: '已发货', tone: 'ok' },
+  completed: { label: '已完成', tone: 'neutral' },
 };
 
 const TYPE_LABEL: Record<string, string> = { ship: '网订店发', pickup: '到店自提' };
@@ -128,7 +129,7 @@ export default function OmnichannelPage() {
     } finally { setDetailLoading(false); }
   };
 
-  const badge = (s: string) => STATUS_BADGE[s] || { label: s, cls: 'bg-pos-paper text-pos-ink-3 border-pos-line-soft' };
+  const badge = (s: string) => STATUS_BADGE[s] || { label: s, tone: 'neutral' as StatusTone };
   const canShip = (o: OmnichannelOrder) => o.type === 'ship' && (o.status === 'pending' || o.status === 'paid');
   const canPick = (o: OmnichannelOrder) => o.type === 'pickup' && (o.status === 'ready' || o.status === 'paid');
   const isDone = (o: OmnichannelOrder) => o.status === 'shipped' || o.status === 'completed';
@@ -200,7 +201,7 @@ export default function OmnichannelPage() {
                        <div>
                          <div className="flex items-center gap-2">
                            <span className="font-medium text-pos-ink">{order.orderNo}</span>
-                           <span className={`px-2 py-0.5 rounded text-xs font-medium border ${b.cls}`}>{b.label}</span>
+                           <StatusBadge tone={b.tone}>{b.label}</StatusBadge>
                          </div>
                          <div className="flex items-center gap-3 mt-0.5 text-xs text-pos-ink-2">
                            <span className="flex items-center gap-1"><ShoppingBag size={10} /> {order.channel}</span>

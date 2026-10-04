@@ -83,6 +83,33 @@ export default function DashboardPage() {
           dashboardApi.getEmployeeRanking(5),
           dashboardApi.getCategorySales(),
         ]);
+
+        // 防御：平台 CSRF 缺失时，axios 拦截器会把 403 降级为「resolve 并返回
+        // HTML 字符串」（而非 reject）。此时 response.data 是字符串而非预期结构，
+        // 直接 setState 会让 kpiCards 在字符串上读 totalSales.toLocaleString()
+        // 而整页崩溃（全局错误边界「页面出错了」）。这里统一判结构异常并走
+        // 加载失败分支——既不崩溃，也不静默当成「今天没生意」。
+        const isKpi = (v: unknown): v is TodayKpi => {
+          if (!v || typeof v !== 'object' || Array.isArray(v)) return false;
+          const k = v as Record<string, unknown>;
+          return (
+            typeof k.totalSales === 'number' &&
+            typeof k.orderCount === 'number' &&
+            typeof k.avgTicket === 'number' &&
+            typeof k.attachRate === 'number' &&
+            typeof k.memberSaleRatio === 'number'
+          );
+        };
+        if (
+          !isKpi(kpiRes) ||
+          !Array.isArray(trendRes) ||
+          !Array.isArray(topRes) ||
+          !Array.isArray(empRes) ||
+          !Array.isArray(catRes)
+        ) {
+          throw new Error('看板数据返回结构异常（可能未通过鉴权或接口异常）');
+        }
+
         setKpi(kpiRes);
         setTrend(trendRes);
         setTopProducts(topRes);
@@ -159,7 +186,7 @@ export default function DashboardPage() {
         center: ['50%', '45%'],
         data: categories.map((c: CategorySalesItem) => ({
           name: c.category,
-          value: c.salesAmount,
+          value: c.salesAmount ?? 0,
         })),
         label: { show: false },
         emphasis: { label: { show: false } },
@@ -324,7 +351,7 @@ export default function DashboardPage() {
                       </td>
                       <td className="px-3 py-2.5 text-right text-pos-ink tabular-nums">{p.qty}</td>
                       <td className="px-4 py-2.5 text-right font-medium text-pos-accent tabular-nums">
-                        ¥{p.amount.toLocaleString()}
+                        ¥{Number(p.amount ?? 0).toLocaleString()}
                       </td>
                     </tr>
                   ))}
@@ -372,7 +399,7 @@ export default function DashboardPage() {
                       </td>
                       <td className="px-3 py-2.5 text-right text-pos-ink tabular-nums">{e.orderCount}</td>
                       <td className="px-4 py-2.5 text-right font-medium text-pos-accent tabular-nums">
-                        ¥{e.salesAmount.toLocaleString()}
+                        ¥{Number(e.salesAmount ?? 0).toLocaleString()}
                       </td>
                     </tr>
                   ))}

@@ -5,30 +5,39 @@
 export { default } from '@client/src/components/ListTable';
 export type { ListTableProps } from '@client/src/components/ListTable';
 
+// P0-4：色彩令牌统一收敛到 StatusTone，与 client/src/components/ui/status-badge 同源
+const TONE_PILL: Record<string, string> = {
+  ok: 'bg-pos-ok-bg text-pos-ok',
+  warn: 'bg-pos-warn-bg text-pos-warn',
+  danger: 'bg-pos-danger-bg text-pos-danger',
+  info: 'bg-pos-info-bg text-pos-info',
+  neutral: 'bg-pos-paper text-pos-ink-2',
+};
+
 export const statusColorMap: Record<string, string> = {
   // 中文兼容
-  已完成: 'bg-pos-ok-bg text-pos-ok',
-  已入库: 'bg-pos-ok-bg text-pos-ok',
-  待审批: 'bg-pos-warn-bg text-pos-warn',
-  待收货: 'bg-pos-warn-bg text-pos-warn',
-  处理中: 'bg-pos-info-bg text-pos-info',
-  已拒绝: 'bg-pos-danger-bg text-pos-danger',
-  进行中: 'bg-pos-info-bg text-pos-info',
+  已完成: TONE_PILL.ok,
+  已入库: TONE_PILL.ok,
+  待审批: TONE_PILL.warn,
+  待收货: TONE_PILL.warn,
+  处理中: TONE_PILL.info,
+  已拒绝: TONE_PILL.danger,
+  进行中: TONE_PILL.info,
   // 英文（后端实际返回）
-  pending: 'bg-pos-warn-bg text-pos-warn',
-  submitted: 'bg-pos-warn-bg text-pos-warn',
-  draft: 'bg-pos-warn-bg text-pos-warn',
-  received: 'bg-pos-ok-bg text-pos-ok',
-  audited: 'bg-pos-ok-bg text-pos-ok',
-  completed: 'bg-pos-ok-bg text-pos-ok',
-  approved: 'bg-pos-ok-bg text-pos-ok',
-  rejected: 'bg-pos-danger-bg text-pos-danger',
-  processing: 'bg-pos-info-bg text-pos-info',
-  cancelled: 'bg-pos-paper text-pos-ink-3',
+  pending: TONE_PILL.warn,
+  submitted: TONE_PILL.warn,
+  draft: TONE_PILL.warn,
+  received: TONE_PILL.ok,
+  audited: TONE_PILL.ok,
+  completed: TONE_PILL.ok,
+  approved: TONE_PILL.ok,
+  rejected: TONE_PILL.danger,
+  processing: TONE_PILL.info,
+  cancelled: TONE_PILL.neutral,
 };
 
 export function getStatusClass(status: string): string {
-  return `px-2 py-0.5 rounded-md font-medium ${statusColorMap[status] || 'bg-pos-paper text-pos-ink-3'}`;
+  return `px-2 py-0.5 rounded-md font-medium ${statusColorMap[status] || TONE_PILL.neutral}`;
 }
 
 export const statusLabelMap: Record<string, string> = {

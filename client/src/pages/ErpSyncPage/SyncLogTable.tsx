@@ -1,5 +1,6 @@
 import { RefreshCw } from 'lucide-react';
 import AsyncState from '@client/src/components/AsyncState';
+import { StatusBadge } from '@client/src/components/ui/status-badge';
 import type { SyncLog } from '@shared/api.interface';
 import { formatDateTime, formatDuration, mapStatus, statusTextMap, getTaskName } from './sync-constants';
 
@@ -78,13 +79,7 @@ export default function SyncLogTable({ logs, loading, error = null, direction, o
                     {formatDateTime(log.createdAt)}
                   </td>
                   <td className="px-4 py-2.5 text-center">
-                    <span className={`text-xs px-2 py-0.5 rounded ${
-                      log.direction === 'upstream'
-                        ? 'bg-pos-info-bg text-pos-info'
-                        : 'bg-pos-accent-light text-pos-accent'
-                    }`}>
-                      {dirLabel}
-                    </span>
+                    <StatusBadge tone={log.direction === 'upstream' ? 'info' : 'accent'}>{dirLabel}</StatusBadge>
                   </td>
                   <td className="px-4 py-2.5 text-pos-ink">
                     {getTaskName(log.dataType)}
@@ -92,14 +87,12 @@ export default function SyncLogTable({ logs, loading, error = null, direction, o
                   </td>
                   <td className="px-4 py-2.5 text-right text-pos-ink-2 tabular-nums">{log.retryCount}</td>
                   <td className="px-4 py-2.5 text-center">
-                    <span className={`text-xs ${
-                      st === 'success' ? 'text-pos-ok' :
-                      st === 'syncing' ? 'text-pos-accent' :
-                      st === 'warning' ? 'text-pos-warn' :
-                      st === 'failed' ? 'text-pos-danger' : 'text-pos-ink-3'
-                    }`}>
-                      {statusTextMap[st]}
-                    </span>
+                    <StatusBadge tone={
+                      st === 'success' ? 'ok' :
+                      st === 'syncing' ? 'accent' :
+                      st === 'warning' ? 'warn' :
+                      st === 'failed' ? 'danger' : 'neutral'
+                    }>{statusTextMap[st]}</StatusBadge>
                   </td>
                   <td className="px-4 py-2.5 text-right text-pos-ink-3 tabular-nums">
                     {formatDuration(log.durationMs)}
