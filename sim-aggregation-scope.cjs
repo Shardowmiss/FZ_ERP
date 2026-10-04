@@ -168,7 +168,7 @@ async function main() {
   const warnAllow = await run(ALLOW, () => svc.dashboard.getWarnings(10));
   assert('getWarnings 放开态 返回数组（无回归）', Array.isArray(warnAllow));
 
-  // ============ 分析：生命周期 / BI / 移动看板 ============
+  // ============ 分析：生命周期 / BI ============
   console.log('\n[分析] dealer 作用域');
   const lifeDeny = await run(DENY, () => svc.analytics.lifecycleList(3650));
   const lifeDenyLeak = Array.isArray(lifeDeny) ? lifeDeny.some((it) => Number(it.recentQty || 0) !== 0) : true;
@@ -179,10 +179,6 @@ async function main() {
   assert('bi 拒绝态 rows 空', biDeny && Array.isArray(biDeny.rows) && biDeny.rows.length === 0, biDeny && biDeny.rows && biDeny.rows.length);
   const biAllow = await run(ALLOW, () => svc.analytics.bi('category'));
   assert('bi 放开态 rows 返回（无回归）', biAllow && Array.isArray(biAllow.rows));
-  const mobDeny = await run(DENY, () => svc.analytics.mobileDashboard());
-  assert('mobileDashboard 拒绝态 topStyles/warnings 空', mobDeny && Array.isArray(mobDeny.topStyles) && mobDeny.topStyles.length === 0 && Array.isArray(mobDeny.warnings) && mobDeny.warnings.length === 0, mobDeny && { t: mobDeny.topStyles.length, w: mobDeny.warnings.length });
-  const mobAllow = await run(ALLOW, () => svc.analytics.mobileDashboard());
-  assert('mobileDashboard 放开态 正常（无回归）', mobAllow && Array.isArray(mobAllow.topStyles) && Array.isArray(mobAllow.warnings));
 
   // ============ 汇总 ============
   console.log(`\n结果：通过 ${pass}，失败 ${fail}`);

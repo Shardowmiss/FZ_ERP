@@ -91,7 +91,6 @@ async function q1(t, where) { const r = await db.select().from(t).where(where).l
   } catch (e) { R.analytics.forecast = 'ERR:' + String(e.message||e).slice(0,120); }
   try { const l = await analytics.lifecycleList(); R.analytics.lifecycleList = 'OK items=' + (l?.length ?? 0); } catch (e) { R.analytics.lifecycleList = 'ERR:' + String(e.message||e).slice(0,120); }
   try { const b = await analytics.bi('style', 'amount', '2026-01-01', '2026-12-31'); R.analytics.bi = 'OK rows=' + (b?.rows?.length ?? 0); } catch (e) { R.analytics.bi = 'ERR:' + String(e.message||e).slice(0,120); }
-  try { const d = await analytics.mobileDashboard(); R.analytics.mobileDashboard = 'OK kpis=' + (Object.keys(d||{}).length); } catch (e) { R.analytics.mobileDashboard = 'ERR:' + String(e.message||e).slice(0,120); }
 
   // ---- 3. Member ----
   R.member = {};

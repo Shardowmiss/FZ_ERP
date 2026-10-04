@@ -2465,18 +2465,3 @@ export interface BiResult {
   rows: BiDimensionValue[];
 }
 
-// ===== P1-6 移动老板看板 =====
-export interface PendingApproval {
-  docType: string;
-  docId: string;
-  docNo: string;
-  date?: string;
-  amount?: number;
-}
-
-export interface MobileDashboard {
-  stats: DashboardStats;
-  pendingApprovals: PendingApproval[];
-  topStyles: TopStyleItem[];
-  warnings: InventoryWarningItem[];
-}

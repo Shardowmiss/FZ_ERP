@@ -90,7 +90,6 @@ const SubcontractPage = React.lazy(() => import('./pages/subcontract/Subcontract
 const ForecastPage = React.lazy(() => import('./pages/analytics/ForecastPage'));
 const LifecyclePage = React.lazy(() => import('./pages/analytics/LifecyclePage'));
 const BIPage = React.lazy(() => import('./pages/analytics/BIPage'));
-const MobileDashboardPage = React.lazy(() => import('./pages/analytics/MobileDashboardPage'));
 const OmniPage = React.lazy(() => import('./pages/omni/OmniPage'));
 const PosCashierPage = React.lazy(() => import('./pages/pos/CashierPage'));
 const PricingPage = React.lazy(() => import('./pages/pricing/PriceListPage'));
@@ -750,10 +749,6 @@ const RoutesComponent = () => {
           <Route
             path="analytics/bi"
             element={protectedWith(<BIPage />, 'dashboard:view')}
-          />
-          <Route
-            path="analytics/mobile-dashboard"
-            element={protectedWith(<MobileDashboardPage />)}
           />
           <Route
             path="omni"

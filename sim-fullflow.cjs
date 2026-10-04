@@ -508,11 +508,6 @@ function note(issue, detail) { R.issues.push({ ok: true, issue, detail: detail |
     assert(list.length >= 3 && Number(payRows[0].amt) > 0, `上下游应收(${list.length})/应付(¥${Number(payRows[0].amt)})闭环连通`, `应收 ${list.length} 笔；应付合计 ¥${Number(payRows[0].amt)}`);
     return { total: list.length, fromSalesOrder: fromSo.length, totalPayable: Number(payRows[0].amt) };
   });
-  await step(R.analytics, 'mobileDashboard', async () => {
-    const d = await analytics.mobileDashboard();
-    R.analytics.keys = Object.keys(d || {});
-    return { keys: Object.keys(d || {}).length };
-  });
   await step(R.analytics, 'bi', async () => {
     const b = await analytics.bi('style', 'amount', '2026-01-01', '2026-12-31');
     return { rows: (b && b.rows ? b.rows.length : 0) };

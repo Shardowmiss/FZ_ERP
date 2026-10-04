@@ -172,7 +172,6 @@ const menuItems: MenuItem[] = [
       { key: 'analytics-forecast', label: 'AI销量预测', path: '/analytics/forecast', permission: 'dashboard:view' },
       { key: 'analytics-lifecycle', label: '商品生命周期', path: '/analytics/lifecycle', permission: 'dashboard:view' },
       { key: 'analytics-bi', label: '自助BI钻取', path: '/analytics/bi', permission: 'dashboard:view' },
-      { key: 'analytics-mobile-dashboard', label: '移动老板看板', path: '/analytics/mobile-dashboard', permission: 'dashboard:view' },
     ],
   },
   {

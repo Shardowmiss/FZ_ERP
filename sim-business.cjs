@@ -386,7 +386,6 @@ const step = async (store, name, fn) => {
   await step(R.analytics, 'forecast', async () => { const f = await analytics.forecast(sampleSku); return { months: f.forecast?.length ?? 0 }; });
   await step(R.analytics, 'bi', async () => { const b = await analytics.bi('style', 'amount', '2026-01-01', '2026-12-31'); return { rows: b?.rows?.length ?? 0 }; });
   await step(R.analytics, 'lifecycleList', async () => (await analytics.lifecycleList())?.length ?? 0);
-  await step(R.analytics, 'mobileDashboard', async () => Object.keys(await analytics.mobileDashboard()).length);
   await step(R.analytics, 'retailReport', async () => { const d = await retailReport.getReport({ startDate: '2026-01-01', endDate: '2026-12-31' }); return { keys: Object.keys(d || {}).length }; });
 
   // ===== 库存盘点（抽查一款）=====

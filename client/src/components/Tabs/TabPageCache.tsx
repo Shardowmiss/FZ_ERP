@@ -71,7 +71,6 @@ const SubcontractPage = React.lazy(() => import('@client/src/pages/subcontract/S
 const ForecastPage = React.lazy(() => import('@client/src/pages/analytics/ForecastPage'));
 const LifecyclePage = React.lazy(() => import('@client/src/pages/analytics/LifecyclePage'));
 const BIPage = React.lazy(() => import('@client/src/pages/analytics/BIPage'));
-const MobileDashboardPage = React.lazy(() => import('@client/src/pages/analytics/MobileDashboardPage'));
 const OmniPage = React.lazy(() => import('@client/src/pages/omni/OmniPage'));
 const MemberPage = React.lazy(() => import('@client/src/pages/member/MemberPage'));
 const MemberMergeAuditPage = React.lazy(() => import('@client/src/pages/member/MemberMergeAuditPage'));
@@ -284,7 +283,6 @@ function getRouteComponent(pathname: string): React.ComponentType | null {
     '/analytics/forecast': ForecastPage,
     '/analytics/lifecycle': LifecyclePage,
     '/analytics/bi': BIPage,
-    '/analytics/mobile-dashboard': MobileDashboardPage,
     '/omni': OmniPage,
     '/member': MemberPage,
     '/base/member-merge-audit': MemberMergeAuditPage,

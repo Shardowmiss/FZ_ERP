@@ -58,13 +58,6 @@ export class AnalyticsController {
     );
   }
 
-  // P1-6 移动老板看板
-  @CheckPermission('dashboard:view')
-  @Get('mobile-dashboard')
-  async mobileDashboard() {
-    return this.analyticsService.mobileDashboard();
-  }
-
   @Post('approve')
   async approve(@Body() body: { docType: string; docId: string }) {
     if (!body?.docType || !body?.docId)

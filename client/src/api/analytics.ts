@@ -3,7 +3,6 @@ import type {
   ForecastResult,
   LifecycleItem,
   BiResult,
-  MobileDashboard,
 } from '@shared/api.interface';
 
 export const analyticsApi = {
@@ -26,8 +25,6 @@ export const analyticsApi = {
       from,
       to,
     }),
-  mobileDashboard: () =>
-    request<MobileDashboard>('/api/analytics/mobile-dashboard'),
   approve: (docType: string, docId: string) =>
     request<{ updated: number }>('/api/analytics/approve', 'POST', {
       docType,

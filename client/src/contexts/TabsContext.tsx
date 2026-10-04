@@ -125,7 +125,6 @@ function getMenuLabelMap(): Record<string, string> {
     '/analytics/forecast': 'AI销量预测',
     '/analytics/lifecycle': '商品生命周期',
     '/analytics/bi': '自助BI钻取',
-    '/analytics/mobile-dashboard': '移动看板',
     '/pos/cashier': 'POS收银',
     '/pricing': '价格管理',
   };
