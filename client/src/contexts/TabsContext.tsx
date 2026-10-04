@@ -92,7 +92,6 @@ function getMenuLabelMap(): Record<string, string> {
     '/product/color': '颜色',
     '/product/size': '尺码',
     '/product/size-group-relation': '尺码组与尺码关系',
-    '/product/barcode-config': '条形码管理',
     '/system/user': '用户管理',
     '/system/role': '角色管理',
     '/system/permission': '权限管理',

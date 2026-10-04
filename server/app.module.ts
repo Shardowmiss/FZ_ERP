@@ -38,7 +38,6 @@ import { OpsModule } from './modules/ops/ops.module';
 import { HangtagModule } from './modules/hangtag/hangtag.module';
 import { UniqueCodeModule } from './modules/unique-code/unique-code.module';
 import { ConsistencyModule } from './modules/consistency/consistency.module';
-import { BarcodeConfigModule } from './modules/product/barcode-config/barcode-config.module';
 
 @Module({
   imports: [
@@ -80,7 +79,6 @@ import { BarcodeConfigModule } from './modules/product/barcode-config/barcode-co
     HangtagModule,
     UniqueCodeModule,
     ConsistencyModule,
-    BarcodeConfigModule,
     ViewModule,
   ],
   providers: [

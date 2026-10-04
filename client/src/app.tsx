@@ -111,7 +111,6 @@ const PaymentEditPage = React.lazy(() => import('./pages/finance/PaymentEditPage
 const ProfitPage = React.lazy(() => import('./pages/finance/ProfitPage'));
 const MonthClosePage = React.lazy(() => import('./pages/finance/MonthClosePage'));
 const CodeRulePage = React.lazy(() => import('./pages/system/CodeRulePage'));
-const BarcodeConfigPage = React.lazy(() => import('./pages/product/BarcodeConfigPage'));
 const UserManagePage = React.lazy(() => import('./pages/system/UserManagePage'));
 const RoleManagePage = React.lazy(() => import('./pages/system/RoleManagePage'));
 const PermissionManagePage = React.lazy(() => import('./pages/system/PermissionManagePage'));
@@ -427,10 +426,6 @@ const RoutesComponent = () => {
           <Route
             path="product/code-rule"
             element={protectedWith(<CodeRulePage />, 'base:style')}
-          />
-          <Route
-            path="product/barcode-config"
-            element={protectedWith(<BarcodeConfigPage />, 'product:barcode')}
           />
           <Route
             path="product/color"
