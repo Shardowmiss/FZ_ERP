@@ -27,7 +27,7 @@ export class SizeGroupController {
 
   @CheckPermission('base:style')
   @Post()
-  async create(@Body() body: { code: string; name: string; sizes: string[] }): Promise<SizeGroup> {
+  async create(@Body() body: { code: string; name: string; sizes?: string[] }): Promise<SizeGroup> {
     return this.sizeGroupService.create(body);
   }
 

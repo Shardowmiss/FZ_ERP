@@ -107,10 +107,12 @@ export class SizeGroupService extends BaseCrudService<
     return this.toDto(row);
   }
 
-  async create(dto: { code: string; name: string; sizes: string[] }): Promise<SizeGroup> {
+  async create(dto: { code: string; name: string; sizes?: string[] }): Promise<SizeGroup> {
     if (!dto.code?.trim()) throw new BadRequestException('编码不能为空');
     if (!dto.name?.trim()) throw new BadRequestException('名称不能为空');
-    if (!Array.isArray(dto.sizes)) throw new BadRequestException('尺码列表格式错误');
+    // 尺码成员改由「尺码组与尺码关系」维护；此处不再强制要求 sizes，缺省为空。
+    // 这样尺码组页只维护组本身（不传 sizes）也能建组，且后续改名不会因不传 sizes 误清空关联表。
+    const sizes = Array.isArray(dto.sizes) ? dto.sizes : [];
 
     const existing = await this.db.select().from(sizeGroup).where(eq(sizeGroup.code, dto.code));
     if (existing.length > 0) throw new ConflictException('编码已存在');
@@ -118,12 +120,12 @@ export class SizeGroupService extends BaseCrudService<
     const values: SizeGroupInsert = {
       code: dto.code,
       name: dto.name,
-      sizes: dto.sizes as any,
+      sizes: sizes as any,
     };
 
     const row = await this.insertRow(values);
-    if (dto.sizes.length > 0) {
-      await this.replaceSizeMembers(row.id, dto.sizes);
+    if (sizes.length > 0) {
+      await this.replaceSizeMembers(row.id, sizes);
       await this.rebuildSizesJsonb(row.id);
     }
     return this.detail(row.id);

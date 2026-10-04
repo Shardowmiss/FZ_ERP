@@ -16,10 +16,9 @@ const SizeGroupPage: React.FC = () => {
   const [searchKeyword, setSearchKeyword] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState<{ code: string; name: string; sizes: string[] }>({
+  const [form, setForm] = useState<{ code: string; name: string }>({
     code: '',
     name: '',
-    sizes: [],
   });
 
   const fetchData = async () => {
@@ -60,7 +59,7 @@ const SizeGroupPage: React.FC = () => {
 
   const openAdd = () => {
     setEditingId(null);
-    setForm({ code: '', name: '', sizes: [''] });
+    setForm({ code: '', name: '' });
     setDialogOpen(true);
   };
 
@@ -69,7 +68,6 @@ const SizeGroupPage: React.FC = () => {
     setForm({
       code: item.code,
       name: item.name,
-      sizes: item.sizes && item.sizes.length > 0 ? [...item.sizes] : [''],
     });
     setDialogOpen(true);
   };
@@ -80,14 +78,13 @@ const SizeGroupPage: React.FC = () => {
     if (submitting) return;
     if (!form.code.trim()) { toast('请输入编码'); return; }
     if (!form.name.trim()) { toast('请输入名称'); return; }
-    const validSizes = form.sizes.filter(s => s.trim());
-    if (validSizes.length === 0) { toast('请至少添加一个尺码'); return; }
     setSubmitting(true);
     try {
+      // 尺码组的尺码成员改由「尺码组与尺码关系」页面维护，此处只维护尺码组本身
       if (editingId) {
-        await baseApi.sizeGroup.update(editingId, { ...form, sizes: validSizes });
+        await baseApi.sizeGroup.update(editingId, { code: form.code, name: form.name });
       } else {
-        await baseApi.sizeGroup.create({ ...form, sizes: validSizes });
+        await baseApi.sizeGroup.create({ code: form.code, name: form.name });
       }
       setDialogOpen(false);
       fetchData();
@@ -108,22 +105,6 @@ const SizeGroupPage: React.FC = () => {
     }
   };
 
-  const addSize = () => {
-    setForm({ ...form, sizes: [...form.sizes, ''] });
-  };
-
-  const removeSize = (index: number) => {
-    const newSizes = [...form.sizes];
-    newSizes.splice(index, 1);
-    setForm({ ...form, sizes: newSizes.length > 0 ? newSizes : [''] });
-  };
-
-  const updateSize = (index: number, value: string) => {
-    const newSizes = [...form.sizes];
-    newSizes[index] = value;
-    setForm({ ...form, sizes: newSizes });
-  };
-
   const totalPages = Math.ceil(total / pageSize);
 
   return (
@@ -131,7 +112,7 @@ const SizeGroupPage: React.FC = () => {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold">尺码组管理</h2>
         <button
-          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
+          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors"
           onClick={openAdd}
         >
           + 新增尺码组
@@ -147,7 +128,7 @@ const SizeGroupPage: React.FC = () => {
           className="px-3 py-2 border border-gray-300 rounded text-sm w-60 focus:outline-none focus:border-primary"
         />
         <button
-          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
+          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors"
           onClick={handleSearch}
         >
           查询
@@ -166,25 +147,23 @@ const SizeGroupPage: React.FC = () => {
             <tr className="bg-gray-50 text-gray-600 font-medium">
               <th className="text-left px-4 py-3 border-b border-gray-200">编码</th>
               <th className="text-left px-4 py-3 border-b border-gray-200">名称</th>
-              <th className="text-left px-4 py-3 border-b border-gray-200">尺码列表</th>
               <th className="text-left px-4 py-3 border-b border-gray-200">创建时间</th>
               <th className="text-left px-4 py-3 border-b border-gray-200 w-32">操作</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={5} className="text-center py-8 text-gray-400">加载中...</td></tr>
+              <tr><td colSpan={4} className="text-center py-8 text-gray-400">加载中...</td></tr>
             ) : list.length === 0 ? (
-              <tr><td colSpan={5} className="text-center py-8 text-gray-400">暂无数据</td></tr>
+              <tr><td colSpan={4} className="text-center py-8 text-gray-400">暂无数据</td></tr>
             ) : (
               list.map((item) => (
                 <tr key={item.id} className="border-b border-gray-200 hover:bg-gray-50">
                   <td className="px-4 py-3">{item.code}</td>
                   <td className="px-4 py-3">{item.name}</td>
-                  <td className="px-4 py-3 text-gray-600">{item.sizes?.join('，') || '-'}</td>
                   <td className="px-4 py-3 text-gray-500">{item.createdAt?.replace('T', ' ').slice(0, 19) || '-'}</td>
                   <td className="px-4 py-3">
-                    <button className="text-primary hover:text-blue-700 mr-3" onClick={() => openEdit(item)}>编辑</button>
+                    <button className="text-primary hover:text-primary/90 mr-3" onClick={() => openEdit(item)}>编辑</button>
                     <button className="text-red-500 hover:text-red-700" onClick={() => handleDelete(item.id)}>删除</button>
                   </td>
                 </tr>
@@ -229,33 +208,6 @@ const SizeGroupPage: React.FC = () => {
                     className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   />
                 </div>
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="block text-sm text-gray-700">尺码列表</label>
-                    <button className="text-sm text-primary hover:text-blue-700" onClick={addSize}>
-                      + 添加尺码
-                    </button>
-                  </div>
-                  <div className="space-y-2">
-                    {form.sizes.map((size, index) => (
-                      <div key={size || index} className="flex items-center gap-2">
-                        <input
-                          type="text"
-                          placeholder="尺码名称"
-                          value={size}
-                          onChange={(e) => updateSize(index, e.target.value)}
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
-                        />
-                        <button
-                          className="text-red-500 hover:text-red-700 text-sm px-2"
-                          onClick={() => removeSize(index)}
-                        >
-                          删除
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
               </div>
             </div>
             <div className="flex justify-end gap-2 px-5 py-3 border-t border-gray-200">
@@ -266,7 +218,7 @@ const SizeGroupPage: React.FC = () => {
                 取消
               </button>
               <button
-                className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleSave}
                 disabled={submitting}
               >
