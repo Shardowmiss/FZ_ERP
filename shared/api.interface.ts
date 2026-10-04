@@ -1087,6 +1087,8 @@ export interface Store {
   name: string;
   storeType: string;
   dealerId?: string;
+  /** 所属经销商名称（store LEFT JOIN dealer 视图，可能为空） */
+  dealerName?: string;
   warehouseId?: string;
   /** 绑定仓库编码（店仓逻辑统一视图：store LEFT JOIN warehouse） */
   warehouseCode?: string;

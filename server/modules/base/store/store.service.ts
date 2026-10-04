@@ -12,6 +12,7 @@ import { escapeLike } from '@server/common/utils/escape-like';
 import {
   store,
   warehouse,
+  dealer,
   retailOrder,
   retailReturn,
   preOrder,
@@ -66,6 +67,7 @@ export class StoreService {
           name: store.name,
           storeType: store.storeType,
           dealerId: store.dealerId,
+          dealerName: dealer.name,
           warehouseId: store.warehouseId,
           contactPerson: store.contactPerson,
           phone: store.phone,
@@ -81,6 +83,7 @@ export class StoreService {
         })
         .from(store)
         .leftJoin(warehouse, eq(store.warehouseId, warehouse.id))
+        .leftJoin(dealer, eq(store.dealerId, dealer.id))
         .where(where as any)
         .orderBy(desc(store.createdAt))
         .limit(pageSize)
@@ -94,6 +97,7 @@ export class StoreService {
       name: row.name,
       storeType: row.storeType,
       dealerId: row.dealerId ?? undefined,
+      dealerName: row.dealerName ?? undefined,
       warehouseId: row.warehouseId ?? undefined,
       contactPerson: row.contactPerson ?? undefined,
       phone: decryptField(row.phone) ?? undefined,
@@ -117,10 +121,25 @@ export class StoreService {
       { kind: 'dealerColumn', column: store.dealerId },
     );
     const rows = await this.db
-      .select()
+      .select({
+        id: store.id,
+        code: store.code,
+        name: store.name,
+        storeType: store.storeType,
+        dealerId: store.dealerId,
+        dealerName: dealer.name,
+        warehouseId: store.warehouseId,
+        contactPerson: store.contactPerson,
+        phone: store.phone,
+        address: store.address,
+        status: store.status,
+        remark: store.remark,
+        createdAt: store.createdAt,
+      })
       .from(store)
+      .leftJoin(dealer, eq(store.dealerId, dealer.id))
       .where(scopeCond ? and(eq(store.id, id), scopeCond) : eq(store.id, id));
-    if (rows.length === 0) throw new NotFoundException('门店不存在');
+    if (rows.length === 0) throw new NotFoundException('店仓不存在');
     const row = rows[0];
     return {
       id: row.id,
@@ -128,6 +147,7 @@ export class StoreService {
       name: row.name,
       storeType: row.storeType,
       dealerId: row.dealerId ?? undefined,
+      dealerName: row.dealerName ?? undefined,
       warehouseId: row.warehouseId ?? undefined,
       contactPerson: row.contactPerson ?? undefined,
       phone: decryptField(row.phone) ?? undefined,
@@ -152,21 +172,17 @@ export class StoreService {
   }): Promise<Store> {
     if (!dto.code?.trim()) throw new BadRequestException('编码不能为空');
     if (!dto.name?.trim()) throw new BadRequestException('名称不能为空');
-    if (!dto.storeType?.trim()) throw new BadRequestException('门店类型不能为空');
+    if (!dto.storeType?.trim()) throw new BadRequestException('店仓类型不能为空');
+    if (!dto.dealerId?.trim()) throw new BadRequestException('店仓必须关联所属经销商');
 
     const existing = await this.db.select().from(store).where(eq(store.code, dto.code));
     if (existing.length > 0) throw new ConflictException('编码已存在');
-
-    const isDealerType = dto.storeType === 'dealer';
-    if (isDealerType && !dto.dealerId) {
-      throw new BadRequestException('经销商门店必须关联经销商');
-    }
 
     const values: StoreInsert = {
       code: dto.code,
       name: dto.name,
       storeType: dto.storeType,
-      dealerId: isDealerType ? dto.dealerId ?? null : null,
+      dealerId: dto.dealerId ?? null,
       warehouseId: dto.warehouseId ?? null,
       contactPerson: dto.contactPerson ?? null,
       phone: encryptField(dto.phone) ?? null,
@@ -184,6 +200,7 @@ export class StoreService {
       name: row.name,
       storeType: row.storeType,
       dealerId: row.dealerId ?? undefined,
+      dealerName: undefined,
       warehouseId: row.warehouseId ?? undefined,
       contactPerson: row.contactPerson ?? undefined,
       phone: decryptField(row.phone) ?? undefined,
@@ -219,11 +236,8 @@ export class StoreService {
       patch.name = dto.name;
     }
     if (dto.storeType !== undefined) {
-      if (!dto.storeType.trim()) throw new BadRequestException('门店类型不能为空');
+      if (!dto.storeType.trim()) throw new BadRequestException('店仓类型不能为空');
       patch.storeType = dto.storeType;
-      if (dto.storeType === 'direct') {
-        patch.dealerId = null;
-      }
     }
     if (dto.dealerId !== undefined) {
       patch.dealerId = dto.dealerId ?? null;
@@ -243,7 +257,7 @@ export class StoreService {
     patch.updatedAt = new Date();
 
     const updated = await this.db.update(store).set(patch).where(eq(store.id, id)).returning();
-    if (updated.length === 0) throw new NotFoundException('门店不存在');
+    if (updated.length === 0) throw new NotFoundException('店仓不存在');
     const row = updated[0];
     return {
       id: row.id,
@@ -251,6 +265,7 @@ export class StoreService {
       name: row.name,
       storeType: row.storeType,
       dealerId: row.dealerId ?? undefined,
+      dealerName: undefined,
       warehouseId: row.warehouseId ?? undefined,
       contactPerson: row.contactPerson ?? undefined,
       phone: decryptField(row.phone) ?? undefined,
@@ -261,13 +276,13 @@ export class StoreService {
     };
   }
 
-async remove(id: string): Promise<void> {
-    // 先查门店获取 warehouseId
+  async remove(id: string): Promise<void> {
+    // 先查店仓获取 warehouseId
     const storeRows = await this.db
       .select({ id: store.id, warehouseId: store.warehouseId })
       .from(store)
       .where(eq(store.id, id));
-    if (storeRows.length === 0) throw new NotFoundException('门店不存在');
+    if (storeRows.length === 0) throw new NotFoundException('店仓不存在');
     const warehouseId = storeRows[0].warehouseId;
 
     // 引用检查：零售单、零售退货、预售单、配货单
@@ -286,10 +301,10 @@ async remove(id: string): Promise<void> {
     ].some((c) => Number(c ?? 0) > 0);
 
     if (hasDocReference) {
-      throw new ConflictException('门店存在关联单据，无法删除');
+      throw new ConflictException('店仓存在关联单据，无法删除');
     }
 
-    // 库存检查：门店关联仓库有库存则拒绝
+    // 库存检查：店仓关联仓库有库存则拒绝
     if (warehouseId) {
       const [skuStockCount, matStockCount] = await Promise.all([
         this.db
@@ -306,12 +321,12 @@ async remove(id: string): Promise<void> {
         .some((c) => Number(c ?? 0) > 0);
 
       if (hasStock) {
-        throw new ConflictException('门店存在关联单据，无法删除');
+        throw new ConflictException('店仓存在关联单据，无法删除');
       }
     }
 
     const deleted = await this.db.delete(store).where(eq(store.id, id)).returning({ id: store.id });
-    if (deleted.length === 0) throw new NotFoundException('门店不存在');
+    if (deleted.length === 0) throw new NotFoundException('店仓不存在');
   }
 
   async options(): Promise<{

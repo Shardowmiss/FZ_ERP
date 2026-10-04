@@ -126,9 +126,9 @@ const StorePage: React.FC = () => {
   };
 
   const handleSave = async () => {
-    if (!form.code?.trim()) { toast('请输入门店编码'); return; }
-    if (!form.name?.trim()) { toast('请输入门店名称'); return; }
-    if (form.storeType === 'dealer' && !form.dealerId) {
+    if (!form.code?.trim()) { toast('请输入店仓编码'); return; }
+    if (!form.name?.trim()) { toast('请输入店仓名称'); return; }
+    if (!form.dealerId) {
       toast('请选择所属经销商');
       return;
     }
@@ -161,7 +161,7 @@ const StorePage: React.FC = () => {
 
   const renderStoreType = (type: string) => {
     if (type === 'direct') return '直营店';
-    if (type === 'dealer') return '经销商门店';
+    if (type === 'franchise' || type === 'dealer') return '经销商店仓';
     return type;
   };
 
@@ -184,8 +184,6 @@ const StorePage: React.FC = () => {
     const d = dealerOptions.find((o: OptionItem) => o.id === dealerId);
     return d ? d.name : '-';
   };
-
-  const isDealerStore = form.storeType === 'dealer';
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-5">
@@ -222,7 +220,7 @@ const StorePage: React.FC = () => {
         >
           <option value="">全部类型</option>
           <option value="direct">直营店</option>
-          <option value="dealer">经销商门店</option>
+          <option value="franchise">经销商店仓</option>
         </select>
         <select
           value={statusFilter}
@@ -251,11 +249,11 @@ const StorePage: React.FC = () => {
         <table className="w-full text-sm border-collapse">
           <thead>
             <tr className="bg-gray-50 text-gray-600 font-medium">
-              <th className="text-left px-4 py-3 border-b border-gray-200">门店编码</th>
-              <th className="text-left px-4 py-3 border-b border-gray-200">门店名称</th>
-              <th className="text-left px-4 py-3 border-b border-gray-200">门店类型</th>
+              <th className="text-left px-4 py-3 border-b border-gray-200">店仓编码</th>
+              <th className="text-left px-4 py-3 border-b border-gray-200">店仓名称</th>
+              <th className="text-left px-4 py-3 border-b border-gray-200">店仓类型</th>
               <th className="text-left px-4 py-3 border-b border-gray-200">绑定仓库</th>
-              <th className="text-left px-4 py-3 border-b border-gray-200">所属经销商</th>
+              <th className="text-left px-4 py-3 border-b border-gray-200">所属经销商名称</th>
               <th className="text-left px-4 py-3 border-b border-gray-200">联系人</th>
               <th className="text-left px-4 py-3 border-b border-gray-200">电话</th>
               <th className="text-left px-4 py-3 border-b border-gray-200">地址</th>
@@ -275,7 +273,7 @@ const StorePage: React.FC = () => {
                   <td className="px-4 py-3">{item.name}</td>
                   <td className="px-4 py-3 text-gray-600">{renderStoreType(item.storeType)}</td>
                   <td className="px-4 py-3 text-gray-600">{renderWarehouse(item)}</td>
-                  <td className="px-4 py-3 text-gray-600">{getDealerName(item.dealerId)}</td>
+                  <td className="px-4 py-3 text-gray-600">{item.dealerName ?? getDealerName(item.dealerId)}</td>
                   <td className="px-4 py-3 text-gray-600">{item.contactPerson || '-'}</td>
                   <td className="px-4 py-3 text-gray-600">{item.phone || '-'}</td>
                   <td className="px-4 py-3 text-gray-600">{item.address || '-'}</td>
@@ -309,7 +307,7 @@ const StorePage: React.FC = () => {
             <div className="p-5 overflow-y-auto flex-1">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm text-gray-700 mb-1">门店编码<span className="text-red-500">*</span></label>
+                  <label className="block text-sm text-gray-700 mb-1">店仓编码<span className="text-red-500">*</span></label>
                   <input
                     type="text"
                     value={form.code || ''}
@@ -318,7 +316,7 @@ const StorePage: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-700 mb-1">门店名称<span className="text-red-500">*</span></label>
+                  <label className="block text-sm text-gray-700 mb-1">店仓名称<span className="text-red-500">*</span></label>
                   <input
                     type="text"
                     value={form.name || ''}
@@ -327,31 +325,35 @@ const StorePage: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-700 mb-1">门店类型<span className="text-red-500">*</span></label>
+                  <label className="block text-sm text-gray-700 mb-1">店仓类型<span className="text-red-500">*</span></label>
                   <select
                     value={form.storeType || 'direct'}
-                    onChange={(e) => setForm({ ...form, storeType: e.target.value, dealerId: e.target.value === 'dealer' ? form.dealerId : '' })}
+                    onChange={(e) => {
+                      const t = e.target.value;
+                      const nextDealer = t === 'direct'
+                        ? (dealerOptions.find((o: OptionItem) => o.name === '总部' || o.code === 'HQ001')?.id ?? form.dealerId)
+                        : '';
+                      setForm({ ...form, storeType: t, dealerId: nextDealer });
+                    }}
                     className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   >
                     <option value="direct">直营店</option>
-                    <option value="dealer">经销商门店</option>
+                    <option value="franchise">经销商店仓</option>
                   </select>
                 </div>
-                {isDealerStore && (
-                  <div>
-                    <label className="block text-sm text-gray-700 mb-1">所属经销商<span className="text-red-500">*</span></label>
-                    <select
-                      value={form.dealerId || ''}
-                      onChange={(e) => setForm({ ...form, dealerId: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
-                    >
-                      <option value="">请选择经销商</option>
-                      {dealerOptions.map((d: OptionItem) => (
-                        <option key={d.id} value={d.id}>{d.code} - {d.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                )}
+                <div>
+                  <label className="block text-sm text-gray-700 mb-1">所属经销商<span className="text-red-500">*</span></label>
+                  <select
+                    value={form.dealerId || ''}
+                    onChange={(e) => setForm({ ...form, dealerId: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
+                  >
+                    <option value="">请选择经销商</option>
+                    {dealerOptions.map((d: OptionItem) => (
+                      <option key={d.id} value={d.id}>{d.code} - {d.name}</option>
+                    ))}
+                  </select>
+                </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">绑定仓库</label>
                   <select
