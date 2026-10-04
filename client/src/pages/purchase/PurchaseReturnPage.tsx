@@ -12,6 +12,9 @@ import { TableContainer } from '@client/src/components/ui/table-container';
 import { DataPagination } from '@client/src/components/ui/pagination';
 import { exportTableToCSV } from '@client/src/utils/export-csv';
 import { errMsg } from '@/utils/errMsg';
+import { purchaseApi } from '@client/src/api/purchase';
+import { baseApi } from '@client/src/api/base';
+import { useDefaultDocDate } from '@client/src/hooks/useDefaultDocDate';
 
 interface PurchaseReturn {
   id: string;
@@ -50,6 +53,14 @@ const PurchaseReturnPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('');
   const [keyword, setKeyword] = useState('');
 
+  const { startDate: defaultStart, endDate: defaultEnd } = useDefaultDocDate();
+  const [filterStartDate, setFilterStartDate] = useState(defaultStart);
+  const [filterEndDate, setFilterEndDate] = useState(defaultEnd);
+  const [filterSupplier, setFilterSupplier] = useState('');
+  const [filterWarehouse, setFilterWarehouse] = useState('');
+  const [supplierOptions, setSupplierOptions] = useState<{ id: string; code: string; name: string }[]>([]);
+  const [warehouseOptions, setWarehouseOptions] = useState<{ id: string; code: string; name: string }[]>([]);
+
   const navigate = useNavigate();
 
   const [printOpen, setPrintOpen] = useState(false);
@@ -63,21 +74,41 @@ const PurchaseReturnPage: React.FC = () => {
 
   useEffect(() => {
     loadList();
-  }, [page, pageSize, statusFilter]);
+  }, [page, pageSize, statusFilter, filterStartDate, filterEndDate, filterSupplier, filterWarehouse, keyword]);
+
+  useEffect(() => {
+    const loadOpts = async () => {
+      try {
+        const [s, w] = await Promise.all([
+          baseApi.supplier.options(),
+          baseApi.warehouse.options(),
+        ]);
+        setSupplierOptions(s);
+        setWarehouseOptions(w);
+      } catch {
+        // ignore
+      }
+    };
+    loadOpts();
+  }, []);
 
   const loadList = async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({
-        page: String(page),
-        pageSize: String(pageSize),
-      });
-      if (statusFilter) params.append('status', statusFilter);
-      if (keyword) params.append('keyword', keyword);
-
-      const res = await axiosForBackend.get(`/api/purchase/return?${params.toString()}`);
-      setList(res.data.items || []);
-      setTotal(res.data.total || 0);
+      const params: {
+        page: number; pageSize: number;
+        status?: string; startDate?: string; endDate?: string;
+        supplierId?: string; warehouseId?: string; keyword?: string;
+      } = { page, pageSize };
+      if (statusFilter) params.status = statusFilter;
+      if (filterStartDate) params.startDate = filterStartDate;
+      if (filterEndDate) params.endDate = filterEndDate;
+      if (filterSupplier) params.supplierId = filterSupplier;
+      if (filterWarehouse) params.warehouseId = filterWarehouse;
+      if (keyword) params.keyword = keyword;
+      const res = await purchaseApi.return.list(params);
+      setList((res.items || []) as unknown as PurchaseReturn[]);
+      setTotal(res.total || 0);
     } catch (error) {
       logger.error('加载采购退货列表失败', error);
       toast(errMsg(error, '加载失败'));
@@ -140,14 +171,19 @@ const PurchaseReturnPage: React.FC = () => {
 
   const handleExport = async () => {
     try {
-      const params = new URLSearchParams({
-        page: '1',
-        pageSize: '10000',
-      });
-      if (statusFilter) params.append('status', statusFilter);
-      if (keyword) params.append('keyword', keyword);
-      const res = await axiosForBackend.get(`/api/purchase/return?${params.toString()}`);
-      exportTableToCSV('采购退货单', (res.data.items || []) as Record<string, unknown>[], {
+      const params: {
+        page: number; pageSize: number;
+        status?: string; startDate?: string; endDate?: string;
+        supplierId?: string; warehouseId?: string; keyword?: string;
+      } = { page: 1, pageSize: 10000 };
+      if (statusFilter) params.status = statusFilter;
+      if (filterStartDate) params.startDate = filterStartDate;
+      if (filterEndDate) params.endDate = filterEndDate;
+      if (filterSupplier) params.supplierId = filterSupplier;
+      if (filterWarehouse) params.warehouseId = filterWarehouse;
+      if (keyword) params.keyword = keyword;
+      const res = await purchaseApi.return.list(params);
+      exportTableToCSV('采购退货单', (res.items || []) as unknown as Record<string, unknown>[], {
         returnNo: '退货单号',
         inboundNo: '入库单号',
         supplierName: '供应商',
@@ -205,7 +241,43 @@ const PurchaseReturnPage: React.FC = () => {
         </button>
       </div>
 
-      <div className="flex flex-wrap gap-3 mb-4 p-3 bg-gray-50 rounded">
+      <div className="flex flex-wrap items-center gap-3 mb-4 p-3 bg-gray-50 rounded">
+        <select
+          value={filterSupplier}
+          onChange={(e) => { setFilterSupplier(e.target.value); setPage(1); }}
+          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
+        >
+          <option value="">全部供应商</option>
+          {supplierOptions.map((s: { id: string; code: string; name: string }) => (
+            <option key={s.id} value={s.id}>{s.name}</option>
+          ))}
+        </select>
+        <select
+          value={filterWarehouse}
+          onChange={(e) => { setFilterWarehouse(e.target.value); setPage(1); }}
+          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
+        >
+          <option value="">全部仓库</option>
+          {warehouseOptions.map((w: { id: string; code: string; name: string }) => (
+            <option key={w.id} value={w.id}>{w.name}</option>
+          ))}
+        </select>
+        <div className="flex items-center gap-1">
+          <span className="text-gray-600 text-sm">退货日期：</span>
+          <input
+            type="date"
+            value={filterStartDate}
+            onChange={(e) => { setFilterStartDate(e.target.value); setPage(1); }}
+            className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
+          />
+          <span className="text-gray-400">至</span>
+          <input
+            type="date"
+            value={filterEndDate}
+            onChange={(e) => { setFilterEndDate(e.target.value); setPage(1); }}
+            className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
+          />
+        </div>
         <input
           type="text"
           placeholder="搜索单号/供应商"
@@ -221,8 +293,7 @@ const PurchaseReturnPage: React.FC = () => {
           <option value="">全部状态</option>
           <option value="draft">草稿</option>
           <option value="approved">已审核</option>
-                    <option value="cancelled">已作废</option>
-</select>
+        </select>
         <button
           onClick={() => { setPage(1); loadList(); }}
           className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600"
@@ -236,7 +307,12 @@ const PurchaseReturnPage: React.FC = () => {
           导出
         </button>
         <button
-          onClick={() => { setKeyword(''); setStatusFilter(''); setPage(1); setTimeout(loadList, 0); }}
+          onClick={() => {
+            setKeyword(''); setStatusFilter('');
+            setFilterStartDate(defaultStart); setFilterEndDate(defaultEnd);
+            setFilterSupplier(''); setFilterWarehouse('');
+            setPage(1); setTimeout(loadList, 0);
+          }}
           className="px-4 py-2 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300"
         >
           重置

@@ -22,11 +22,21 @@ export class PurchaseReturnController {
     @Query('page') page = '1',
     @Query('pageSize') pageSize = '20',
     @Query('status') status?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+    @Query('supplierId') supplierId?: string,
+    @Query('warehouseId') warehouseId?: string,
+    @Query('keyword') keyword?: string,
   ): Promise<PaginationResult<PurchaseReturn>> {
     return this.purchaseReturnService.list({
       page: parseInt(page, 10),
       pageSize: parseInt(pageSize, 10),
       status,
+      startDate,
+      endDate,
+      supplierId,
+      warehouseId,
+      keyword,
     });
   }
 

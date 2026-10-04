@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { voidDraftDocument } from '@server/common/document-void';
 import { DRIZZLE_DATABASE, type PostgresJsDatabase } from '@lark-apaas/fullstack-nestjs-core';
-import { eq, and, desc, count, sql, inArray } from 'drizzle-orm';
+import { eq, and, desc, count, sql, inArray, gte, lte, like, or } from 'drizzle-orm';
 import {
   purchaseReturn,
   purchaseReturnItem,
@@ -49,6 +49,11 @@ interface ListQuery {
   page: number;
   pageSize: number;
   status?: string;
+  startDate?: string;
+  endDate?: string;
+  supplierId?: string;
+  warehouseId?: string;
+  keyword?: string;
 }
 
 @Injectable()
@@ -110,9 +115,21 @@ export class PurchaseReturnService {
   }
 
   async list(query: ListQuery): Promise<PaginationResult<PurchaseReturn>> {
-    const { page, pageSize, status } = query;
+    const { page, pageSize, status, startDate, endDate, supplierId, warehouseId, keyword } = query;
     const conditions = [];
     if (status) conditions.push(eq(purchaseReturn.status, status));
+    if (startDate) conditions.push(gte(purchaseReturn.returnDate, startDate));
+    if (endDate) conditions.push(lte(purchaseReturn.returnDate, endDate));
+    if (supplierId) conditions.push(eq(purchaseReturn.supplierId, supplierId));
+    if (warehouseId) conditions.push(eq(purchaseReturn.warehouseId, warehouseId));
+    if (keyword) {
+      conditions.push(
+        or(
+          like(purchaseReturn.returnNo, `%${keyword}%`),
+          like(purchaseReturn.supplierName, `%${keyword}%`),
+        ),
+      );
+    }
 
     const where = conditions.length > 0 ? and(...conditions) : undefined;
     const offset = (page - 1) * pageSize;

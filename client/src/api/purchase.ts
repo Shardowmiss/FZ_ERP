@@ -19,7 +19,7 @@ export const purchaseApi = {
       request<PaginationResult<PurchaseOrder>>('/api/purchase/order/importable', 'GET', null, params),
   },
   inbound: {
-    list: (params: PaginationParams & { supplierId?: string; status?: string; orderNo?: string }) =>
+    list: (params: PaginationParams & { supplierId?: string; status?: string; orderNo?: string; startDate?: string; endDate?: string; warehouseId?: string }) =>
       request<PaginationResult<PurchaseInbound>>('/api/purchase/inbound', 'GET', null, params),
     get: (id: string) => request<PurchaseInbound>(`/api/purchase/inbound/${id}`),
     create: (data: any) => request<PurchaseInbound>('/api/purchase/inbound', 'POST', data),
@@ -29,7 +29,7 @@ export const purchaseApi = {
     void: (id: string) => request<void>(`/api/purchase/inbound/${id}/void`, 'POST'),
   },
   return: {
-    list: (params: PaginationParams & { status?: string }) =>
+    list: (params: PaginationParams & { status?: string; startDate?: string; endDate?: string; supplierId?: string; warehouseId?: string; keyword?: string }) =>
       request<PaginationResult<PurchaseReturn>>('/api/purchase/return', 'GET', null, params),
     get: (id: string) => request<PurchaseReturn>(`/api/purchase/return/${id}`),
     create: (data: any) => request<PurchaseReturn>('/api/purchase/return', 'POST', data),

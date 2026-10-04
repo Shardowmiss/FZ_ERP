@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { voidDraftDocument } from '@server/common/document-void';
 import { DRIZZLE_DATABASE, type PostgresJsDatabase } from '@lark-apaas/fullstack-nestjs-core';
-import { eq, and, desc, count, sql, inArray, isNull } from 'drizzle-orm';
+import { eq, and, desc, count, sql, inArray, isNull, gte, lte } from 'drizzle-orm';
 import {
   purchaseInbound,
   purchaseInboundItem,
@@ -53,6 +53,9 @@ interface ListQuery {
   supplierId?: string;
   status?: string;
   orderNo?: string;
+  startDate?: string;
+  endDate?: string;
+  warehouseId?: string;
 }
 
 @Injectable()
@@ -116,11 +119,14 @@ export class PurchaseInboundService {
   }
 
   async list(query: ListQuery): Promise<PaginationResult<PurchaseInbound>> {
-    const { page, pageSize, supplierId, status, orderNo } = query;
+    const { page, pageSize, supplierId, status, orderNo, startDate, endDate, warehouseId } = query;
     const conditions = [];
     if (supplierId) conditions.push(eq(purchaseInbound.supplierId, supplierId));
     if (status) conditions.push(eq(purchaseInbound.status, status));
     if (orderNo) conditions.push(eq(purchaseInbound.orderNo, orderNo));
+    if (startDate) conditions.push(gte(purchaseInbound.inboundDate, startDate));
+    if (endDate) conditions.push(lte(purchaseInbound.inboundDate, endDate));
+    if (warehouseId) conditions.push(eq(purchaseInbound.warehouseId, warehouseId));
 
     // 软删除过滤：仅返回未删除记录
     conditions.push(isNull(purchaseInbound.deletedAt));
