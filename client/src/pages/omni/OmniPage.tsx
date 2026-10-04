@@ -63,7 +63,7 @@ const OmniPage: React.FC = () => {
 
   const resolveSku = async (skuCode: string) => {
     try {
-      const r = await axiosForBackend.get('/api/base/sku/list', { params: { keyword: skuCode, pageSize: 5 } });
+      const r = await axiosForBackend.get('/api/base/sku', { params: { keyword: skuCode, pageSize: 5 } });
       const items: any[] = r.data?.items || [];
       const m = items.find((s) => s.skuCode === skuCode) || items[0];
       return m ? { skuId: m.id, styleNo: m.styleNo, color: m.color, size: m.size } : null;

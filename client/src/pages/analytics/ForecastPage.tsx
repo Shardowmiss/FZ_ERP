@@ -20,7 +20,7 @@ const ForecastPage: React.FC = () => {
 
   const loadSkus = async () => {
     try {
-      const r = await axiosForBackend.get('/api/base/sku/list', { params: { pageSize: 200 } });
+      const r = await axiosForBackend.get('/api/base/sku', { params: { pageSize: 200 } });
       setSkuOptions(r.data?.items || []);
     } catch (e) {
       toast(errMsg(e, '加载SKU失败'));
