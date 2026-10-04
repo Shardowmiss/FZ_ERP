@@ -23,6 +23,7 @@ export { retailApi } from './retail';
 export { rbacApi } from './rbac';
 export { reportApi } from './report';
 export { garmentPurchaseApi, productionApi } from './production';
+export { productApi } from './product';
 
 export { request } from './request';
 

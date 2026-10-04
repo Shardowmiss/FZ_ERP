@@ -49,6 +49,7 @@ export class StyleController {
     sizeGroupId: string;
     status?: string;
     remark?: string;
+    codeRuleId?: string;
   }): Promise<Style & { skus: Sku[] }> {
     return this.styleService.create(body);
   }
@@ -75,6 +76,7 @@ export class StyleController {
     sizeGroupId?: string;
     status?: string;
     remark?: string | null;
+    codeRuleId?: string | null;
   }): Promise<Style> {
     return this.styleService.update(id, body);
   }

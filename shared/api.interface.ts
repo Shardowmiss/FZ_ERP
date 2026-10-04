@@ -76,6 +76,7 @@ export interface Style {
   supplyPrice: number;
   colorGroupId: string;
   sizeGroupId: string;
+  codeRuleId?: string;
   status: string;
   remark?: string;
   createdAt: string;
@@ -798,12 +799,60 @@ export interface StyleCodePreviewRequest {
   fit: string;
   serialNo?: string; // 可选，不传则取下一个流水号
   attributes?: Record<string, string>; // 动态属性值
+  ruleId?: string; // 可选，指定使用的编码规则（多套规则支持）
 }
 
 // 款号预览结果
 export interface StyleCodePreviewResult {
   styleNo: string;
   breakdown: Array<{ segmentType: string; segmentName: string; value: string; }>;
+}
+
+// ============ 条形码管理（四大改造 D） ============
+export interface StyleBarcodeColorConfig {
+  name: string;
+  value?: string;
+}
+
+export interface StyleBarcodeConfigDto {
+  id: string;
+  styleId: string;
+  colors: StyleBarcodeColorConfig[];
+  sizeGroupIds: string[];
+  barcodePrefix?: string;
+  status: string;
+  remark?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StyleBarcodeConfigSaveRequest {
+  styleId: string;
+  colors: StyleBarcodeColorConfig[];
+  sizeGroupIds: string[];
+  barcodePrefix?: string;
+  remark?: string;
+}
+
+export interface StyleBarcodeDto {
+  id: string;
+  configId: string;
+  styleId: string;
+  colorName: string;
+  colorValue?: string;
+  size: string;
+  sizeGroupId?: string;
+  barcode: string;
+  enabled: boolean;
+}
+
+export interface StyleBarcodeGenerateRequest {
+  styleId: string;
+}
+
+export interface StyleBarcodeGenerateResult {
+  generated: number;
+  barcodes: StyleBarcodeDto[];
 }
 
 // 款号属性定义（动态）
@@ -862,6 +911,7 @@ export interface StyleCreateAutoRequest {
   sizeGroupId: string;
   remark?: string;
   attributes?: Record<string, string>; // 动态属性值
+  codeRuleId?: string; // 关联编码规则（四大改造 C）
   skus: Array<{
     costPrice: number;
     tagPrice: number;

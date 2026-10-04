@@ -33,6 +33,10 @@ import type {
 } from '@shared/api.interface';
 
 const genId = (): string => Math.random().toString(36).slice(2, 10);
+const genUuid = (): string =>
+  (typeof crypto !== 'undefined' && 'randomUUID' in crypto)
+    ? crypto.randomUUID()
+    : genId();
 
 const defaultSegments: CodeRuleSegment[] = [
   { id: genId(), type: 'fixed', enabled: true, order: 0, config: { value: 'GS' } },
@@ -93,22 +97,32 @@ const CodeRulePage: React.FC = () => {
   const [mapping, setMapping] = useState<CodeMappingConfig>(defaultMapping);
   const [saving, setSaving] = useState(false);
   const [ruleId, setRuleId] = useState<string>('');
+  const [rules, setRules] = useState<CodeRule[]>([]);
+  const [ruleName, setRuleName] = useState<string>('默认款号规则');
+  const [isDefault, setIsDefault] = useState<boolean>(true);
   const [brandOptions, setBrandOptions] = useState<BrandCode[]>([]);
   const [attrDefs, setAttrDefs] = useState<StyleAttrDef[]>([]);
 
   useEffect(() => {
     const load = async () => {
       try {
-        const [ruleRes, mapRes, brandRes, attrRes] = await Promise.all([
+        const [listRes, defaultRes, mapRes, brandRes, attrRes] = await Promise.all([
+          systemApi.codeRule.list(),
           systemApi.codeRule.getDefaultRule(),
           systemApi.codeRule.getMapping(),
           systemApi.codeRule.getBrandOptions(),
           baseApi.styleAttrDef.listWithValues(true),
         ]);
-        if (ruleRes?.segments?.length) {
-          setSegments(ruleRes.segments);
-          setRuleId(ruleRes.id);
-        }
+        // 多套规则支持：列表 + 默认规则（保证至少一条可选）
+        const allRules = listRes?.length ? listRes : [defaultRes];
+        setRules(allRules);
+        const selId = defaultRes.id;
+        setSelectedRuleId(selId);
+        setRuleId(selId);
+        const sel = allRules.find((r: CodeRule) => r.id === selId) ?? defaultRes;
+        if (sel?.segments?.length) setSegments(sel.segments);
+        setRuleName(sel?.name ?? '默认款号规则');
+        setIsDefault(sel?.isDefault ?? true);
         if (mapRes) setMapping(mapRes);
         if (brandRes) setBrandOptions(brandRes);
         if (attrRes) setAttrDefs([...attrRes].sort((a, b) => a.sortOrder - b.sortOrder));
@@ -118,6 +132,30 @@ const CodeRulePage: React.FC = () => {
     };
     load();
   }, []);
+
+  // 顶部规则选择器切换
+  const [selectedRuleId, setSelectedRuleId] = useState<string>('');
+  const selectRule = async (id: string) => {
+    if (!id) return;
+    setSelectedRuleId(id);
+    setRuleId(id);
+    try {
+      const rule = await systemApi.codeRule.get(id);
+      if (rule?.segments?.length) setSegments(rule.segments);
+      setRuleName(rule?.name ?? '');
+      setIsDefault(rule?.isDefault ?? false);
+    } catch {
+      // 保持当前
+    }
+  };
+
+  const newRule = () => {
+    setSelectedRuleId('');
+    setRuleId('');
+    setSegments(defaultSegments);
+    setRuleName('');
+    setIsDefault(false);
+  };
 
   const addSegment = () => {
     const nextOrder = segments.length > 0 ? Math.max(...segments.map((s: CodeRuleSegment) => s.order)) + 1 : 0;
@@ -215,10 +253,10 @@ const CodeRulePage: React.FC = () => {
     setSaving(true);
     try {
       const ruleData: CodeRule = {
-        id: ruleId || genId(),
-        name: '默认款号规则',
+        id: ruleId || genUuid(),
+        name: ruleName.trim() || (isDefault ? '默认款号规则' : '未命名规则'),
         segments: sortedSegments,
-        isDefault: true,
+        isDefault,
         createdAt: '',
         updatedAt: '',
       };
@@ -261,14 +299,40 @@ const CodeRulePage: React.FC = () => {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-2">
           <Settings size={20} className="text-primary" />
           <h1 className="text-xl font-semibold text-gray-800">编码规则配置</h1>
         </div>
-        <Button onClick={handleSave} disabled={saving}>
-          {saving ? '保存中...' : '保存'}
-        </Button>
+        <div className="flex items-center gap-3">
+          {/* 多套规则支持：规则选择器 + 新建 */}
+          <Select value={selectedRuleId} onValueChange={(id: string) => selectRule(id)}>
+            <SelectTrigger className="w-56"><SelectValue placeholder="选择编码规则" /></SelectTrigger>
+            <SelectContent>
+              {rules.map((r: CodeRule) => (
+                <SelectItem key={r.id} value={r.id}>
+                  {r.name}{r.isDefault ? '（默认）' : ''}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button variant="outline" size="sm" onClick={newRule}>
+            <Plus size={16} className="mr-1" /> 新建规则
+          </Button>
+          <input
+            className="h-9 rounded-md border border-gray-300 px-3 text-sm w-44"
+            placeholder="规则名称"
+            value={ruleName}
+            onChange={(e) => setRuleName(e.target.value)}
+          />
+          <label className="flex items-center gap-1.5 text-sm text-gray-600 cursor-pointer">
+            <Switch checked={isDefault} onCheckedChange={(c: boolean) => setIsDefault(c)} />
+            设为默认
+          </label>
+          <Button onClick={handleSave} disabled={saving}>
+            {saving ? '保存中...' : '保存'}
+          </Button>
+        </div>
       </div>
 
       <div className="flex gap-5">
@@ -383,6 +447,7 @@ const CodeRulePage: React.FC = () => {
              <TabsTrigger value="brand">品牌编码</TabsTrigger>
              <TabsTrigger value="color">颜色编码</TabsTrigger>
             <TabsTrigger value="size">尺码编码</TabsTrigger>
+            <TabsTrigger value="dynamic">动态属性编码</TabsTrigger>
           </TabsList>
           <TabsContent value="season">
             <div className="text-sm text-gray-500 mb-3">
@@ -425,6 +490,34 @@ const CodeRulePage: React.FC = () => {
               onAdd={() => addMappingItem('sizes')}
               onRemove={(i) => removeMappingItem('sizes', i)}
               onUpdate={(i, p) => updateMappingItem('sizes', i, p as Record<string, string>)} />
+          </TabsContent>
+          {/* 四大改造 A：动态属性编码 —— 数据来自「款号属性维护」，
+              新增一个动态属性时此处自动出现对应分组，只读展示 */}
+          <TabsContent value="dynamic">
+            <div className="text-sm text-gray-500 mb-3">
+              动态属性编码已统一从「款号属性维护」读取，新增一个款号属性即在此自动出现对应分组。
+              请到 <Link to="/base/style-attribute" className="text-primary hover:underline">基础档案→款号属性维护</Link> 页面管理
+            </div>
+            {Object.keys(mapping.attrValues || {}).length === 0 ? (
+              <div className="text-sm text-gray-400 py-6 text-center">暂无动态属性编码</div>
+            ) : (
+              <div className="space-y-5">
+                {Object.entries(mapping.attrValues || {}).map(([code, values]) => {
+                  const def = attrDefs.find(
+                    (d: StyleAttrDef) => (d.attrCode || '').toLowerCase() === code.toLowerCase(),
+                  );
+                  return (
+                    <div key={code}>
+                      <div className="text-sm font-medium text-gray-700 mb-2">
+                        {def?.attrName || code}
+                        <span className="text-xs text-gray-400 ml-2">{code}</span>
+                      </div>
+                      <ReadOnlyMapping columns={['名称', '代码']} data={values as never} />
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </Card>

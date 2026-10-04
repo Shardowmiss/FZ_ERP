@@ -383,6 +383,7 @@ export class RbacService {
     { code: 'md:merge', name: '主数据-合并（商品/客户去重，泛化）' },
     { code: 'omni:manage', name: '全渠道-管理' },
     { code: 'subcontract:manage', name: '委外-管理' },
+    { code: 'product:barcode', name: '商品-条形码管理' },
   ];
 
   /** 超级管理员角色固定 UUID（与迁移 0005 保持一致） */

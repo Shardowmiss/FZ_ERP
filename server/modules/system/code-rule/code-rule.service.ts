@@ -148,14 +148,40 @@ export class CodeRuleService {
       return codeRuleRowToDto(rows[0]);
     }
 
-    return {
-      id: 'default',
-      name: '默认编码规则',
-      segments: DEFAULT_SEGMENTS,
-      isDefault: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+    // 首次访问：库内尚无默认规则，原子插入一条真实 uuid 的默认规则。
+    // 修复旧逻辑返回合成 id('default') 导致 saveRule 走 update 0 行报「规则不存在」的缺陷；
+    // 同时支撑「多套编码规则」——默认规则只是其中 isDefault=true 的一条。
+    const inserted = await this.db
+      .insert(codeRule)
+      .values({
+        name: '默认编码规则',
+        segments: DEFAULT_SEGMENTS as any,
+        isDefault: true,
+      })
+      .returning();
+    return codeRuleRowToDto(inserted[0]);
+  }
+
+  /** 列出全部编码规则（多套规则支持） */
+  async listRules(): Promise<CodeRule[]> {
+    const rows = await this.db
+      .select()
+      .from(codeRule)
+      .orderBy(desc(codeRule.isDefault), codeRule.createdAt);
+    return rows.map(codeRuleRowToDto);
+  }
+
+  /** 按 id 获取单条规则 */
+  async getRule(id: string): Promise<CodeRule> {
+    const rows = await this.db
+      .select()
+      .from(codeRule)
+      .where(eq(codeRule.id, id))
+      .limit(1);
+    if (rows.length === 0) {
+      throw new BadRequestException('规则不存在');
+    }
+    return codeRuleRowToDto(rows[0]);
   }
 
   async saveRule(ruleData: {
@@ -323,7 +349,7 @@ export class CodeRuleService {
 
   async previewStyleCode(params: StyleCodePreviewRequest): Promise<StyleCodePreviewResult> {
     const [rule, mapping] = await Promise.all([
-      this.getDefaultRule(),
+      params.ruleId ? this.getRule(params.ruleId) : this.getDefaultRule(),
       this.getMappingConfig(),
     ]);
 
@@ -355,8 +381,8 @@ export class CodeRuleService {
     return { styleNo, breakdown };
   }
 
-  async getNextSerialNo(params: { year?: string; category?: string }): Promise<string> {
-    const rule = await this.getDefaultRule();
+  async getNextSerialNo(params: { year?: string; category?: string; ruleId?: string }): Promise<string> {
+    const rule = params.ruleId ? await this.getRule(params.ruleId) : await this.getDefaultRule();
     const serialSegment = rule.segments.find((s) => s.type === 'serial' && s.enabled);
     const serialDigits = serialSegment?.config?.serialDigits ?? 4;
     const serialReset = serialSegment?.config?.serialReset ?? 'year';

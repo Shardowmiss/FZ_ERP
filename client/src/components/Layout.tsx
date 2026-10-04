@@ -58,6 +58,7 @@ const menuItems: MenuItem[] = [
       { key: 'style-attribute', label: '款号属性维护', path: '/base/style-attribute', permission: 'base:style' },
       // 原用 system:permission（系统权限），会让「有系统权限=有编码规则」，属误授；改用款号码
       { key: 'code-rule', label: '款号编码规则', path: '/product/code-rule', permission: 'base:style' },
+      { key: 'barcode-config', label: '条形码管理', path: '/product/barcode-config', permission: 'product:barcode' },
     ],
   },
   {

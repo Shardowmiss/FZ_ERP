@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, useImperativeHandle, f
 import { systemApi } from '@client/src/api';
 import { baseApi } from '@client/src/api/base';
 import type {
-  Style, ColorGroup, SizeGroup,
+  Style, ColorGroup, SizeGroup, CodeRule,
   StyleCodePreviewResult, StyleCreateAutoRequest,
   StyleAttribute, StyleAttrDef,
 } from '@shared/api.interface';
@@ -26,12 +26,13 @@ interface AutoFormState {
   status: string;
   remark: string;
   attributes: Record<string, string>;
+  codeRuleId: string;
 }
 
 const defaultAutoForm: AutoFormState = {
   name: '', wave: '', tagPrice: '', costPrice: '', supplyPrice: '',
   colorGroupId: '', sizeGroupId: '', status: 'active', remark: '',
-  attributes: {},
+  attributes: {}, codeRuleId: '',
 };
 
 export interface AutoCreateFormHandle {
@@ -53,6 +54,7 @@ export const AutoCreateForm = forwardRef<AutoCreateFormHandle, AutoCreateFormPro
     const timerRef = useRef<number | null>(null);
 
     const [attrDefs, setAttrDefs] = useState<StyleAttrDef[]>([]);
+    const [codeRules, setCodeRules] = useState<CodeRule[]>([]);
 
     useEffect(() => {
       const loadAttrs = async () => {
@@ -73,7 +75,15 @@ export const AutoCreateForm = forwardRef<AutoCreateFormHandle, AutoCreateFormPro
             );
             initAttrs['year'] = current ? current.valueName : yearDef.values[0].valueName;
           }
-          setForm((f) => ({ ...f, attributes: initAttrs }));
+          // 加载编码规则列表，默认选中「默认规则」
+          try {
+            const rules = await systemApi.codeRule.list();
+            setCodeRules(rules || []);
+            const def = (rules || []).find((r: CodeRule) => r.isDefault) || (rules || [])[0];
+            setForm((f) => ({ ...f, attributes: initAttrs, codeRuleId: def?.id ?? '' }));
+          } catch {
+            setForm((f) => ({ ...f, attributes: initAttrs }));
+          }
         } catch (e) {
           toast(errMsg(e, '加载属性定义失败'));
         }
@@ -157,6 +167,7 @@ export const AutoCreateForm = forwardRef<AutoCreateFormHandle, AutoCreateFormPro
         colorGroupId: form.colorGroupId, sizeGroupId: form.sizeGroupId,
         remark: form.remark || undefined, skus: [],
         attributes: form.attributes,
+        codeRuleId: form.codeRuleId || undefined,
       });
     }, [form, attrDefs, onSave]);
 
@@ -246,6 +257,13 @@ export const AutoCreateForm = forwardRef<AutoCreateFormHandle, AutoCreateFormPro
               </select>
             </div>
             <div>
+              <label className={labelCls}>编码规则</label>
+              <select className={inputCls} value={form.codeRuleId} onChange={e => update('codeRuleId', e.target.value)}>
+                <option value="">默认规则</option>
+                {codeRules.map(r => <option key={r.id} value={r.id}>{r.name}{r.isDefault ? '（默认）' : ''}</option>)}
+              </select>
+            </div>
+            <div>
               <label className={labelCls}>状态</label>
               <select className={inputCls} value={form.status} onChange={e => update('status', e.target.value)}>
                 <option value="active">启用</option>
@@ -313,12 +331,19 @@ interface ManualFormProps {
 
 export const ManualForm: React.FC<ManualFormProps> = ({ form, editing, colorGroups, sizeGroups, brandOptions, onChange }) => {
   const [attrDefs, setAttrDefs] = useState<StyleAttrDef[]>([]);
+  const [codeRules, setCodeRules] = useState<CodeRule[]>([]);
 
   useEffect(() => {
     const loadAttrs = async () => {
       try {
         const defs = await baseApi.styleAttrDef.listWithValues(true);
         setAttrDefs([...defs].sort((a: StyleAttrDef, b: StyleAttrDef) => a.sortOrder - b.sortOrder));
+      } catch {
+        // non-critical
+      }
+      try {
+        const rules = await systemApi.codeRule.list();
+        setCodeRules(rules || []);
       } catch {
         // non-critical
       }
@@ -405,6 +430,14 @@ export const ManualForm: React.FC<ManualFormProps> = ({ form, editing, colorGrou
            onChange={e => onChange({ sizeGroupId: e.target.value })}>
            <option value="">请选择</option>
            {sizeGroups.map(sg => <option key={sg.id} value={sg.id}>{sg.name} ({sg.code})</option>)}
+         </select>
+       </div>
+       <div>
+         <label className={labelCls}>编码规则</label>
+         <select className={inputCls} value={form.codeRuleId || ''} disabled={editing}
+           onChange={e => onChange({ codeRuleId: e.target.value })}>
+           <option value="">默认规则</option>
+           {codeRules.map(r => <option key={r.id} value={r.id}>{r.name}{r.isDefault ? '（默认）' : ''}</option>)}
          </select>
        </div>
        <div>

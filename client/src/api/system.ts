@@ -15,6 +15,10 @@ export const systemApi = {
   codeRule: {
     getDefaultRule: () =>
       request<CodeRule>('/api/system/code-rule', 'GET'),
+    list: () =>
+      request<CodeRule[]>('/api/system/code-rule/list', 'GET'),
+    get: (id: string) =>
+      request<CodeRule>(`/api/system/code-rule/${id}`, 'GET'),
     saveRule: (data: CodeRule) =>
       request<CodeRule>('/api/system/code-rule', 'POST', data),
     getMapping: () =>

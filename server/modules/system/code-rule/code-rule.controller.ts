@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param } from '@nestjs/common';
 import { NeedLogin } from '@lark-apaas/fullstack-nestjs-core';
 import { CodeRuleService } from './code-rule.service';
 import type {
@@ -19,6 +19,16 @@ export class CodeRuleController {
   @Get()
   async getDefaultRule(): Promise<CodeRule> {
     return this.codeRuleService.getDefaultRule();
+  }
+
+  @Get('list')
+  async listRules(): Promise<CodeRule[]> {
+    return this.codeRuleService.listRules();
+  }
+
+  @Get(':id')
+  async getRule(@Param('id') id: string): Promise<CodeRule> {
+    return this.codeRuleService.getRule(id);
   }
 
   @CheckPermission('system:config')
@@ -51,7 +61,7 @@ export class CodeRuleController {
 
   @CheckPermission('system:config')
   @Post('next-serial')
-  async getNextSerial(@Body() body: { year?: string; category?: string }): Promise<{ serialNo: string }> {
+  async getNextSerial(@Body() body: { year?: string; category?: string; ruleId?: string }): Promise<{ serialNo: string }> {
     const serialNo = await this.codeRuleService.getNextSerialNo(body);
     return { serialNo };
   }

@@ -3058,6 +3058,8 @@ export const style = pgTable("style", {
   supplyPrice: numeric("supply_price").default('0'),
   colorGroupId: uuid("color_group_id").notNull(),
   sizeGroupId: uuid("size_group_id").notNull(),
+  // 四大改造 C：款号关联的编码规则（可为空，删除规则时 SET NULL）
+  codeRuleId: uuid("code_rule_id"),
   status: varchar("status", { length: 20 }).notNull().default('active'),
   remark: text("remark"),
   year: varchar("year", { length: 10 }),
@@ -3097,6 +3099,12 @@ export const style = pgTable("style", {
     foreignColumns: [sizeGroup.id],
     name: "style_size_group_id_fkey",
   }),
+  // 四大改造 C：款号 → 编码规则（删除规则时解除关联，不级联删款号）
+  foreignKey({
+    columns: [table.codeRuleId],
+    foreignColumns: [codeRule.id],
+    name: "style_code_rule_id_fkey",
+  }).onDelete("set null"),
   // 自愈引用：删除/改指 survivor 时把 mergedInto 置空（被合并款式不会被级联删）
   foreignKey({
     columns: [table.mergedInto],
@@ -3147,6 +3155,74 @@ export const colorGroup = pgTable("color_group", {
   deletedAt: customTimestamptz("_deleted_at", { precision: 3 }),
 }, (table) => [
   uniqueIndex("color_group_code_key").on(table.code),
+]);
+
+// ============ 四大改造 D：条形码管理 ============
+export const styleBarcodeConfig = pgTable("style_barcode_config", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  // 关联款号
+  styleId: uuid("style_id").notNull(),
+  /**
+   * @type { Array<{ name: string; value: string }> }
+   */
+  colors: jsonb("colors").notNull().default('[]'),
+  // 适用尺码组（引用 size_group.id），可多个
+  sizeGroupIds: uuid("size_group_ids").array().notNull().default(sql`'{}'`),
+  // 条码前缀（可选）
+  barcodePrefix: varchar("barcode_prefix", { length: 50 }),
+  status: varchar("status", { length: 20 }).notNull().default('active'),
+  remark: text("remark"),
+  // System field: Creation time (auto-filled, do not modify)
+  createdAt: customTimestamptz("_created_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  // System field: Creator (auto-filled, do not modify)
+  createdBy: userProfile("_created_by"),
+  // System field: Update time (auto-filled, do not modify)
+  updatedAt: customTimestamptz("_updated_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  // System field: Updater (auto-filled, do not modify)
+  updatedBy: userProfile("_updated_by"),
+}, (table) => [
+  index("idx_style_barcode_config_style").on(table.styleId),
+  foreignKey({
+    columns: [table.styleId],
+    foreignColumns: [style.id],
+    name: "style_barcode_config_style_fkey",
+  }).onDelete("cascade"),
+]);
+
+export const styleBarcode = pgTable("style_barcode", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  // 关联配置
+  configId: uuid("config_id").notNull(),
+  // 关联款号
+  styleId: uuid("style_id").notNull(),
+  colorName: varchar("color_name", { length: 100 }).notNull(),
+  colorValue: varchar("color_value", { length: 50 }),
+  size: varchar("size", { length: 50 }).notNull(),
+  sizeGroupId: uuid("size_group_id"),
+  barcode: varchar("barcode", { length: 50 }).notNull(),
+  enabled: boolean("enabled").notNull().default(true),
+  // System field: Creation time (auto-filled, do not modify)
+  createdAt: customTimestamptz("_created_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  // System field: Creator (auto-filled, do not modify)
+  createdBy: userProfile("_created_by"),
+  // System field: Update time (auto-filled, do not modify)
+  updatedAt: customTimestamptz("_updated_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  // System field: Updater (auto-filled, do not modify)
+  updatedBy: userProfile("_updated_by"),
+}, (table) => [
+  index("idx_style_barcode_config").on(table.configId),
+  index("idx_style_barcode_style").on(table.styleId),
+  uniqueIndex("style_barcode_barcode_key").on(table.barcode),
+  foreignKey({
+    columns: [table.configId],
+    foreignColumns: [styleBarcodeConfig.id],
+    name: "style_barcode_config_id_fkey",
+  }).onDelete("cascade"),
+  foreignKey({
+    columns: [table.styleId],
+    foreignColumns: [style.id],
+    name: "style_barcode_style_fkey",
+  }).onDelete("cascade"),
 ]);
 
 // table aliases
@@ -3231,6 +3307,8 @@ export const styleTable = style;
 export const styleAttrDefTable = styleAttrDef;
 export const styleAttrValueTable = styleAttrValue;
 export const styleAttributeTable = styleAttribute;
+export const styleBarcodeConfigTable = styleBarcodeConfig;
+export const styleBarcodeTable = styleBarcode;
 export const subcontractFeeTable = subcontractFee;
 export const subcontractIssueTable = subcontractIssue;
 export const subcontractIssueItemTable = subcontractIssueItem;

@@ -61,6 +61,7 @@ function styleRowToDto(row: typeof style.$inferSelect): Style {
     supplyPrice: Number(row.supplyPrice ?? 0),
     colorGroupId: row.colorGroupId,
     sizeGroupId: row.sizeGroupId,
+    codeRuleId: row.codeRuleId ?? undefined,
     status: row.status,
       remark: row.remark ?? undefined,
       createdAt: row.createdAt.toISOString(),
@@ -140,6 +141,7 @@ export class StyleService {
       category: dto.category,
       subCategory: dto.subCategory,
       fit: dto.fit,
+      ruleId: dto.codeRuleId,
     });
     const styleNo = preview.styleNo;
 
@@ -181,6 +183,7 @@ export class StyleService {
          supplyPrice: dto.supplyPrice !== undefined ? String(dto.supplyPrice) : '0',
          colorGroupId: dto.colorGroupId,
          sizeGroupId: dto.sizeGroupId,
+         codeRuleId: dto.codeRuleId ?? null,
           status: 'active',
           remark: dto.remark ?? null,
           attributes: dto.attributes ?? {} as any,
@@ -253,6 +256,7 @@ export class StyleService {
     status?: string;
     remark?: string;
     attributes?: Record<string, string>;
+    codeRuleId?: string;
   }): Promise<Style & { skus: Sku[] }> {
     if (!dto.styleNo?.trim()) throw new BadRequestException('款号不能为空');
     if (!dto.name?.trim()) throw new BadRequestException('名称不能为空');
@@ -287,6 +291,7 @@ export class StyleService {
          supplyPrice: dto.supplyPrice !== undefined ? String(dto.supplyPrice) : '0',
          colorGroupId: dto.colorGroupId,
          sizeGroupId: dto.sizeGroupId,
+         codeRuleId: dto.codeRuleId ?? null,
           status: dto.status ?? 'active',
           remark: dto.remark ?? null,
           attributes: dto.attributes ?? {} as any,
@@ -359,6 +364,7 @@ export class StyleService {
       status?: string;
       remark?: string | null;
       attributes?: Record<string, string> | null;
+      codeRuleId?: string | null;
     },
   ): Promise<Style> {
     const patch: Partial<StyleInsert> = {};
@@ -379,6 +385,7 @@ export class StyleService {
     if (dto.supplyPrice !== undefined) patch.supplyPrice = String(dto.supplyPrice);
     if (dto.colorGroupId !== undefined) patch.colorGroupId = dto.colorGroupId;
     if (dto.sizeGroupId !== undefined) patch.sizeGroupId = dto.sizeGroupId;
+    if (dto.codeRuleId !== undefined) patch.codeRuleId = dto.codeRuleId ?? null;
     if (dto.status !== undefined) patch.status = dto.status;
     if (dto.remark !== undefined) patch.remark = dto.remark ?? null;
     if (dto.attributes !== undefined) patch.attributes = dto.attributes as any;
