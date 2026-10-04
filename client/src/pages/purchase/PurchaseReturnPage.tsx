@@ -51,12 +51,16 @@ const PurchaseReturnPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [loading, setLoading] = useState(false);
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('draft'); // 默认查「未出库」= 草稿（审核即出库）
   const [keyword, setKeyword] = useState('');
 
-  const { startDate: defaultStart, endDate: defaultEnd } = useDefaultDocDate();
-  const [filterStartDate, setFilterStartDate] = useState(defaultStart);
-  const [filterEndDate, setFilterEndDate] = useState(defaultEnd);
+  // 单据日期（createdAt/_created_at）：默认近 90 天
+  const { startDate: defaultDocStart, endDate: defaultDocEnd } = useDefaultDocDate();
+  const [filterDocStart, setFilterDocStart] = useState(defaultDocStart);
+  const [filterDocEnd, setFilterDocEnd] = useState(defaultDocEnd);
+  // 退货日期（出库日期，returnDate）：默认不限制
+  const [filterStartDate, setFilterStartDate] = useState('');
+  const [filterEndDate, setFilterEndDate] = useState('');
   const [filterSupplier, setFilterSupplier] = useState('');
   const [filterWarehouse, setFilterWarehouse] = useState('');
   const [supplierOptions, setSupplierOptions] = useState<{ id: string; code: string; name: string }[]>([]);
@@ -75,7 +79,7 @@ const PurchaseReturnPage: React.FC = () => {
 
   useEffect(() => {
     loadList();
-  }, [page, pageSize, statusFilter, filterStartDate, filterEndDate, filterSupplier, filterWarehouse, keyword]);
+  }, [page, pageSize, statusFilter, filterDocStart, filterDocEnd, filterStartDate, filterEndDate, filterSupplier, filterWarehouse, keyword]);
 
   useEffect(() => {
     const loadOpts = async () => {
@@ -99,9 +103,12 @@ const PurchaseReturnPage: React.FC = () => {
       const params: {
         page: number; pageSize: number;
         status?: string; startDate?: string; endDate?: string;
+        docStartDate?: string; docEndDate?: string;
         supplierId?: string; warehouseId?: string; keyword?: string;
       } = { page, pageSize };
       if (statusFilter) params.status = statusFilter;
+      if (filterDocStart) params.docStartDate = filterDocStart;
+      if (filterDocEnd) params.docEndDate = filterDocEnd;
       if (filterStartDate) params.startDate = filterStartDate;
       if (filterEndDate) params.endDate = filterEndDate;
       if (filterSupplier) params.supplierId = filterSupplier;
@@ -175,9 +182,12 @@ const PurchaseReturnPage: React.FC = () => {
       const params: {
         page: number; pageSize: number;
         status?: string; startDate?: string; endDate?: string;
+        docStartDate?: string; docEndDate?: string;
         supplierId?: string; warehouseId?: string; keyword?: string;
       } = { page: 1, pageSize: 10000 };
       if (statusFilter) params.status = statusFilter;
+      if (filterDocStart) params.docStartDate = filterDocStart;
+      if (filterDocEnd) params.docEndDate = filterDocEnd;
       if (filterStartDate) params.startDate = filterStartDate;
       if (filterEndDate) params.endDate = filterEndDate;
       if (filterSupplier) params.supplierId = filterSupplier;
@@ -215,6 +225,7 @@ const PurchaseReturnPage: React.FC = () => {
     const map: Record<string, { label: string; tone: StatusTone }> = {
       draft: { label: '草稿', tone: 'neutral' },
       approved: { label: '已审核', tone: 'ok' },
+      cancelled: { label: '已作废', tone: 'danger' },
     };
     return map[status] || { label: status, tone: 'neutral' };
   };
@@ -236,7 +247,7 @@ const PurchaseReturnPage: React.FC = () => {
         <h1 className="text-xl font-semibold text-gray-800">采购退货</h1>
         <button
           onClick={handleAdd}
-          className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600 flex items-center gap-1"
+          className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-primary flex items-center gap-1"
         >
           <Plus size={16} /> 新增采购退货
         </button>
@@ -263,6 +274,22 @@ const PurchaseReturnPage: React.FC = () => {
             <option key={w.id} value={w.id}>{w.name}</option>
           ))}
         </select>
+        <div className="flex items-center gap-1">
+          <span className="text-gray-600 text-sm">单据日期：</span>
+          <input
+            type="date"
+            value={filterDocStart}
+            onChange={(e) => { setFilterDocStart(e.target.value); setPage(1); }}
+            className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
+          />
+          <span className="text-gray-400">至</span>
+          <input
+            type="date"
+            value={filterDocEnd}
+            onChange={(e) => { setFilterDocEnd(e.target.value); setPage(1); }}
+            className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
+          />
+        </div>
         <div className="flex items-center gap-1">
           <span className="text-gray-600 text-sm">退货日期：</span>
           <input
@@ -292,12 +319,13 @@ const PurchaseReturnPage: React.FC = () => {
           className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
         >
           <option value="">全部状态</option>
-          <option value="draft">草稿</option>
+          <option value="draft">草稿（未出库）</option>
           <option value="approved">已审核</option>
+          <option value="cancelled">已作废</option>
         </select>
         <button
           onClick={() => { setPage(1); loadList(); }}
-          className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600"
+          className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-primary"
         >
           查询
         </button>
@@ -309,8 +337,9 @@ const PurchaseReturnPage: React.FC = () => {
         </button>
         <button
           onClick={() => {
-            setKeyword(''); setStatusFilter('');
-            setFilterStartDate(defaultStart); setFilterEndDate(defaultEnd);
+            setKeyword(''); setStatusFilter('draft');
+            setFilterDocStart(defaultDocStart); setFilterDocEnd(defaultDocEnd);
+            setFilterStartDate(''); setFilterEndDate('');
             setFilterSupplier(''); setFilterWarehouse('');
             setPage(1); setTimeout(loadList, 0);
           }}
@@ -364,7 +393,7 @@ const PurchaseReturnPage: React.FC = () => {
                         </>
                        ) : (
                          <>
-                           <button onClick={() => handleView(item)} className="text-primary hover:text-blue-600 mr-3">查看</button>
+                           <button onClick={() => handleView(item)} className="text-primary hover:text-primary mr-3">查看</button>
                            <button onClick={() => handleListPrint(item)} className="text-gray-500 hover:text-gray-600 inline-flex align-middle" title="打印">
                              <Printer size={14} />
                            </button>

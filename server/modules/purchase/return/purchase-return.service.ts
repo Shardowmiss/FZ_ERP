@@ -49,8 +49,10 @@ interface ListQuery {
   page: number;
   pageSize: number;
   status?: string;
-  startDate?: string;
-  endDate?: string;
+  startDate?: string; // 退货日期（出库日期）起
+  endDate?: string; // 退货日期（出库日期）止
+  docStartDate?: string; // 单据日期（createdAt/_created_at）起
+  docEndDate?: string; // 单据日期（createdAt/_created_at）止
   supplierId?: string;
   warehouseId?: string;
   keyword?: string;
@@ -115,11 +117,31 @@ export class PurchaseReturnService {
   }
 
   async list(query: ListQuery): Promise<PaginationResult<PurchaseReturn>> {
-    const { page, pageSize, status, startDate, endDate, supplierId, warehouseId, keyword } = query;
+    const { page, pageSize, status, startDate, endDate, docStartDate, docEndDate, supplierId, warehouseId, keyword } = query;
     const conditions = [];
-    if (status) conditions.push(eq(purchaseReturn.status, status));
+    if (status) {
+      const vals = status
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+      if (vals.length === 1) {
+        conditions.push(eq(purchaseReturn.status, vals[0]));
+      } else if (vals.length > 1) {
+        conditions.push(inArray(purchaseReturn.status, vals));
+      }
+    }
     if (startDate) conditions.push(gte(purchaseReturn.returnDate, startDate));
     if (endDate) conditions.push(lte(purchaseReturn.returnDate, endDate));
+    // 单据日期（系统创建时间 _created_at）：createdAt 为 customTimestamptz(Date 类型)，
+    // 用 sql 模板传日期字符串规避 gte/lte 字符串类型报错；结束日用「< 次日」半开区间含入整日。
+    if (docStartDate) conditions.push(sql`${purchaseReturn.createdAt} >= ${docStartDate}`);
+    if (docEndDate) {
+      const [y, m, d] = docEndDate.split('-').map(Number);
+      const endDt = new Date(y, m - 1, d);
+      endDt.setDate(endDt.getDate() + 1);
+      const nextDay = `${endDt.getFullYear()}-${String(endDt.getMonth() + 1).padStart(2, '0')}-${String(endDt.getDate()).padStart(2, '0')}`;
+      conditions.push(sql`${purchaseReturn.createdAt} < ${nextDay}`);
+    }
     if (supplierId) conditions.push(eq(purchaseReturn.supplierId, supplierId));
     if (warehouseId) conditions.push(eq(purchaseReturn.warehouseId, warehouseId));
     if (keyword) {

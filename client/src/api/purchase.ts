@@ -29,7 +29,7 @@ export const purchaseApi = {
     void: (id: string) => request<void>(`/api/purchase/inbound/${id}/void`, 'POST'),
   },
   return: {
-    list: (params: PaginationParams & { status?: string; startDate?: string; endDate?: string; supplierId?: string; warehouseId?: string; keyword?: string }) =>
+    list: (params: PaginationParams & { status?: string; startDate?: string; endDate?: string; docStartDate?: string; docEndDate?: string; supplierId?: string; warehouseId?: string; keyword?: string }) =>
       request<PaginationResult<PurchaseReturn>>('/api/purchase/return', 'GET', null, params),
     get: (id: string) => request<PurchaseReturn>(`/api/purchase/return/${id}`),
     create: (data: any) => request<PurchaseReturn>('/api/purchase/return', 'POST', data),
