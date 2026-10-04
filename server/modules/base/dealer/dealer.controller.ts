@@ -10,8 +10,10 @@ export class DealerController {
   constructor(private readonly dealerService: DealerService) {}
 
   @Get('options')
-  async options(): Promise<{ id: string; code: string; name: string }[]> {
-    return this.dealerService.options();
+  async options(
+    @Query('excludeId') excludeId?: string,
+  ): Promise<{ id: string; code: string; name: string }[]> {
+    return this.dealerService.options(excludeId);
   }
 
   @Get()
@@ -41,6 +43,7 @@ export class DealerController {
     address?: string;
     remark?: string;
     status?: string;
+    parentId?: string | null;
   }): Promise<Dealer> {
     return this.dealerService.create(body);
   }
@@ -55,6 +58,7 @@ export class DealerController {
     address?: string | null;
     remark?: string | null;
     status?: string;
+    parentId?: string | null;
   }): Promise<Dealer> {
     return this.dealerService.update(id, body);
   }

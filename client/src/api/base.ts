@@ -124,7 +124,8 @@ export const baseApi = {
       request<Dealer>(`/api/base/dealer/${id}`, 'PUT', data),
     remove: (id: string) => request<void>(`/api/base/dealer/${id}`, 'DELETE'),
 
-    options: () => request<{ id: string; code: string; name: string }[]>('/api/base/dealer/options'),
+    options: (params?: { excludeId?: string }) =>
+      request<{ id: string; code: string; name: string }[]>('/api/base/dealer/options', 'GET', null, params),
   },
   store: {
     list: (params: PaginationParams & { keyword?: string; storeType?: string; status?: string }) =>

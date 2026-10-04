@@ -20,9 +20,11 @@ const DealerPage: React.FC = () => {
   const [searchStatus, setSearchStatus] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [parentOptions, setParentOptions] = useState<{ id: string; code: string; name: string }[]>([]);
   const [form, setForm] = useState<Partial<Dealer>>({
     code: '',
     name: '',
+    parentId: '',
     contactPerson: '',
     phone: '',
     address: '',
@@ -66,29 +68,42 @@ const DealerPage: React.FC = () => {
     setSearchStatus('');
   };
 
+  const fetchParentOptions = async (excludeId?: string) => {
+    try {
+      const opts = await baseApi.dealer.options(excludeId ? { excludeId } : undefined);
+      setParentOptions(opts);
+    } catch (e) {
+      toast(errMsg(e, '加载上级经销商失败'));
+    }
+  };
+
   const openAdd = () => {
     setEditingId(null);
     setForm({
       code: '',
       name: '',
+      parentId: '',
       contactPerson: '',
       phone: '',
       address: '',
       status: 'active',
       remark: '',
     });
+    fetchParentOptions();
     setDialogOpen(true);
   };
 
   const openEdit = (item: Dealer) => {
     setEditingId(item.id);
-    setForm({ ...item });
+    setForm({ ...item, parentId: item.parentId ?? '' });
+    fetchParentOptions(item.id);
     setDialogOpen(true);
   };
 
   const handleSave = async () => {
     if (!form.code?.trim()) { toast('请输入经销商编码'); return; }
     if (!form.name?.trim()) { toast('请输入经销商名称'); return; }
+    if (!form.parentId) { toast('请选择上级经销商'); return; }
     try {
       if (editingId) {
         await baseApi.dealer.update(editingId, form);
@@ -180,6 +195,7 @@ const DealerPage: React.FC = () => {
             <tr className="bg-gray-50 text-gray-600 font-medium">
               <th className="text-left px-4 py-3 border-b border-gray-200">编码</th>
               <th className="text-left px-4 py-3 border-b border-gray-200">名称</th>
+              <th className="text-left px-4 py-3 border-b border-gray-200">上级经销商名称</th>
               <th className="text-left px-4 py-3 border-b border-gray-200">联系人</th>
               <th className="text-left px-4 py-3 border-b border-gray-200">电话</th>
               <th className="text-left px-4 py-3 border-b border-gray-200">地址</th>
@@ -189,14 +205,15 @@ const DealerPage: React.FC = () => {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={7} className="text-center py-8 text-gray-400">加载中...</td></tr>
+              <tr><td colSpan={8} className="text-center py-8 text-gray-400">加载中...</td></tr>
             ) : list.length === 0 ? (
-              <tr><td colSpan={7} className="text-center py-8 text-gray-400">暂无数据</td></tr>
+              <tr><td colSpan={8} className="text-center py-8 text-gray-400">暂无数据</td></tr>
             ) : (
               list.map((item) => (
                 <tr key={item.id} className="border-b border-gray-200 hover:bg-gray-50">
                   <td className="px-4 py-3 font-medium">{item.code}</td>
                   <td className="px-4 py-3">{item.name}</td>
+                  <td className="px-4 py-3 text-gray-600">{item.parentName || '总部'}</td>
                   <td className="px-4 py-3 text-gray-600">{item.contactPerson || '-'}</td>
                   <td className="px-4 py-3 text-gray-600">{item.phone || '-'}</td>
                   <td className="px-4 py-3 text-gray-600">{item.address || '-'}</td>
@@ -246,6 +263,19 @@ const DealerPage: React.FC = () => {
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-700 mb-1">上级经销商<span className="text-red-500">*</span></label>
+                  <select
+                    value={form.parentId || ''}
+                    onChange={(e) => setForm({ ...form, parentId: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
+                  >
+                    <option value="">总部（顶级）</option>
+                    {parentOptions.map((o) => (
+                      <option key={o.id} value={o.id}>{o.name}（{o.code}）</option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">联系人</label>

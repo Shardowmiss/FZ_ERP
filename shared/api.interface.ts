@@ -923,6 +923,10 @@ export interface Dealer {
   id: string;
   code: string;
   name: string;
+  /** 上级经销商 ID；根节点（总部）为 undefined */
+  parentId?: string;
+  /** 上级经销商名称；根节点（总部）固定显示「总部」 */
+  parentName?: string;
   contactPerson?: string;
   phone?: string;
   address?: string;
