@@ -27,6 +27,8 @@ export class PurchaseInboundController {
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
     @Query('warehouseId') warehouseId?: string,
+    @Query('docStartDate') docStartDate?: string,
+    @Query('docEndDate') docEndDate?: string,
   ): Promise<PaginationResult<PurchaseInbound>> {
     return this.purchaseInboundService.list({
       page: parseInt(page, 10),
@@ -37,6 +39,8 @@ export class PurchaseInboundController {
       startDate,
       endDate,
       warehouseId,
+      docStartDate,
+      docEndDate,
     });
   }
 

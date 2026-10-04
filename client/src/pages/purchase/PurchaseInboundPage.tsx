@@ -37,15 +37,17 @@ const PurchaseInboundPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
 
   const [filterSupplier, setFilterSupplier] = useState<string>('');
-  const [filterStatus, setFilterStatus] = useState<string>('');
+  const [filterStatus, setFilterStatus] = useState<string>('draft,approved');
   const [keyword, setKeyword] = useState<string>('');
 
   const [supplierOptions, setSupplierOptions] = useState<{ id: string; code: string; name: string }[]>([]);
   const [warehouseOptions, setWarehouseOptions] = useState<{ id: string; code: string; name: string }[]>([]);
 
-  const { startDate: defaultStart, endDate: defaultEnd } = useDefaultDocDate();
-  const [filterStartDate, setFilterStartDate] = useState<string>(defaultStart);
-  const [filterEndDate, setFilterEndDate] = useState<string>(defaultEnd);
+  const { startDate: defaultDocStart, endDate: defaultDocEnd } = useDefaultDocDate();
+  const [filterDocStartDate, setFilterDocStartDate] = useState<string>(defaultDocStart);
+  const [filterDocEndDate, setFilterDocEndDate] = useState<string>(defaultDocEnd);
+  const [filterStartDate, setFilterStartDate] = useState<string>('');
+  const [filterEndDate, setFilterEndDate] = useState<string>('');
   const [filterWarehouse, setFilterWarehouse] = useState<string>('');
 
   const navigate = useNavigate();
@@ -66,6 +68,7 @@ const PurchaseInboundPage: React.FC = () => {
         page: number; pageSize: number;
         supplierId?: string; status?: string; orderNo?: string;
         startDate?: string; endDate?: string; warehouseId?: string;
+        docStartDate?: string; docEndDate?: string;
       } = { page, pageSize };
       if (filterSupplier) params.supplierId = filterSupplier;
       if (filterStatus) params.status = filterStatus;
@@ -73,6 +76,8 @@ const PurchaseInboundPage: React.FC = () => {
       if (filterStartDate) params.startDate = filterStartDate;
       if (filterEndDate) params.endDate = filterEndDate;
       if (filterWarehouse) params.warehouseId = filterWarehouse;
+      if (filterDocStartDate) params.docStartDate = filterDocStartDate;
+      if (filterDocEndDate) params.docEndDate = filterDocEndDate;
       const res = await purchaseApi.inbound.list(params);
       setList(res.items);
       setTotal(res.total);
@@ -85,7 +90,7 @@ const PurchaseInboundPage: React.FC = () => {
 
   useEffect(() => {
     fetchList();
-  }, [page, filterSupplier, filterStatus, keyword, filterStartDate, filterEndDate, filterWarehouse]);
+  }, [page, filterSupplier, filterStatus, keyword, filterStartDate, filterEndDate, filterWarehouse, filterDocStartDate, filterDocEndDate]);
 
   useEffect(() => {
     const loadOpts = async (): Promise<void> => {
@@ -178,6 +183,7 @@ const PurchaseInboundPage: React.FC = () => {
         page: number; pageSize: number;
         supplierId?: string; status?: string; orderNo?: string;
         startDate?: string; endDate?: string; warehouseId?: string;
+        docStartDate?: string; docEndDate?: string;
       } = { page: 1, pageSize: 10000 };
       if (filterSupplier) params.supplierId = filterSupplier;
       if (filterStatus) params.status = filterStatus;
@@ -185,6 +191,8 @@ const PurchaseInboundPage: React.FC = () => {
       if (filterStartDate) params.startDate = filterStartDate;
       if (filterEndDate) params.endDate = filterEndDate;
       if (filterWarehouse) params.warehouseId = filterWarehouse;
+      if (filterDocStartDate) params.docStartDate = filterDocStartDate;
+      if (filterDocEndDate) params.docEndDate = filterDocEndDate;
       const res: PaginationResult<PurchaseInbound> = await purchaseApi.inbound.list(params);
       exportTableToCSV('采购入库单', res.items as unknown as Record<string, unknown>[], {
         inboundNo: '入库单号',
@@ -208,7 +216,7 @@ const PurchaseInboundPage: React.FC = () => {
           <h1 className="text-xl font-semibold text-gray-800">采购入库</h1>
           <button
             onClick={openAdd}
-            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600 flex items-center gap-1"
+            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary flex items-center gap-1"
           >
              <Plus size={16} /> 新增采购入库
           </button>
@@ -235,6 +243,7 @@ const PurchaseInboundPage: React.FC = () => {
               className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
             >
               <option value="">全部</option>
+              <option value="draft,approved">未验收</option>
               <option value="draft">草稿</option>
               <option value="approved">已审</option>
               <option value="completed">已完成</option>
@@ -252,6 +261,22 @@ const PurchaseInboundPage: React.FC = () => {
                 <option key={w.id} value={w.id}>{w.name}</option>
               ))}
             </select>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="text-gray-600">单据日期：</span>
+            <input
+              type="date"
+              value={filterDocStartDate}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilterDocStartDate(e.target.value)}
+              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
+            />
+            <span className="text-gray-400">至</span>
+            <input
+              type="date"
+              value={filterDocEndDate}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilterDocEndDate(e.target.value)}
+              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
+            />
           </div>
           <div className="flex items-center gap-1">
             <span className="text-gray-600">入库日期：</span>
@@ -283,14 +308,15 @@ const PurchaseInboundPage: React.FC = () => {
           </div>
           <button
             onClick={() => { setPage(1); fetchList(); }}
-            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600 flex items-center gap-1"
+            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary flex items-center gap-1"
           >
             <Search size={14} /> 查询
           </button>
           <button
             onClick={() => {
-              setFilterSupplier(''); setFilterStatus(''); setFilterWarehouse('');
-              setFilterStartDate(defaultStart); setFilterEndDate(defaultEnd); setKeyword('');
+              setFilterSupplier(''); setFilterStatus('draft,approved'); setFilterWarehouse('');
+              setFilterDocStartDate(defaultDocStart); setFilterDocEndDate(defaultDocEnd);
+              setFilterStartDate(''); setFilterEndDate(''); setKeyword('');
               setPage(1); void fetchList();
             }}
             className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50"
@@ -352,7 +378,7 @@ const PurchaseInboundPage: React.FC = () => {
                     )}
                     {(item.status === 'approved' || item.status === 'completed') && (
                       <>
-                        <button onClick={() => openView(item.id)} className="text-primary hover:text-blue-600">查看</button>
+                        <button onClick={() => openView(item.id)} className="text-primary hover:text-primary">查看</button>
                         <button onClick={() => handleListPrint(item.id)} className="text-gray-500 hover:text-gray-600 inline-flex align-middle" title="打印">
                           <Printer size={14} />
                         </button>

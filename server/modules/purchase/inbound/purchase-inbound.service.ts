@@ -56,6 +56,8 @@ interface ListQuery {
   startDate?: string;
   endDate?: string;
   warehouseId?: string;
+  docStartDate?: string;
+  docEndDate?: string;
 }
 
 @Injectable()
@@ -119,14 +121,31 @@ export class PurchaseInboundService {
   }
 
   async list(query: ListQuery): Promise<PaginationResult<PurchaseInbound>> {
-    const { page, pageSize, supplierId, status, orderNo, startDate, endDate, warehouseId } = query;
+    const { page, pageSize, supplierId, status, orderNo, startDate, endDate, warehouseId, docStartDate, docEndDate } = query;
     const conditions = [];
     if (supplierId) conditions.push(eq(purchaseInbound.supplierId, supplierId));
-    if (status) conditions.push(eq(purchaseInbound.status, status));
+    if (status) {
+      const statusVals = status.split(',').map((s) => s.trim()).filter(Boolean);
+      if (statusVals.length === 1) {
+        conditions.push(eq(purchaseInbound.status, statusVals[0]));
+      } else if (statusVals.length > 1) {
+        conditions.push(inArray(purchaseInbound.status, statusVals));
+      }
+    }
     if (orderNo) conditions.push(eq(purchaseInbound.orderNo, orderNo));
     if (startDate) conditions.push(gte(purchaseInbound.inboundDate, startDate));
     if (endDate) conditions.push(lte(purchaseInbound.inboundDate, endDate));
     if (warehouseId) conditions.push(eq(purchaseInbound.warehouseId, warehouseId));
+    // 单据日期（系统创建时间 _created_at）区间过滤，作用列 createdAt（timestamptz）
+    // 用 sql 模板传日期字符串，Postgres 按会话时区统一转型，避免 Date 时区偏移；结束日用次日开区间含入整日
+    if (docStartDate) conditions.push(sql`${purchaseInbound.createdAt} >= ${docStartDate}`);
+    if (docEndDate) {
+      const [y, m, d] = docEndDate.split('-').map(Number);
+      const endDt = new Date(y, m - 1, d);
+      endDt.setDate(endDt.getDate() + 1);
+      const nextDay = `${endDt.getFullYear()}-${String(endDt.getMonth() + 1).padStart(2, '0')}-${String(endDt.getDate()).padStart(2, '0')}`;
+      conditions.push(sql`${purchaseInbound.createdAt} < ${nextDay}`);
+    }
 
     // 软删除过滤：仅返回未删除记录
     conditions.push(isNull(purchaseInbound.deletedAt));

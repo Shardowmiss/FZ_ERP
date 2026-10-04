@@ -19,7 +19,7 @@ export const purchaseApi = {
       request<PaginationResult<PurchaseOrder>>('/api/purchase/order/importable', 'GET', null, params),
   },
   inbound: {
-    list: (params: PaginationParams & { supplierId?: string; status?: string; orderNo?: string; startDate?: string; endDate?: string; warehouseId?: string }) =>
+    list: (params: PaginationParams & { supplierId?: string; status?: string; orderNo?: string; startDate?: string; endDate?: string; warehouseId?: string; docStartDate?: string; docEndDate?: string }) =>
       request<PaginationResult<PurchaseInbound>>('/api/purchase/inbound', 'GET', null, params),
     get: (id: string) => request<PurchaseInbound>(`/api/purchase/inbound/${id}`),
     create: (data: any) => request<PurchaseInbound>('/api/purchase/inbound', 'POST', data),
