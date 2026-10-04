@@ -3,7 +3,7 @@ import { useTabs, getTabInfoFromPath } from '@client/src/contexts/TabsContext';
 import {
   Shirt, Layers, Building2, ShoppingCart, Factory,
   CalendarDays, ShoppingBag, Store, Package, DollarSign,
-  BarChart3, ArrowRight, Sparkles,
+  BarChart3, ArrowRight,
 } from 'lucide-react';
 
 interface FlowCard {
@@ -177,10 +177,6 @@ const WelcomePage: React.FC = () => {
     <div className="h-full overflow-auto bg-gray-50">
       <div className="max-w-5xl mx-auto py-10 px-6">
         <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-50 text-blue-600 rounded-full text-sm mb-4">
-            <Sparkles size={14} />
-            <span>服装行业一站式解决方案</span>
-          </div>
           <h1 className="text-3xl font-bold text-gray-800 mb-3">
             欢迎使用服装ERP管理系统
           </h1>

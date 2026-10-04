@@ -1,3 +1,4 @@
+import { StatusBadge, type StatusTone } from '@client/src/components/ui/status-badge';
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { salesApi } from '@client/src/api/sales';
@@ -16,11 +17,11 @@ import { DataPagination } from '@client/src/components/ui/pagination';
 import { exportTableToCSV } from '@client/src/utils/export-csv';
 import { errMsg } from '@/utils/errMsg';
 
-const STATUS_MAP: Record<string, { label: string; color: string }> = {
-  draft: { label: '新增', color: 'bg-gray-100 text-gray-600' },
-  audited: { label: '审核', color: 'bg-orange-100 text-orange-600' },
-  booked: { label: '记账', color: 'bg-blue-100 text-blue-600' },
-  accepted: { label: '验收', color: 'bg-green-100 text-green-600' },
+const STATUS_MAP: Record<string, { label: string; tone: StatusTone }> = {
+  draft: { label: '新增', tone: 'neutral' },
+  audited: { label: '审核', tone: 'warn' },
+  booked: { label: '记账', tone: 'info' },
+  accepted: { label: '验收', tone: 'ok' },
 };
 
 const BACK_PATH = '/sales/outbound';
@@ -275,7 +276,7 @@ export default function SalesOutboundPage() {
             {loading && <tr><td colSpan={9} className="text-center py-8 text-gray-400">加载中...</td></tr>}
             {!loading && list.length === 0 && <tr><td colSpan={9} className="text-center py-8 text-gray-400">暂无数据</td></tr>}
             {!loading && list.map((item: SalesOutbound) => {
-              const st = STATUS_MAP[item.status] || { label: item.status, color: 'bg-gray-100 text-gray-600' };
+              const st = STATUS_MAP[item.status] || { label: item.status, tone: 'neutral' };
               return (
                 <tr key={item.id} className="border-b border-gray-100 hover:bg-gray-50 h-10">
                   <td className="px-4">{item.outboundNo}</td>
@@ -285,7 +286,7 @@ export default function SalesOutboundPage() {
                   <td className="px-4">{item.outboundDate.slice(0, 10)}</td>
                   <td className="px-4 text-right">{item.totalAmount.toFixed(2)}</td>
                   <td className="px-4 text-right">{item.costAmount.toFixed(2)}</td>
-                  <td className="px-4"><span className={`px-2 py-0.5 rounded text-xs ${st.color}`}>{st.label}</span></td>
+                  <td className="px-4"><StatusBadge tone={st.tone}>{st.label}</StatusBadge></td>
                   <td className="px-4">
                     <span className="space-x-2 inline-flex items-center">
                       {item.status === 'draft' && (

@@ -1,3 +1,4 @@
+import { StatusBadge } from '@client/src/components/ui/status-badge';
 import { useState, useEffect } from 'react';
 import { useDefaultDocDate } from '@client/src/hooks/useDefaultDocDate';
 import { inventoryApi } from '@client/src/api/inventory';
@@ -198,11 +199,7 @@ export default function InventoryFlowPage() {
                   <td className="px-4">{FLOW_TYPE_LABELS[item.flowType] || item.flowType}</td>
                   <td className="px-4">{item.bizNo}</td>
                   <td className="px-4">
-                    <span className={`px-2 py-0.5 rounded text-xs ${
-                      inFlag ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                    }`}>
-                      {inFlag ? '入库' : '出库'}
-                    </span>
+                    <StatusBadge tone={inFlag ? 'ok' : 'danger'}>{inFlag ? '入库' : '出库'}</StatusBadge>
                   </td>
                   <td className="px-4">{itemName}</td>
                   <td className="px-4">{item.color || '-'}</td>

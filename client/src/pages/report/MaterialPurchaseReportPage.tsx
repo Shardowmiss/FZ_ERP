@@ -1,3 +1,4 @@
+import { StatusBadge, type StatusTone } from '@client/src/components/ui/status-badge';
 import { useState, useEffect, useCallback } from 'react';
 import { productionApi } from '@client/src/api/production';
 import { baseApi } from '@client/src/api/base';
@@ -99,10 +100,10 @@ export default function MaterialPurchaseReportPage() {
     approved: '已审',
   };
 
-  const statusColor: Record<string, string> = {
-    draft: 'bg-gray-100 text-gray-600',
-    pending: 'bg-orange-100 text-orange-600',
-    approved: 'bg-green-100 text-green-600',
+  const statusColor: Record<string, StatusTone> = {
+    draft: 'neutral',
+    pending: 'warn',
+    approved: 'ok',
   };
 
   const renderCell = (item: MaterialPurchaseInbound, key: string) => {
@@ -111,9 +112,7 @@ export default function MaterialPurchaseReportPage() {
         return formatAmount(item.totalAmount);
       case 'status':
         return (
-          <span className={`px-2 py-0.5 rounded text-xs ${statusColor[item.status] || ''}`}>
-            {statusLabel[item.status] || item.status}
-          </span>
+          <StatusBadge tone={statusColor[item.status] || 'neutral'}>{statusLabel[item.status] || item.status}</StatusBadge>
         );
       default:
         return (item as any)[key] || '-';

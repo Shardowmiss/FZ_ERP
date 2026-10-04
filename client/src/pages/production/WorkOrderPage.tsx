@@ -1,3 +1,4 @@
+import { StatusBadge, type StatusTone } from '@client/src/components/ui/status-badge';
 import { useState, useEffect } from 'react';
 import { useDefaultDocDate } from '@client/src/hooks/useDefaultDocDate';
 import { useNavigate } from 'react-router-dom';
@@ -17,12 +18,12 @@ import { exportTableToCSV } from '@client/src/utils/export-csv';
 import { validateDateRange } from '@client/src/utils/date-utils';
 import { errMsg } from '@/utils/errMsg';
 
-const STATUS_MAP: Record<string, { label: string; color: string }> = {
-  draft: { label: '草稿', color: 'bg-gray-100 text-gray-600' },
-  pending: { label: '待下发', color: 'bg-amber-100 text-amber-600' },
-  producing: { label: '生产中', color: 'bg-blue-100 text-blue-600' },
-  finished: { label: '已完工', color: 'bg-green-100 text-green-600' },
-  closed: { label: '已关闭', color: 'bg-slate-100 text-slate-600' },
+const STATUS_MAP: Record<string, { label: string; tone: StatusTone }> = {
+  draft: { label: '草稿', tone: 'neutral' },
+  pending: { label: '待下发', tone: 'warn' },
+  producing: { label: '生产中', tone: 'info' },
+  finished: { label: '已完工', tone: 'ok' },
+  closed: { label: '已关闭', tone: 'neutral' },
 };
 
 export default function WorkOrderPage() {
@@ -283,7 +284,7 @@ export default function WorkOrderPage() {
                 <tr><td colSpan={8} className="text-center py-8 text-gray-400">暂无数据</td></tr>
               )}
               {!loading && list.map((item: ProductionWorkOrder) => {
-                const st = STATUS_MAP[item.status] || { label: item.status, color: 'bg-gray-100 text-gray-600' };
+                const st = STATUS_MAP[item.status] || { label: item.status, tone: 'neutral' };
                 return (
                   <tr key={item.id} className="border-b border-gray-100 hover:bg-gray-50 h-10">
                     <td className="px-4 font-medium text-gray-800">{item.orderNo}</td>
@@ -293,7 +294,7 @@ export default function WorkOrderPage() {
                     <td className="px-4 text-gray-500">{item.planStartDate?.slice(0, 10) || '-'}</td>
                     <td className="px-4 text-gray-500">{item.planFinishDate?.slice(0, 10) || '-'}</td>
                     <td className="px-4">
-                      <span className={`px-2 py-0.5 rounded text-xs ${st.color}`}>{st.label}</span>
+                      <StatusBadge tone={st.tone}>{st.label}</StatusBadge>
                     </td>
                     <td className="px-4 space-x-2">
                       <button onClick={() => openView(item.id)} className="text-primary hover:underline">查看</button>

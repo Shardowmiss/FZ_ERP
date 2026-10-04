@@ -1,3 +1,4 @@
+import { StatusBadge } from '@client/src/components/ui/status-badge';
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { TableContainer } from '@client/src/components/ui/table-container';
@@ -202,9 +203,7 @@ const ReplenishTemplatePage: React.FC = () => {
                         </td>
                         <td className="px-3 py-2 text-gray-500">{t.cron || '-'}</td>
                         <td className="px-3 py-2 text-center">
-                          <span className={`px-2 py-0.5 rounded text-xs ${t.enabled ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                            {t.enabled ? '是' : '否'}
-                          </span>
+                          <StatusBadge tone={t.enabled ? 'ok' : 'neutral'}>{t.enabled ? '是' : '否'}</StatusBadge>
                         </td>
                         <td className="px-3 py-2 text-right whitespace-nowrap">
                           <button onClick={() => handleExecute(t.id)} className="text-blue-600 hover:underline text-xs mr-2">执行</button>

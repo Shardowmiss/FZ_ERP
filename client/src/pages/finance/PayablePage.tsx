@@ -7,6 +7,7 @@ import { TableContainer } from '@client/src/components/ui/table-container';
 import { DataPagination } from '@client/src/components/ui/pagination';
 import { exportTableToCSV } from '@client/src/utils/export-csv';
 import { errMsg } from '@/utils/errMsg';
+import { StatusBadge, type StatusTone } from '@client/src/components/ui/status-badge';
 
 interface PaymentItem {
   id: string;
@@ -181,12 +182,12 @@ const PayablePage: React.FC = () => {
   };
 
   const getStatusLabel = (status: string) => {
-    const map: Record<string, { label: string; className: string }> = {
-      unpaid: { label: '未付款', className: 'bg-red-100 text-red-700' },
-      partial: { label: '部分付款', className: 'bg-yellow-100 text-yellow-700' },
-      paid: { label: '已结清', className: 'bg-green-100 text-green-700' },
+    const map: Record<string, { label: string; tone: StatusTone }> = {
+      unpaid: { label: '未付款', tone: 'danger' },
+      partial: { label: '部分付款', tone: 'warn' },
+      paid: { label: '已结清', tone: 'ok' },
     };
-    return map[status] || { label: status, className: 'bg-gray-100 text-gray-600' };
+    return map[status] || { label: status, tone: 'neutral' };
   };
 
   const formatDate = (dateStr: string) => {
@@ -274,9 +275,7 @@ const PayablePage: React.FC = () => {
                     <td className="px-4 py-3 text-right text-red-500 font-medium">¥{item.balance.toFixed(2)}</td>
                     <td className="px-4 py-3 text-gray-500">{formatDate(item.createdAt)}</td>
                     <td className="px-4 py-3 text-center">
-                      <span className={`inline-block px-2 py-0.5 rounded text-xs ${s.className}`}>
-                        {s.label}
-                      </span>
+                      <StatusBadge tone={s.tone}>{s.label}</StatusBadge>
                     </td>
                     <td className="px-4 py-3 text-center">
                       <button

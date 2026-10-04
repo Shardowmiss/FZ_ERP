@@ -22,6 +22,7 @@ import {
 } from '@client/src/components/ui/table';
 import { Switch } from '@client/src/components/ui/switch';
 import { errMsg } from '@/utils/errMsg';
+import { StatusBadge } from '@client/src/components/ui/status-badge';
 import {
   ArrowUp,
   ArrowDown,
@@ -324,15 +325,11 @@ const StyleAttrDefPage: React.FC = () => {
   const renderStatusBadge = (status: string) => {
     if (status === 'active') {
       return (
-        <span className="inline-block px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded">
-          启用
-        </span>
+        <StatusBadge tone="ok">启用</StatusBadge>
       );
     }
     return (
-      <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded">
-        禁用
-      </span>
+      <StatusBadge tone="neutral">禁用</StatusBadge>
     );
   };
 

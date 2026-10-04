@@ -4,6 +4,7 @@ import { logger } from '@lark-apaas/client-toolkit/logger';
 import { toast } from 'sonner';
 import { showConfirm } from '@lark-apaas/client-toolkit';
 import { errMsg } from '@/utils/errMsg';
+import { StatusBadge as SharedStatusBadge, type StatusTone } from '@client/src/components/ui/status-badge';
 
 interface Option { id: string; code: string; name: string; unit?: string; costPrice?: number }
 interface OrderItem { id: string; skuId: string; skuCode: string; styleNo: string; color: string; size: string; quantity: number; unitPrice: number; amount: number; receivedQty: number }
@@ -489,16 +490,16 @@ const FeeTab: React.FC<{ orderOptions: any[]; supplierOptions: Option[]; onChang
 };
 
 const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
-  const map: Record<string, string> = {
-    draft: 'bg-gray-100 text-gray-600',
-    approved: 'bg-green-100 text-green-700',
-    pending: 'bg-yellow-100 text-yellow-700',
-    settled: 'bg-blue-100 text-blue-700',
-    completed: 'bg-purple-100 text-purple-700',
-    cancelled: 'bg-red-100 text-red-600',
+  const map: Record<string, StatusTone> = {
+    draft: 'neutral',
+    approved: 'ok',
+    pending: 'warn',
+    settled: 'info',
+    completed: 'accent',
+    cancelled: 'danger',
   };
   const label: Record<string, string> = { draft: '草稿', approved: '已审核', pending: '待结算', settled: '已结算', completed: '完成', cancelled: '已作废' };
-  return <span className={`inline-block px-2 py-0.5 rounded text-xs ${map[status] || 'bg-gray-100 text-gray-600'}`}>{label[status] || status}</span>;
+  return <SharedStatusBadge tone={map[status] ?? 'neutral'}>{label[status] || status}</SharedStatusBadge>;
 };
 
 export default SubcontractPage;

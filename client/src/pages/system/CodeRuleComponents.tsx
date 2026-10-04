@@ -1,3 +1,4 @@
+import { StatusBadge } from '@client/src/components/ui/status-badge';
 import React from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { Button } from '@client/src/components/ui/button';
@@ -276,13 +277,7 @@ export function BrandMappingTable(props: { data: BrandCode[] }) {
               <TableCell className="h-10 text-sm">{item.name}</TableCell>
               <TableCell className="h-10 text-sm text-center">{item.sortOrder ?? '-'}</TableCell>
               <TableCell className="h-10 text-sm text-center">
-                <span className={`inline-block px-2 py-0.5 rounded text-xs ${
-                  item.status === 'active'
-                    ? 'bg-green-50 text-green-600'
-                    : 'bg-gray-100 text-gray-500'
-                }`}>
-                  {item.status === 'active' ? '启用' : '禁用'}
-                </span>
+                <StatusBadge tone={item.status === 'active' ? 'ok' : 'neutral'}>{item.status === 'active' ? '启用' : '禁用'}</StatusBadge>
               </TableCell>
             </TableRow>
           ))

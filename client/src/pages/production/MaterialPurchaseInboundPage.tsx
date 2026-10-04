@@ -1,3 +1,4 @@
+import { StatusBadge, type StatusTone } from '@client/src/components/ui/status-badge';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Download, Printer } from 'lucide-react';
@@ -25,10 +26,10 @@ const statusLabel: Record<string, string> = {
   cancelled: '已作废',
 };
 
-const statusColor: Record<string, string> = {
-  draft: 'bg-gray-100 text-gray-600',
-  approved: 'bg-green-100 text-green-600',
-  completed: 'bg-blue-100 text-blue-600',
+const statusColor: Record<string, StatusTone> = {
+  draft: 'neutral',
+  approved: 'ok',
+  completed: 'info',
 };
 
 const MaterialPurchaseInboundPage: React.FC = () => {
@@ -312,9 +313,7 @@ const MaterialPurchaseInboundPage: React.FC = () => {
                   <td className="py-2 px-4 text-gray-500">{item.inboundDate.slice(0, 10)}</td>
                   <td className="py-2 px-4 text-right font-medium text-gray-800">¥ {item.totalAmount.toFixed(2)}</td>
                   <td className="py-2 px-4">
-                    <span className={`px-2 py-0.5 rounded text-xs ${statusColor[item.status] ?? 'bg-gray-100 text-gray-600'}`}>
-                      {statusLabel[item.status] ?? item.status}
-                    </span>
+                    <StatusBadge tone={statusColor[item.status] ?? 'neutral'}>{statusLabel[item.status] ?? item.status}</StatusBadge>
                   </td>
                   <td className="py-2 px-4 space-x-2">
                     {item.status === 'draft' && (

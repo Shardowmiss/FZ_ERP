@@ -1,3 +1,4 @@
+import { StatusBadge, type StatusTone } from '@client/src/components/ui/status-badge';
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { retailApi } from '@client/src/api/retail';
@@ -19,10 +20,10 @@ import { calcBlocksTotal } from '@client/src/components/styleMatrixUtils';
 import DocPage from '@client/src/components/DocPage/DocPage';
 import { errMsg } from '@/utils/errMsg';
 
-const RETURN_STATUS_MAP: Record<string, { label: string; variant: string }> = {
-  draft: { label: '待退款', variant: 'bg-amber-100 text-amber-700' },
-  refunded: { label: '已退款', variant: 'bg-green-100 text-green-700' },
-  cancelled: { label: '已取消', variant: 'bg-gray-100 text-gray-600' },
+const RETURN_STATUS_MAP: Record<string, { label: string; tone: StatusTone }> = {
+  draft: { label: '待退款', tone: 'warn' },
+  refunded: { label: '已退款', tone: 'ok' },
+  cancelled: { label: '已取消', tone: 'neutral' },
 };
 
 interface StoreOption {

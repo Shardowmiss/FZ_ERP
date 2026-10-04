@@ -1,3 +1,4 @@
+import { StatusBadge } from '@client/src/components/ui/status-badge';
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Download } from 'lucide-react';
@@ -175,8 +176,8 @@ const StylePage: React.FC = () => {
 
   const renderStatus = (status: string) => (
     status === 'active'
-      ? <span className="inline-block px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded">启用</span>
-      : <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded">停用</span>
+      ? <StatusBadge tone="ok">启用</StatusBadge>
+      : <StatusBadge tone="neutral">停用</StatusBadge>
   );
 
   const getStyleTooltip = (item: Style): string => {

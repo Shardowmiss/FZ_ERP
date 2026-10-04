@@ -1,3 +1,4 @@
+import { StatusBadge, type StatusTone } from '@client/src/components/ui/status-badge';
 import React, { useState, useEffect } from 'react';
 import { tradeShowApi } from '@client/src/api';
 import type { TradeShow, PaginationResult } from '@shared/api.interface';
@@ -6,11 +7,11 @@ import { showConfirm } from '@lark-apaas/client-toolkit';
 import { CalendarCheck, CalendarX, Lock, Plus } from 'lucide-react';
 import { errMsg } from '@/utils/errMsg';
 
-const STATUS_MAP: Record<string, { label: string; className: string }> = {
-  draft: { label: '草稿', className: 'bg-gray-100 text-gray-500' },
-  ongoing: { label: '进行中', className: 'bg-green-100 text-green-700' },
-  ended: { label: '已结束', className: 'bg-orange-100 text-orange-700' },
-  closed: { label: '已关闭', className: 'bg-gray-200 text-gray-700' },
+const STATUS_MAP: Record<string, { label: string; tone: StatusTone }> = {
+  draft: { label: '草稿', tone: 'neutral' },
+  ongoing: { label: '进行中', tone: 'ok' },
+  ended: { label: '已结束', tone: 'warn' },
+  closed: { label: '已关闭', tone: 'neutral' },
 };
 
 const SEASON_OPTIONS = [
@@ -182,11 +183,7 @@ const TradeShowPage: React.FC = () => {
   const renderStatus = (status: string) => {
     const cfg = STATUS_MAP[status] || STATUS_MAP.draft;
     return (
-      <span
-        className={`inline-block px-2 py-0.5 text-xs rounded ${cfg.className}`}
-      >
-        {cfg.label}
-      </span>
+      <StatusBadge tone={cfg.tone}>{cfg.label}</StatusBadge>
     );
   };
 

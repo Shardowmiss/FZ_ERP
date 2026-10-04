@@ -1,3 +1,4 @@
+import { StatusBadge } from '@client/src/components/ui/status-badge';
 import React, { useState, useEffect } from 'react';
 import { Download } from 'lucide-react';
 import { baseApi } from '@client/src/api';
@@ -117,9 +118,9 @@ const DealerPage: React.FC = () => {
 
   const renderStatus = (status: string) => {
     if (status === 'active') {
-      return <span className="inline-block px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded">合作中</span>;
+      return <StatusBadge tone="ok">合作中</StatusBadge>;
     }
-    return <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded">已终止</span>;
+    return <StatusBadge tone="neutral">已终止</StatusBadge>;
   };
 
   return (

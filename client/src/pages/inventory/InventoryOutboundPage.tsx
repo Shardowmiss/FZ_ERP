@@ -1,3 +1,4 @@
+import { StatusBadge } from '@client/src/components/ui/status-badge';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { axiosForBackend } from '@lark-apaas/client-toolkit/utils/getAxiosForBackend';
@@ -179,9 +180,7 @@ const InventoryOutboundPage: React.FC = () => {
                   <td className="px-4 py-3 text-gray-600">{typeMap[item.outboundType] || item.outboundType}</td>
                   <td className="px-4 py-3 text-gray-500">{item.outboundDate}</td>
                   <td className="px-4 py-3 text-center">
-                    <span className="inline-block px-2 py-0.5 rounded text-xs bg-green-100 text-green-700">
-                      已完成
-                    </span>
+                    <StatusBadge tone="ok">已完成</StatusBadge>
                   </td>
                   <td className="px-4 py-3 text-gray-500 text-xs">{item.createdAt || '-'}</td>
                   <td className="px-4 py-3">

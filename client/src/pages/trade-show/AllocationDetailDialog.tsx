@@ -1,3 +1,4 @@
+import { StatusBadge, type StatusTone } from '@client/src/components/ui/status-badge';
 import React, { useState, useEffect, useMemo } from 'react';
 import { tradeShowApi, baseApi } from '@client/src/api';
 import type { AllocationOrder, AllocationItem, Sku } from '@shared/api.interface';
@@ -22,9 +23,9 @@ interface PartyGroup {
   items: AllocationItem[];
 }
 
-const STATUS_MAP: Record<string, { label: string; className: string }> = {
-  draft: { label: '草稿', className: 'bg-gray-100 text-gray-500' },
-  approved: { label: '已审核', className: 'bg-green-100 text-green-700' },
+const STATUS_MAP: Record<string, { label: string; tone: StatusTone }> = {
+  draft: { label: '草稿', tone: 'neutral' },
+  approved: { label: '已审核', tone: 'ok' },
 };
 
 const AllocationDetailDialog: React.FC<AllocationDetailDialogProps> = ({
@@ -165,11 +166,7 @@ const AllocationDetailDialog: React.FC<AllocationDetailDialogProps> = ({
   const renderStatus = (status: string) => {
     const cfg = STATUS_MAP[status] || STATUS_MAP.draft;
     return (
-      <span
-        className={`inline-block px-2 py-0.5 text-xs rounded ${cfg.className}`}
-      >
-        {cfg.label}
-      </span>
+      <StatusBadge tone={cfg.tone}>{cfg.label}</StatusBadge>
     );
   };
 

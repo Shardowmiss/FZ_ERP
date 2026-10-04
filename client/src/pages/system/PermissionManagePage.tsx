@@ -1,3 +1,4 @@
+import { StatusBadge } from '@client/src/components/ui/status-badge';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { ChevronRight, ChevronDown, Save, Shield } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
@@ -390,9 +391,7 @@ const PermissionManagePage: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <span>{role.name}</span>
                     {role.code === 'admin' && (
-                      <span className="text-xs bg-amber-100 text-amber-600 px-1.5 py-0.5 rounded">
-                        管理员
-                      </span>
+                      <StatusBadge tone="warn">管理员</StatusBadge>
                     )}
                   </div>
                   <div className="text-xs text-gray-400 mt-0.5">

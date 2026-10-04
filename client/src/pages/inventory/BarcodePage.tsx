@@ -1,3 +1,4 @@
+import { StatusBadge } from '@client/src/components/ui/status-badge';
 import React, { useState, useEffect } from 'react';
 import { axiosForBackend } from '@lark-apaas/client-toolkit/utils/getAxiosForBackend';
 import { logger } from '@lark-apaas/client-toolkit/logger';
@@ -159,9 +160,7 @@ const BarcodePage: React.FC = () => {
                     <td className="px-4 py-3 text-gray-700 font-mono text-xs">{item.batchNo}</td>
                     <td className="px-4 py-3 text-right text-gray-700">{item.quantity.toFixed(3)}</td>
                     <td className="px-4 py-3 text-center">
-                      <span className="inline-block px-2 py-0.5 rounded text-xs bg-green-100 text-green-700">
-                        {item.status}
-                      </span>
+                      <StatusBadge tone="ok">{item.status}</StatusBadge>
                     </td>
                   </tr>
                 ))

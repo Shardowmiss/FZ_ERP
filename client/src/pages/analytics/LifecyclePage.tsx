@@ -1,3 +1,4 @@
+import { StatusBadge, type StatusTone } from '@client/src/components/ui/status-badge';
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { analyticsApi } from '@client/src/api/analytics';
@@ -10,11 +11,11 @@ const STATUS_LABEL: Record<string, string> = {
   maturity: '成熟期',
   decline: '衰退期',
 };
-const VELOCITY_LABEL: Record<string, { text: string; cls: string }> = {
-  hot: { text: '畅销', cls: 'bg-red-100 text-red-600' },
-  normal: { text: '平销', cls: 'bg-blue-100 text-blue-600' },
-  slow: { text: '动销慢', cls: 'bg-amber-100 text-amber-600' },
-  dead: { text: '滞销', cls: 'bg-gray-200 text-gray-500' },
+const VELOCITY_LABEL: Record<string, { text: string; tone: StatusTone }> = {
+  hot: { text: '畅销', tone: 'danger' },
+  normal: { text: '平销', tone: 'info' },
+  slow: { text: '动销慢', tone: 'warn' },
+  dead: { text: '滞销', tone: 'neutral' },
 };
 
 const LifecyclePage: React.FC = () => {
@@ -90,7 +91,7 @@ const LifecyclePage: React.FC = () => {
                     <td className="px-3 py-2 text-gray-600">{it.category || '-'}</td>
                     <td className="px-3 py-2 text-right text-gray-700">{it.recentQty}</td>
                     <td className="px-3 py-2 text-center">
-                      <span className={`px-2 py-0.5 rounded text-xs ${v.cls}`}>{v.text}</span>
+                      <StatusBadge tone={v.tone}>{v.text}</StatusBadge>
                     </td>
                     <td className="px-3 py-2 text-center text-gray-700">
                       {STATUS_LABEL[it.lifecycleStatus] || it.lifecycleStatus}

@@ -1,3 +1,4 @@
+import { StatusBadge, type StatusTone } from '@client/src/components/ui/status-badge';
 import React, { useState, useEffect } from 'react';
 import { tradeShowApi, baseApi } from '@client/src/api';
 import type { PreOrder, PaginationResult } from '@shared/api.interface';
@@ -10,19 +11,16 @@ import type { SkuMatrixItem } from '@client/src/components/print/SkuMatrixTable'
 import PreOrderDialog from './PreOrderDialog';
 import { errMsg } from '@/utils/errMsg';
 
-const STATUS_MAP: Record<string, { label: string; className: string }> = {
-  draft: { label: '草稿', className: 'bg-gray-100 text-gray-500' },
-  submitted: { label: '已提交', className: 'bg-blue-100 text-blue-700' },
-  confirmed: { label: '已确认', className: 'bg-green-100 text-green-700' },
-  rejected: { label: '已驳回', className: 'bg-red-100 text-red-700' },
+const STATUS_MAP: Record<string, { label: string; tone: StatusTone }> = {
+  draft: { label: '草稿', tone: 'neutral' },
+  submitted: { label: '已提交', tone: 'info' },
+  confirmed: { label: '已确认', tone: 'ok' },
+  rejected: { label: '已驳回', tone: 'danger' },
 };
 
-const SUBMITTER_TYPE_MAP: Record<
-  string,
-  { label: string; className: string }
-> = {
-  dealer: { label: '经销商', className: 'bg-purple-100 text-purple-700' },
-  store: { label: '直营店', className: 'bg-cyan-100 text-cyan-700' },
+const SUBMITTER_TYPE_MAP: Record<string, { label: string; tone: StatusTone }> = {
+  dealer: { label: '经销商', tone: 'accent' },
+  store: { label: '直营店', tone: 'info' },
 };
 
 const PreOrderPage: React.FC = () => {
@@ -294,11 +292,7 @@ const PreOrderPage: React.FC = () => {
   const renderStatus = (status: string) => {
     const cfg = STATUS_MAP[status] || STATUS_MAP.draft;
     return (
-      <span
-        className={`inline-block px-2 py-0.5 text-xs rounded ${cfg.className}`}
-      >
-        {cfg.label}
-      </span>
+      <StatusBadge tone={cfg.tone}>{cfg.label}</StatusBadge>
     );
   };
 
@@ -306,11 +300,7 @@ const PreOrderPage: React.FC = () => {
     const cfg = SUBMITTER_TYPE_MAP[type];
     if (!cfg) return null;
     return (
-      <span
-        className={`inline-block px-1.5 py-0.5 text-xs rounded ${cfg.className}`}
-      >
-        {cfg.label}
-      </span>
+      <StatusBadge tone={cfg.tone}>{cfg.label}</StatusBadge>
     );
   };
 

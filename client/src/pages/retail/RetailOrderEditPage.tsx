@@ -1,3 +1,4 @@
+import { StatusBadge, type StatusTone } from '@client/src/components/ui/status-badge';
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { retailApi } from '@client/src/api/retail';
@@ -26,10 +27,10 @@ import {
 import DocPage from '@client/src/components/DocPage/DocPage';
 import { errMsg } from '@/utils/errMsg';
 
-const STATUS_MAP: Record<string, { label: string; variant: string }> = {
-  draft: { label: '草稿', variant: 'bg-gray-100 text-gray-600' },
-  settled: { label: '已结算', variant: 'bg-green-100 text-green-700' },
-  returned: { label: '已退货', variant: 'bg-red-100 text-red-700' },
+const STATUS_MAP: Record<string, { label: string; tone: StatusTone }> = {
+  draft: { label: '草稿', tone: 'neutral' },
+  settled: { label: '已结算', tone: 'ok' },
+  returned: { label: '已退货', tone: 'danger' },
 };
 
 const SOURCE_MAP: Record<string, string> = {

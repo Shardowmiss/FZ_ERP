@@ -5,6 +5,7 @@ import { logger } from '@lark-apaas/client-toolkit/logger';
 import { uniqueCodeApi, type PublicTrace } from '@client/src/api/uniqueCode';
 import { Card, CardContent, CardHeader, CardTitle } from '@client/src/components/ui/card';
 import { Badge } from '@client/src/components/ui/badge';
+import { Search } from 'lucide-react';
 import { CHART_PRIMARY } from '@client/src/lib/chart-colors';
 
 /* ------------------------------------------------------------------ *
@@ -115,7 +116,7 @@ const UniqueCodePublicTracePage: React.FC = () => {
         {!loading && !error && data && !data.found && (
           <Card>
             <CardContent style={{ padding: 24, textAlign: 'center' }}>
-              <div style={{ fontSize: 48, marginBottom: 8 }}>🔍</div>
+              <Search size={48} className="mx-auto text-gray-400" style={{ marginBottom: 8 }} />
               <div style={{ fontWeight: 600, color: '#0f172a' }}>未查询到该唯一码</div>
               <div style={{ fontSize: 13, color: '#64748b', marginTop: 6 }}>
                 码号：{data.uniqueCode || decoded}

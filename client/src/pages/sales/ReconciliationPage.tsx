@@ -1,3 +1,4 @@
+import { StatusBadge, type StatusTone } from '@client/src/components/ui/status-badge';
 import React, { useState, useEffect } from 'react';
 import { Plus, Search } from 'lucide-react';
 import { toast } from 'sonner';
@@ -14,10 +15,10 @@ const statusLabel: Record<string, string> = {
   voided: '已作废',
 };
 
-const statusColor: Record<string, string> = {
-  draft: 'bg-gray-100 text-gray-600',
-  confirmed: 'bg-green-100 text-green-600',
-  voided: 'bg-red-100 text-red-600',
+const statusColor: Record<string, StatusTone> = {
+  draft: 'neutral',
+  confirmed: 'ok',
+  voided: 'danger',
 };
 
 const SalesReconciliationPage: React.FC = () => {
@@ -279,9 +280,7 @@ const SalesReconciliationPage: React.FC = () => {
                     <td className="py-2 px-4 text-right text-orange-500">-¥ {item.returnAmount.toFixed(2)}</td>
                     <td className="py-2 px-4 text-right font-medium text-gray-800">¥ {item.totalAmount.toFixed(2)}</td>
                     <td className="py-2 px-4">
-                      <span className={`px-2 py-0.5 rounded text-xs ${statusColor[item.status] ?? 'bg-gray-100 text-gray-600'}`}>
-                        {statusLabel[item.status] ?? item.status}
-                      </span>
+                      <StatusBadge tone={statusColor[item.status] ?? 'neutral'}>{statusLabel[item.status] ?? item.status}</StatusBadge>
                     </td>
                     <td className="py-2 px-4 space-x-2">
                       <button onClick={() => openView(item.id)} className="text-primary hover:text-blue-600">查看</button>

@@ -1,3 +1,4 @@
+import { StatusBadge } from '@client/src/components/ui/status-badge';
 import React, { useState, useEffect } from 'react';
 import { baseApi } from '@client/src/api';
 import type { Color, PaginationResult } from '@shared/api.interface';
@@ -111,9 +112,7 @@ const ColorPage: React.FC = () => {
   const renderStatus = (status?: string) => {
     const active = status === 'active';
     return (
-      <span className={`px-2 py-0.5 rounded text-xs ${active ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-500'}`}>
-        {active ? '启用' : '停用'}
-      </span>
+      <StatusBadge tone={active ? 'ok' : 'neutral'}>{active ? '启用' : '停用'}</StatusBadge>
     );
   };
 

@@ -3,6 +3,7 @@ import { logger } from '@lark-apaas/client-toolkit/logger';
 import { toast } from 'sonner';
 import { financeApi } from '@client/src/api/finance';
 import { errMsg } from '@/utils/errMsg';
+import { StatusBadge, type StatusTone } from '@client/src/components/ui/status-badge';
 import type {
   MonthCloseRecord,
   MonthCloseDetailResponse,
@@ -108,9 +109,9 @@ const MonthClosePage: React.FC = () => {
 
   const getStatusLabel = (status: string) => {
     if (status === 'closed') {
-      return { label: '已月结', className: 'bg-green-100 text-green-700' };
+      return { label: '已月结', tone: 'ok' as StatusTone };
     }
-    return { label: '未月结', className: 'bg-gray-100 text-gray-600' };
+    return { label: '未月结', tone: 'neutral' as StatusTone };
   };
 
   const renderDetailTable = (
@@ -216,11 +217,7 @@ const MonthClosePage: React.FC = () => {
                       {item.month}
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <span
-                        className={`inline-block px-2 py-0.5 rounded text-xs ${s.className}`}
-                      >
-                        {s.label}
-                      </span>
+                      <StatusBadge tone={s.tone}>{s.label}</StatusBadge>
                     </td>
                     <td className="px-4 py-3 text-gray-700">
                       {item.closedByName || '-'}

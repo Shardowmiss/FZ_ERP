@@ -1,3 +1,4 @@
+import { StatusBadge, type StatusTone } from '@client/src/components/ui/status-badge';
 import React, { useState, useEffect } from 'react';
 import { logger } from '@lark-apaas/client-toolkit/logger';
 import { toast } from 'sonner';
@@ -157,11 +158,11 @@ const InventoryWarningPage: React.FC = () => {
   };
 
   const getWarningLabel = (type: string) => {
-    const map: Record<string, { label: string; className: string }> = {
-      below_min: { label: '低于下限', className: 'bg-red-100 text-red-700' },
-      above_max: { label: '高于上限', className: 'bg-orange-100 text-orange-700' },
+    const map: Record<string, { label: string; tone: StatusTone }> = {
+      below_min: { label: '低于下限', tone: 'danger' },
+      above_max: { label: '高于上限', tone: 'warn' },
     };
-    return map[type] || { label: type, className: 'bg-gray-100 text-gray-600' };
+    return map[type] || { label: type, tone: 'neutral' };
   };
 
   return (
@@ -255,9 +256,7 @@ const InventoryWarningPage: React.FC = () => {
                     <td className="px-4 py-3 text-right text-gray-500">{item.minStock?.toFixed(3) || '-'}</td>
                     <td className="px-4 py-3 text-right text-gray-500">{item.maxStock?.toFixed(3) || '-'}</td>
                     <td className="px-4 py-3 text-center">
-                      <span className={`inline-block px-2 py-0.5 rounded text-xs ${w.className}`}>
-                        {w.label}
-                      </span>
+                      <StatusBadge tone={w.tone}>{w.label}</StatusBadge>
                     </td>
                   </tr>
                 );

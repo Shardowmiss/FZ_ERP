@@ -1,3 +1,4 @@
+import { StatusBadge, type StatusTone } from '@client/src/components/ui/status-badge';
 import React, { useState, useEffect } from 'react';
 import { useDefaultDocDate } from '@client/src/hooks/useDefaultDocDate';
 import { useNavigate } from 'react-router-dom';
@@ -20,11 +21,11 @@ const statusLabel: Record<string, string> = {
   cancelled: '已作废',
 };
 
-const statusColor: Record<string, string> = {
-  draft: 'bg-gray-100 text-gray-600',
-  pending: 'bg-orange-100 text-orange-600',
-  approved: 'bg-green-100 text-green-600',
-  completed: 'bg-blue-100 text-blue-600',
+const statusColor: Record<string, StatusTone> = {
+  draft: 'neutral',
+  pending: 'warn',
+  approved: 'ok',
+  completed: 'info',
 };
 
 const GarmentPurchaseOrderPage: React.FC = () => {
@@ -324,11 +325,7 @@ const GarmentPurchaseOrderPage: React.FC = () => {
                     ¥ {item.totalAmount.toFixed(2)}
                   </td>
                   <td className="py-2 px-4">
-                    <span
-                      className={`px-2 py-0.5 rounded text-xs ${statusColor[item.status] ?? 'bg-gray-100 text-gray-600'}`}
-                    >
-                      {statusLabel[item.status] ?? item.status}
-                    </span>
+                    <StatusBadge tone={statusColor[item.status] ?? 'neutral'}>{statusLabel[item.status] ?? item.status}</StatusBadge>
                   </td>
                   <td className="py-2 px-4 space-x-2">
                     {item.status === 'draft' && (

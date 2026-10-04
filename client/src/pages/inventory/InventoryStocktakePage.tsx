@@ -1,3 +1,4 @@
+import { StatusBadge, type StatusTone } from '@client/src/components/ui/status-badge';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { inventoryApi } from '@client/src/api/inventory';
@@ -24,9 +25,9 @@ export default function InventoryStocktakePage() {
 
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
 
-  const STATUS_MAP: Record<string, { label: string; color: string }> = {
-    draft: { label: '草稿', color: 'bg-gray-100 text-gray-600' },
-    approved: { label: '已审核', color: 'bg-green-100 text-green-700' },
+  const STATUS_MAP: Record<string, { label: string; tone: StatusTone }> = {
+    draft: { label: '草稿', tone: 'neutral' },
+    approved: { label: '已审核', tone: 'ok' },
   };
 
   const fetchWarehouses = async () => {
@@ -170,14 +171,14 @@ export default function InventoryStocktakePage() {
             {loading && <tr><td colSpan={6} className="text-center py-8 text-gray-400">加载中...</td></tr>}
             {!loading && list.length === 0 && <tr><td colSpan={6} className="text-center py-8 text-gray-400">暂无数据</td></tr>}
             {!loading && list.map((item: InventoryStocktake) => {
-              const st = STATUS_MAP[item.status] || { label: item.status, color: 'bg-gray-100 text-gray-600' };
+              const st = STATUS_MAP[item.status] || { label: item.status, tone: 'neutral' };
               return (
                 <tr key={item.id} className="border-b border-gray-100 hover:bg-gray-50 h-10">
                   <td className="px-4">{item.stocktakeNo}</td>
                   <td className="px-4">{item.warehouseName}</td>
                   <td className="px-4">{item.stocktakeDate.slice(0, 10)}</td>
                   <td className="px-4">{item.itemType === 'sku' ? '成品' : '面辅料'}</td>
-                  <td className="px-4"><span className={`px-2 py-0.5 rounded text-xs ${st.color}`}>{st.label}</span></td>
+                  <td className="px-4"><StatusBadge tone={st.tone}>{st.label}</StatusBadge></td>
                   <td className="px-4 space-x-2">
                     <button onClick={() => openView(item.id)} className="text-primary hover:underline">查看</button>
                     {item.status === 'draft' && (

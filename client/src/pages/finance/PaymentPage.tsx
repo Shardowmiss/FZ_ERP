@@ -10,6 +10,7 @@ import type { FinancePayment, PaginationResult } from '@shared/api.interface';
 import { TableContainer } from '@client/src/components/ui/table-container';
 import { DataPagination } from '@client/src/components/ui/pagination';
 import { errMsg } from '@/utils/errMsg';
+import { StatusBadge, type StatusTone } from '@client/src/components/ui/status-badge';
 
 const statusLabel: Record<string, string> = {
   draft: '草稿',
@@ -18,10 +19,10 @@ const statusLabel: Record<string, string> = {
   cancelled: '已作废',
 };
 
-const statusColor: Record<string, string> = {
-  draft: 'bg-gray-100 text-gray-600',
-  approved: 'bg-green-100 text-green-600',
-  voided: 'bg-red-100 text-red-600',
+const statusTone: Record<string, StatusTone> = {
+  draft: 'neutral',
+  approved: 'ok',
+  voided: 'danger',
 };
 
 const paymentMethodLabel: Record<string, string> = {
@@ -268,9 +269,7 @@ const PaymentPage: React.FC = () => {
                     <td className="py-2 px-4">{paymentMethodLabel[item.paymentMethod] ?? item.paymentMethod}</td>
                     <td className="py-2 px-4 text-gray-500">{item.handler ?? '-'}</td>
                     <td className="py-2 px-4">
-                      <span className={`px-2 py-0.5 rounded text-xs ${statusColor[item.status] ?? 'bg-gray-100 text-gray-600'}`}>
-                        {statusLabel[item.status] ?? item.status}
-                      </span>
+                      <StatusBadge tone={statusTone[item.status] ?? 'neutral'}>{statusLabel[item.status] ?? item.status}</StatusBadge>
                     </td>
                     <td className="py-2 px-4 space-x-2">
                       {item.status === 'draft' && (

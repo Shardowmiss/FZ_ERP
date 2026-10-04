@@ -1,3 +1,4 @@
+import { StatusBadge, type StatusTone } from '@client/src/components/ui/status-badge';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { inventoryApi } from '@client/src/api/inventory';
@@ -15,12 +16,12 @@ import { DataPagination } from '@client/src/components/ui/pagination';
 import { exportTableToCSV } from '@client/src/utils/export-csv';
 import { errMsg } from '@/utils/errMsg';
 
-const STATUS_MAP: Record<string, { label: string; color: string }> = {
-  draft: { label: '草稿', color: 'bg-gray-100 text-gray-600' },
-  in_transit: { label: '在途', color: 'bg-amber-100 text-amber-700' },
-  completed: { label: '已完成', color: 'bg-green-100 text-green-700' },
-  accepted: { label: '已验收', color: 'bg-teal-100 text-teal-700' },
-  cancelled: { label: '已作废', color: 'bg-red-100 text-red-700' },
+const STATUS_MAP: Record<string, { label: string; tone: StatusTone }> = {
+  draft: { label: '草稿', tone: 'neutral' },
+  in_transit: { label: '在途', tone: 'warn' },
+  completed: { label: '已完成', tone: 'ok' },
+  accepted: { label: '已验收', tone: 'info' },
+  cancelled: { label: '已作废', tone: 'danger' },
 };
 
 export default function InventoryTransferPage() {
@@ -286,7 +287,7 @@ export default function InventoryTransferPage() {
             {loading && <tr><td colSpan={7} className="text-center py-8 text-gray-400">加载中...</td></tr>}
             {!loading && list.length === 0 && <tr><td colSpan={7} className="text-center py-8 text-gray-400">暂无数据</td></tr>}
             {!loading && list.map((item: InventoryTransfer) => {
-              const st = STATUS_MAP[item.status] || { label: item.status, color: 'bg-gray-100 text-gray-600' };
+              const st = STATUS_MAP[item.status] || { label: item.status, tone: 'neutral' };
               return (
                 <tr key={item.id} className="border-b border-gray-100 hover:bg-gray-50 h-10">
                   <td className="px-4">{item.transferNo}</td>
@@ -294,7 +295,7 @@ export default function InventoryTransferPage() {
                   <td className="px-4 py-2">{renderPartyCell(item, 'to')}</td>
                   <td className="px-4">{item.transferDate.slice(0, 10)}</td>
                   <td className="px-4">{item.items?.length ?? 0}</td>
-                  <td className="px-4"><span className={`px-2 py-0.5 rounded text-xs ${st.color}`}>{st.label}</span></td>
+                  <td className="px-4"><StatusBadge tone={st.tone}>{st.label}</StatusBadge></td>
                   <td className="px-4 space-x-2">
                     <button onClick={() => openView(item.id)} className="text-primary hover:underline">查看</button>
                     {item.status === 'draft' && (

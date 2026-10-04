@@ -1,3 +1,4 @@
+import { StatusBadge } from '@client/src/components/ui/status-badge';
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { axiosForBackend } from '@lark-apaas/client-toolkit/utils/getAxiosForBackend';
@@ -174,7 +175,7 @@ const OmniPage: React.FC = () => {
                   <td className="px-3 py-2 text-gray-600">{o.channelName}</td>
                   <td className="px-3 py-2 text-gray-700">{o.customerName}</td>
                   <td className="px-3 py-2 text-right text-gray-700">¥{Number(o.totalAmount ?? 0).toFixed(2)}</td>
-                  <td className="px-3 py-2 text-center"><span className="px-2 py-0.5 rounded text-xs bg-blue-100 text-blue-600">{STATUS_LABEL[o.status] || o.status}</span></td>
+                  <td className="px-3 py-2 text-center"><StatusBadge tone="info">{STATUS_LABEL[o.status] || o.status}</StatusBadge></td>
                   <td className="px-3 py-2 text-center"><button onClick={() => openDetail(o.id)} className="text-primary text-xs">明细</button></td>
                 </tr>
               ))

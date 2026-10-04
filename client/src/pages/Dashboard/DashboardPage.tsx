@@ -1,3 +1,4 @@
+import { StatusBadge } from '@client/src/components/ui/status-badge';
 import React, { useState, useEffect } from 'react';
 import SafeChart from '@client/src/components/SafeChart';
 import {
@@ -187,9 +188,7 @@ const DashboardPage: React.FC = () => {
                     <td className={`py-2 px-3 text-right ${isBelow ? 'text-red-500' : ''}`}>{item.quantity}</td>
                     <td className={`py-2 px-3 text-right ${isBelow ? 'text-red-500' : ''}`}>{item.safetyMin}</td>
                     <td className="py-2 px-3">
-                      <span className={`px-2 py-0.5 rounded text-xs ${isBelow ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600'}`}>
-                        {isBelow ? '低于下限' : '高于上限'}
-                      </span>
+                      <StatusBadge tone={isBelow ? 'danger' : 'warn'}>{isBelow ? '低于下限' : '高于上限'}</StatusBadge>
                     </td>
                   </tr>
                 );

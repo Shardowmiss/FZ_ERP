@@ -1,3 +1,4 @@
+import { StatusBadge } from '@client/src/components/ui/status-badge';
 import React, { useMemo } from 'react';
 import type { AllocationItem, Sku } from '@shared/api.interface';
 
@@ -42,15 +43,7 @@ const PartyAllocationTable: React.FC<PartyAllocationTableProps> = ({
       <div className="px-4 py-2 bg-blue-50 border-b border-gray-200 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="font-medium text-gray-700">{partyName}</span>
-          <span
-            className={`text-xs px-1.5 py-0.5 rounded ${
-              partyType === 'dealer'
-                ? 'bg-purple-100 text-purple-700'
-                : 'bg-cyan-100 text-cyan-700'
-            }`}
-          >
-            {partyType === 'dealer' ? '经销商' : '直营店'}
-          </span>
+          <StatusBadge tone={partyType === 'dealer' ? 'accent' : 'info'}>{partyType === 'dealer' ? '经销商' : '直营店'}</StatusBadge>
         </div>
         <div className="text-sm text-gray-600">
           预订：

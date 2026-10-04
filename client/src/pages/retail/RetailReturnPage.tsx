@@ -1,3 +1,4 @@
+import { StatusBadge, type StatusTone } from '@client/src/components/ui/status-badge';
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { retailApi } from '@client/src/api/retail';
@@ -15,10 +16,10 @@ import { SkuDocPrintContent } from '@client/src/components/print/DocPrintContent
 import type { SkuMatrixItem } from '@client/src/components/print/SkuMatrixTable';
 import { errMsg } from '@/utils/errMsg';
 
-const RETURN_STATUS_MAP: Record<string, { label: string; variant: string }> = {
-  draft: { label: '待退款', variant: 'bg-amber-100 text-amber-700' },
-  refunded: { label: '已退款', variant: 'bg-green-100 text-green-700' },
-  cancelled: { label: '已取消', variant: 'bg-gray-100 text-gray-600' },
+const RETURN_STATUS_MAP: Record<string, { label: string; tone: StatusTone }> = {
+  draft: { label: '待退款', tone: 'warn' },
+  refunded: { label: '已退款', tone: 'ok' },
+  cancelled: { label: '已取消', tone: 'neutral' },
 };
 
 interface StoreOption {
@@ -284,7 +285,7 @@ export default function RetailReturnPage() {
             {loading && <tr><td colSpan={7} className="text-center py-8 text-gray-400">加载中...</td></tr>}
             {!loading && list.length === 0 && <tr><td colSpan={7} className="text-center py-8 text-gray-400">暂无数据</td></tr>}
             {!loading && list.map((item: RetailReturn) => {
-              const st = RETURN_STATUS_MAP[item.status] || { label: item.status, variant: 'bg-gray-100 text-gray-600' };
+              const st = RETURN_STATUS_MAP[item.status] || { label: item.status, tone: 'neutral' };
               return (
                 <tr key={item.id} className="border-b border-gray-100 hover:bg-gray-50 h-10">
                   <td className="px-4 font-medium">{item.returnNo}</td>
@@ -293,7 +294,7 @@ export default function RetailReturnPage() {
                   <td className="px-4">{item.returnDate?.slice(0, 10) || item.createdAt?.slice(0, 10)}</td>
                   <td className="px-4 text-right text-red-600">-¥{item.totalAmount?.toFixed(2)}</td>
                   <td className="px-4">
-                    <span className={`px-2 py-0.5 rounded text-xs ${st.variant}`}>{st.label}</span>
+                    <StatusBadge tone={st.tone}>{st.label}</StatusBadge>
                   </td>
                   <td className="px-4 space-x-2">
                     <button onClick={() => openView(item.id)} className="text-primary hover:underline">查看</button>

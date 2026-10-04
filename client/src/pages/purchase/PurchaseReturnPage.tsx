@@ -1,3 +1,4 @@
+import { StatusBadge, type StatusTone } from '@client/src/components/ui/status-badge';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { axiosForBackend } from '@lark-apaas/client-toolkit/utils/getAxiosForBackend';
@@ -211,11 +212,11 @@ const PurchaseReturnPage: React.FC = () => {
   };
 
   const getStatusLabel = (status: string) => {
-    const map: Record<string, { label: string; className: string }> = {
-      draft: { label: '草稿', className: 'bg-gray-100 text-gray-600' },
-      approved: { label: '已审核', className: 'bg-green-100 text-green-700' },
+    const map: Record<string, { label: string; tone: StatusTone }> = {
+      draft: { label: '草稿', tone: 'neutral' },
+      approved: { label: '已审核', tone: 'ok' },
     };
-    return map[status] || { label: status, className: 'bg-gray-100 text-gray-600' };
+    return map[status] || { label: status, tone: 'neutral' };
   };
 
   const handleVoid = async (id: string): Promise<void> => {
@@ -350,9 +351,7 @@ const PurchaseReturnPage: React.FC = () => {
                     <td className="px-4 py-3 text-gray-500">{item.returnDate}</td>
                     <td className="px-4 py-3 text-right text-gray-700">¥{item.totalAmount.toFixed(2)}</td>
                     <td className="px-4 py-3 text-center">
-                      <span className={`inline-block px-2 py-0.5 rounded text-xs ${s.className}`}>
-                        {s.label}
-                      </span>
+                      <StatusBadge tone={s.tone}>{s.label}</StatusBadge>
                     </td>
                     <td className="px-4 py-3 text-center">
                       {item.status === 'draft' ? (

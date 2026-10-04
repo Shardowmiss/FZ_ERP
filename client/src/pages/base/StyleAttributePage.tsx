@@ -1,3 +1,4 @@
+import { StatusBadge } from '@client/src/components/ui/status-badge';
 import React, { useState, useEffect } from 'react';
 import { baseApi } from '@client/src/api';
 import type { StyleAttribute } from '@client/src/api/base';
@@ -166,9 +167,9 @@ const StyleAttributePage: React.FC = () => {
 
   const renderStatus = (status: string) => {
     if (status === 'active') {
-      return <span className="inline-block px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded">启用</span>;
+      return <StatusBadge tone="ok">启用</StatusBadge>;
     }
-    return <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded">禁用</span>;
+    return <StatusBadge tone="neutral">禁用</StatusBadge>;
   };
 
   const getCategoryLabel = (code: string | undefined) => {

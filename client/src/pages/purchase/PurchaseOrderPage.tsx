@@ -1,3 +1,4 @@
+import { StatusBadge, type StatusTone } from '@client/src/components/ui/status-badge';
 import React, { useState, useEffect } from 'react';
 import { useDefaultDocDate } from '@client/src/hooks/useDefaultDocDate';
 import { useNavigate } from 'react-router-dom';
@@ -24,11 +25,11 @@ const statusLabel: Record<string, string> = {
   cancelled: '已作废',
 };
 
-const statusColor: Record<string, string> = {
-  draft: 'bg-gray-100 text-gray-600',
-  audited: 'bg-orange-100 text-orange-600',
-  booked: 'bg-blue-100 text-blue-600',
-  accepted: 'bg-green-100 text-green-600',
+const statusColor: Record<string, StatusTone> = {
+  draft: 'neutral',
+  audited: 'warn',
+  booked: 'info',
+  accepted: 'ok',
 };
 
 const PurchaseOrderPage: React.FC = () => {
@@ -323,9 +324,7 @@ const PurchaseOrderPage: React.FC = () => {
                   <td className="py-2 px-4 text-gray-500">{item.expectDate ? item.expectDate.slice(0, 10) : '-'}</td>
                   <td className="py-2 px-4 text-right font-medium text-gray-800">¥ {item.totalAmount.toFixed(2)}</td>
                   <td className="py-2 px-4">
-                    <span className={`px-2 py-0.5 rounded text-xs ${statusColor[item.status] ?? 'bg-gray-100 text-gray-600'}`}>
-                      {statusLabel[item.status] ?? item.status}
-                    </span>
+                    <StatusBadge tone={statusColor[item.status] ?? 'neutral'}>{statusLabel[item.status] ?? item.status}</StatusBadge>
                   </td>
                   <td className="py-2 px-4">
                     <span key={`actions-${item.status}`} className="space-x-2 inline-flex items-center">
