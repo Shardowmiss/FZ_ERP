@@ -73,6 +73,8 @@ const LifecyclePage = React.lazy(() => import('@client/src/pages/analytics/Lifec
 const BIPage = React.lazy(() => import('@client/src/pages/analytics/BIPage'));
 const OmniPage = React.lazy(() => import('@client/src/pages/omni/OmniPage'));
 const MemberPage = React.lazy(() => import('@client/src/pages/member/MemberPage'));
+const MemberManagePage = React.lazy(() => import('@client/src/pages/member/MemberManagePage'));
+const MemberLevelPage = React.lazy(() => import('@client/src/pages/member/MemberLevelPage'));
 const MemberMergeAuditPage = React.lazy(() => import('@client/src/pages/member/MemberMergeAuditPage'));
 
 const CodeRulePage = React.lazy(() => import('@client/src/pages/system/CodeRulePage'));
@@ -85,6 +87,7 @@ const TradeShowPage = React.lazy(() => import('@client/src/pages/trade-show/Trad
 const PreOrderPage = React.lazy(() => import('@client/src/pages/trade-show/PreOrderPage'));
 const PreOrderSummaryPage = React.lazy(() => import('@client/src/pages/trade-show/PreOrderSummaryPage'));
 const AllocationPage = React.lazy(() => import('@client/src/pages/trade-show/AllocationPage'));
+const ThemePage = React.lazy(() => import('@client/src/pages/trade-show/ThemePage'));
 const PivotAnalysisPage = React.lazy(() => import('@client/src/pages/report/PivotAnalysisPage'));
 const GarmentPurchaseReportPage = React.lazy(() =>
   import('@client/src/pages/report').then(m => ({ default: m.GarmentPurchaseReportPage })),
@@ -262,6 +265,7 @@ function getRouteComponent(pathname: string): React.ComponentType | null {
     '/trade-show/pre-order': PreOrderPage,
     '/trade-show/summary': PreOrderSummaryPage,
     '/trade-show/allocation': AllocationPage,
+    '/trade-show/theme': ThemePage,
     '/report/pivot': PivotAnalysisPage,
     '/report/garment-purchase': GarmentPurchaseReportPage,
     '/report/material-purchase': MaterialPurchaseReportPage,
@@ -285,6 +289,8 @@ function getRouteComponent(pathname: string): React.ComponentType | null {
     '/analytics/bi': BIPage,
     '/omni': OmniPage,
     '/member': MemberPage,
+    '/member/manage': MemberManagePage,
+    '/member/level': MemberLevelPage,
     '/base/member-merge-audit': MemberMergeAuditPage,
   };
 

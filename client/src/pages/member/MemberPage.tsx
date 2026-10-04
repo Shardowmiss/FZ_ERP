@@ -255,7 +255,7 @@ const MemberPage: React.FC = () => {
                   <td className="px-3 py-2 text-gray-700">{m.memberNo}</td>
                   <td className="px-3 py-2 text-gray-700">{m.name}</td>
                   <td className="px-3 py-2 text-gray-600">{LEVEL_LABEL[m.level] || m.level}</td>
-                  <td className="px-3 py-2 text-right text-gray-700">¥{(m.totalSpent ?? 0).toFixed(2)}</td>
+                  <td className="px-3 py-2 text-right text-gray-700">¥{Number(m.totalSpent ?? 0).toFixed(2)}</td>
                   <td className="px-3 py-2 text-right text-gray-600">{m.orderCount}</td>
                   <td className="px-3 py-2 text-right text-gray-600">{m.points}</td>
                   <td className="px-3 py-2 text-center"><button onClick={() => openProfile(m)} className="text-primary text-xs">画像</button></td>
@@ -275,8 +275,8 @@ const MemberPage: React.FC = () => {
           </div>
           <div className="grid grid-cols-4 gap-3 mb-4">
             {[
-              { label: '累计消费', value: `¥${profile.totalSpent.toFixed(2)}` },
-              { label: '客单价', value: `¥${profile.avgOrderValue.toFixed(2)}` },
+              { label: '累计消费', value: `¥${Number(profile.totalSpent ?? 0).toFixed(2)}` },
+              { label: '客单价', value: `¥${Number(profile.avgOrderValue ?? 0).toFixed(2)}` },
               { label: '订单数', value: String(profile.orderCount) },
               { label: '积分', value: String(profile.points) },
             ].map((c) => (
