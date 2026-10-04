@@ -116,7 +116,7 @@ const GarmentPurchaseReturnPage: React.FC = () => {
       if (filterStatus) params.status = filterStatus;
       if (keyword) params.keyword = keyword;
       const res: PaginationResult<GarmentPurchaseReturn> = await garmentPurchaseApi.return.list(params);
-      exportTableToCSV('款号采购退货单', res.items as unknown as Record<string, unknown>[], {
+      exportTableToCSV('采购退货单', res.items as unknown as Record<string, unknown>[], {
         returnNo: '退货单号',
         inboundNo: '入库单号',
         supplierName: '供应商',
@@ -135,12 +135,12 @@ const GarmentPurchaseReturnPage: React.FC = () => {
     <div className="space-y-4">
       <div className="bg-white rounded-lg p-4 shadow-sm">
         <div className="flex items-center justify-between mb-3">
-          <h1 className="text-xl font-semibold text-gray-800">款号采购退货</h1>
+          <h1 className="text-xl font-semibold text-gray-800">采购退货</h1>
           <button
             onClick={openAdd}
             className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600 flex items-center gap-1"
           >
-             <Plus size={16} /> 新增款号采购退货
+             <Plus size={16} /> 新增采购退货
           </button>
         </div>
         <div className="flex flex-wrap items-center gap-3 text-sm">

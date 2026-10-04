@@ -521,7 +521,7 @@ const GarmentPurchaseOrderEditPage: React.FC = () => {
 
   return (
     <DocPage
-      title="款号采购订单"
+      title="采购订单"
       docNo={orderNo}
       status={status}
       backPath={BACK_PATH}

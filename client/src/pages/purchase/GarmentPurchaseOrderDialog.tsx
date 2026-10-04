@@ -315,10 +315,10 @@ const GarmentPurchaseOrderDialog: React.FC<GarmentPurchaseOrderDialogProps> = ({
         <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200">
           <h3 className="text-lg font-medium">
             {viewOnly
-              ? '款号采购订单详情'
+              ? '采购订单详情'
               : editId
-                ? '编辑款号采购订单'
-                : '新增款号采购订单'}
+                ? '编辑采购订单'
+                : '新增采购订单'}
           </h3>
           <button
             className="text-gray-400 hover:text-gray-600 text-xl"

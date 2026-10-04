@@ -110,7 +110,7 @@ const GarmentPurchaseOrderPage: React.FC = () => {
   };
 
   const handleDelete = async (id: string): Promise<void> => {
-    if (!await showConfirm('确定删除该款号采购订单吗？')) return;
+    if (!await showConfirm('确定删除该采购订单吗？')) return;
     try {
       await garmentPurchaseApi.order.remove(id);
       toast('删除成功');
@@ -171,7 +171,7 @@ const GarmentPurchaseOrderPage: React.FC = () => {
       if (filterEndDate) params.endDate = filterEndDate;
       if (keyword) params.keyword = keyword;
       const res: PaginationResult<GarmentPurchaseOrder> = await garmentPurchaseApi.order.list(params);
-      exportTableToCSV('款号采购订单', res.items as unknown as Record<string, unknown>[], {
+      exportTableToCSV('采购订单', res.items as unknown as Record<string, unknown>[], {
         orderNo: '采购单号',
         supplierName: '供应商',
         orderDate: '采购日期',
@@ -191,12 +191,12 @@ const GarmentPurchaseOrderPage: React.FC = () => {
     <div className="space-y-4">
       <div className="bg-white rounded-lg p-4 shadow-sm">
         <div className="flex items-center justify-between mb-3">
-          <h1 className="text-xl font-semibold text-gray-800">款号采购订单</h1>
+          <h1 className="text-xl font-semibold text-gray-800">采购订单</h1>
           <button
             onClick={openAdd}
             className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600 flex items-center gap-1"
           >
-             <Plus size={16} /> 新增款号采购订单
+             <Plus size={16} /> 新增采购订单
           </button>
         </div>
         <div className="flex flex-wrap items-center gap-3 text-sm">

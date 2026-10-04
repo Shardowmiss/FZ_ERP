@@ -399,7 +399,7 @@ const GarmentPurchaseReturnEditPage: React.FC = () => {
 
   return (
     <DocPage
-      title="款号采购退货"
+      title="采购退货"
       docNo={returnNo}
       status={status}
       backPath={BACK_PATH}

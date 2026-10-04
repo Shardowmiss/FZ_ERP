@@ -481,7 +481,7 @@ const GarmentPurchaseInboundEditPage: React.FC = () => {
 
   return (
     <DocPage
-      title="款号采购入库"
+      title="采购入库"
       docNo={inboundNo}
       status={status}
       backPath={BACK_PATH}
