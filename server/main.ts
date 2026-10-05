@@ -10,6 +10,7 @@ import { __express as hbsExpressEngine } from 'hbs';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { PosUpstreamCsrfBypassMiddleware } from './middleware/pos-upstream-csrf-bypass';
+import { HealthCsrfBypassMiddleware } from './middleware/health-csrf-bypass';
 import { requestLogMiddleware } from './middleware/request-log.middleware';
 import { spaTemplateMiddleware } from './middleware/spa-template.middleware';
 import { validateSecrets } from './common/crypto/secret-validation';
@@ -28,7 +29,12 @@ async function bootstrap() {
   });
   // CSRF 豁免：仅 /api/pos-receiver/* 且携带有效 X-Erp-Upstream-Token 时放行（须在 configureApp 之前注册，
   // 使平台 CsrfMiddleware 之前即注入一致的 CSRF 凭据；真实鉴权仍由 UpstreamTokenGuard 完成）。
+  // CSRF 豁免：仅 /api/pos-receiver/* 且携带有效 X-Erp-Upstream-Token 时放行（须在 configureApp 之前注册，
+  // 使平台 CsrfMiddleware 之前即注入一致的 CSRF 凭据；真实鉴权仍由 UpstreamTokenGuard 完成）。
   app.use((req, res, next) => new PosUpstreamCsrfBypassMiddleware().use(req, res, next));
+  // CSRF 豁免：只读公开探针 /api/health、/api/health/metrics（W1-1 可观测性基线）。
+  // 健康检查/指标为 GET 只读、无 PII，属 K8s/LB 探活常规公开端点，注入 dummy 凭据绕过平台 CSRF 的浏览器会话假设。
+  app.use((req, res, next) => new HealthCsrfBypassMiddleware().use(req, res, next));
   // 请求上下文与访问日志（Wave 4-A② / P2-c）：必须早于平台 CSRF / 鉴权，
   // 使 401/403/500 等被拒或失败的响应同样带 requestId，链路不被截断。
   app.use(requestLogMiddleware);
