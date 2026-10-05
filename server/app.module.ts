@@ -39,6 +39,7 @@ import { HangtagModule } from './modules/hangtag/hangtag.module';
 import { UniqueCodeModule } from './modules/unique-code/unique-code.module';
 import { ConsistencyModule } from './modules/consistency/consistency.module';
 import { HealthModule } from './modules/health/health.module';
+import { EventsModule } from './modules/events/events.module';
 
 @Module({
   imports: [
@@ -81,6 +82,7 @@ import { HealthModule } from './modules/health/health.module';
     UniqueCodeModule,
     ConsistencyModule,
     HealthModule,
+    EventsModule,
     ViewModule,
   ],
   providers: [

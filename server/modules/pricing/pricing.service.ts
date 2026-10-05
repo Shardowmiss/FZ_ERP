@@ -33,7 +33,8 @@ import {
 } from '@server/database/schema';
 import { RbacService } from '../rbac/rbac.service';
 import { MoneyService } from '@server/common/services/money.service';
-import { TTL as CACHE_TTL, cached as readThrough, invalidate } from '@server/common/cache';
+import { EventBusService } from '@server/modules/events/event-bus.service';
+import { TTL as CACHE_TTL, cached as readThrough } from '@server/common/cache';
 import {
   CommonStatus,
   CouponType,
@@ -109,6 +110,7 @@ export class PricingService {
     private readonly rbacService: RbacService,
     private readonly money: MoneyService,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+    @Inject(EventBusService) private readonly eventBus: EventBusService,
   ) {}
 
   /* ========== Price List ========== */
@@ -729,14 +731,24 @@ export class PricingService {
    * create/update 价格表、改明细、改促销全部漏失效，导致改完报价仍用旧值（最长 60 秒）。
    * 现已在全部写路径统一调用（见各 create/update/delete 方法）。
    * 任期键带 scope 指纹是多余的：这两张表是全局主数据，不涉及经销商隔离。
+   *
+   * W2-1 事件总线化：本地同步失效改为 publish('cache.invalidate') 事件，由
+   * CacheInvalidationSubscriber 异步执行真正的缓存删除。语义从「同步」变为「秒级异步」，
+   * 与内存缓存 TTL(60s) 预期一致，且把「写路径里的跨模块副作用」解耦到事件总线。
+   * publish 失败（如 DB 抖动）只记日志、不阻断业务写路径（缓存失效降级为下次 TTL 自然过期）。
    */
   private async invalidateActiveCache() {
     const today = todayStr();
-    await invalidate(
-      this.cacheManager,
-      `pricing:activeLists:${today}`,
-      `pricing:activePromos:${today}`,
-    );
+    await this.eventBus
+      .publish({
+        aggregateType: 'pricing',
+        aggregateId: 'active',
+        eventType: 'cache.invalidate',
+        payload: {
+          keys: [`pricing:activeLists:${today}`, `pricing:activePromos:${today}`],
+        },
+      })
+      .catch((e) => this.logger.error('发布缓存失效事件失败（不影响业务写路径）', e));
   }
 
   /** 计价参考数据（价格表/促销）的读穿缓存：key + producer，TTL 取 reference。 */

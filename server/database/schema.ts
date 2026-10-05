@@ -4081,3 +4081,30 @@ export const consistencyCheckLog = pgTable(
   }),
 );
 export const consistencyCheckLogTable = consistencyCheckLog;
+
+/* ============ Wave 2-1 纯 PG 事件总线：domain_event 发件箱表 ============
+ * 与迁移 0037_domain_event_outbox.sql 三处同步（schema.ts ↔ 迁移 ↔ erp_test 重克隆）。
+ * status: pending → processing → dispatched（失败达上限转 failed 死信）。
+ */
+export const domainEvent = pgTable(
+  "domain_event",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    aggregateType: varchar("aggregate_type", { length: 40 }).notNull(),
+    aggregateId: varchar("aggregate_id", { length: 64 }).notNull(),
+    eventType: varchar("event_type", { length: 64 }).notNull(),
+    payload: jsonb("payload").notNull().default(sql`'{}'::jsonb`),
+    status: varchar("status", { length: 16 }).notNull().default("pending"),
+    attempts: integer("attempts").notNull().default(0),
+    lastError: text("last_error"),
+    processingSince: customTimestamptz("processing_since", { precision: 3 }),
+    createdAt: customTimestamptz("_created_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
+    dispatchedAt: customTimestamptz("dispatched_at", { precision: 3 }),
+  },
+  (table) => [
+    index("idx_domain_event_status_created").on(table.status, table.createdAt),
+    index("idx_domain_event_agg").on(table.aggregateType, table.aggregateId),
+    index("idx_domain_event_type").on(table.eventType),
+  ],
+);
+export const domainEventTable = domainEvent;
