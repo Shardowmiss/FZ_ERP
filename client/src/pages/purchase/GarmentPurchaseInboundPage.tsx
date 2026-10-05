@@ -10,6 +10,7 @@ import { TableContainer } from '@client/src/components/ui/table-container';
 import { DataPagination } from '@client/src/components/ui/pagination';
 import { exportTableToCSV } from '@client/src/utils/export-csv';
 import { errMsg } from '@/utils/errMsg';
+import { useDefaultDocDate } from '@client/src/hooks/useDefaultDocDate';
 
 const statusLabel: Record<string, string> = {
   draft: '草稿',
@@ -43,6 +44,14 @@ const GarmentPurchaseInboundPage: React.FC = () => {
     { id: string; code: string; name: string }[]
   >([]);
 
+  // 单据默认查询窗口（近 N 天，来自系统参数 defaultDocQueryDays）
+  const { startDate: defaultDocStart, endDate: defaultDocEnd } = useDefaultDocDate();
+  const [filterDocStart, setFilterDocStart] = useState(defaultDocStart);
+  const [filterDocEnd, setFilterDocEnd] = useState(defaultDocEnd);
+  const [filterInboundStart, setFilterInboundStart] = useState('');
+  const [filterInboundEnd, setFilterInboundEnd] = useState('');
+  const [filterWarehouse, setFilterWarehouse] = useState('');
+
   const fetchList = async (): Promise<void> => {
     setLoading(true);
     try {
@@ -52,10 +61,20 @@ const GarmentPurchaseInboundPage: React.FC = () => {
         supplierId?: string;
         status?: string;
         orderNo?: string;
+        warehouseId?: string;
+        docStartDate?: string;
+        docEndDate?: string;
+        startDate?: string;
+        endDate?: string;
       } = { page, pageSize };
       if (filterSupplier) params.supplierId = filterSupplier;
       if (filterStatus) params.status = filterStatus;
       if (keyword) params.orderNo = keyword;
+      if (filterWarehouse) params.warehouseId = filterWarehouse;
+      if (filterDocStart) params.docStartDate = filterDocStart;
+      if (filterDocEnd) params.docEndDate = filterDocEnd;
+      if (filterInboundStart) params.startDate = filterInboundStart;
+      if (filterInboundEnd) params.endDate = filterInboundEnd;
       const res = await garmentPurchaseApi.inbound.list(params);
       setList(res.items);
       setTotal(res.total);
@@ -68,7 +87,7 @@ const GarmentPurchaseInboundPage: React.FC = () => {
 
   useEffect(() => {
     fetchList();
-  }, [page, filterSupplier, filterStatus, keyword]);
+  }, [page, filterSupplier, filterStatus, keyword, filterWarehouse, filterDocStart, filterDocEnd, filterInboundStart, filterInboundEnd]);
 
   useEffect(() => {
     const loadOpts = async (): Promise<void> => {
@@ -107,10 +126,20 @@ const GarmentPurchaseInboundPage: React.FC = () => {
         supplierId?: string;
         status?: string;
         orderNo?: string;
+        warehouseId?: string;
+        docStartDate?: string;
+        docEndDate?: string;
+        startDate?: string;
+        endDate?: string;
       } = { page: 1, pageSize: 10000 };
       if (filterSupplier) params.supplierId = filterSupplier;
       if (filterStatus) params.status = filterStatus;
       if (keyword) params.orderNo = keyword;
+      if (filterWarehouse) params.warehouseId = filterWarehouse;
+      if (filterDocStart) params.docStartDate = filterDocStart;
+      if (filterDocEnd) params.docEndDate = filterDocEnd;
+      if (filterInboundStart) params.startDate = filterInboundStart;
+      if (filterInboundEnd) params.endDate = filterInboundEnd;
       const res: PaginationResult<GarmentPurchaseInbound> = await garmentPurchaseApi.inbound.list(params);
       exportTableToCSV('采购入库单', res.items as unknown as Record<string, unknown>[], {
         inboundNo: '入库单号',
@@ -166,7 +195,7 @@ const GarmentPurchaseInboundPage: React.FC = () => {
           <h1 className="text-xl font-semibold text-gray-800">采购入库</h1>
           <button
             onClick={openAdd}
-            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600 flex items-center gap-1"
+            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary flex items-center gap-1"
           >
              <Plus size={16} /> 新增采购入库
           </button>
@@ -211,9 +240,34 @@ const GarmentPurchaseInboundPage: React.FC = () => {
               />
             </div>
           </div>
+          <div className="flex items-center gap-1">
+            <span className="text-gray-600">仓库：</span>
+            <select
+              value={filterWarehouse}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilterWarehouse(e.target.value)}
+              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
+            >
+              <option value="">全部</option>
+              {warehouseOptions.map((w: { id: string; code: string; name: string }) => (
+                <option key={w.id} value={w.id}>{w.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="text-gray-600">单据日期：</span>
+            <input type="date" value={filterDocStart} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilterDocStart(e.target.value)} className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary" />
+            <span className="text-gray-400">至</span>
+            <input type="date" value={filterDocEnd} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilterDocEnd(e.target.value)} className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary" />
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="text-gray-600">入库日期：</span>
+            <input type="date" value={filterInboundStart} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilterInboundStart(e.target.value)} className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary" />
+            <span className="text-gray-400">至</span>
+            <input type="date" value={filterInboundEnd} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilterInboundEnd(e.target.value)} className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary" />
+          </div>
           <button
             onClick={() => { setPage(1); fetchList(); }}
-            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600 flex items-center gap-1"
+            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary flex items-center gap-1"
           >
             <Search size={14} /> 查询
           </button>
@@ -290,7 +344,7 @@ const GarmentPurchaseInboundPage: React.FC = () => {
                     {(item.status === 'approved' || item.status === 'completed') && (
                        <button
                          onClick={() => openView(item.id)}
-                         className="text-primary hover:text-blue-600"
+                         className="text-primary hover:text-primary"
                        >查看</button>
                     )}
                   </td>

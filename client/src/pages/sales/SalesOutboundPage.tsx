@@ -16,6 +16,7 @@ import { TableContainer } from '@client/src/components/ui/table-container';
 import { DataPagination } from '@client/src/components/ui/pagination';
 import { exportTableToCSV } from '@client/src/utils/export-csv';
 import { errMsg } from '@/utils/errMsg';
+import { useDefaultDocDate } from '@client/src/hooks/useDefaultDocDate';
 
 const STATUS_MAP: Record<string, { label: string; tone: StatusTone }> = {
   draft: { label: '新增', tone: 'neutral' },
@@ -38,6 +39,15 @@ export default function SalesOutboundPage() {
   const [brand, setBrand] = useState('');
   const [brandOptions, setBrandOptions] = useState<{ attrCode: string; attrName: string }[]>([]);
 
+  // 单据默认查询窗口（近 N 天，来自系统参数 defaultDocQueryDays）
+  const { startDate: defaultDocStart, endDate: defaultDocEnd } = useDefaultDocDate();
+  const [filterDocStart, setFilterDocStart] = useState(defaultDocStart);
+  const [filterDocEnd, setFilterDocEnd] = useState(defaultDocEnd);
+  const [filterOutboundStart, setFilterOutboundStart] = useState('');
+  const [filterOutboundEnd, setFilterOutboundEnd] = useState('');
+  const [filterWarehouse, setFilterWarehouse] = useState('');
+  const [warehouseOptions, setWarehouseOptions] = useState<{ id: string; code: string; name: string }[]>([]);
+
   const navigate = useNavigate();
 
   const [printOpen, setPrintOpen] = useState(false);
@@ -56,6 +66,11 @@ export default function SalesOutboundPage() {
        if (status) params.status = status;
        if (keyword) params.keyword = keyword;
        if (brand) params.brand = brand;
+       if (filterWarehouse) params.warehouseId = filterWarehouse;
+       if (filterDocStart) params.docStartDate = filterDocStart;
+       if (filterDocEnd) params.docEndDate = filterDocEnd;
+       if (filterOutboundStart) params.startDate = filterOutboundStart;
+       if (filterOutboundEnd) params.endDate = filterOutboundEnd;
        const res: PaginationResult<SalesOutbound> = await salesApi.outbound.list(params);
        setList(res.items);
        setTotal(res.total);
@@ -81,6 +96,18 @@ export default function SalesOutboundPage() {
     fetchBrands();
   }, [page]);
 
+  useEffect(() => {
+    const loadWarehouses = async () => {
+      try {
+        const res = await baseApi.warehouse.options();
+        setWarehouseOptions(res);
+      } catch (e) {
+        logger.error('加载仓库失败', e);
+      }
+    };
+    loadWarehouses();
+  }, []);
+
   const handleSearch = () => { setPage(1); fetchList(); };
 
   const handlePageSizeChange = (size: number) => {
@@ -94,6 +121,11 @@ export default function SalesOutboundPage() {
       if (status) params.status = status;
       if (keyword) params.keyword = keyword;
       if (brand) params.brand = brand;
+      if (filterWarehouse) params.warehouseId = filterWarehouse;
+      if (filterDocStart) params.docStartDate = filterDocStart;
+      if (filterDocEnd) params.docEndDate = filterDocEnd;
+      if (filterOutboundStart) params.startDate = filterOutboundStart;
+      if (filterOutboundEnd) params.endDate = filterOutboundEnd;
       const res: PaginationResult<SalesOutbound> = await salesApi.outbound.list(params);
       exportTableToCSV('销售出库单', res.items as unknown as Record<string, unknown>[], {
         outboundNo: '出库单号',
@@ -216,7 +248,7 @@ export default function SalesOutboundPage() {
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-xl font-semibold">销售出库</h1>
         {hasPermission('sales:outbound:create') && (
-          <button onClick={openCreate} className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-blue-600 flex items-center gap-1">
+          <button onClick={openCreate} className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-primary flex items-center gap-1">
             <Plus size={16} /> 新增销售出库
           </button>
         )}
@@ -244,6 +276,36 @@ export default function SalesOutboundPage() {
              ))}
            </select>
          </div>
+         <div className="flex flex-col">
+           <label className="text-xs text-gray-500 mb-1">仓库</label>
+           <select value={filterWarehouse} onChange={(e) => setFilterWarehouse(e.target.value)}
+             className="border border-gray-300 rounded px-3 py-1.5 text-sm w-40">
+             <option value="">全部</option>
+             {warehouseOptions.map((w: { id: string; code: string; name: string }) => (
+               <option key={w.id} value={w.id}>{w.name}</option>
+             ))}
+           </select>
+         </div>
+         <div className="flex flex-col">
+           <label className="text-xs text-gray-500 mb-1">单据日期</label>
+           <div className="flex items-center gap-1">
+             <input type="date" value={filterDocStart} onChange={(e) => setFilterDocStart(e.target.value)}
+               className="border border-gray-300 rounded px-2 py-1.5 text-sm" />
+             <span className="text-gray-400">至</span>
+             <input type="date" value={filterDocEnd} onChange={(e) => setFilterDocEnd(e.target.value)}
+               className="border border-gray-300 rounded px-2 py-1.5 text-sm" />
+           </div>
+         </div>
+         <div className="flex flex-col">
+           <label className="text-xs text-gray-500 mb-1">出库日期</label>
+           <div className="flex items-center gap-1">
+             <input type="date" value={filterOutboundStart} onChange={(e) => setFilterOutboundStart(e.target.value)}
+               className="border border-gray-300 rounded px-2 py-1.5 text-sm" />
+             <span className="text-gray-400">至</span>
+             <input type="date" value={filterOutboundEnd} onChange={(e) => setFilterOutboundEnd(e.target.value)}
+               className="border border-gray-300 rounded px-2 py-1.5 text-sm" />
+           </div>
+         </div>
         <div className="flex flex-col">
           <label className="text-xs text-gray-500 mb-1">搜索</label>
           <input type="text" value={keyword} onChange={(e) => setKeyword(e.target.value)}
@@ -251,7 +313,7 @@ export default function SalesOutboundPage() {
             className="border border-gray-300 rounded px-3 py-1.5 text-sm w-48" />
         </div>
         <button onClick={handleSearch}
-          className="bg-primary text-white px-4 py-1.5 rounded text-sm hover:bg-blue-600">查询</button>
+          className="bg-primary text-white px-4 py-1.5 rounded text-sm hover:bg-primary">查询</button>
         <button onClick={handleExport}
           className="px-4 py-1.5 border border-gray-300 rounded text-sm hover:bg-gray-50">导出</button>
        </div>

@@ -15,6 +15,7 @@ import { PrintDialog } from '@client/src/components/print/PrintDialog';
 import { SkuDocPrintContent } from '@client/src/components/print/DocPrintContent';
 import type { SkuMatrixItem } from '@client/src/components/print/SkuMatrixTable';
 import { errMsg } from '@/utils/errMsg';
+import { useDefaultDocDate } from '@client/src/hooks/useDefaultDocDate';
 
 const RETURN_STATUS_MAP: Record<string, { label: string; tone: StatusTone }> = {
   draft: { label: '待退款', tone: 'warn' },
@@ -44,6 +45,13 @@ export default function RetailReturnPage() {
   const [filterStatus, setFilterStatus] = useState('');
   const [filterKeyword, setFilterKeyword] = useState('');
 
+  // 单据默认查询窗口（近 N 天，来自系统参数 defaultDocQueryDays）
+  const { startDate: defaultDocStart, endDate: defaultDocEnd } = useDefaultDocDate();
+  const [filterDocStart, setFilterDocStart] = useState(defaultDocStart);
+  const [filterDocEnd, setFilterDocEnd] = useState(defaultDocEnd);
+  const [filterReturnStart, setFilterReturnStart] = useState('');
+  const [filterReturnEnd, setFilterReturnEnd] = useState('');
+
   const [storeOptions, setStoreOptions] = useState<StoreOption[]>([]);
 
   // 打印状态
@@ -69,6 +77,10 @@ export default function RetailReturnPage() {
       if (filterStoreId) params.storeId = filterStoreId;
       if (filterStatus) params.status = filterStatus;
       if (filterKeyword) params.keyword = filterKeyword;
+      if (filterDocStart) params.docStartDate = filterDocStart;
+      if (filterDocEnd) params.docEndDate = filterDocEnd;
+      if (filterReturnStart) params.startDate = filterReturnStart;
+      if (filterReturnEnd) params.endDate = filterReturnEnd;
       const res: PaginationResult<RetailReturn> = await retailApi.returnList(params);
       setList(res.items);
       setTotal(res.total);
@@ -150,6 +162,10 @@ export default function RetailReturnPage() {
     setFilterStoreId('');
     setFilterStatus('');
     setFilterKeyword('');
+    setFilterDocStart(defaultDocStart);
+    setFilterDocEnd(defaultDocEnd);
+    setFilterReturnStart('');
+    setFilterReturnEnd('');
     setPage(1);
     setTimeout(fetchList, 0);
   };
@@ -213,7 +229,7 @@ export default function RetailReturnPage() {
         <h1 className="text-xl font-semibold">零售退货单</h1>
         <button
           onClick={openCreate}
-          className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-blue-600 flex items-center gap-2"
+          className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-primary flex items-center gap-2"
         >
           <Plus size={16} />
           新增退货
@@ -246,6 +262,26 @@ export default function RetailReturnPage() {
           </select>
         </div>
         <div className="flex flex-col">
+          <label className="text-xs text-gray-500 mb-1">单据日期</label>
+          <div className="flex items-center gap-1">
+            <input type="date" value={filterDocStart} onChange={(e) => setFilterDocStart(e.target.value)}
+              className="border border-gray-300 rounded px-2 py-1.5 text-sm" />
+            <span className="text-gray-400">至</span>
+            <input type="date" value={filterDocEnd} onChange={(e) => setFilterDocEnd(e.target.value)}
+              className="border border-gray-300 rounded px-2 py-1.5 text-sm" />
+          </div>
+        </div>
+        <div className="flex flex-col">
+          <label className="text-xs text-gray-500 mb-1">退货日期</label>
+          <div className="flex items-center gap-1">
+            <input type="date" value={filterReturnStart} onChange={(e) => setFilterReturnStart(e.target.value)}
+              className="border border-gray-300 rounded px-2 py-1.5 text-sm" />
+            <span className="text-gray-400">至</span>
+            <input type="date" value={filterReturnEnd} onChange={(e) => setFilterReturnEnd(e.target.value)}
+              className="border border-gray-300 rounded px-2 py-1.5 text-sm" />
+          </div>
+        </div>
+        <div className="flex flex-col">
           <label className="text-xs text-gray-500 mb-1">关键字</label>
           <div className="relative">
             <Search size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -260,7 +296,7 @@ export default function RetailReturnPage() {
         </div>
         <button
           onClick={handleSearch}
-          className="bg-primary text-white px-4 py-1.5 rounded text-sm hover:bg-blue-600"
+          className="bg-primary text-white px-4 py-1.5 rounded text-sm hover:bg-primary"
         >查询</button>
         <button
           onClick={handleReset}

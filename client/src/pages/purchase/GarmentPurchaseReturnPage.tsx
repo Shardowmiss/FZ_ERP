@@ -2,7 +2,7 @@ import { StatusBadge, type StatusTone } from '@client/src/components/ui/status-b
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search } from 'lucide-react';
-import { garmentPurchaseApi } from '@client/src/api';
+import { garmentPurchaseApi, baseApi } from '@client/src/api';
 import type { GarmentPurchaseReturn, GarmentPurchaseInbound, PaginationResult } from '@shared/api.interface';
 import { toast } from 'sonner';
 import { showConfirm } from '@lark-apaas/client-toolkit';
@@ -10,6 +10,7 @@ import { TableContainer } from '@client/src/components/ui/table-container';
 import { DataPagination } from '@client/src/components/ui/pagination';
 import { exportTableToCSV } from '@client/src/utils/export-csv';
 import { errMsg } from '@/utils/errMsg';
+import { useDefaultDocDate } from '@client/src/hooks/useDefaultDocDate';
 
 const statusLabel: Record<string, string> = {
   draft: '草稿',
@@ -35,6 +36,15 @@ const GarmentPurchaseReturnPage: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<string>('');
   const [keyword, setKeyword] = useState<string>('');
 
+  // 单据默认查询窗口（近 N 天，来自系统参数 defaultDocQueryDays）
+  const { startDate: defaultDocStart, endDate: defaultDocEnd } = useDefaultDocDate();
+  const [filterDocStart, setFilterDocStart] = useState(defaultDocStart);
+  const [filterDocEnd, setFilterDocEnd] = useState(defaultDocEnd);
+  const [filterReturnStart, setFilterReturnStart] = useState('');
+  const [filterReturnEnd, setFilterReturnEnd] = useState('');
+  const [filterWarehouse, setFilterWarehouse] = useState('');
+  const [warehouseOptions, setWarehouseOptions] = useState<{ id: string; code: string; name: string }[]>([]);
+
   const fetchList = async (): Promise<void> => {
     setLoading(true);
     try {
@@ -43,9 +53,19 @@ const GarmentPurchaseReturnPage: React.FC = () => {
         pageSize: number;
         status?: string;
         keyword?: string;
+        warehouseId?: string;
+        docStartDate?: string;
+        docEndDate?: string;
+        startDate?: string;
+        endDate?: string;
       } = { page, pageSize };
       if (filterStatus) params.status = filterStatus;
       if (keyword) params.keyword = keyword;
+      if (filterWarehouse) params.warehouseId = filterWarehouse;
+      if (filterDocStart) params.docStartDate = filterDocStart;
+      if (filterDocEnd) params.docEndDate = filterDocEnd;
+      if (filterReturnStart) params.startDate = filterReturnStart;
+      if (filterReturnEnd) params.endDate = filterReturnEnd;
       const res = await garmentPurchaseApi.return.list(params);
       setList(res.items);
       setTotal(res.total);
@@ -58,7 +78,19 @@ const GarmentPurchaseReturnPage: React.FC = () => {
 
   useEffect(() => {
     fetchList();
-  }, [page, filterStatus, keyword]);
+  }, [page, filterStatus, keyword, filterWarehouse, filterDocStart, filterDocEnd, filterReturnStart, filterReturnEnd]);
+
+  useEffect(() => {
+    const loadWarehouses = async (): Promise<void> => {
+      try {
+        const res = await baseApi.warehouse.options();
+        setWarehouseOptions(res);
+      } catch {
+        // ignore
+      }
+    };
+    loadWarehouses();
+  }, []);
 
   const openAdd = (): void => {
     navigate('/purchase/garment-return/new');
@@ -112,9 +144,19 @@ const GarmentPurchaseReturnPage: React.FC = () => {
         pageSize: number;
         status?: string;
         keyword?: string;
+        warehouseId?: string;
+        docStartDate?: string;
+        docEndDate?: string;
+        startDate?: string;
+        endDate?: string;
       } = { page: 1, pageSize: 10000 };
       if (filterStatus) params.status = filterStatus;
       if (keyword) params.keyword = keyword;
+      if (filterWarehouse) params.warehouseId = filterWarehouse;
+      if (filterDocStart) params.docStartDate = filterDocStart;
+      if (filterDocEnd) params.docEndDate = filterDocEnd;
+      if (filterReturnStart) params.startDate = filterReturnStart;
+      if (filterReturnEnd) params.endDate = filterReturnEnd;
       const res: PaginationResult<GarmentPurchaseReturn> = await garmentPurchaseApi.return.list(params);
       exportTableToCSV('采购退货单', res.items as unknown as Record<string, unknown>[], {
         returnNo: '退货单号',
@@ -138,7 +180,7 @@ const GarmentPurchaseReturnPage: React.FC = () => {
           <h1 className="text-xl font-semibold text-gray-800">采购退货</h1>
           <button
             onClick={openAdd}
-            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600 flex items-center gap-1"
+            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary flex items-center gap-1"
           >
              <Plus size={16} /> 新增采购退货
           </button>
@@ -171,14 +213,39 @@ const GarmentPurchaseReturnPage: React.FC = () => {
                  placeholder="搜索退货单号"
                  className="border border-gray-300 rounded pl-7 pr-2 py-1 text-sm focus:outline-none focus:border-primary w-44"
                />
-             </div>
-           </div>
-           <button
-             onClick={() => { setPage(1); fetchList(); }}
-             className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600 flex items-center gap-1"
-           >
-             <Search size={14} /> 查询
-           </button>
+            </div>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="text-gray-600">仓库：</span>
+            <select
+              value={filterWarehouse}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilterWarehouse(e.target.value)}
+              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
+            >
+              <option value="">全部</option>
+              {warehouseOptions.map((w: { id: string; code: string; name: string }) => (
+                <option key={w.id} value={w.id}>{w.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="text-gray-600">单据日期：</span>
+            <input type="date" value={filterDocStart} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilterDocStart(e.target.value)} className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary" />
+            <span className="text-gray-400">至</span>
+            <input type="date" value={filterDocEnd} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilterDocEnd(e.target.value)} className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary" />
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="text-gray-600">退货日期：</span>
+            <input type="date" value={filterReturnStart} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilterReturnStart(e.target.value)} className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary" />
+            <span className="text-gray-400">至</span>
+            <input type="date" value={filterReturnEnd} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilterReturnEnd(e.target.value)} className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary" />
+          </div>
+          <button
+            onClick={() => { setPage(1); fetchList(); }}
+            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary flex items-center gap-1"
+          >
+            <Search size={14} /> 查询
+          </button>
            <button
              onClick={() => { void handleExport(); }}
              className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50"
@@ -252,7 +319,7 @@ const GarmentPurchaseReturnPage: React.FC = () => {
                     {(item.status === 'approved' || item.status === 'completed') && (
                        <button
                          onClick={() => openView(item.id)}
-                         className="text-primary hover:text-blue-600"
+                         className="text-primary hover:text-primary"
                        >查看</button>
                     )}
                   </td>

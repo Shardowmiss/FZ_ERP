@@ -13,6 +13,7 @@ import { TableContainer } from '@client/src/components/ui/table-container';
 import { DataPagination } from '@client/src/components/ui/pagination';
 import { exportTableToCSV } from '@client/src/utils/export-csv';
 import { errMsg } from '@/utils/errMsg';
+import { useDefaultDocDate } from '@client/src/hooks/useDefaultDocDate';
 
 export default function InventoryStocktakePage() {
   const navigate = useNavigate();
@@ -23,8 +24,9 @@ export default function InventoryStocktakePage() {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('');
   const [warehouseName, setWarehouseName] = useState('');
-  const [stocktakeDateStart, setStocktakeDateStart] = useState('');
-  const [stocktakeDateEnd, setStocktakeDateEnd] = useState('');
+  const { startDate: defaultDocStart, endDate: defaultDocEnd } = useDefaultDocDate();
+  const [stocktakeDateStart, setStocktakeDateStart] = useState(defaultDocStart);
+  const [stocktakeDateEnd, setStocktakeDateEnd] = useState(defaultDocEnd);
 
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
 

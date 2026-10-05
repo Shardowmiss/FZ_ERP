@@ -15,6 +15,7 @@ import { TableContainer } from '@client/src/components/ui/table-container';
 import { DataPagination } from '@client/src/components/ui/pagination';
 import { exportTableToCSV } from '@client/src/utils/export-csv';
 import { errMsg } from '@/utils/errMsg';
+import { useDefaultDocDate } from '@client/src/hooks/useDefaultDocDate';
 
 const STATUS_MAP: Record<string, { label: string; tone: StatusTone }> = {
   draft: { label: '草稿', tone: 'neutral' },
@@ -35,8 +36,9 @@ export default function InventoryTransferPage() {
   const [filterFromWhId, setFilterFromWhId] = useState('');
   const [filterToWhId, setFilterToWhId] = useState('');
   const [transferNo, setTransferNo] = useState('');
-  const [transferDateStart, setTransferDateStart] = useState('');
-  const [transferDateEnd, setTransferDateEnd] = useState('');
+  const { startDate: defaultDocStart, endDate: defaultDocEnd } = useDefaultDocDate();
+  const [transferDateStart, setTransferDateStart] = useState(defaultDocStart);
+  const [transferDateEnd, setTransferDateEnd] = useState(defaultDocEnd);
   const [createdAtStart, setCreatedAtStart] = useState('');
   const [createdAtEnd, setCreatedAtEnd] = useState('');
 

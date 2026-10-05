@@ -8,6 +8,7 @@ import { TableContainer } from '@client/src/components/ui/table-container';
 import { DataPagination } from '@client/src/components/ui/pagination';
 import { exportTableToCSV } from '@client/src/utils/export-csv';
 import { errMsg } from '@/utils/errMsg';
+import { useDefaultDocDate } from '@client/src/hooks/useDefaultDocDate';
 
 interface InboundOrder {
   id: string;
@@ -32,8 +33,9 @@ const InventoryInboundPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [typeFilter, setTypeFilter] = useState('');
   const [bizNo, setBizNo] = useState('');
-  const [bizDateStart, setBizDateStart] = useState('');
-  const [bizDateEnd, setBizDateEnd] = useState('');
+  const { startDate: defaultDocStart, endDate: defaultDocEnd } = useDefaultDocDate();
+  const [bizDateStart, setBizDateStart] = useState(defaultDocStart);
+  const [bizDateEnd, setBizDateEnd] = useState(defaultDocEnd);
   const [createdAtStart, setCreatedAtStart] = useState('');
   const [createdAtEnd, setCreatedAtEnd] = useState('');
   const [warehouseName, setWarehouseName] = useState('');
@@ -61,8 +63,8 @@ const InventoryInboundPage: React.FC = () => {
       if (bizNo) params.set('bizNo', bizNo);
       if (bizDateStart) params.set('bizDateStart', bizDateStart);
       if (bizDateEnd) params.set('bizDateEnd', bizDateEnd);
-      if (createdAtStart) params.set('createdAtStart', createdAtStart);
-      if (createdAtEnd) params.set('createdAtEnd', createdAtEnd);
+      if (createdAtStart) params.set('startDate', createdAtStart);
+      if (createdAtEnd) params.set('endDate', createdAtEnd);
       if (warehouseName) params.set('warehouseName', warehouseName);
       const res = await axiosForBackend.get(
         `/api/inventory/flow?${params.toString()}`
@@ -119,8 +121,8 @@ const InventoryInboundPage: React.FC = () => {
       if (bizNo) params.set('bizNo', bizNo);
       if (bizDateStart) params.set('bizDateStart', bizDateStart);
       if (bizDateEnd) params.set('bizDateEnd', bizDateEnd);
-      if (createdAtStart) params.set('createdAtStart', createdAtStart);
-      if (createdAtEnd) params.set('createdAtEnd', createdAtEnd);
+      if (createdAtStart) params.set('startDate', createdAtStart);
+      if (createdAtEnd) params.set('endDate', createdAtEnd);
       if (warehouseName) params.set('warehouseName', warehouseName);
       const res = await axiosForBackend.get(
         `/api/inventory/flow?${params.toString()}`

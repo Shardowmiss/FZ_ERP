@@ -41,7 +41,7 @@ export const garmentPurchaseApi = {
     unapprove: (id: string) => request<void>(`/api/purchase/garment-order/${id}/unapprove`, 'POST'),
   },
   inbound: {
-    list: (params: PaginationParams & { supplierId?: string; status?: string; orderNo?: string }) =>
+    list: (params: PaginationParams & { supplierId?: string; status?: string; orderNo?: string; warehouseId?: string; docStartDate?: string; docEndDate?: string; startDate?: string; endDate?: string }) =>
       request<PaginationResult<GarmentPurchaseInbound>>(
         '/api/purchase/garment-inbound', 'GET', null, params),
     get: (id: string) => request<GarmentPurchaseInbound>(`/api/purchase/garment-inbound/${id}`),
@@ -52,7 +52,7 @@ export const garmentPurchaseApi = {
     void: (id: string) => request<void>(`/api/purchase/garment-inbound/${id}/void`, 'POST'),
   },
   return: {
-    list: (params: PaginationParams & { status?: string }) =>
+    list: (params: PaginationParams & { status?: string; warehouseId?: string; docStartDate?: string; docEndDate?: string; startDate?: string; endDate?: string }) =>
       request<PaginationResult<GarmentPurchaseReturn>>(
         '/api/purchase/garment-return', 'GET', null, params),
     get: (id: string) => request<GarmentPurchaseReturn>(`/api/purchase/garment-return/${id}`),
@@ -106,7 +106,7 @@ export const productionApi = {
       `/api/production/material-purchase-order/${id}/unapprove`, 'POST'),
   },
   materialPurchaseInbound: {
-    list: (params: PaginationParams & { supplierId?: string; status?: string; orderNo?: string }) =>
+    list: (params: PaginationParams & { supplierId?: string; status?: string; orderNo?: string; warehouseId?: string; docStartDate?: string; docEndDate?: string; startDate?: string; endDate?: string }) =>
       request<PaginationResult<MaterialPurchaseInbound>>(
         '/api/production/material-purchase-inbound', 'GET', null, params),
     get: (id: string) => request<MaterialPurchaseInbound>(

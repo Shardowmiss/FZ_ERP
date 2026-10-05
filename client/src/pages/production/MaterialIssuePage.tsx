@@ -18,6 +18,7 @@ import { DataPagination } from '@client/src/components/ui/pagination';
 import { exportTableToCSV } from '@client/src/utils/export-csv';
 import { validateDateRange } from '@client/src/utils/date-utils';
 import { errMsg } from '@/utils/errMsg';
+import { useDefaultDocDate } from '@client/src/hooks/useDefaultDocDate';
 
 const STATUS_MAP: Record<string, { label: string; tone: StatusTone }> = {
   draft: { label: '草稿', tone: 'neutral' },
@@ -34,8 +35,9 @@ export default function MaterialIssuePage() {
 
   const [keyword, setKeyword] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
-  const [filterStartDate, setFilterStartDate] = useState('');
-  const [filterEndDate, setFilterEndDate] = useState('');
+  const { startDate: defaultDocStart, endDate: defaultDocEnd } = useDefaultDocDate();
+  const [filterStartDate, setFilterStartDate] = useState(defaultDocStart);
+  const [filterEndDate, setFilterEndDate] = useState(defaultDocEnd);
 
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [materials, setMaterials] = useState<Material[]>([]);
@@ -195,7 +197,7 @@ export default function MaterialIssuePage() {
           <h1 className="text-xl font-semibold">领料单</h1>
           <button
             onClick={openCreate}
-            className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-blue-600 flex items-center gap-1"
+            className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-primary flex items-center gap-1"
           >
             <Plus size={16} /> 新增领料单
           </button>
@@ -249,7 +251,7 @@ export default function MaterialIssuePage() {
           </div>
           <button
             onClick={handleSearch}
-            className="bg-primary text-white px-4 py-1.5 rounded text-sm hover:bg-blue-600 flex items-center gap-1"
+            className="bg-primary text-white px-4 py-1.5 rounded text-sm hover:bg-primary flex items-center gap-1"
           >
             <Search size={14} /> 查询
           </button>
