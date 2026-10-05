@@ -40,6 +40,7 @@ import { UniqueCodeModule } from './modules/unique-code/unique-code.module';
 import { ConsistencyModule } from './modules/consistency/consistency.module';
 import { HealthModule } from './modules/health/health.module';
 import { EventsModule } from './modules/events/events.module';
+import { MetricsModule } from './modules/metrics/metrics.module';
 
 @Module({
   imports: [
@@ -83,6 +84,7 @@ import { EventsModule } from './modules/events/events.module';
     ConsistencyModule,
     HealthModule,
     EventsModule,
+    MetricsModule,
     ViewModule,
   ],
   providers: [
