@@ -43,5 +43,32 @@ export default defineConfig({
     poolOptions: {
       forks: { minThreads: 1, maxThreads: 1 },
     },
+    // —— W1-3 覆盖率门禁（就绪，待覆盖率 provider 可安装后启用）——
+    // 启用方式：先安装 provider（npm i -D @vitest/coverage-v8 或 @vitest/coverage-istanbul），
+    //           再跑 `npm run test:coverage`。
+    // 当前（2026-10-05）本机 npm broker (CODEBUDDY_BROKER_DENY) 拒绝安装任何覆盖率 provider，
+    // 且既有测试套件有 28 个用例失败（待修复），故阈值门禁暂未接入 CI、也未在本地实跑验证。
+    // provider 装好且套件转绿后，本块即对「核心模块 ≥60%」强制门禁。
+    // coverage: {
+    //   provider: 'v8',
+    //   reporter: ['text', 'html', 'json-summary'],
+    //   // 仅统计核心业务模块，排除框架胶水层与测试本身
+    //   include: [
+    //     'server/modules/inventory/**/*.ts',
+    //     'server/modules/pos-receiver/**/*.ts',
+    //     'server/modules/rbac/**/*.ts',
+    //     'server/modules/report/**/*.ts',
+    //   ],
+    //   exclude: [
+    //     '**/*.spec.ts', '**/*.d.ts', '**/*.module.ts',
+    //     '**/*.controller.ts', '**/dto/**', 'server/main.ts',
+    //   ],
+    //   thresholds: {
+    //     lines: 60,
+    //     branches: 60,
+    //     functions: 60,
+    //     statements: 60,
+    //   },
+    // },
   },
 });
