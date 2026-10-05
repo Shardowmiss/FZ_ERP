@@ -31,10 +31,6 @@ import type {
 } from '@shared/api.interface';
 
 const genId = (): string => Math.random().toString(36).slice(2, 10);
-const genUuid = (): string =>
-  (typeof crypto !== 'undefined' && 'randomUUID' in crypto)
-    ? crypto.randomUUID()
-    : genId();
 
 const defaultSegments: CodeRuleSegment[] = [
   { id: genId(), type: 'fixed', enabled: true, order: 0, config: { value: 'GS' } },
@@ -267,14 +263,16 @@ const CodeRulePage: React.FC = () => {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const ruleData: CodeRule = {
-        id: ruleId || genUuid(),
+      // 仅「修改」时带 id；「新建」(ruleId 为空) 不传 id，由后端走 INSERT。
+      // 旧逻辑 id: ruleId || genUuid() 会给新建也伪造随机 uuid，导致后端 UPDATE 0 行报「规则不存在」。
+      const ruleData = {
+        ...(ruleId ? { id: ruleId } : {}),
         name: ruleName.trim() || (isDefault ? '默认款号规则' : '未命名规则'),
         segments: sortedSegments,
         isDefault,
         createdAt: '',
         updatedAt: '',
-      };
+      } as CodeRule;
       const colorSizeMapping: CodeMappingConfig = {
         ...mapping,
         seasons: [],
