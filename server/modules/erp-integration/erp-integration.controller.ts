@@ -17,6 +17,7 @@ import type {
   ErpConnectionStatus,
   ErpSyncStatus,
   SyncLog,
+  SyncConflict,
   ListResponse,
 } from '@shared/api.interface';
 
@@ -96,5 +97,34 @@ export class ErpIntegrationController {
     @Body('storeId') storeId: string,
   ): Promise<{ success: boolean; message: string }> {
     return this.erpIntegrationService.initialSync(storeId);
+  }
+
+  // ============ W2-3：离线冲突仲裁台 ============
+  @Roles('admin')
+  @Get('sync-conflicts')
+  async listSyncConflicts(
+    @Query('status') status?: string,
+    @Query('storeId') storeId?: string,
+  ): Promise<ListResponse<SyncConflict>> {
+    const rows = await this.erpIntegrationService.listConflicts({
+      status: status as 'pending' | 'resolved' | undefined,
+      storeId: storeId ?? null,
+    });
+    return { items: rows, total: rows.length, page: 1, pageSize: rows.length };
+  }
+
+  @Roles('admin')
+  @Post('sync-conflicts/:id/resolve')
+  async resolveSyncConflict(
+    @Param('id') id: string,
+    @Body('resolution') resolution: 'pos' | 'erp' | 'merge',
+    @Body('mergedValue') mergedValue?: string | null,
+    @Req() req?: Request,
+  ): Promise<SyncConflict> {
+    const resolved = await this.erpIntegrationService.resolveConflict(id, resolution, {
+      mergedValue,
+      resolvedBy: req ? operatorIdFromReq(req) : null,
+    });
+    return resolved as SyncConflict;
   }
 }

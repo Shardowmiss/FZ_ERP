@@ -400,6 +400,30 @@ CREATE TABLE IF NOT EXISTS pos_wallet_event (
 CREATE UNIQUE INDEX IF NOT EXISTS uniq_pos_wallet_event_key ON pos_wallet_event (event_key);
 CREATE INDEX IF NOT EXISTS idx_pos_wallet_event_status ON pos_wallet_event (status, _created_at);
 CREATE INDEX IF NOT EXISTS idx_pos_wallet_event_member ON pos_wallet_event (member_id);
+
+-- 【W2-3】离线冲突收件箱。jsonb 在 pglite 下可用；
+-- 系统列 _created_by/_updated_by/_resolved_by 复用 user_profile 最小复合类型（见文件头注释）。
+CREATE TABLE IF NOT EXISTS pos_sync_conflict (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  store_id varchar(50),
+  entity_type varchar(20) NOT NULL DEFAULT 'member',
+  entity_id uuid NOT NULL,
+  field varchar(50) NOT NULL,
+  pos_value jsonb,
+  erp_value jsonb,
+  pos_ts timestamptz,
+  erp_ts timestamptz,
+  status varchar(20) NOT NULL DEFAULT 'pending',
+  resolution varchar(10),
+  _resolved_by user_profile DEFAULT NULL,
+  resolved_at timestamptz,
+  _created_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  _created_by user_profile DEFAULT NULL,
+  _updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  _updated_by user_profile DEFAULT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_pos_sync_conflict_status ON pos_sync_conflict (status, _created_at);
+CREATE INDEX IF NOT EXISTS idx_pos_sync_conflict_entity ON pos_sync_conflict (entity_type, entity_id);
 `;
 
 export interface TestDb {

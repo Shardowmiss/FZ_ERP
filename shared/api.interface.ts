@@ -13,6 +13,36 @@ export interface PaginationQuery {
   pageSize?: number;
 }
 
+// ============ 离线冲突收件箱（W2-3） ============
+export type SyncConflictResolution = 'pos' | 'erp' | 'merge' | null;
+
+export interface SyncConflict {
+  id: string;
+  storeId: string | null;
+  /** 实体类型，当前仅 'member' */
+  entityType: string;
+  /** 实体主键（pos_member.id） */
+  entityId: string;
+  /** 冲突标量字段名（name/phone/gender/birthday/level） */
+  field: string;
+  /** 门店本地值 */
+  posValue: string | null;
+  /** ERP 下行值 */
+  erpValue: string | null;
+  /** 本地写入时间戳（ISO） */
+  posTs: string | null;
+  /** ERP 已知版本时间戳（ISO） */
+  erpTs: string | null;
+  /** pending(待仲裁) | resolved(已裁决) */
+  status: string;
+  /** 仲裁结论：pos(保留本地) | erp(采用ERP) | merge(合并) | null */
+  resolution: SyncConflictResolution;
+  resolvedBy: string | null;
+  resolvedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // ============ 主数据 ============
 export interface Color {
   id: string;

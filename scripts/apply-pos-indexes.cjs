@@ -94,6 +94,9 @@ const INDEXES = [
     table: 'pos_wallet_event',
     ddl: '(member_id)',
   },
+  // 【W2-3】离线冲突收件箱查询热路径：仲裁台按状态取待办、按实体聚合冲突
+  { name: 'idx_pos_sync_conflict_status', table: 'pos_sync_conflict', ddl: '(status, _created_at)' },
+  { name: 'idx_pos_sync_conflict_entity', table: 'pos_sync_conflict', ddl: '(entity_type, entity_id)' },
 ];
 
 async function main() {

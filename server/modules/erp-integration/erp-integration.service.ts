@@ -16,6 +16,7 @@ import {
   posSku,
   posPromotion,
   posMember,
+  posSyncConflict,
   posTransfer,
   posTransferItem,
 } from '@server/database/schema';
@@ -28,6 +29,8 @@ import type {
   ErpConnectionStatus,
   ErpSyncStatus,
   SyncLog,
+  SyncConflict,
+  SyncConflictResolution,
   ListResponse,
   SyncLogQuery,
 } from '@shared/api.interface';
@@ -44,6 +47,20 @@ type ErpMemberFeedRow = Awaited<
 interface MemberSyncConflict {
   memberNo: string;
   reason: string;
+}
+
+// W2-3：参与离线冲突比对的标量字段（资金字段 points/stored_value 永不比对，S1 资损护栏）
+const MEMBER_CONFLICT_FIELDS = ['name', 'phone', 'gender', 'birthday', 'level'] as const;
+type MemberConflictField = (typeof MEMBER_CONFLICT_FIELDS)[number];
+
+/** 把字段值规整为可比较的字符串；null/undefined → null；birthday → YYYY-MM-DD */
+function normMemberField(field: MemberConflictField, v: unknown): string | null {
+  if (v == null) return null;
+  if (field === 'birthday') {
+    const d = v instanceof Date ? v : new Date(String(v));
+    return Number.isNaN(d.getTime()) ? String(v) : d.toISOString().slice(0, 10);
+  }
+  return String(v);
 }
 
 @Injectable()
@@ -445,6 +462,13 @@ export class ErpIntegrationService {
             memberNo: posMember.memberNo,
             phone: posMember.phone,
             erpMemberId: posMember.erpMemberId,
+            // W2-3：标量字段 + 时间戳，供字段级 LWW 比对
+            name: posMember.name,
+            gender: posMember.gender,
+            birthday: posMember.birthday,
+            level: posMember.level,
+            updatedAt: posMember.updatedAt,
+            erpSyncAt: posMember.erpSyncAt,
           })
           .from(posMember)
           .where(or(...conds));
@@ -466,7 +490,16 @@ export class ErpIntegrationService {
         const claimedPhones = new Set<string>();
         const claimedNos = new Set<string>();
         const linkTasks: { posId: string; erpId: string }[] = [];
-        const values: (typeof posMember.$inferInsert)[] = [];
+        const insertValues: (typeof posMember.$inferInsert)[] = [];
+        // W2-3：待入收件箱的冲突行（批内暂存，批末按幂等去重后一次性写入）
+        const pendingConflicts: {
+          entityId: string;
+          field: MemberConflictField;
+          posValue: string | null;
+          erpValue: string | null;
+          posTs: Date | null;
+          erpTs: Date | null;
+        }[] = [];
 
         for (const m of batch) {
           // 批内重复锚点：保留第一条，其余登记为冲突
@@ -519,6 +552,51 @@ export class ErpIntegrationService {
               byAnchor.set(m.erpMemberId, target);
             }
             claimed.add(target.id);
+            if (m.phone) claimedPhones.add(m.phone);
+
+            // W2-3 字段级 LWW：逐标量字段比较 ERP 下行值 vs 本地值
+            const targetConflicts: typeof pendingConflicts = [];
+            const erpWin: MemberConflictField[] = [];
+            for (const f of MEMBER_CONFLICT_FIELDS) {
+              const lv = normMemberField(f, (target as Record<string, unknown>)[f]);
+              const ev = normMemberField(f, (m as Record<string, unknown>)[f]);
+              if (lv === ev) continue; // 无变化
+              // 任一侧为空 → 由 ERP 主数据补齐，不视为冲突（避免噪音）
+              if (lv === null || ev === null) {
+                erpWin.push(f);
+                continue;
+              }
+              // 两侧均有值且不同：
+              if (target.erpSyncAt == null) {
+                // 首次建链（本地离线新建，从未收到 ERP 基线）→ ERP 主数据权威
+                erpWin.push(f);
+              } else if (new Date(target.updatedAt).getTime() > new Date(target.erpSyncAt).getTime()) {
+                // 本地在「上次同步基线」之后编辑过该记录 → 保留本地，登记冲突待人工仲裁
+                targetConflicts.push({
+                  entityId: target.id,
+                  field: f,
+                  posValue: lv,
+                  erpValue: ev,
+                  posTs: target.updatedAt ? new Date(target.updatedAt) : null,
+                  erpTs: target.erpSyncAt ? new Date(target.erpSyncAt) : null,
+                });
+              } else {
+                // ERP 较新 / 本地未改动 → 采用 ERP 值
+                erpWin.push(f);
+              }
+            }
+
+            // 构造该存量行的更新：仅 ERP 胜出字段；无冲突时才刷新基线 erp_sync_at
+            const set: Record<string, unknown> = {};
+            for (const f of erpWin) {
+              set[f] = (m as Record<string, unknown>)[f];
+            }
+            if (targetConflicts.length === 0) set.erpSyncAt = new Date();
+            if (Object.keys(set).length > 0) {
+              await tx.update(posMember).set(set as any).where(eq(posMember.id, target.id));
+            }
+            pendingConflicts.push(...targetConflicts);
+            upserted += 1;
           } else {
             // 全新会员：手机号若已被占用则无法插入，隔离而非让整批失败
             const phoneOwner = m.phone ? byPhone.get(m.phone) : undefined;
@@ -544,22 +622,22 @@ export class ErpIntegrationService {
               continue;
             }
             claimedNos.add(m.memberNo);
+            if (m.phone) claimedPhones.add(m.phone);
+
+            // 全新会员：整行插入（含 ERP 初始 points/stored_value），标量字段随 ERP
+            insertValues.push({
+              erpMemberId: m.erpMemberId,
+              memberNo: m.memberNo,
+              name: m.name,
+              phone: m.phone,
+              gender: m.gender,
+              birthday: m.birthday ? m.birthday : null,
+              level: m.level,
+              points: m.points,
+              storedValue: toCents(Number(m.storedValue ?? 0)),
+              erpSyncAt: new Date(),
+            });
           }
-
-          if (m.phone) claimedPhones.add(m.phone);
-
-          values.push({
-            erpMemberId: m.erpMemberId,
-            memberNo: m.memberNo,
-            name: m.name,
-            phone: m.phone,
-            gender: m.gender,
-            birthday: m.birthday ? m.birthday : null,
-            level: m.level,
-            points: m.points,
-            storedValue: toCents(Number(m.storedValue ?? 0)),
-            erpSyncAt: new Date(),
-          });
         }
 
         // ③ 回填存量行的锚点（仅限本次判定的 1:1 匹配，不按手机号猜测合并）
@@ -570,33 +648,69 @@ export class ErpIntegrationService {
             .where(and(eq(posMember.id, t.posId), isNull(posMember.erpMemberId)));
         }
 
-        if (values.length === 0) continue;
+        // 新会员批量插入（幂等键 erp_member_id；资金字段仅 INSERT 分支写入，UPDATE 不覆盖）
+        if (insertValues.length > 0) {
+          await tx
+            .insert(posMember)
+            .values(insertValues)
+            .onConflictDoUpdate({
+              target: posMember.erpMemberId,
+              // S1 止血（资金安全）：此处**故意不覆盖** points / stored_value，只同步档案字段；
+              // 仅「新会员」写入二者（ERP 初始值），「已存在会员」的冲突更新经字段级 LWW 单独处理。
+              // set 不含 memberNo —— 门店本地会员号一旦生成就不再被 ERP 改写。
+              set: {
+                name: sql`excluded.name`,
+                phone: sql`excluded.phone`,
+                gender: sql`excluded.gender`,
+                birthday: sql`excluded.birthday`,
+                level: sql`excluded.level`,
+                erpSyncAt: sql`excluded.erp_sync_at`,
+              },
+            });
+          upserted += insertValues.length;
+        }
 
-        await tx
-          .insert(posMember)
-          .values(values)
-          .onConflictDoUpdate({
-            target: posMember.erpMemberId,
-            // S1 止血（资金安全）：此处**故意不覆盖** points / stored_value，只同步档案字段。
-            // 原因：
-            //  ① POS 侧积分由 sales/returns/omnichannel 各自本地累加，是营运余额；
-            //  ② ERP `member` 表根本没有 storedValue 字段，RealErpAdapter 取数恒为 0
-            //     （real-erp.adapter.ts:229 注释、:257 `storedValue: 0`），
-            //     一旦覆盖会把会员**储值余额清零**——这是资损，不是数据偏差；
-            //  ③ ERP 的 `points` 是旧快照，覆盖会抹掉门店已累积的积分。
-            // INSERT 分支仍写入二者（让新会员拿到 ERP 初始值），
-            // 仅「已存在会员」的冲突更新不再覆写。最终单轨收口见 S3。
-            // 另注意：set 不含 memberNo —— 门店本地会员号一旦生成就不再被 ERP 改写。
-            set: {
-              name: sql`excluded.name`,
-              phone: sql`excluded.phone`,
-              gender: sql`excluded.gender`,
-              birthday: sql`excluded.birthday`,
-              level: sql`excluded.level`,
-              erpSyncAt: sql`excluded.erp_sync_at`,
-            },
-          });
-        upserted += values.length;
+        // W2-3：幂等写入冲突收件箱（同一 (entity_id, field) 已有 pending 则跳过，避免重复告警）
+        if (pendingConflicts.length > 0) {
+          const entityIds = [...new Set(pendingConflicts.map((c) => c.entityId))];
+          // W2-3 修复项：去重需覆盖「已仲裁为保留本地」的行，否则下次同步仍会按
+          // (entity, field) 重新插入 pending 行，人工裁决结论被反复重新挂起（重复告警）。
+          const existing = await tx
+            .select({
+              entityId: posSyncConflict.entityId,
+              field: posSyncConflict.field,
+              status: posSyncConflict.status,
+              resolution: posSyncConflict.resolution,
+            })
+            .from(posSyncConflict)
+            .where(
+              and(
+                eq(posSyncConflict.entityType, 'member'),
+                inArray(posSyncConflict.entityId, entityIds),
+              ),
+            );
+          const dupSet = new Set(
+            existing
+              .filter((r) => r.status === 'pending' || r.resolution === 'pos')
+              .map((r) => `${r.entityId}:${r.field}`),
+          );
+          const toInsert = pendingConflicts.filter((c) => !dupSet.has(`${c.entityId}:${c.field}`));
+          if (toInsert.length > 0) {
+            await tx.insert(posSyncConflict).values(
+              toInsert.map((c) => ({
+                storeId: null,
+                entityType: 'member',
+                entityId: c.entityId,
+                field: c.field,
+                posValue: c.posValue,
+                erpValue: c.erpValue,
+                posTs: c.posTs,
+                erpTs: c.erpTs,
+                status: 'pending',
+              })),
+            );
+          }
+        }
       }
     });
 
@@ -607,6 +721,116 @@ export class ErpIntegrationService {
       );
     }
     return { upserted, anchorless, conflicts };
+  }
+
+  /**
+   * W2-3：列出待仲裁的离线冲突（conflict inbox）。
+   * 会员为全局主数据，不强制门店维度；storeId 为 null 时返回全部。
+   */
+  async listConflicts(opts?: {
+    storeId?: string | null;
+    status?: 'pending' | 'resolved';
+    entityType?: string;
+  }  ): Promise<SyncConflict[]> {
+    const conds: import('drizzle-orm').SQL[] = [
+      eq(posSyncConflict.entityType, opts?.entityType ?? 'member'),
+    ];
+    if (opts?.status) conds.push(eq(posSyncConflict.status, opts.status));
+    if (opts?.storeId) conds.push(eq(posSyncConflict.storeId, opts.storeId));
+    const rows = await this.db
+      .select()
+      .from(posSyncConflict)
+      .where(conds.length > 1 ? and(...conds) : conds[0])
+      .orderBy(desc(posSyncConflict.createdAt));
+    return rows.map((r) => this.toSyncConflictRow(r));
+  }
+
+  /** DB 行 → 前后端共享 DTO（Date→ISO、jsonb→string|null） */
+  private toSyncConflictRow(r: typeof posSyncConflict.$inferSelect): SyncConflict {
+    return {
+      id: r.id,
+      storeId: r.storeId,
+      entityType: r.entityType,
+      entityId: r.entityId,
+      field: r.field,
+      posValue: (r.posValue as string | null) ?? null,
+      erpValue: (r.erpValue as string | null) ?? null,
+      posTs: r.posTs ? new Date(r.posTs).toISOString() : null,
+      erpTs: r.erpTs ? new Date(r.erpTs).toISOString() : null,
+      status: r.status,
+      resolution: (r.resolution as SyncConflictResolution) ?? null,
+      resolvedBy: r.resolvedBy ?? null,
+      resolvedAt: r.resolvedAt ? new Date(r.resolvedAt).toISOString() : null,
+      createdAt: new Date(r.createdAt).toISOString(),
+      updatedAt: new Date(r.updatedAt).toISOString(),
+    };
+  }
+
+  /**
+   * W2-3：人工裁决一条离线冲突。
+   * - 'erp'：采用 ERP 下行值，并把 pos_member.erp_sync_at 推进到当前（基线对齐）；
+   * - 'pos'：保留门店本地值（即拒绝该 ERP 改动），同样推进基线避免下次重复告警；
+   * - 'merge'：写入调用方提供的合并值，推进基线。
+   * 幂等：已 resolved 的行直接返回，不重复落值。
+   * 资金字段（points/stored_value）绝不在此路径改动（S1 资损护栏）。
+   */
+  async resolveConflict(
+    id: string,
+    resolution: 'pos' | 'erp' | 'merge',
+    opts?: { mergedValue?: string | null; resolvedBy?: string | null },
+  ): Promise<SyncConflict> {
+    const [row] = await this.db
+      .select()
+      .from(posSyncConflict)
+      .where(eq(posSyncConflict.id, id));
+    if (!row) throw new BadRequestException(`冲突记录不存在: ${id}`);
+    if (row.status === 'resolved') return this.toSyncConflictRow(row);
+
+    let newValue: string | null;
+    if (resolution === 'erp') newValue = (row.erpValue as string | null) ?? null;
+    else if (resolution === 'pos') newValue = (row.posValue as string | null) ?? null;
+    else if (resolution === 'merge') newValue = opts?.mergedValue ?? null;
+    else throw new BadRequestException(`不支持的仲裁结论: ${resolution}`);
+
+    // 把裁决值落回 pos_member 对应标量字段（资金字段绝不在此路径改动）
+    // W2-3 修复项：'pos'（保留本地）必须显式把「本地编辑基线」推到 erp_sync_at 之后——
+    // 否则下一次下行同步会因 `updated_at <= erp_sync_at` 判定 ERP 较新，落入 erpWin 分支
+    // 把人工「保留本地」的决定无声回写覆盖（资损/档案误操作）。其余结论正常推进基线。
+    const now = new Date();
+    const memberSet: Record<string, unknown> = {};
+    if (resolution === 'pos') {
+      memberSet.updatedAt = now;
+      memberSet.erpSyncAt = new Date(now.getTime() - 1000);
+    } else {
+      memberSet.erpSyncAt = now;
+    }
+    if (row.field === 'name') memberSet.name = newValue;
+    else if (row.field === 'phone') memberSet.phone = newValue;
+    else if (row.field === 'gender') memberSet.gender = newValue;
+    else if (row.field === 'birthday') memberSet.birthday = newValue;
+    else if (row.field === 'level') memberSet.level = newValue;
+    else throw new BadRequestException(`不支持的冲突字段: ${row.field}`);
+
+    await this.db
+      .update(posMember)
+      .set(memberSet as any)
+      .where(eq(posMember.id, row.entityId));
+
+    await this.db
+      .update(posSyncConflict)
+      .set({
+        status: 'resolved',
+        resolution,
+        resolvedBy: opts?.resolvedBy ?? null,
+        resolvedAt: new Date(),
+      })
+      .where(eq(posSyncConflict.id, id));
+
+    const [updated] = await this.db
+      .select()
+      .from(posSyncConflict)
+      .where(eq(posSyncConflict.id, id));
+    return this.toSyncConflictRow(updated);
   }
 
   async getUpstreamStatus(): Promise<ErpSyncStatus[]> {

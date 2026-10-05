@@ -1189,6 +1189,68 @@ export const posWalletEvent = pgTable("pos_wallet_event", {
   index("idx_pos_wallet_event_member").on(table.memberId),
 ]);
 
+/**
+ * 【W2-3】离线冲突收件箱（conflict inbox）。
+ *
+ * 为什么必须有它：POS 是离线优先系统，会员档案存在「双写源头」——
+ *   ① 门店离线/本地新建并修改会员（offline-sync.service.ts 离线回放）；
+ *   ② ERP 主数据下行更新（erp-integration.service.ts:415）。
+ * 当两条来源对**同一标量字段**（name / phone / gender / birthday / level）给出不同值时，
+ * 简单的「后写覆盖」会丢失一方营业数据（误改客户姓名、手机号）。
+ *
+ * 设计（避免过度设计，见 #604 评估）：
+ *   - 采用 2 源 LWW（Last-Write-Wins）：以 `erp_sync_at`（ERP 基线）与本地写入时间戳
+ *     比较，但**不自动裁决**——冲突先入收件箱，由店长/运营在仲裁台人工裁决。
+ *   - 资金字段（points / stored_value）**永不入箱、永不覆盖**：S1 资损护栏，
+ *     ERP 侧 storedValue 恒为 0，覆盖即清零。
+ *   - 不引入版本向量：仅需比较「ERP 已知版本 vs 本地未同步修改」两枚时间戳即可。
+ *   - 不改动 pos_member：现有 erp_sync_at / updated_at 已足够支撑 2 源比较。
+ *
+ * 幂等：同一 (entity_id, field) 已有 pending 冲突时不再重复建（应用层判重），
+ * 仲裁后落值并推进 pos_member.erp_sync_at 基线。
+ */
+export const posSyncConflict = pgTable("pos_sync_conflict", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  /** 冲突所属门店（enforceStoreScope 维度）。会员为全局主数据，冲突行 store_id 为 null */
+  storeId: varchar("store_id", { length: 50 }),
+  /** 冲突实体类型，当前仅 'member'；预留以扩展到其它双向实体 */
+  entityType: varchar("entity_type", { length: 20 }).notNull().default('member'),
+  /** 实体主键（当前 = pos_member.id） */
+  entityId: uuid("entity_id").notNull(),
+  /** 冲突的标量字段名（name/phone/gender/birthday/level） */
+  field: varchar("field", { length: 50 }).notNull(),
+  /** 门店本地值（jsonb 以支持多类型取值比较与展示） */
+  posValue: jsonb("pos_value"),
+  /** ERP 下行值 */
+  erpValue: jsonb("erp_value"),
+  /** 本地写入时间戳（pos_member.updated_at / offline 回放时间） */
+  posTs: customTimestamptz("pos_ts", { precision: 3 }),
+  /** ERP 已知版本时间戳（pos_member.erp_sync_at） */
+  erpTs: customTimestamptz("erp_ts", { precision: 3 }),
+  /** pending(待仲裁) | resolved(已裁决) */
+  status: varchar("status", { length: 20 }).notNull().default('pending'),
+  /** 仲裁结论：pos(保留本地) | erp(采用ERP) | merge(合并) | null(尚未裁决) */
+  resolution: varchar("resolution", { length: 10 }),
+  /** 仲裁人（app.user_id） */
+  resolvedBy: userProfile("_resolved_by"),
+  resolvedAt: customTimestamptz("resolved_at", { precision: 3 }),
+  // System field: Creation time (auto-filled, do not modify)
+  createdAt: customTimestamptz("_created_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  // System field: Creator (auto-filled, do not modify)
+  createdBy: userProfile("_created_by").default(sql`CASE
+    WHEN (current_setting('app.user_id'::text, true) = ''::text) THEN NULL`),
+  // System field: Update time (auto-filled, do not modify)
+  updatedAt: customTimestamptz("_updated_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  // System field: Updater (auto-filled, do not modify)
+  updatedBy: userProfile("_updated_by").default(sql`CASE
+    WHEN (current_setting('app.user_id'::text, true) = ''::text) THEN NULL`),
+}, (table) => [
+  // 仲裁台列表热路径：按状态取待办 + 时间序
+  index("idx_pos_sync_conflict_status").on(table.status, table.createdAt),
+  // 按实体聚合冲突（某会员的全部字段冲突）
+  index("idx_pos_sync_conflict_entity").on(table.entityType, table.entityId),
+]);
+
 export const posEmployee = pgTable("pos_employee", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: varchar("name", { length: 50 }).notNull(),
