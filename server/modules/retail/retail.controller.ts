@@ -85,6 +85,10 @@ export class RetailController {
     @Query('storeId') storeId?: string,
     @Query('status') status?: string,
     @Query('keyword') keyword?: string,
+    @Query('docStartDate') docStartDate?: string,
+    @Query('docEndDate') docEndDate?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
   ): Promise<PaginationResult<RetailReturn>> {
     return this.retailService.getReturnList({
       page: parseInt(page, 10) || 1,
@@ -92,6 +96,10 @@ export class RetailController {
       storeId,
       status,
       keyword,
+      docStartDate,
+      docEndDate,
+      startDate,
+      endDate,
       userId: req.userContext?.userId,
     });
   }

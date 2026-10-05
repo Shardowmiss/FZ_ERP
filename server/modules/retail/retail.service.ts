@@ -10,7 +10,7 @@ import {
   DRIZZLE_DATABASE,
   type PostgresJsDatabase,
 } from '@lark-apaas/fullstack-nestjs-core';
-import { eq, and, count, desc, sql, gte, lt, like, or } from 'drizzle-orm';
+import { eq, and, count, desc, sql, gte, lt, lte, like, or } from 'drizzle-orm';
 import type { SQL } from 'drizzle-orm';
 import {
   retailOrder,
@@ -649,12 +649,28 @@ export class RetailService {
     status?: string;
     keyword?: string;
     userId?: string;
+    docStartDate?: string;
+    docEndDate?: string;
+    startDate?: string;
+    endDate?: string;
   }): Promise<PaginationResult<RetailReturn>> {
-    const { page, pageSize, storeId, status, keyword, userId } = params;
+    const { page, pageSize, storeId, status, keyword, userId, docStartDate, docEndDate, startDate, endDate } = params;
 
     const conditions = [];
     if (storeId) conditions.push(eq(retailReturn.storeId, storeId));
     if (status) conditions.push(eq(retailReturn.status, status));
+    // 单据日期（系统创建时间 createdAt）区间过滤，结束日用次日开区间含入整日
+    if (docStartDate) conditions.push(sql`${retailReturn.createdAt} >= ${docStartDate}`);
+    if (docEndDate) {
+      const [y, m, d] = docEndDate.split('-').map(Number);
+      const endDt = new Date(y, m - 1, d);
+      endDt.setDate(endDt.getDate() + 1);
+      const nextDay = `${endDt.getFullYear()}-${String(endDt.getMonth() + 1).padStart(2, '0')}-${String(endDt.getDate()).padStart(2, '0')}`;
+      conditions.push(sql`${retailReturn.createdAt} < ${nextDay}`);
+    }
+    // 业务日期（退货日期 returnDate）区间过滤
+    if (startDate) conditions.push(gte(retailReturn.returnDate, startDate));
+    if (endDate) conditions.push(lte(retailReturn.returnDate, endDate));
     // 行级数据权限：将用户可见门店范围并入查询条件
     if (userId) {
       const scope = await this.rbacService.getUserDataScope(userId);

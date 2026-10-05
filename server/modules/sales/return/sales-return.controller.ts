@@ -22,11 +22,21 @@ export class SalesReturnController {
     @Query('page') page = '1',
     @Query('pageSize') pageSize = '20',
     @Query('status') status?: string,
+    @Query('warehouseId') warehouseId?: string,
+    @Query('docStartDate') docStartDate?: string,
+    @Query('docEndDate') docEndDate?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
   ): Promise<PaginationResult<SalesReturn>> {
     return this.salesReturnService.list({
       page: parseInt(page, 10),
       pageSize: parseInt(pageSize, 10),
       status,
+      warehouseId,
+      docStartDate,
+      docEndDate,
+      startDate,
+      endDate,
     });
   }
 

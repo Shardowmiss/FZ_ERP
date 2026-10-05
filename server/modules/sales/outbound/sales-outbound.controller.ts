@@ -25,6 +25,11 @@ export class SalesOutboundController {
     @Query('status') status?: string,
     @Query('orderNo') orderNo?: string,
     @Query('brand') brand?: string,
+    @Query('warehouseId') warehouseId?: string,
+    @Query('docStartDate') docStartDate?: string,
+    @Query('docEndDate') docEndDate?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
   ): Promise<PaginationResult<SalesOutbound>> {
     return this.salesOutboundService.list({
       page: parseInt(page, 10),
@@ -33,6 +38,11 @@ export class SalesOutboundController {
       status,
       orderNo,
       brand,
+      warehouseId,
+      docStartDate,
+      docEndDate,
+      startDate,
+      endDate,
     });
   }
 

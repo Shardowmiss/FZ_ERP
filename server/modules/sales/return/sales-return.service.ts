@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { voidDraftDocument } from '@server/common/document-void';
 import { DRIZZLE_DATABASE, type PostgresJsDatabase } from '@lark-apaas/fullstack-nestjs-core';
-import { eq, and, desc, count, sql, inArray, isNull } from 'drizzle-orm';
+import { eq, and, desc, count, sql, inArray, isNull, gte, lte } from 'drizzle-orm';
 import {
   salesReturn,
   salesReturnItem,
@@ -53,6 +53,11 @@ interface ListQuery {
   page: number;
   pageSize: number;
   status?: string;
+  warehouseId?: string;
+  docStartDate?: string;
+  docEndDate?: string;
+  startDate?: string;
+  endDate?: string;
 }
 
 @Injectable()
@@ -116,9 +121,23 @@ export class SalesReturnService {
   }
 
   async list(query: ListQuery): Promise<PaginationResult<SalesReturn>> {
-    const { page, pageSize, status } = query;
+    const { page, pageSize, status, warehouseId, docStartDate, docEndDate, startDate, endDate } = query;
     const conditions = [];
     if (status) conditions.push(eq(salesReturn.status, status));
+    // 店仓（仓库）精确过滤
+    if (warehouseId) conditions.push(eq(salesReturn.warehouseId, warehouseId));
+    // 单据日期（系统创建时间 createdAt）区间过滤，结束日用次日开区间含入整日
+    if (docStartDate) conditions.push(sql`${salesReturn.createdAt} >= ${docStartDate}`);
+    if (docEndDate) {
+      const [y, m, d] = docEndDate.split('-').map(Number);
+      const endDt = new Date(y, m - 1, d);
+      endDt.setDate(endDt.getDate() + 1);
+      const nextDay = `${endDt.getFullYear()}-${String(endDt.getMonth() + 1).padStart(2, '0')}-${String(endDt.getDate()).padStart(2, '0')}`;
+      conditions.push(sql`${salesReturn.createdAt} < ${nextDay}`);
+    }
+    // 业务日期（退货日期 returnDate）区间过滤
+    if (startDate) conditions.push(gte(salesReturn.returnDate, startDate));
+    if (endDate) conditions.push(lte(salesReturn.returnDate, endDate));
 
     // 行级数据权限：仅可见当前用户所属经销商的客户关联销售退货单
     const scopeCond = buildDealerScopeCondition(
