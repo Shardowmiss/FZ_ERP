@@ -29,6 +29,11 @@ export class MaterialPurchaseInboundController {
     @Query('supplierId') supplierId?: string,
     @Query('status') status?: string,
     @Query('orderNo') orderNo?: string,
+    @Query('warehouseId') warehouseId?: string,
+    @Query('docStartDate') docStartDate?: string,
+    @Query('docEndDate') docEndDate?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
   ): Promise<PaginationResult<MaterialPurchaseInbound>> {
     return this.materialPurchaseInboundService.list({
       page: parseInt(page, 10),
@@ -36,6 +41,11 @@ export class MaterialPurchaseInboundController {
       supplierId,
       status,
       orderNo,
+      warehouseId,
+      docStartDate,
+      docEndDate,
+      startDate,
+      endDate,
     });
   }
 
