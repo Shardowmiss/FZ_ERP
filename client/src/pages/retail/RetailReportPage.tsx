@@ -280,7 +280,7 @@ const RetailReportPage: React.FC = () => {
            </div>
           <button
             onClick={fetchData}
-            className="bg-primary text-white px-4 py-1.5 rounded text-sm hover:bg-blue-600"
+            className="bg-primary text-white px-4 py-1.5 rounded text-sm hover:bg-primary"
           >刷新</button>
         </div>
       </div>

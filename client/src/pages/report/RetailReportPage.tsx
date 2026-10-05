@@ -183,7 +183,7 @@ export default function RetailReportPage() {
             className="bg-white p-4 rounded border border-gray-200"
           >
             <div className="text-sm text-gray-500 mb-2">{card.label}</div>
-            <div className="text-2xl font-semibold text-blue-600">
+            <div className="text-2xl font-semibold text-primary">
               {card.prefix}
               {card.value}
               <span className="text-sm font-normal text-gray-500 ml-1">
@@ -277,7 +277,7 @@ export default function RetailReportPage() {
                   {formatQty(summary.totalQty)}
                 </td>
                 <td></td>
-                <td className="px-3 text-right font-medium text-blue-600">
+                <td className="px-3 text-right font-medium text-primary">
                   {formatAmount(summary.totalAmount)}
                 </td>
                 <td colSpan={2}></td>

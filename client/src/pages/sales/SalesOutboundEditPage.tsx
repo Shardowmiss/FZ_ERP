@@ -475,7 +475,7 @@ export default function SalesOutboundEditPage() {
       </div>
       <div className="flex items-center justify-end gap-6 text-sm border-t border-gray-200 pt-3">
         <div>
-          总数量：<span className="font-semibold text-blue-600">{totals.totalQty.toFixed(3)}</span>
+          总数量：<span className="font-semibold text-primary">{totals.totalQty.toFixed(3)}</span>
         </div>
         <div>
           总金额：<span className="font-semibold text-red-500">¥{totals.totalAmount.toFixed(2)}</span>

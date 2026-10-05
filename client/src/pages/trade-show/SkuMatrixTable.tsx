@@ -110,7 +110,7 @@ const SkuMatrixTable: React.FC<SkuMatrixTableProps> = ({
                     />
                   </td>
                 ))}
-                <td className="px-3 py-2 border-b border-gray-200 text-center font-medium text-blue-600 bg-blue-50">
+                <td className="px-3 py-2 border-b border-gray-200 text-center font-medium text-primary bg-blue-50">
                   {rowTotal}
                 </td>
               </tr>
@@ -130,13 +130,13 @@ const SkuMatrixTable: React.FC<SkuMatrixTableProps> = ({
               return (
                 <td
                   key={size}
-                  className="px-3 py-2 border-t border-r border-gray-200 text-center text-blue-600"
+                  className="px-3 py-2 border-t border-r border-gray-200 text-center text-primary"
                 >
                   {colTotal}
                 </td>
               );
             })}
-            <td className="px-3 py-2 border-t border-gray-200 text-center text-blue-700 text-base">
+            <td className="px-3 py-2 border-t border-gray-200 text-center text-primary/90 text-base">
               {totalQty}
             </td>
           </tr>

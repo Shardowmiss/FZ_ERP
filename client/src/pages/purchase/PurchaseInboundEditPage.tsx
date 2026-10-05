@@ -322,7 +322,7 @@ const PurchaseInboundEditPage: React.FC = () => {
                   )}
                 </td>
                 <td className="py-1.5 px-2 text-right text-gray-500">{item.price.toFixed(2)}</td>
-                <td className="py-1.5 px-2 text-right font-medium text-blue-600">
+                <td className="py-1.5 px-2 text-right font-medium text-primary">
                   {(item.quantity * item.price).toFixed(2)}
                 </td>
                 <td className="py-1.5 px-2">

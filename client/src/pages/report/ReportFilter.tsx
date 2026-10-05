@@ -127,7 +127,7 @@ export default function ReportFilter({
   };
 
   const inputCls =
-    'border border-gray-300 rounded px-3 py-1.5 text-sm w-full focus:outline-none focus:border-blue-400';
+    'border border-gray-300 rounded px-3 py-1.5 text-sm w-full focus:outline-none focus:border-primary/70';
 
   return (
     <div className="bg-white p-5 rounded border border-gray-200 mb-4">
@@ -220,7 +220,7 @@ export default function ReportFilter({
         <div className="flex gap-2">
           <button
             onClick={handleSearch}
-            className="bg-primary text-white px-4 py-1.5 rounded text-sm hover:bg-blue-600 transition-colors"
+            className="bg-primary text-white px-4 py-1.5 rounded text-sm hover:bg-primary transition-colors"
           >
             查询
           </button>

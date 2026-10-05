@@ -384,7 +384,7 @@ const PermissionManagePage: React.FC = () => {
                   onClick={() => handleSelectRole(role.id)}
                   className={`px-4 py-2.5 text-sm cursor-pointer border-l-2 transition-colors ${
                     selectedRoleId === role.id
-                      ? 'bg-white border-l-primary text-blue-600 font-medium'
+                      ? 'bg-white border-l-primary text-primary font-medium'
                       : 'border-l-transparent text-gray-600 hover:bg-white hover:text-gray-800'
                   }`}
                 >

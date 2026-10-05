@@ -284,7 +284,7 @@ const MaterialPurchaseOrderEditPage: React.FC = () => {
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-medium text-gray-700">明细</h2>
         {!viewOnly && (
-          <button onClick={handleAddRow} className="text-sm text-primary hover:text-blue-600">+ 添加行</button>
+          <button onClick={handleAddRow} className="text-sm text-primary hover:text-primary">+ 添加行</button>
         )}
       </div>
       <table className="w-full text-sm border border-gray-200">
@@ -350,7 +350,7 @@ const MaterialPurchaseOrderEditPage: React.FC = () => {
                     />
                   )}
                 </td>
-                <td className="py-1.5 px-2 text-right font-medium text-blue-600">
+                <td className="py-1.5 px-2 text-right font-medium text-primary">
                   {(item.quantity * item.price).toFixed(2)}
                 </td>
                 {!viewOnly && (

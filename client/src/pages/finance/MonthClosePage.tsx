@@ -232,7 +232,7 @@ const MonthClosePage: React.FC = () => {
                       {item.status === 'open' ? (
                         <button
                           onClick={() => handleClose(item)}
-                          className="px-3 py-1 bg-primary text-white rounded text-xs hover:bg-blue-600"
+                          className="px-3 py-1 bg-primary text-white rounded text-xs hover:bg-primary"
                         >
                           月结
                         </button>
@@ -240,7 +240,7 @@ const MonthClosePage: React.FC = () => {
                         <div className="flex items-center justify-center gap-2">
                           <button
                             onClick={() => handleViewDetail(item)}
-                            className="text-primary hover:text-blue-600 text-xs"
+                            className="text-primary hover:text-primary text-xs"
                           >
                             查看详情
                           </button>
@@ -316,7 +316,7 @@ const MonthClosePage: React.FC = () => {
                         <div className="text-xs text-gray-500 mb-1">
                           本月应收发生额
                         </div>
-                        <div className="text-xl font-semibold text-blue-600">
+                        <div className="text-xl font-semibold text-primary">
                           {formatAmount(detailData.receivableAmount)}
                         </div>
                       </div>
@@ -393,7 +393,7 @@ const MonthClosePage: React.FC = () => {
                 disabled={actionLoading}
                 className={`px-4 py-2 text-white rounded text-sm disabled:opacity-50 ${
                   confirmType === 'close'
-                    ? 'bg-primary hover:bg-blue-600'
+                    ? 'bg-primary hover:bg-primary'
                     : 'bg-red-500 hover:bg-red-600'
                 }`}
               >

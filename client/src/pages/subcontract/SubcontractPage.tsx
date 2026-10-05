@@ -71,7 +71,7 @@ const SubcontractPage: React.FC = () => {
               onClick={() => setTab(t.key)}
               className={`px-4 py-2 text-sm border-b-2 -mb-px ${
                 tab === t.key
-                  ? 'border-primary text-blue-600 font-medium'
+                  ? 'border-primary text-primary font-medium'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
             >
@@ -134,7 +134,7 @@ const OrderTab: React.FC<{ supplierOptions: Option[]; skuOptions: Option[]; onCh
   return (
     <div>
       <div className="mb-3 flex justify-end">
-        <button onClick={() => setShowForm(!showForm)} className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600">
+        <button onClick={() => setShowForm(!showForm)} className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-primary">
           {showForm ? '收起' : '新建委外订单'}
         </button>
       </div>
@@ -191,7 +191,7 @@ const OrderTab: React.FC<{ supplierOptions: Option[]; skuOptions: Option[]; onCh
                 <td className="px-3 py-2 text-right text-gray-700">{Number(o.totalAmount).toFixed(2)}</td>
                 <td className="px-3 py-2 text-center"><StatusBadge status={o.status} /></td>
                 <td className="px-3 py-2 text-center">
-                  {o.status === 'draft' && <button onClick={() => approve(o.id)} className="text-blue-600 text-xs px-2">审核</button>}
+                  {o.status === 'draft' && <button onClick={() => approve(o.id)} className="text-primary text-xs px-2">审核</button>}
                   {o.status === 'draft' && <button onClick={() => voidSubcontract('order', o.id, load)} className="text-red-500 text-xs px-2">作废</button>}
                 </td>
               </tr>
@@ -237,7 +237,7 @@ const IssueTab: React.FC<{ orderOptions: any[]; warehouseOptions: Option[]; mate
   return (
     <div>
       <div className="mb-3 flex justify-end">
-        <button onClick={() => setShowForm(!showForm)} className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600">{showForm ? '收起' : '新建发料单'}</button>
+        <button onClick={() => setShowForm(!showForm)} className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-primary">{showForm ? '收起' : '新建发料单'}</button>
       </div>
       {showForm && (
         <div className="mb-4 p-4 bg-gray-50 rounded border border-gray-200">
@@ -291,7 +291,7 @@ const IssueTab: React.FC<{ orderOptions: any[]; warehouseOptions: Option[]; mate
                 <td className="px-3 py-2 text-gray-600">{o.issueDate}</td>
                 <td className="px-3 py-2 text-center"><StatusBadge status={o.status} /></td>
                 <td className="px-3 py-2 text-center">
-                  {o.status === 'draft' && <button onClick={() => approve(o.id)} className="text-blue-600 text-xs px-2">审核(扣料)</button>}
+                  {o.status === 'draft' && <button onClick={() => approve(o.id)} className="text-primary text-xs px-2">审核(扣料)</button>}
                   {o.status === 'draft' && <button onClick={() => voidSubcontract('issue', o.id, load)} className="text-red-500 text-xs px-2">作废</button>}
                 </td>
               </tr>
@@ -337,7 +337,7 @@ const ReceiptTab: React.FC<{ orderOptions: any[]; warehouseOptions: Option[]; sk
   return (
     <div>
       <div className="mb-3 flex justify-end">
-        <button onClick={() => setShowForm(!showForm)} className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600">{showForm ? '收起' : '新建回收单'}</button>
+        <button onClick={() => setShowForm(!showForm)} className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-primary">{showForm ? '收起' : '新建回收单'}</button>
       </div>
       {showForm && (
         <div className="mb-4 p-4 bg-gray-50 rounded border border-gray-200">
@@ -392,7 +392,7 @@ const ReceiptTab: React.FC<{ orderOptions: any[]; warehouseOptions: Option[]; sk
                 <td className="px-3 py-2 text-gray-600">{o.receiptDate}</td>
                 <td className="px-3 py-2 text-center"><StatusBadge status={o.status} /></td>
                 <td className="px-3 py-2 text-center">
-                  {o.status === 'draft' && <button onClick={() => approve(o.id)} className="text-blue-600 text-xs px-2">审核(入库)</button>}
+                  {o.status === 'draft' && <button onClick={() => approve(o.id)} className="text-primary text-xs px-2">审核(入库)</button>}
                   {o.status === 'draft' && <button onClick={() => voidSubcontract('receipt', o.id, load)} className="text-red-500 text-xs px-2">作废</button>}
                 </td>
               </tr>
@@ -433,7 +433,7 @@ const FeeTab: React.FC<{ orderOptions: any[]; supplierOptions: Option[]; onChang
   return (
     <div>
       <div className="mb-3 flex justify-end">
-        <button onClick={() => setShowForm(!showForm)} className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600">{showForm ? '收起' : '录入加工费'}</button>
+        <button onClick={() => setShowForm(!showForm)} className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-primary">{showForm ? '收起' : '录入加工费'}</button>
       </div>
       {showForm && (
         <div className="mb-4 p-4 bg-gray-50 rounded border border-gray-200">
@@ -478,7 +478,7 @@ const FeeTab: React.FC<{ orderOptions: any[]; supplierOptions: Option[]; onChang
                 <td className="px-3 py-2 text-right text-gray-700">{Number(o.amount).toFixed(2)}</td>
                 <td className="px-3 py-2 text-center"><StatusBadge status={o.status} /></td>
                 <td className="px-3 py-2 text-center">
-                  {o.status === 'pending' && <button onClick={() => settle(o.id)} className="text-blue-600 text-xs px-2">结算</button>}
+                  {o.status === 'pending' && <button onClick={() => settle(o.id)} className="text-primary text-xs px-2">结算</button>}
                   {o.status === 'pending' && <button onClick={() => voidSubcontract('fee', o.id, load)} className="text-red-500 text-xs px-2">作废</button>}
                 </td>
               </tr>

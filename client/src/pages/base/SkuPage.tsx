@@ -193,7 +193,7 @@ const SkuPage: React.FC = () => {
           ))}
         </select>
         <button
-          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
+          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors"
           onClick={handleSearch}
         >
           查询
@@ -244,7 +244,7 @@ const SkuPage: React.FC = () => {
                   <td className="px-4 py-3">{item.safetyStockMax?.toFixed(3)}</td>
                   <td className="px-4 py-3">{renderStatus(item.status)}</td>
                   <td className="px-4 py-3">
-                    <button className="text-primary hover:text-blue-700" onClick={() => openEdit(item)}>编辑</button>
+                    <button className="text-primary hover:text-primary/90" onClick={() => openEdit(item)}>编辑</button>
                   </td>
                 </tr>
               ))
@@ -377,7 +377,7 @@ const SkuPage: React.FC = () => {
                 取消
               </button>
               <button
-                className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleSave}
                 disabled={submitting}
               >

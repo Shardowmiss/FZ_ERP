@@ -282,7 +282,7 @@ const StylePage: React.FC = () => {
           )}
           <div className="relative" onClick={e => e.stopPropagation()}>
             <button
-              className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors flex items-center gap-1"
+              className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors flex items-center gap-1"
               onClick={() => setAddDropdownOpen(v => !v)}
             >
               新增<span className="text-xs">▼</span>
@@ -318,7 +318,7 @@ const StylePage: React.FC = () => {
           <option value="active">启用</option>
           <option value="inactive">停用</option>
         </select>
-           <button className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
+           <button className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors"
            onClick={handleSearch}>查询</button>
         <button className="px-4 py-2 bg-gray-100 text-gray-700 text-sm rounded hover:bg-gray-200 transition-colors"
           onClick={handleReset}>重置</button>
@@ -380,7 +380,7 @@ const StylePage: React.FC = () => {
                 <td className="px-4 py-3">{renderStatus(item.status)}</td>
                 <td className="px-4 py-3 text-gray-500">{item.createdAt?.replace('T', ' ').slice(0, 19) || '-'}</td>
                 <td className="px-4 py-3">
-                  <button className="text-primary hover:text-blue-700 mr-3" onClick={() => openEdit(item)}>编辑</button>
+                  <button className="text-primary hover:text-primary/90 mr-3" onClick={() => openEdit(item)}>编辑</button>
                   <button className="text-red-500 hover:text-red-700" onClick={() => handleDelete(item.id)}>删除</button>
                 </td>
               </tr>
@@ -429,7 +429,7 @@ const StylePage: React.FC = () => {
             <div className="flex justify-end gap-2 px-5 py-3 border-t border-gray-200">
               <button className="px-4 py-2 bg-gray-100 text-gray-700 text-sm rounded hover:bg-gray-200 transition-colors"
                 onClick={() => setDialogOpen(false)}>取消</button>
-              <button className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              <button className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleSave} disabled={submitting}>{submitting ? '保存中...' : '保存'}</button>
             </div>
           </div>

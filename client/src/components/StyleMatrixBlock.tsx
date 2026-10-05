@@ -174,7 +174,7 @@ const StyleMatrixBlock: React.FC<StyleMatrixBlockProps> = ({
           <span className="font-medium text-gray-800">{styleNo}</span>
           <span className="text-gray-500 text-sm">{styleName}</span>
           {brand && <span className="text-gray-400 text-xs px-1.5 py-0.5 bg-gray-100 rounded">{brand}</span>}
-          <span className="text-blue-600 text-xs font-medium ml-2">
+          <span className="text-primary text-xs font-medium ml-2">
             合计 {totals.totalQty} 件
             {showPrice && ` / ¥${totals.totalAmount.toFixed(2)}`}
           </span>
@@ -224,7 +224,7 @@ const StyleMatrixBlock: React.FC<StyleMatrixBlockProps> = ({
                         {!readOnly && (
                           <button
                             onClick={() => handleFillColumn(size)}
-                            className="text-[10px] text-primary hover:text-blue-700 hover:bg-blue-50 px-1 py-0.5 rounded"
+                            className="text-[10px] text-primary hover:text-primary/90 hover:bg-blue-50 px-1 py-0.5 rounded"
                             title="整列填充"
                           >
                             填充
@@ -235,7 +235,7 @@ const StyleMatrixBlock: React.FC<StyleMatrixBlockProps> = ({
                   ))}
                   <th
                     colSpan={showPrice ? 2 : 1}
-                    className="text-center px-2 py-2 border-b border-gray-200 bg-blue-50 text-blue-700"
+                    className="text-center px-2 py-2 border-b border-gray-200 bg-blue-50 text-primary/90"
                   >
                     行合计
                   </th>
@@ -321,11 +321,11 @@ const StyleMatrixBlock: React.FC<StyleMatrixBlockProps> = ({
                           </React.Fragment>
                         );
                       })}
-                      <td className="px-3 py-2 border-b border-r border-gray-200 text-center font-medium text-blue-600 bg-blue-50">
+                      <td className="px-3 py-2 border-b border-r border-gray-200 text-center font-medium text-primary bg-blue-50">
                         {rowQty}
                       </td>
                       {showPrice && (
-                        <td className="px-3 py-2 border-b border-gray-200 text-center font-medium text-blue-600 bg-blue-50">
+                        <td className="px-3 py-2 border-b border-gray-200 text-center font-medium text-primary bg-blue-50">
                           ¥{rowAmount.toFixed(2)}
                         </td>
                       )}
@@ -333,7 +333,7 @@ const StyleMatrixBlock: React.FC<StyleMatrixBlockProps> = ({
                         {!readOnly && (
                           <button
                             onClick={() => handleFillRow(color)}
-                            className="text-[10px] text-primary hover:text-blue-700 hover:bg-blue-50 px-2 py-1 rounded"
+                            className="text-[10px] text-primary hover:text-primary/90 hover:bg-blue-50 px-2 py-1 rounded"
                             title="整行填充"
                           >
                             整行填充
@@ -361,22 +361,22 @@ const StyleMatrixBlock: React.FC<StyleMatrixBlockProps> = ({
                     }
                     return (
                       <React.Fragment key={size}>
-                        <td className="px-3 py-2 border-t border-r border-gray-200 text-center text-blue-600">
+                        <td className="px-3 py-2 border-t border-r border-gray-200 text-center text-primary">
                           {colQty}
                         </td>
                         {showPrice && (
-                          <td className="px-3 py-2 border-t border-r border-gray-200 text-center text-blue-600 text-xs">
+                          <td className="px-3 py-2 border-t border-r border-gray-200 text-center text-primary text-xs">
                             ¥{colAmount.toFixed(2)}
                           </td>
                         )}
                       </React.Fragment>
                     );
                   })}
-                  <td className="px-3 py-2 border-t border-r border-gray-200 text-center text-blue-700 text-base">
+                  <td className="px-3 py-2 border-t border-r border-gray-200 text-center text-primary/90 text-base">
                     {totals.totalQty}
                   </td>
                   {showPrice && (
-                    <td className="px-3 py-2 border-t border-gray-200 text-center text-blue-700 text-base">
+                    <td className="px-3 py-2 border-t border-gray-200 text-center text-primary/90 text-base">
                       ¥{totals.totalAmount.toFixed(2)}
                     </td>
                   )}

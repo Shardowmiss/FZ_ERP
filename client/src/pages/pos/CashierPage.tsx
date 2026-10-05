@@ -330,7 +330,7 @@ export default function CashierPage() {
           />
         </div>
         <button
-          className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded"
+          className="flex items-center gap-1 bg-primary text-white px-3 py-1.5 rounded"
           onClick={handleAddSku}
           disabled={adding}
         >

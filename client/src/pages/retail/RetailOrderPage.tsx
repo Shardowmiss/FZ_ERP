@@ -220,7 +220,7 @@ export default function RetailOrderPage() {
         <h1 className="text-xl font-semibold">零售单</h1>
         <button
           onClick={openCreate}
-          className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-blue-600 flex items-center gap-2"
+          className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-primary flex items-center gap-2"
         >
           <Plus size={16} />
           新增零售单
@@ -285,7 +285,7 @@ export default function RetailOrderPage() {
         </div>
         <button
           onClick={handleSearch}
-          className="bg-primary text-white px-4 py-1.5 rounded text-sm hover:bg-blue-600"
+          className="bg-primary text-white px-4 py-1.5 rounded text-sm hover:bg-primary"
         >查询</button>
         <button
           onClick={handleReset}

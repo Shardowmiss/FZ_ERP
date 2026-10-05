@@ -103,7 +103,7 @@ const OmniPage: React.FC = () => {
       <div className="bg-white rounded-lg shadow-sm p-5">
         <div className="flex items-center justify-between mb-3">
           <h1 className="text-xl font-semibold text-gray-800">全渠道 OMS</h1>
-          <button onClick={() => setShowCreate((v) => !v)} className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600">
+          <button onClick={() => setShowCreate((v) => !v)} className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-primary">
             {showCreate ? '收起' : '新建订单'}
           </button>
         </div>

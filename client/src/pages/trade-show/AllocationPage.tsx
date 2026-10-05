@@ -268,7 +268,7 @@ const AllocationPage: React.FC = () => {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold">配货管理</h2>
         <button
-          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors flex items-center gap-1"
+          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors flex items-center gap-1"
           onClick={openCreate}
           data-ai-section-type="button"
         >
@@ -325,7 +325,7 @@ const AllocationPage: React.FC = () => {
           ))}
         </select>
         <button
-          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
+          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors"
           onClick={handleSearch}
           data-ai-section-type="button"
         >
@@ -412,7 +412,7 @@ const AllocationPage: React.FC = () => {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2 flex-wrap">
                         <button
-                          className="text-primary hover:text-blue-700 text-xs flex items-center gap-0.5"
+                          className="text-primary hover:text-primary/90 text-xs flex items-center gap-0.5"
                           onClick={() => openDetail(item)}
                         >
                           <Eye size={12} />
@@ -558,7 +558,7 @@ const AllocationPage: React.FC = () => {
                 取消
               </button>
               <button
-                className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
+                className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors"
                 onClick={handleCreate}
               >
                 创建

@@ -194,7 +194,7 @@ const StyleAttributePage: React.FC = () => {
             key={tab.key}
             className={`px-4 py-2 text-sm font-medium transition-colors relative ${
               activeTab === tab.key
-                ? 'text-blue-600'
+                ? 'text-primary'
                 : 'text-gray-600 hover:text-gray-900'
             }`}
             onClick={() => handleTabChange(tab.key)}
@@ -219,14 +219,14 @@ const StyleAttributePage: React.FC = () => {
           className="px-3 py-2 border border-gray-300 rounded text-sm w-60 focus:outline-none focus:border-primary"
         />
         <button
-          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
+          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors"
           onClick={handleSearch}
         >
           查询
         </button>
         <div className="flex-1" />
         <button
-          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
+          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors"
           onClick={openAdd}
         >
           + 新增属性
@@ -275,7 +275,7 @@ const StyleAttributePage: React.FC = () => {
                   <td className="px-4 py-3">{renderStatus(item.status)}</td>
                   <td className="px-4 py-3">
                     <button
-                      className="text-primary hover:text-blue-700 mr-3"
+                      className="text-primary hover:text-primary/90 mr-3"
                       onClick={() => openEdit(item)}
                     >
                       编辑
@@ -403,7 +403,7 @@ const StyleAttributePage: React.FC = () => {
                 取消
               </button>
               <button
-                className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
+                className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors"
                 onClick={handleSave}
               >
                 确定

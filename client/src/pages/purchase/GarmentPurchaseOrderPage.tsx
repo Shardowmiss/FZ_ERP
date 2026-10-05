@@ -194,7 +194,7 @@ const GarmentPurchaseOrderPage: React.FC = () => {
           <h1 className="text-xl font-semibold text-gray-800">采购订单</h1>
           <button
             onClick={openAdd}
-            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600 flex items-center gap-1"
+            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary flex items-center gap-1"
           >
              <Plus size={16} /> 新增采购订单
           </button>
@@ -263,7 +263,7 @@ const GarmentPurchaseOrderPage: React.FC = () => {
               setPage(1);
               fetchList();
             }}
-            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600 flex items-center gap-1"
+            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary flex items-center gap-1"
           >
             <Search size={14} /> 查询
           </button>
@@ -332,7 +332,7 @@ const GarmentPurchaseOrderPage: React.FC = () => {
                       <>
                         <button
                           onClick={() => openEdit(item.id)}
-                          className="text-primary hover:text-blue-600"
+                          className="text-primary hover:text-primary"
                         >编辑</button>
                         <button
                           onClick={() => { void handleDelete(item.id); }}
@@ -349,7 +349,7 @@ const GarmentPurchaseOrderPage: React.FC = () => {
                       <>
                         <button
                           onClick={() => openView(item.id)}
-                          className="text-primary hover:text-blue-600"
+                          className="text-primary hover:text-primary"
                         >查看</button>
                         <button
                           onClick={() => { void handleStatusAction(item.id, 'approve'); }}
@@ -361,7 +361,7 @@ const GarmentPurchaseOrderPage: React.FC = () => {
                       <>
                         <button
                           onClick={() => openView(item.id)}
-                          className="text-primary hover:text-blue-600"
+                          className="text-primary hover:text-primary"
                         >查看</button>
                         <button
                           onClick={() => { void handleStatusAction(item.id, 'unapprove'); }}
@@ -373,7 +373,7 @@ const GarmentPurchaseOrderPage: React.FC = () => {
                       <>
                         <button
                           onClick={() => openView(item.id)}
-                          className="text-primary hover:text-blue-600"
+                          className="text-primary hover:text-primary"
                         >查看</button>
                       </>
                     )}

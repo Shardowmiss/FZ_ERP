@@ -107,7 +107,7 @@ const ThemePage: React.FC = () => {
         {canEdit && (
           <button
             onClick={openCreate}
-            className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600"
+            className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-primary"
           >
             新增主题
           </button>
@@ -158,7 +158,7 @@ const ThemePage: React.FC = () => {
               <td className="px-3 py-2 text-gray-500 max-w-xs truncate">{r.remark ?? '-'}</td>
               {canEdit && (
                 <td className="px-3 py-2 whitespace-nowrap">
-                  <button onClick={() => openEdit(r)} className="text-blue-600 hover:underline mr-3">编辑</button>
+                  <button onClick={() => openEdit(r)} className="text-primary hover:underline mr-3">编辑</button>
                   <button onClick={() => remove(r.id)} className="text-red-600 hover:underline">删除</button>
                 </td>
               )}
@@ -273,7 +273,7 @@ const ThemePage: React.FC = () => {
               </button>
               <button
                 onClick={submit}
-                className="px-4 py-2 bg-primary text-white rounded hover:bg-blue-600"
+                className="px-4 py-2 bg-primary text-white rounded hover:bg-primary"
               >
                 保存
               </button>

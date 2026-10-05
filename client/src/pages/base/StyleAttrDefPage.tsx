@@ -410,7 +410,7 @@ const StyleAttrDefPage: React.FC = () => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-7 w-7 text-primary hover:text-blue-700 hover:bg-blue-50"
+                          className="h-7 w-7 text-primary hover:text-primary/90 hover:bg-blue-50"
                           onClick={() => openEditAttrDef(item)}
                           title="编辑"
                         >
@@ -513,7 +513,7 @@ const StyleAttrDefPage: React.FC = () => {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-primary hover:text-blue-700 hover:bg-blue-50"
+                            className="h-8 w-8 text-primary hover:text-primary/90 hover:bg-blue-50"
                             onClick={() => openEditAttrValue(item)}
                             title="编辑"
                           >

@@ -89,7 +89,7 @@ const ForecastPage: React.FC = () => {
           <button
             onClick={handleForecast}
             disabled={loading}
-            className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50"
+            className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-primary disabled:opacity-50"
           >
             {loading ? '预测中...' : '开始预测'}
           </button>

@@ -148,7 +148,7 @@ const PreOrderSummaryPage: React.FC = () => {
         <h2 className="text-xl font-semibold">预订汇总</h2>
         <div className="text-sm text-gray-500">
           总预订量：
-          <span className="text-blue-600 font-semibold ml-1">
+          <span className="text-primary font-semibold ml-1">
             {grandTotal}
           </span>{' '}
           件
@@ -256,7 +256,7 @@ const PreOrderSummaryPage: React.FC = () => {
                        <td className="px-4 py-3 font-medium">{item.styleNo}</td>
                        <td className="px-4 py-3">{item.styleName}</td>
                        <td className="px-4 py-3 text-gray-500">{item.brand || '-'}</td>
-                      <td className="px-4 py-3 text-right font-semibold text-blue-600">
+                      <td className="px-4 py-3 text-right font-semibold text-primary">
                         {item.totalQty}
                       </td>
                       {allParties.map((p) => {
@@ -342,7 +342,7 @@ const PreOrderSummaryPage: React.FC = () => {
                                               <span
                                                 className={`${
                                                   total > 0
-                                                    ? 'text-blue-600 font-medium'
+                                                    ? 'text-primary font-medium'
                                                     : 'text-gray-400'
                                                 }`}
                                               >
@@ -351,7 +351,7 @@ const PreOrderSummaryPage: React.FC = () => {
                                             </td>
                                           );
                                         })}
-                                        <td className="px-3 py-2 border-b border-gray-200 text-center font-medium text-blue-600 bg-blue-50">
+                                        <td className="px-3 py-2 border-b border-gray-200 text-center font-medium text-primary bg-blue-50">
                                           {rowTotal}
                                         </td>
                                       </tr>
@@ -373,13 +373,13 @@ const PreOrderSummaryPage: React.FC = () => {
                                       return (
                                         <td
                                           key={size}
-                                          className="px-3 py-2 border-t border-r border-gray-200 text-center text-blue-600"
+                                          className="px-3 py-2 border-t border-r border-gray-200 text-center text-primary"
                                         >
                                           {colTotal}
                                         </td>
                                       );
                                     })}
-                                    <td className="px-3 py-2 border-t border-gray-200 text-center text-blue-700 text-base">
+                                    <td className="px-3 py-2 border-t border-gray-200 text-center text-primary/90 text-base">
                                       {skuSummary.items.reduce(
                                         (sum, i) => sum + i.totalQty,
                                         0,

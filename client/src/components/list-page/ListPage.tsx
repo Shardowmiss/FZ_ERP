@@ -148,7 +148,7 @@ const ListPage = function <T>(props: ListPageProps<T>) {
               <button
                 onClick={onAdd}
                 title="快捷键：Enter"
-                className="bg-primary text-white px-4 py-2 text-sm rounded transition-colors hover:bg-blue-600 flex items-center gap-1"
+                className="bg-primary text-white px-4 py-2 text-sm rounded transition-colors hover:bg-primary flex items-center gap-1"
               >
                 <Plus size={16} />
                 {addButtonText ?? '+ 新增'}

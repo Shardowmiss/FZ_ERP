@@ -123,7 +123,7 @@ const MrpPage: React.FC = () => {
           <button
             onClick={() => { void handleCalculate(); }}
             disabled={loading}
-            className="px-5 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600 disabled:opacity-50 flex items-center gap-1"
+            className="px-5 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary disabled:opacity-50 flex items-center gap-1"
           >
             <Calculator size={16} /> 计算
           </button>
@@ -173,7 +173,7 @@ const MrpPage: React.FC = () => {
                       <td className="py-2 px-3 text-right">{it.lossRate}%</td>
                       <td className="py-2 px-3 text-right font-medium text-gray-800">{it.grossDemand.toFixed(3)}</td>
                       <td className="py-2 px-3 text-right">{it.stockQty}</td>
-                      <td className="py-2 px-3 text-right font-medium text-blue-600">{it.netDemand.toFixed(3)}</td>
+                      <td className="py-2 px-3 text-right font-medium text-primary">{it.netDemand.toFixed(3)}</td>
                       <td className="py-2 px-3 text-right font-medium text-orange-600">{it.suggestedPurchaseQty.toFixed(3)}</td>
                     </tr>
                   ))}
@@ -181,21 +181,21 @@ const MrpPage: React.FC = () => {
                 <tfoot>
                   <tr className="bg-gray-50 text-gray-600">
                     <td colSpan={8} className="py-2.5 px-3 font-medium text-right">主料需求合计：</td>
-                    <td className="py-2.5 px-3 font-medium text-right text-blue-600">{sumNetDemand(mainItems).toFixed(3)}</td>
+                    <td className="py-2.5 px-3 font-medium text-right text-primary">{sumNetDemand(mainItems).toFixed(3)}</td>
                     <td className="py-2.5 px-3 font-medium text-right text-orange-600">
                       {mainItems.reduce((s: number, it: MrpResultItem) => s + it.suggestedPurchaseQty, 0).toFixed(3)}
                     </td>
                   </tr>
                   <tr className="bg-gray-50 text-gray-600">
                     <td colSpan={8} className="py-2.5 px-3 font-medium text-right">辅料需求合计：</td>
-                    <td className="py-2.5 px-3 font-medium text-right text-blue-600">{sumNetDemand(auxItems).toFixed(3)}</td>
+                    <td className="py-2.5 px-3 font-medium text-right text-primary">{sumNetDemand(auxItems).toFixed(3)}</td>
                     <td className="py-2.5 px-3 font-medium text-right text-orange-600">
                       {auxItems.reduce((s: number, it: MrpResultItem) => s + it.suggestedPurchaseQty, 0).toFixed(3)}
                     </td>
                   </tr>
                   <tr className="bg-gray-50 text-gray-600">
                     <td colSpan={8} className="py-2.5 px-3 font-medium text-right">包材需求合计：</td>
-                    <td className="py-2.5 px-3 font-medium text-right text-blue-600">{sumNetDemand(pkgItems).toFixed(3)}</td>
+                    <td className="py-2.5 px-3 font-medium text-right text-primary">{sumNetDemand(pkgItems).toFixed(3)}</td>
                     <td className="py-2.5 px-3 font-medium text-right text-orange-600">
                       {pkgItems.reduce((s: number, it: MrpResultItem) => s + it.suggestedPurchaseQty, 0).toFixed(3)}
                     </td>

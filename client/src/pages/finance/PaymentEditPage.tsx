@@ -324,7 +324,7 @@ const PaymentEditPage: React.FC = () => {
           {!viewOnly && (
             <button
               onClick={loadSupplierPayables}
-              className="text-sm text-primary hover:text-blue-600"
+              className="text-sm text-primary hover:text-primary"
             >
               + 添加核销单
             </button>
@@ -457,7 +457,7 @@ const PaymentEditPage: React.FC = () => {
               </button>
               <button
                 onClick={confirmPickPayables}
-                className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600"
+                className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-primary"
               >
                 确定
               </button>

@@ -116,7 +116,7 @@ export function DropZonePanel({
         onDrop={handleZoneDrop}
         className={`min-h-[60px] rounded px-2 py-1.5 border-2 border-dashed transition-colors flex flex-wrap gap-1.5 items-start content-start ${
           isDragOver
-            ? 'border-blue-400 bg-blue-50'
+            ? 'border-primary/70 bg-blue-50'
             : 'border-gray-200 bg-gray-50/50 hover:border-gray-300'
         }`}
       >
@@ -291,7 +291,7 @@ export function ValueDropZonePanel({
                       onChangeAgg(v.key, e.target.value as PivotAggType)
                     }
                     onClick={(e) => e.stopPropagation()}
-                    className="border border-gray-200 rounded px-1 py-0.5 text-xs bg-gray-50 focus:outline-none focus:border-blue-400"
+                    className="border border-gray-200 rounded px-1 py-0.5 text-xs bg-gray-50 focus:outline-none focus:border-primary/70"
                   >
                     {AGG_OPTIONS.map((opt) => (
                       <option key={opt.value} value={opt.value}>

@@ -470,7 +470,7 @@ const GarmentPurchaseInboundEditPage: React.FC = () => {
           </div>
           <div className="text-gray-600">
             总金额：
-            <span className="font-medium text-blue-600 ml-1 text-base">
+            <span className="font-medium text-primary ml-1 text-base">
               ¥ {totals.totalAmount.toFixed(2)}
             </span>
           </div>

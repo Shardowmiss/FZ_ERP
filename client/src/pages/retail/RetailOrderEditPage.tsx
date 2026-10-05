@@ -507,7 +507,7 @@ export default function RetailOrderEditPage() {
                 </select>
                 <button
                   onClick={addStyleBlock}
-                  className="bg-primary text-white px-3 py-1.5 rounded text-sm hover:bg-blue-600 inline-flex items-center gap-1"
+                  className="bg-primary text-white px-3 py-1.5 rounded text-sm hover:bg-primary inline-flex items-center gap-1"
                 >
                   <Plus size={14} /> 添加
                 </button>
@@ -539,8 +539,8 @@ export default function RetailOrderEditPage() {
         <div className="px-4 py-2 border-t border-gray-200 bg-gray-50 flex items-center justify-between text-sm">
           <span className="text-gray-500">合计：</span>
           <div className="flex items-center gap-4">
-            <span>共 <span className="font-semibold text-blue-600">{blockTotals.totalQty}</span> 件</span>
-            <span className="font-semibold text-blue-600 text-base">
+            <span>共 <span className="font-semibold text-primary">{blockTotals.totalQty}</span> 件</span>
+            <span className="font-semibold text-primary text-base">
               ¥{blockTotals.totalAmount.toFixed(2)}
             </span>
           </div>
@@ -601,7 +601,7 @@ export default function RetailOrderEditPage() {
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-500">应收金额：</span>
-            <span className="font-semibold text-lg text-blue-600">¥{totals.totalAmount.toFixed(2)}</span>
+            <span className="font-semibold text-lg text-primary">¥{totals.totalAmount.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-500">实收金额：</span>

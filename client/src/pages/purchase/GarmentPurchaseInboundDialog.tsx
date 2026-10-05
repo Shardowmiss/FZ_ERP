@@ -453,7 +453,7 @@ const GarmentPurchaseInboundDialog: React.FC<GarmentPurchaseInboundDialogProps> 
                   </div>
                   <div className="text-gray-600">
                     总金额：
-                    <span className="font-medium text-blue-600 ml-1 text-base">
+                    <span className="font-medium text-primary ml-1 text-base">
                       ¥ {totals.totalAmount.toFixed(2)}
                     </span>
                   </div>
@@ -471,7 +471,7 @@ const GarmentPurchaseInboundDialog: React.FC<GarmentPurchaseInboundDialogProps> 
             <button
               onClick={handleSave}
               disabled={saving}
-              className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50"
+              className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-primary disabled:opacity-50"
             >保存</button>
           )}
         </div>

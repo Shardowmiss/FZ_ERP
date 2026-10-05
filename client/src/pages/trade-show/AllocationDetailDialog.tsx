@@ -179,7 +179,7 @@ const AllocationDetailDialog: React.FC<AllocationDetailDialogProps> = ({
             {renderStatus(order.status)}
             {onPrint && (
               <button
-                className="text-primary hover:text-blue-600 text-sm flex items-center gap-1 ml-2"
+                className="text-primary hover:text-primary text-sm flex items-center gap-1 ml-2"
                 onClick={onPrint}
               >
                 <Printer size={14} />
@@ -212,7 +212,7 @@ const AllocationDetailDialog: React.FC<AllocationDetailDialogProps> = ({
           </div>
           <div>
             <span className="text-gray-500">总到货量：</span>
-            <span className="font-semibold text-blue-600">
+            <span className="font-semibold text-primary">
               {order.totalArrivedQty}
             </span>
           </div>
@@ -249,7 +249,7 @@ const AllocationDetailDialog: React.FC<AllocationDetailDialogProps> = ({
               </div>
               <div>
                 <span className="text-gray-500">总到货量：</span>
-                <span className="font-medium text-blue-600">
+                <span className="font-medium text-primary">
                   {order.totalArrivedQty}
                 </span>
               </div>
@@ -286,7 +286,7 @@ const AllocationDetailDialog: React.FC<AllocationDetailDialogProps> = ({
               {!isApproved && !detailEditing && (
                 <>
                   <button
-                    className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
+                    className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors"
                     onClick={() => setDetailEditing(true)}
                     data-ai-section-type="button"
                   >
@@ -311,7 +311,7 @@ const AllocationDetailDialog: React.FC<AllocationDetailDialogProps> = ({
                     取消
                   </button>
                   <button
-                    className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors disabled:opacity-50"
+                    className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors disabled:opacity-50"
                     onClick={handleSave}
                     disabled={saving}
                   >

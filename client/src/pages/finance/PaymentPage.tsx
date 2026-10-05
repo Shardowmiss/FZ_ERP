@@ -164,7 +164,7 @@ const PaymentPage: React.FC = () => {
           <h1 className="text-xl font-semibold text-gray-800">付款单</h1>
           <button
             onClick={openAdd}
-            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600 flex items-center gap-1"
+            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary flex items-center gap-1"
           >
             <Plus size={16} /> 新增付款单
           </button>
@@ -226,7 +226,7 @@ const PaymentPage: React.FC = () => {
           </div>
           <button
             onClick={handleSearch}
-            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600 flex items-center gap-1"
+            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary flex items-center gap-1"
           >
             <Search size={14} /> 查询
           </button>
@@ -274,14 +274,14 @@ const PaymentPage: React.FC = () => {
                     <td className="py-2 px-4 space-x-2">
                       {item.status === 'draft' && (
                         <>
-                          <button onClick={() => navigate(`/finance/payment/${item.id}/edit`)} className="text-primary hover:text-blue-600">编辑</button>
+                          <button onClick={() => navigate(`/finance/payment/${item.id}/edit`)} className="text-primary hover:text-primary">编辑</button>
                           <button onClick={() => handleApprove(item.id)} className="text-green-500 hover:text-green-600">审核</button>
                           <button onClick={() => handleDelete(item.id)} className="text-red-500 hover:text-red-600">删除</button>
                                                 <button onClick={() => handleVoid(item.id)} className="text-red-500 hover:text-red-600">作废</button>
 </>
                       )}
                       {item.status === 'approved' && (
-                        <button onClick={() => openView(item.id)} className="text-primary hover:text-blue-600">查看</button>
+                        <button onClick={() => openView(item.id)} className="text-primary hover:text-primary">查看</button>
                       )}
                     </td>
                   </tr>

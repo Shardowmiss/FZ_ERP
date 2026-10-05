@@ -58,7 +58,7 @@ const PurchaseInboundModal: React.FC<InboundModalProps> = ({
           </span>
           <div className="flex items-center gap-2">
             {viewOnly && (
-              <button onClick={onPrint} className="text-primary hover:text-blue-600 text-sm flex items-center gap-1">
+              <button onClick={onPrint} className="text-primary hover:text-primary text-sm flex items-center gap-1">
                 <Printer size={14} /> 打印
               </button>
             )}
@@ -162,7 +162,7 @@ const PurchaseInboundModal: React.FC<InboundModalProps> = ({
                         )}
                       </td>
                       <td className="py-1.5 px-2 text-right text-gray-500">{item.price.toFixed(2)}</td>
-                      <td className="py-1.5 px-2 text-right font-medium text-blue-600">
+                      <td className="py-1.5 px-2 text-right font-medium text-primary">
                         {(item.quantity * item.price).toFixed(2)}
                       </td>
                       <td className="py-1.5 px-2">
@@ -197,7 +197,7 @@ const PurchaseInboundModal: React.FC<InboundModalProps> = ({
             <button
               onClick={onSave}
               disabled={submitting}
-              className="px-4 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >{submitting ? '保存中...' : '保存'}</button>
           )}
         </div>

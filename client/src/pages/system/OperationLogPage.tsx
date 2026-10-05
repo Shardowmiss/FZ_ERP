@@ -184,7 +184,7 @@ const OperationLogPage: React.FC = () => {
           </div>
           <button
             onClick={handleSearch}
-            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600 flex items-center gap-1"
+            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary flex items-center gap-1"
           >
             <Search size={14} /> 查询
           </button>
@@ -223,7 +223,7 @@ const OperationLogPage: React.FC = () => {
                     <td className="py-2 px-4 text-gray-800">{item.userName ?? item.userId ?? '-'}</td>
                     <td className="py-2 px-4 text-gray-600">{getModuleLabel(item.module)}</td>
                     <td className="py-2 px-4">
-                      <span className="px-2 py-0.5 rounded text-xs bg-blue-50 text-blue-600">
+                      <span className="px-2 py-0.5 rounded text-xs bg-blue-50 text-primary">
                         {getTypeLabel(item.operationType)}
                       </span>
                     </td>

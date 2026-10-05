@@ -119,7 +119,7 @@ const SizePage: React.FC = () => {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold">尺码管理</h2>
         <button
-          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
+          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors"
           onClick={openAdd}
         >
           + 新增尺码
@@ -135,7 +135,7 @@ const SizePage: React.FC = () => {
           className="px-3 py-2 border border-gray-300 rounded text-sm w-60 focus:outline-none focus:border-primary"
         />
         <button
-          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
+          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors"
           onClick={handleSearch}
         >
           查询
@@ -176,7 +176,7 @@ const SizePage: React.FC = () => {
                   <td className="px-4 py-3 text-gray-600">{item.remark || '-'}</td>
                   <td className="px-4 py-3 text-gray-500">{item.createdAt?.replace('T', ' ').slice(0, 19) || '-'}</td>
                   <td className="px-4 py-3">
-                    <button className="text-primary hover:text-blue-700 mr-3" onClick={() => openEdit(item)}>编辑</button>
+                    <button className="text-primary hover:text-primary/90 mr-3" onClick={() => openEdit(item)}>编辑</button>
                     <button className="text-red-500 hover:text-red-700" onClick={() => handleDelete(item.id)}>删除</button>
                   </td>
                 </tr>
@@ -262,7 +262,7 @@ const SizePage: React.FC = () => {
                 取消
               </button>
               <button
-                className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleSave}
                 disabled={submitting}
               >

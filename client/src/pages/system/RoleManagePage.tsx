@@ -246,7 +246,7 @@ const RoleManagePage: React.FC = () => {
                     <div className="flex items-center gap-3">
                       <button
                         onClick={() => openEdit(item.id)}
-                        className="text-primary hover:text-blue-600"
+                        className="text-primary hover:text-primary"
                       >
                         编辑
                       </button>

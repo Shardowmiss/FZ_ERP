@@ -249,7 +249,7 @@ const BomPage: React.FC = () => {
           </button>
           <button
             onClick={openAdd}
-            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600 flex items-center gap-1"
+            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary flex items-center gap-1"
           >
             <Plus size={16} /> + 新增BOM
           </button>
@@ -301,7 +301,7 @@ const BomPage: React.FC = () => {
                   </td>
                   <td className="py-2 px-4 text-gray-500">{item.createdAt || '-'}</td>
                   <td className="py-2 px-4">
-                    <button onClick={() => openEdit(item.id)} className="text-primary hover:text-blue-600 mr-3">编辑</button>
+                    <button onClick={() => openEdit(item.id)} className="text-primary hover:text-primary mr-3">编辑</button>
                     <button onClick={() => handleDelete(item.id)} className="text-red-500 hover:text-red-600 mr-3">删除</button>
                     <button
                       onClick={async () => {
@@ -375,7 +375,7 @@ const BomPage: React.FC = () => {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-sm text-gray-600 font-medium">BOM明细</label>
-                  <button onClick={handleAddRow} className="text-sm text-primary hover:text-blue-600">+ 添加行</button>
+                  <button onClick={handleAddRow} className="text-sm text-primary hover:text-primary">+ 添加行</button>
                 </div>
                 <table className="w-full text-sm border border-gray-200">
                   <thead>
@@ -445,7 +445,7 @@ const BomPage: React.FC = () => {
             </div>
             <div className="px-5 py-3 border-t border-gray-200 flex justify-end gap-2">
               <button onClick={() => setShowModal(false)} className="px-4 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50">取消</button>
-              <button onClick={handleSubmit} className="px-4 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600">保存</button>
+              <button onClick={handleSubmit} className="px-4 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary">保存</button>
             </div>
           </div>
         </div>
@@ -472,7 +472,7 @@ const BomPage: React.FC = () => {
                     <option key={s.id} value={s.id}>{s.styleNo} - {s.name}</option>
                   ))}
                 </select>
-                <button onClick={runCostSim} className="px-4 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600">模拟</button>
+                <button onClick={runCostSim} className="px-4 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary">模拟</button>
               </div>
               {costResult && (
                 <>
@@ -503,7 +503,7 @@ const BomPage: React.FC = () => {
                           <td className="py-1.5 px-2 text-right">{it.lossRate}%</td>
                           <td className="py-1.5 px-2 text-right">{it.grossUsage.toFixed(3)}</td>
                           <td className="py-1.5 px-2 text-right">{it.unitPrice.toFixed(2)}</td>
-                          <td className="py-1.5 px-2 text-right text-blue-600 font-medium">{it.cost.toFixed(2)}</td>
+                          <td className="py-1.5 px-2 text-right text-primary font-medium">{it.cost.toFixed(2)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -515,7 +515,7 @@ const BomPage: React.FC = () => {
               )}
             </div>
             <div className="px-5 py-3 border-t border-gray-200 flex justify-end">
-              <button onClick={() => setShowCostModal(false)} className="px-4 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600">关闭</button>
+              <button onClick={() => setShowCostModal(false)} className="px-4 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary">关闭</button>
             </div>
           </div>
         </div>

@@ -170,11 +170,11 @@ const GarmentSkuMatrixTable: React.FC<GarmentSkuMatrixTableProps> = ({
                     </React.Fragment>
                   );
                 })}
-                <td className="px-3 py-2 border-b border-r border-gray-200 text-center font-medium text-blue-600 bg-blue-50">
+                <td className="px-3 py-2 border-b border-r border-gray-200 text-center font-medium text-primary bg-blue-50">
                   {rowQty}
                 </td>
                 {showPrice && (
-                  <td className="px-3 py-2 border-b border-gray-200 text-center font-medium text-blue-600 bg-blue-50">
+                  <td className="px-3 py-2 border-b border-gray-200 text-center font-medium text-primary bg-blue-50">
                     ¥{rowAmount.toFixed(2)}
                   </td>
                 )}
@@ -199,22 +199,22 @@ const GarmentSkuMatrixTable: React.FC<GarmentSkuMatrixTableProps> = ({
               }
               return (
                 <React.Fragment key={size}>
-                  <td className="px-3 py-2 border-t border-r border-gray-200 text-center text-blue-600">
+                  <td className="px-3 py-2 border-t border-r border-gray-200 text-center text-primary">
                     {colQty}
                   </td>
                   {showPrice && (
-                    <td className="px-3 py-2 border-t border-r border-gray-200 text-center text-blue-600 text-xs">
+                    <td className="px-3 py-2 border-t border-r border-gray-200 text-center text-primary text-xs">
                       ¥{colAmount.toFixed(2)}
                     </td>
                   )}
                 </React.Fragment>
               );
             })}
-            <td className="px-3 py-2 border-t border-r border-gray-200 text-center text-blue-700 text-base">
+            <td className="px-3 py-2 border-t border-r border-gray-200 text-center text-primary/90 text-base">
               {totals.totalQty}
             </td>
             {showPrice && (
-              <td className="px-3 py-2 border-t border-gray-200 text-center text-blue-700 text-base">
+              <td className="px-3 py-2 border-t border-gray-200 text-center text-primary/90 text-base">
                 ¥{totals.totalAmount.toFixed(2)}
               </td>
             )}

@@ -162,7 +162,7 @@ export function PivotTable({
           >
             <td
               colSpan={rowFieldCount}
-              className="px-3 text-right whitespace-nowrap border-r border-blue-400"
+              className="px-3 text-right whitespace-nowrap border-r border-primary/70"
             >
               总计
             </td>
@@ -171,7 +171,7 @@ export function PivotTable({
               return (
                 <td
                   key={colKey}
-                  className="px-3 text-right whitespace-nowrap border-r border-blue-400 tabular-nums"
+                  className="px-3 text-right whitespace-nowrap border-r border-primary/70 tabular-nums"
                 >
                   {cell ? formatNumber(cell.value) : '-'}
                 </td>

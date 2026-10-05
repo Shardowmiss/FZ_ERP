@@ -283,7 +283,7 @@ export const AutoCreateForm = forwardRef<AutoCreateFormHandle, AutoCreateFormPro
             <h4 className="text-sm font-medium text-gray-700 mb-3">款号预览</h4>
             <div className="text-center py-4 bg-white rounded border border-gray-200 mb-3">
               {canPreview ? (
-                <div className="text-2xl font-bold text-blue-600 tracking-wider">
+                <div className="text-2xl font-bold text-primary tracking-wider">
                   {loading ? '生成中...' : (preview?.styleNo || '---')}
                 </div>
               ) : (

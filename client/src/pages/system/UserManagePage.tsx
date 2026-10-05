@@ -216,7 +216,7 @@ const UserManagePage: React.FC = () => {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold">用户管理</h2>
         <button
-          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
+          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors"
           onClick={openAdd}
         >
           新增用户
@@ -241,7 +241,7 @@ const UserManagePage: React.FC = () => {
           <option value="inactive">禁用</option>
         </select>
         <button
-          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
+          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors"
           onClick={handleSearch}
         >
           搜索
@@ -293,7 +293,7 @@ const UserManagePage: React.FC = () => {
                   </td>
                   <td className="px-4 py-3">
                     <button
-                      className="text-primary hover:text-blue-700 mr-3"
+                      className="text-primary hover:text-primary/90 mr-3"
                       onClick={() => openEdit(item)}
                     >
                       编辑
@@ -495,7 +495,7 @@ const UserManagePage: React.FC = () => {
                 取消
               </button>
               <button
-                className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleSave}
                 disabled={submitting}
               >

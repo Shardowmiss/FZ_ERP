@@ -250,10 +250,10 @@ export default function StockMovementPage() {
                 <td className="px-3 text-right font-medium text-orange-500">
                   {formatQty(summary.transferNetQty)}
                 </td>
-                <td className="px-3 text-right font-medium text-blue-600">
+                <td className="px-3 text-right font-medium text-primary">
                   {formatQty(summary.endQty)}
                 </td>
-                <td className="px-3 text-right font-medium text-blue-600">
+                <td className="px-3 text-right font-medium text-primary">
                   {formatAmount(summary.endAmount)}
                 </td>
               </tr>

@@ -453,7 +453,7 @@ const GarmentPurchaseOrderEditPage: React.FC = () => {
           <button
             onClick={handleAddStyle}
             disabled={loadingStyleId !== ''}
-            className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50 flex items-center gap-1"
+            className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-primary disabled:opacity-50 flex items-center gap-1"
           >
             <Plus size={16} /> 添加
           </button>
@@ -510,7 +510,7 @@ const GarmentPurchaseOrderEditPage: React.FC = () => {
           </div>
           <div className="text-gray-600">
             总金额：
-            <span className="font-medium text-blue-600 ml-1 text-base">
+            <span className="font-medium text-primary ml-1 text-base">
               ¥ {totals.totalAmount.toFixed(2)}
             </span>
           </div>

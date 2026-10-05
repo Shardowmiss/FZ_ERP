@@ -104,7 +104,7 @@ const SizeGroupRelationPage: React.FC = () => {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold">尺码组与尺码关系</h2>
         <button
-          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={() => setAddOpen(true)}
           disabled={!selectedGroupId}
         >
@@ -129,7 +129,7 @@ const SizeGroupRelationPage: React.FC = () => {
                   key={g.id}
                   onClick={() => setSelectedGroupId(g.id)}
                   className={`px-3 py-2 text-sm cursor-pointer border-b border-gray-100 ${
-                    selectedGroupId === g.id ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-50'
+                    selectedGroupId === g.id ? 'bg-blue-50 text-primary' : 'hover:bg-gray-50'
                   }`}
                 >
                   <div className="font-medium">{g.name}</div>
@@ -212,7 +212,7 @@ const SizeGroupRelationPage: React.FC = () => {
                 取消
               </button>
               <button
-                className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleAdd}
                 disabled={availableOptions.length === 0 || !selectedSizeId}
               >

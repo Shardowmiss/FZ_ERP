@@ -229,7 +229,7 @@ export default function SalesReportPage() {
                 <td className="px-3 text-right font-medium text-orange-600">
                   {formatAmount(summary.totalDiscount)}
                 </td>
-                <td className="px-3 text-right font-medium text-blue-600">
+                <td className="px-3 text-right font-medium text-primary">
                   {formatAmount(summary.totalAmount)}
                 </td>
                 <td colSpan={3}></td>

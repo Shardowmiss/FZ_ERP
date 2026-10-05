@@ -196,7 +196,7 @@ export default function WorkOrderPage() {
           <h1 className="text-xl font-semibold">生产工单</h1>
           <button
             onClick={openCreate}
-            className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-blue-600 flex items-center gap-1"
+            className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-primary flex items-center gap-1"
           >
             <Plus size={16} /> 新增工单
           </button>
@@ -250,7 +250,7 @@ export default function WorkOrderPage() {
           </div>
           <button
             onClick={handleSearch}
-            className="bg-primary text-white px-4 py-1.5 rounded text-sm hover:bg-blue-600 flex items-center gap-1"
+            className="bg-primary text-white px-4 py-1.5 rounded text-sm hover:bg-primary flex items-center gap-1"
           >
             <Search size={14} /> 查询
           </button>

@@ -231,7 +231,7 @@ export default function PricingPage() {
             key={t.key}
             className={`flex items-center gap-1 px-4 py-2 -mb-px border-b-2 ${
               tab === t.key
-                ? 'border-blue-600 text-blue-600'
+                ? 'border-primary text-primary'
                 : 'border-transparent text-gray-500'
             }`}
             onClick={() => setTab(t.key)}
@@ -257,7 +257,7 @@ export default function PricingPage() {
                 </select>
                 <input className="border rounded px-2 py-1.5" placeholder="适用对象ID(可选)" value={plForm.scopeId} onChange={(e) => setPlForm({ ...plForm, scopeId: e.target.value })} />
                 <input className="border rounded px-2 py-1.5" placeholder="优先级" type="number" value={plForm.priority} onChange={(e) => setPlForm({ ...plForm, priority: e.target.value })} />
-                <button className="flex items-center justify-center gap-1 bg-blue-600 text-white rounded px-2" onClick={createPriceList}>
+                <button className="flex items-center justify-center gap-1 bg-primary text-white rounded px-2" onClick={createPriceList}>
                   <Plus className="w-4 h-4" /> 创建
                 </button>
               </div>
@@ -304,7 +304,7 @@ export default function PricingPage() {
                 <input className="border rounded px-2 py-1.5" placeholder="款号" value={itemForm.styleNo} onChange={(e) => setItemForm({ ...itemForm, styleNo: e.target.value })} />
                 <input className="border rounded px-2 py-1.5" placeholder="吊牌价" type="number" value={itemForm.tagPrice} onChange={(e) => setItemForm({ ...itemForm, tagPrice: e.target.value })} />
                 <input className="border rounded px-2 py-1.5" placeholder="售价" type="number" value={itemForm.price} onChange={(e) => setItemForm({ ...itemForm, price: e.target.value })} />
-                <button className="flex items-center justify-center gap-1 bg-blue-600 text-white rounded px-2 col-span-2" onClick={addPlItem}>
+                <button className="flex items-center justify-center gap-1 bg-primary text-white rounded px-2 col-span-2" onClick={addPlItem}>
                   <Plus className="w-4 h-4" /> 添加明细
                 </button>
               </div>
@@ -353,7 +353,7 @@ export default function PricingPage() {
               <input className="border rounded px-2 py-1.5" placeholder="折扣率(0~1)" type="number" step="0.01" value={promoForm.discountRate} onChange={(e) => setPromoForm({ ...promoForm, discountRate: e.target.value })} />
               <input className="border rounded px-2 py-1.5" type="date" value={promoForm.beginDate} onChange={(e) => setPromoForm({ ...promoForm, beginDate: e.target.value })} />
               <input className="border rounded px-2 py-1.5" type="date" value={promoForm.endDate} onChange={(e) => setPromoForm({ ...promoForm, endDate: e.target.value })} />
-              <button className="flex items-center justify-center gap-1 bg-blue-600 text-white rounded px-2" onClick={createPromotion}>
+              <button className="flex items-center justify-center gap-1 bg-primary text-white rounded px-2" onClick={createPromotion}>
                 <Plus className="w-4 h-4" /> 创建
               </button>
             </div>
@@ -405,7 +405,7 @@ export default function PricingPage() {
               <input className="border rounded px-2 py-1.5" placeholder="面额/减免" type="number" value={couponForm.value} onChange={(e) => setCouponForm({ ...couponForm, value: e.target.value })} />
               <input className="border rounded px-2 py-1.5" placeholder="折扣率(0~1)" type="number" step="0.01" value={couponForm.discountRate} onChange={(e) => setCouponForm({ ...couponForm, discountRate: e.target.value })} />
               <input className="border rounded px-2 py-1.5" placeholder="最低消费" type="number" value={couponForm.minSpend} onChange={(e) => setCouponForm({ ...couponForm, minSpend: e.target.value })} />
-              <button className="flex items-center justify-center gap-1 bg-blue-600 text-white rounded px-2" onClick={createCoupon}>
+              <button className="flex items-center justify-center gap-1 bg-primary text-white rounded px-2" onClick={createCoupon}>
                 <Plus className="w-4 h-4" /> 创建
               </button>
             </div>

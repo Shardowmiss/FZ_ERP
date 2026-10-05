@@ -332,7 +332,7 @@ const PurchaseReturnEditPage: React.FC = () => {
           <tfoot>
             <tr className="border-t-2 border-gray-300 bg-gray-50 font-medium">
               <td colSpan={4} className="px-3 py-2 text-right">合计：</td>
-              <td className="px-3 py-2 text-right text-blue-700">¥{totalAmount.toFixed(2)}</td>
+              <td className="px-3 py-2 text-right text-primary/90">¥{totalAmount.toFixed(2)}</td>
             </tr>
           </tfoot>
         </table>
@@ -373,7 +373,7 @@ const PurchaseReturnEditPage: React.FC = () => {
           <tfoot>
             <tr className="border-t-2 border-gray-300 bg-gray-50 font-medium">
               <td colSpan={5} className="px-3 py-2 text-right">合计：</td>
-              <td className="px-3 py-2 text-right text-blue-700">¥{totalAmount.toFixed(2)}</td>
+              <td className="px-3 py-2 text-right text-primary/90">¥{totalAmount.toFixed(2)}</td>
             </tr>
           </tfoot>
         </table>

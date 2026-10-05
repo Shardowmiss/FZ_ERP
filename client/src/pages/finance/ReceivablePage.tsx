@@ -222,7 +222,7 @@ const ReceivablePage: React.FC = () => {
         </select>
         <button
           onClick={handleSearch}
-          className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600"
+          className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-primary"
         >
           查询
         </button>
@@ -280,7 +280,7 @@ const ReceivablePage: React.FC = () => {
                     <td className="px-4 py-3 text-center">
                       <button
                         onClick={() => handleViewDetail(item)}
-                        className="text-primary hover:text-blue-600 mr-3"
+                        className="text-primary hover:text-primary mr-3"
                       >
                         查看/收款
                       </button>
@@ -358,7 +358,7 @@ const ReceivablePage: React.FC = () => {
               {currentItem.status !== 'paid' && (
                 <button
                   onClick={openPaymentModal}
-                  className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600"
+                  className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-primary"
                 >
                   收款核销
                 </button>
@@ -434,7 +434,7 @@ const ReceivablePage: React.FC = () => {
               <button
                 onClick={handlePayment}
                 disabled={submitting}
-                className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-primary disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {submitting ? '收款中...' : '确认收款'}
               </button>

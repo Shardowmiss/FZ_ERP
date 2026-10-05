@@ -225,7 +225,7 @@ const PreOrderDialog: React.FC<PreOrderDialogProps> = ({
             </h3>
             {viewMode && onPrint && (
               <button
-                className="text-primary hover:text-blue-600 text-sm flex items-center gap-1"
+                className="text-primary hover:text-primary text-sm flex items-center gap-1"
                 onClick={onPrint}
               >
                 <Printer size={14} />
@@ -330,7 +330,7 @@ const PreOrderDialog: React.FC<PreOrderDialogProps> = ({
               <label className="text-sm text-gray-700 font-medium">
                 SKU 预订矩阵
               </label>
-              <span className="text-sm text-blue-600 font-medium">
+              <span className="text-sm text-primary font-medium">
                 合计：{totalQty} 件
               </span>
             </div>
@@ -366,7 +366,7 @@ const PreOrderDialog: React.FC<PreOrderDialogProps> = ({
           </button>
           {!viewMode && (
             <button
-              className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors disabled:opacity-50"
+              className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors disabled:opacity-50"
               onClick={handleSave}
               disabled={saving}
             >

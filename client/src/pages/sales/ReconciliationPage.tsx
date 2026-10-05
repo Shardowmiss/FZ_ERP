@@ -186,7 +186,7 @@ const SalesReconciliationPage: React.FC = () => {
           <h1 className="text-xl font-semibold text-gray-800">销售对账</h1>
           <button
             onClick={openAdd}
-            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600 flex items-center gap-1"
+            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary flex items-center gap-1"
           >
             <Plus size={16} /> 新建对账
           </button>
@@ -235,7 +235,7 @@ const SalesReconciliationPage: React.FC = () => {
           </div>
           <button
             onClick={handleSearch}
-            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600 flex items-center gap-1"
+            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary flex items-center gap-1"
           >
             <Search size={14} /> 查询
           </button>
@@ -276,14 +276,14 @@ const SalesReconciliationPage: React.FC = () => {
                     <td className="py-2 px-4">
                       {formatDate(item.startDate)} ~ {formatDate(item.endDate)}
                     </td>
-                    <td className="py-2 px-4 text-right text-blue-600">¥ {item.outboundAmount.toFixed(2)}</td>
+                    <td className="py-2 px-4 text-right text-primary">¥ {item.outboundAmount.toFixed(2)}</td>
                     <td className="py-2 px-4 text-right text-orange-500">-¥ {item.returnAmount.toFixed(2)}</td>
                     <td className="py-2 px-4 text-right font-medium text-gray-800">¥ {item.totalAmount.toFixed(2)}</td>
                     <td className="py-2 px-4">
                       <StatusBadge tone={statusColor[item.status] ?? 'neutral'}>{statusLabel[item.status] ?? item.status}</StatusBadge>
                     </td>
                     <td className="py-2 px-4 space-x-2">
-                      <button onClick={() => openView(item.id)} className="text-primary hover:text-blue-600">查看</button>
+                      <button onClick={() => openView(item.id)} className="text-primary hover:text-primary">查看</button>
                     </td>
                   </tr>
                 ))
@@ -346,7 +346,7 @@ const SalesReconciliationPage: React.FC = () => {
                 <button
                   onClick={handlePreview}
                   disabled={previewLoading}
-                  className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {previewLoading ? '计算中...' : '预览'}
                 </button>
@@ -357,7 +357,7 @@ const SalesReconciliationPage: React.FC = () => {
                   <div className="grid grid-cols-3 gap-4">
                     <div className="bg-blue-50 border border-blue-200 rounded p-4 text-center">
                       <div className="text-sm text-gray-600 mb-1">出库金额合计</div>
-                      <div className="text-xl font-semibold text-blue-600">¥ {previewData.outboundAmount.toFixed(2)}</div>
+                      <div className="text-xl font-semibold text-primary">¥ {previewData.outboundAmount.toFixed(2)}</div>
                     </div>
                     <div className="bg-orange-50 border border-orange-200 rounded p-4 text-center">
                       <div className="text-sm text-gray-600 mb-1">退货金额合计</div>
@@ -375,7 +375,7 @@ const SalesReconciliationPage: React.FC = () => {
                         onClick={() => setPreviewTab('outbound')}
                         className={`px-4 py-2 text-sm border-b-2 -mb-px ${
                           previewTab === 'outbound'
-                            ? 'border-primary text-blue-600 font-medium'
+                            ? 'border-primary text-primary font-medium'
                             : 'border-transparent text-gray-600 hover:text-gray-800'
                         }`}
                       >
@@ -385,7 +385,7 @@ const SalesReconciliationPage: React.FC = () => {
                         onClick={() => setPreviewTab('return')}
                         className={`px-4 py-2 text-sm border-b-2 -mb-px ${
                           previewTab === 'return'
-                            ? 'border-primary text-blue-600 font-medium'
+                            ? 'border-primary text-primary font-medium'
                             : 'border-transparent text-gray-600 hover:text-gray-800'
                         }`}
                       >
@@ -453,7 +453,7 @@ const SalesReconciliationPage: React.FC = () => {
               <button
                 onClick={handleConfirm}
                 disabled={submitting || !previewData}
-                className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-primary disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {submitting ? '确认中...' : '确认对账'}
               </button>

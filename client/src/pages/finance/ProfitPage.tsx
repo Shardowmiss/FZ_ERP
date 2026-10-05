@@ -134,7 +134,7 @@ const ProfitPage: React.FC = () => {
         <button
           onClick={handleAnalyze}
           disabled={!selectedOrderId || analyzing}
-          className="px-6 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-6 py-2 bg-primary text-white rounded text-sm hover:bg-primary disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {analyzing ? '分析中...' : '开始分析'}
         </button>
@@ -151,8 +151,8 @@ const ProfitPage: React.FC = () => {
         <div className="space-y-6">
           <div className="grid grid-cols-4 gap-4">
             <div className="p-4 bg-blue-50 rounded-lg">
-              <div className="text-sm text-blue-600 mb-1">销售金额</div>
-              <div className="text-2xl font-semibold text-blue-700">¥{analysis.salesAmount.toFixed(2)}</div>
+              <div className="text-sm text-primary mb-1">销售金额</div>
+              <div className="text-2xl font-semibold text-primary/90">¥{analysis.salesAmount.toFixed(2)}</div>
             </div>
             <div className="p-4 bg-orange-50 rounded-lg">
               <div className="text-sm text-orange-600 mb-1">总成本</div>
@@ -231,7 +231,7 @@ const ProfitPage: React.FC = () => {
                         {analysis.items?.reduce((sum, s) => sum + s.quantity, 0).toFixed(0) || 0}
                       </td>
                       <td className="px-3 py-2"></td>
-                      <td className="px-3 py-2 text-right text-blue-700">¥{analysis.salesAmount.toFixed(2)}</td>
+                      <td className="px-3 py-2 text-right text-primary/90">¥{analysis.salesAmount.toFixed(2)}</td>
                       <td className="px-3 py-2"></td>
                       <td className="px-3 py-2 text-right text-orange-700">¥{analysis.outboundCost.toFixed(2)}</td>
                       <td className="px-3 py-2"></td>

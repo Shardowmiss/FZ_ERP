@@ -87,12 +87,12 @@ const ProductionCostPage: React.FC = () => {
             <td className="py-2 px-3 text-right">{it.lossRate}%</td>
             <td className="py-2 px-3 text-right">{it.unitCost.toFixed(4)}</td>
             <td className="py-2 px-3 text-right font-medium text-gray-700">{it.perPieceCost.toFixed(4)}</td>
-            <td className="py-2 px-3 text-right font-medium text-blue-600">{it.totalCost.toFixed(2)}</td>
+            <td className="py-2 px-3 text-right font-medium text-primary">{it.totalCost.toFixed(2)}</td>
           </tr>
         ))}
         <tr className="bg-gray-50 text-gray-600">
           <td colSpan={8} className="py-2 px-3 font-medium text-right text-sm">小计：</td>
-          <td className="py-2 px-3 font-medium text-right text-blue-600">¥ {groupTotal.toFixed(2)}</td>
+          <td className="py-2 px-3 font-medium text-right text-primary">¥ {groupTotal.toFixed(2)}</td>
         </tr>
       </>
     );
@@ -145,7 +145,7 @@ const ProductionCostPage: React.FC = () => {
           <button
             onClick={() => { void handleCalculate(); }}
             disabled={loading}
-            className="px-5 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600 disabled:opacity-50 flex items-center gap-1"
+            className="px-5 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary disabled:opacity-50 flex items-center gap-1"
           >
             <Calculator size={16} /> 核算
           </button>
@@ -158,7 +158,7 @@ const ProductionCostPage: React.FC = () => {
           <div className="grid grid-cols-5 gap-4" data-ai-section-type="card-stat">
             <div className="bg-white rounded-lg shadow-sm p-5">
               <div className="text-sm text-gray-500 mb-1">主料成本</div>
-              <div className="text-2xl font-semibold text-blue-600">¥ {result.mainMaterialCost.toFixed(2)}</div>
+              <div className="text-2xl font-semibold text-primary">¥ {result.mainMaterialCost.toFixed(2)}</div>
             </div>
             <div className="bg-white rounded-lg shadow-sm p-5">
               <div className="text-sm text-gray-500 mb-1">辅料成本</div>

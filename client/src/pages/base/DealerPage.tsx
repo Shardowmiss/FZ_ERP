@@ -150,7 +150,7 @@ const DealerPage: React.FC = () => {
             <Download size={16} /> 导出
           </button>
           <button
-            className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
+            className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors"
             onClick={openAdd}
           >
             + 新增经销商
@@ -176,7 +176,7 @@ const DealerPage: React.FC = () => {
           <option value="inactive">已终止</option>
         </select>
         <button
-          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
+          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors"
           onClick={handleSearch}
         >
           查询
@@ -219,7 +219,7 @@ const DealerPage: React.FC = () => {
                   <td className="px-4 py-3 text-gray-600">{item.address || '-'}</td>
                   <td className="px-4 py-3">{renderStatus(item.status)}</td>
                   <td className="px-4 py-3">
-                    <button className="text-primary hover:text-blue-700 mr-3" onClick={() => openEdit(item)}>编辑</button>
+                    <button className="text-primary hover:text-primary/90 mr-3" onClick={() => openEdit(item)}>编辑</button>
                     <button className="text-red-500 hover:text-red-700" onClick={() => handleDelete(item.id)}>删除</button>
                   </td>
                 </tr>
@@ -334,7 +334,7 @@ const DealerPage: React.FC = () => {
                 取消
               </button>
               <button
-                className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
+                className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors"
                 onClick={handleSave}
               >
                 保存

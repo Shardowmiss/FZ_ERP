@@ -213,7 +213,7 @@ const PurchaseOrderPage: React.FC = () => {
           <h1 className="text-xl font-semibold text-gray-800">采购订单</h1>
            <button
              onClick={openAdd}
-             className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600 flex items-center gap-1"
+             className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary flex items-center gap-1"
            >
              <Plus size={16} /> 新增采购订单
            </button>
@@ -282,7 +282,7 @@ const PurchaseOrderPage: React.FC = () => {
               setPage(1);
               fetchList();
             }}
-            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-blue-600 flex items-center gap-1"
+            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary flex items-center gap-1"
           >
             <Search size={14} /> 查询
           </button>
@@ -330,7 +330,7 @@ const PurchaseOrderPage: React.FC = () => {
                     <span key={`actions-${item.status}`} className="space-x-2 inline-flex items-center">
                       {item.status === 'draft' && (
                         <>
-                          <button onClick={() => openEdit(item.id)} className="text-primary hover:text-blue-600">编辑</button>
+                          <button onClick={() => openEdit(item.id)} className="text-primary hover:text-primary">编辑</button>
                           <button onClick={() => handleDelete(item.id)} className="text-red-500 hover:text-red-600">删除</button>
                           <button onClick={() => handleStatusAction(item.id, 'audit')} className="text-orange-500 hover:text-orange-600">审核</button>
                           <button onClick={() => handleListPrint(item.id)} className="text-gray-500 hover:text-gray-600 inline-flex align-middle" title="打印">
@@ -341,9 +341,9 @@ const PurchaseOrderPage: React.FC = () => {
                       )}
                       {item.status === 'audited' && (
                         <>
-                          <button onClick={() => openView(item.id)} className="text-primary hover:text-blue-600">查看</button>
+                          <button onClick={() => openView(item.id)} className="text-primary hover:text-primary">查看</button>
                           <button onClick={() => handleStatusAction(item.id, 'cancelAudit')} className="text-orange-500 hover:text-orange-600">取消审核</button>
-                          <button onClick={() => handleStatusAction(item.id, 'book')} className="text-primary hover:text-blue-600">记账</button>
+                          <button onClick={() => handleStatusAction(item.id, 'book')} className="text-primary hover:text-primary">记账</button>
                           <button onClick={() => handleListPrint(item.id)} className="text-gray-500 hover:text-gray-600 inline-flex align-middle" title="打印">
                             <Printer size={14} />
                           </button>
@@ -351,7 +351,7 @@ const PurchaseOrderPage: React.FC = () => {
                       )}
                       {item.status === 'booked' && (
                         <>
-                          <button onClick={() => openView(item.id)} className="text-primary hover:text-blue-600">查看</button>
+                          <button onClick={() => openView(item.id)} className="text-primary hover:text-primary">查看</button>
                           <button onClick={() => handleStatusAction(item.id, 'accept')} className="text-green-500 hover:text-green-600">验收</button>
                           <button onClick={() => handleListPrint(item.id)} className="text-gray-500 hover:text-gray-600 inline-flex align-middle" title="打印">
                             <Printer size={14} />
@@ -360,7 +360,7 @@ const PurchaseOrderPage: React.FC = () => {
                       )}
                       {item.status === 'accepted' && (
                         <>
-                          <button onClick={() => openView(item.id)} className="text-primary hover:text-blue-600">查看</button>
+                          <button onClick={() => openView(item.id)} className="text-primary hover:text-primary">查看</button>
                           <button onClick={() => handleListPrint(item.id)} className="text-gray-500 hover:text-gray-600 inline-flex align-middle" title="打印">
                             <Printer size={14} />
                           </button>

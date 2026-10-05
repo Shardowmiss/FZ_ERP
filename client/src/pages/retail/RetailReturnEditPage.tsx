@@ -430,7 +430,7 @@ export default function RetailReturnEditPage() {
             <button
               onClick={searchOrder}
               disabled={searching}
-              className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-blue-600 disabled:opacity-50"
+              className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-primary disabled:opacity-50"
             >{searching ? '查询中...' : '查询'}</button>
           </div>
         </div>
@@ -443,7 +443,7 @@ export default function RetailReturnEditPage() {
             <span>门店：{originalOrder.storeName}</span>
             <span>日期：{originalOrder.saleDate?.slice(0, 10)}</span>
           </div>
-          <div className="text-blue-700">
+          <div className="text-primary/90">
             原单总金额：¥{originalOrder.totalAmount?.toFixed(2)}
           </div>
         </div>

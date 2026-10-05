@@ -320,7 +320,7 @@ const PreOrderPage: React.FC = () => {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold">预订单</h2>
         <button
-          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
+          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors"
           onClick={openAdd}
           data-ai-section-type="button"
         >
@@ -392,7 +392,7 @@ const PreOrderPage: React.FC = () => {
           className="px-3 py-2 border border-gray-300 rounded text-sm w-48 focus:outline-none focus:border-primary"
         />
         <button
-          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-blue-600 transition-colors"
+          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors"
           onClick={handleSearch}
           data-ai-section-type="button"
         >
@@ -466,7 +466,7 @@ const PreOrderPage: React.FC = () => {
                   <td className="px-4 py-3 text-gray-600">
                     {item.styleNo || '-'}
                   </td>
-                  <td className="px-4 py-3 font-medium text-blue-600">
+                  <td className="px-4 py-3 font-medium text-primary">
                     {item.totalQty}
                   </td>
                   <td className="px-4 py-3">{renderStatus(item.status)}</td>
@@ -480,7 +480,7 @@ const PreOrderPage: React.FC = () => {
                         明细
                       </button>
                       <button
-                        className="text-primary hover:text-blue-700 text-xs flex items-center gap-0.5"
+                        className="text-primary hover:text-primary/90 text-xs flex items-center gap-0.5"
                         onClick={() => openPrint(item)}
                       >
                         <Printer size={12} />
@@ -489,7 +489,7 @@ const PreOrderPage: React.FC = () => {
                       {item.status === 'draft' && (
                         <>
                           <button
-                            className="text-primary hover:text-blue-700 text-xs"
+                            className="text-primary hover:text-primary/90 text-xs"
                             onClick={() => openEdit(item)}
                           >
                             编辑

@@ -386,7 +386,7 @@ export default function SalesOrderModal({
             <button
               onClick={handleSubmit}
               disabled={submitting}
-              className="px-4 py-1.5 bg-primary text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-1.5 bg-primary text-white rounded text-sm hover:bg-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >{submitting ? '保存中...' : '保存'}</button>
           )}
         </div>

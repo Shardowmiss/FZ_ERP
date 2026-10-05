@@ -36,9 +36,9 @@ interface ToolbarProps {
 
 const labelCls = 'text-xs text-gray-500 mr-1 flex-shrink-0';
 const selectCls =
-  'border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 bg-white h-7';
+  'border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary/70 focus:ring-1 focus:ring-primary/70 bg-white h-7';
 const inputCls =
-  'border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 h-7';
+  'border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary/70 focus:ring-1 focus:ring-primary/70 h-7';
 
 export function Toolbar({
   dataSource,
@@ -124,7 +124,7 @@ export function Toolbar({
         <div className="flex gap-2">
           <button
             onClick={onSearch}
-            className="bg-primary text-white px-4 py-1 rounded text-sm hover:bg-blue-600 transition-colors flex items-center gap-1 h-7"
+            className="bg-primary text-white px-4 py-1 rounded text-sm hover:bg-primary transition-colors flex items-center gap-1 h-7"
           >
             <Search size={14} />
             查询

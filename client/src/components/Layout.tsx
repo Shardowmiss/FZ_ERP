@@ -100,7 +100,7 @@ const Layout: React.FC = () => {
             collapsed ? 'justify-center px-2' : 'px-4'
           } border-b border-gray-700 overflow-hidden`}
         >
-          <Shirt className="text-blue-400 flex-shrink-0" size={24} />
+          <Shirt className="text-primary/70 flex-shrink-0" size={24} />
           <span
             className={`text-white font-semibold text-lg whitespace-nowrap transition-all ${
               collapsed
@@ -123,7 +123,7 @@ const Layout: React.FC = () => {
                       collapsed ? 'justify-center px-2' : 'px-4'
                     } py-2.5 text-sm cursor-pointer transition-colors ${
                       isActive
-                        ? 'bg-blue-600 text-white'
+                        ? 'bg-primary text-white'
                         : 'hover:bg-gray-700 hover:text-white'
                     }`
                   }
@@ -181,7 +181,7 @@ const Layout: React.FC = () => {
                           className={({ isActive }) =>
                             `flex items-center pl-12 pr-4 py-2 text-sm cursor-pointer transition-colors ${
                               isActive
-                                ? 'text-blue-400 bg-gray-800 border-l-2 border-blue-400'
+                                ? 'text-primary/70 bg-gray-800 border-l-2 border-primary/70'
                                 : 'text-gray-400 hover:text-white hover:bg-gray-700'
                             }`
                           }
@@ -203,7 +203,7 @@ const Layout: React.FC = () => {
                           className={({ isActive }) =>
                             `block px-4 py-2 text-sm transition-colors ${
                               isActive
-                                ? 'text-blue-400 bg-gray-700'
+                                ? 'text-primary/70 bg-gray-700'
                                 : 'text-gray-300 hover:text-white hover:bg-gray-700'
                             }`
                           }
