@@ -29,6 +29,9 @@ export class InventoryStocktakeController {
     @Query('page') page = '1',
     @Query('pageSize') pageSize = '20',
     @Query('status') status?: string,
+    @Query('stocktakeDateStart') stocktakeDateStart?: string,
+    @Query('stocktakeDateEnd') stocktakeDateEnd?: string,
+    @Query('warehouseName') warehouseName?: string,
   ): Promise<PaginationResult<InventoryStocktake>> {
     const pageNum = parseInt(page, 10) || 1;
     const pageSizeNum = parseInt(pageSize, 10) || 20;
@@ -36,6 +39,9 @@ export class InventoryStocktakeController {
       page: pageNum,
       pageSize: pageSizeNum,
       status,
+      stocktakeDateStart,
+      stocktakeDateEnd,
+      warehouseName,
     });
   }
 
@@ -78,6 +84,16 @@ export class InventoryStocktakeController {
   ): Promise<InventoryStocktake> {
     const { userId } = req.userContext;
     return this.inventoryStocktakeService.approveStocktake(id, userId);
+  }
+
+  @CheckPermission('inventory:stocktake')
+  @Post(':id/post')
+  async postStocktake(
+    @Req() req: Request,
+    @Param('id') id: string,
+  ): Promise<InventoryStocktake> {
+    const { userId } = req.userContext;
+    return this.inventoryStocktakeService.postStocktake(id, userId);
   }
 
   @CheckPermission('inventory:stocktake')

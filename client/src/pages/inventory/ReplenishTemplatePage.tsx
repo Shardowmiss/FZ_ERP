@@ -171,7 +171,7 @@ const ReplenishTemplatePage: React.FC = () => {
               <h2 className="text-sm font-medium text-gray-700">模板列表</h2>
               <button
                 onClick={startCreate}
-                className="px-3 py-1.5 bg-primary text-white rounded text-xs hover:bg-blue-600"
+                className="px-3 py-1.5 bg-primary text-white rounded text-xs hover:bg-primary"
               >
                 + 新建模板
               </button>
@@ -206,7 +206,7 @@ const ReplenishTemplatePage: React.FC = () => {
                           <StatusBadge tone={t.enabled ? 'ok' : 'neutral'}>{t.enabled ? '是' : '否'}</StatusBadge>
                         </td>
                         <td className="px-3 py-2 text-right whitespace-nowrap">
-                          <button onClick={() => handleExecute(t.id)} className="text-blue-600 hover:underline text-xs mr-2">执行</button>
+                          <button onClick={() => handleExecute(t.id)} className="text-primary hover:underline text-xs mr-2">执行</button>
                           <button onClick={() => startEdit(t)} className="text-gray-600 hover:underline text-xs mr-2">编辑</button>
                           <button onClick={() => handleDelete(t.id)} className="text-red-500 hover:underline text-xs">删除</button>
                         </td>
@@ -302,7 +302,7 @@ const ReplenishTemplatePage: React.FC = () => {
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50"
+                className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-primary disabled:opacity-50"
               >
                 {saving ? '保存中...' : '保存模板'}
               </button>

@@ -31,6 +31,11 @@ export class InventoryTransferController {
     @Query('status') status?: string,
     @Query('fromWarehouseId') fromWarehouseId?: string,
     @Query('toWarehouseId') toWarehouseId?: string,
+    @Query('transferNo') transferNo?: string,
+    @Query('transferDateStart') transferDateStart?: string,
+    @Query('transferDateEnd') transferDateEnd?: string,
+    @Query('createdAtStart') createdAtStart?: string,
+    @Query('createdAtEnd') createdAtEnd?: string,
   ): Promise<PaginationResult<InventoryTransfer>> {
     const pageNum = parseInt(page, 10) || 1;
     const pageSizeNum = parseInt(pageSize, 10) || 20;
@@ -40,6 +45,11 @@ export class InventoryTransferController {
       status,
       fromWarehouseId,
       toWarehouseId,
+      transferNo,
+      transferDateStart,
+      transferDateEnd,
+      createdAtStart,
+      createdAtEnd,
     });
   }
 

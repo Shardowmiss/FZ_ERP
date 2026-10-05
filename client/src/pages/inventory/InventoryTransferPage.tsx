@@ -34,6 +34,11 @@ export default function InventoryTransferPage() {
   const [status, setStatus] = useState('');
   const [filterFromWhId, setFilterFromWhId] = useState('');
   const [filterToWhId, setFilterToWhId] = useState('');
+  const [transferNo, setTransferNo] = useState('');
+  const [transferDateStart, setTransferDateStart] = useState('');
+  const [transferDateEnd, setTransferDateEnd] = useState('');
+  const [createdAtStart, setCreatedAtStart] = useState('');
+  const [createdAtEnd, setCreatedAtEnd] = useState('');
 
   const [warehouseOptions, setWarehouseOptions] = useState<any[]>([]);
   const [storeOptions, setStoreOptions] = useState<any[]>([]);
@@ -46,6 +51,11 @@ export default function InventoryTransferPage() {
       if (status) params.status = status;
       if (filterFromWhId) params.fromWarehouseId = filterFromWhId;
       if (filterToWhId) params.toWarehouseId = filterToWhId;
+      if (transferNo) params.transferNo = transferNo;
+      if (transferDateStart) params.transferDateStart = transferDateStart;
+      if (transferDateEnd) params.transferDateEnd = transferDateEnd;
+      if (createdAtStart) params.createdAtStart = createdAtStart;
+      if (createdAtEnd) params.createdAtEnd = createdAtEnd;
       const res: PaginationResult<InventoryTransfer> = await inventoryApi.transfer.list(params);
       setList(res.items);
       setTotal(res.total);
@@ -68,7 +78,7 @@ export default function InventoryTransferPage() {
     } catch (e) { logger.error('加载选项失败', e); }
   };
 
-  useEffect(() => { fetchList(); fetchOptions(); }, [page, pageSize, status, filterFromWhId, filterToWhId]);
+  useEffect(() => { fetchList(); fetchOptions(); }, [page, pageSize, status, filterFromWhId, filterToWhId, transferNo, transferDateStart, transferDateEnd, createdAtStart, createdAtEnd]);
 
   const getWarehouseTypeLabel = (id: string): string => {
     const w = warehouseOptions.find((wh: any) => wh.id === id);
@@ -188,6 +198,11 @@ export default function InventoryTransferPage() {
       if (status) params.status = status;
       if (filterFromWhId) params.fromWarehouseId = filterFromWhId;
       if (filterToWhId) params.toWarehouseId = filterToWhId;
+      if (transferNo) params.transferNo = transferNo;
+      if (transferDateStart) params.transferDateStart = transferDateStart;
+      if (transferDateEnd) params.transferDateEnd = transferDateEnd;
+      if (createdAtStart) params.createdAtStart = createdAtStart;
+      if (createdAtEnd) params.createdAtEnd = createdAtEnd;
       const res: PaginationResult<InventoryTransfer> = await inventoryApi.transfer.list(params);
       const data = res.items.map((it: InventoryTransfer) => ({
         transferNo: it.transferNo,
@@ -221,6 +236,11 @@ export default function InventoryTransferPage() {
     setStatus('');
     setFilterFromWhId('');
     setFilterToWhId('');
+    setTransferNo('');
+    setTransferDateStart('');
+    setTransferDateEnd('');
+    setCreatedAtStart('');
+    setCreatedAtEnd('');
     setPage(1);
     fetchList();
   };
@@ -230,7 +250,7 @@ export default function InventoryTransferPage() {
       <div className="bg-white rounded-lg shadow-sm p-5">
         <div className="mb-4 flex items-center justify-between">
           <h1 className="text-xl font-semibold">调拨单</h1>
-          <button onClick={openCreate} className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-blue-600">
+          <button onClick={openCreate} className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-primary">
             + 新增调拨单
           </button>
         </div>
@@ -262,8 +282,34 @@ export default function InventoryTransferPage() {
             {warehouseOptions.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
           </select>
         </div>
+        <div className="flex flex-col">
+          <label className="text-xs text-gray-500 mb-1">单号</label>
+          <input type="text" value={transferNo} onChange={(e) => setTransferNo(e.target.value)}
+            placeholder="调拨单号"
+            className="border border-gray-300 rounded px-3 py-1.5 text-sm w-36" />
+        </div>
+        <div className="flex flex-col">
+          <label className="text-xs text-gray-500 mb-1">单据日期</label>
+          <div className="flex items-center gap-1">
+            <input type="date" value={transferDateStart} onChange={(e) => setTransferDateStart(e.target.value)}
+              className="border border-gray-300 rounded px-2 py-1.5 text-sm" />
+            <span className="text-gray-400">~</span>
+            <input type="date" value={transferDateEnd} onChange={(e) => setTransferDateEnd(e.target.value)}
+              className="border border-gray-300 rounded px-2 py-1.5 text-sm" />
+          </div>
+        </div>
+        <div className="flex flex-col">
+          <label className="text-xs text-gray-500 mb-1">出库日期</label>
+          <div className="flex items-center gap-1">
+            <input type="date" value={createdAtStart} onChange={(e) => setCreatedAtStart(e.target.value)}
+              className="border border-gray-300 rounded px-2 py-1.5 text-sm" />
+            <span className="text-gray-400">~</span>
+            <input type="date" value={createdAtEnd} onChange={(e) => setCreatedAtEnd(e.target.value)}
+              className="border border-gray-300 rounded px-2 py-1.5 text-sm" />
+          </div>
+        </div>
         <button onClick={handleSearch}
-          className="bg-primary text-white px-4 py-1.5 rounded text-sm hover:bg-blue-600">查询</button>
+          className="bg-primary text-white px-4 py-1.5 rounded text-sm hover:bg-primary">查询</button>
         <button onClick={handleExport}
           className="bg-white text-gray-700 border border-gray-300 px-4 py-1.5 rounded text-sm hover:bg-gray-50">导出</button>
         <button onClick={handleReset}

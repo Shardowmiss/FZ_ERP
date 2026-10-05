@@ -17,10 +17,16 @@ const InventoryOutboundPage: React.FC = () => {
   const [pageSize, setPageSize] = useState(20);
   const [loading, setLoading] = useState(false);
   const [typeFilter, setTypeFilter] = useState('');
+  const [bizNo, setBizNo] = useState('');
+  const [bizDateStart, setBizDateStart] = useState('');
+  const [bizDateEnd, setBizDateEnd] = useState('');
+  const [createdAtStart, setCreatedAtStart] = useState('');
+  const [createdAtEnd, setCreatedAtEnd] = useState('');
+  const [warehouseName, setWarehouseName] = useState('');
 
   useEffect(() => {
     loadList();
-  }, [page, pageSize, typeFilter]);
+  }, [page, pageSize, typeFilter, bizNo, bizDateStart, bizDateEnd, createdAtStart, createdAtEnd, warehouseName]);
 
   const handleAdd = () => {
     navigate('/inventory/outbound/new');
@@ -33,9 +39,19 @@ const InventoryOutboundPage: React.FC = () => {
   const loadList = async () => {
     setLoading(true);
     try {
+      const params = new URLSearchParams();
+      params.set('page', String(page));
+      params.set('pageSize', String(pageSize));
+      params.set('flowType', 'out');
+      if (typeFilter) params.set('outboundType', typeFilter);
+      if (bizNo) params.set('bizNo', bizNo);
+      if (bizDateStart) params.set('bizDateStart', bizDateStart);
+      if (bizDateEnd) params.set('bizDateEnd', bizDateEnd);
+      if (createdAtStart) params.set('createdAtStart', createdAtStart);
+      if (createdAtEnd) params.set('createdAtEnd', createdAtEnd);
+      if (warehouseName) params.set('warehouseName', warehouseName);
       const res = await axiosForBackend.get(
-        `/api/inventory/flow?page=${page}&pageSize=${pageSize}&flowType=out` +
-        (typeFilter ? `&outboundType=${typeFilter}` : '')
+        `/api/inventory/flow?${params.toString()}`
       );
       const flows = res.data.items || [];
       const grouped: Record<string, any> = {};
@@ -48,6 +64,7 @@ const InventoryOutboundPage: React.FC = () => {
             warehouseId: f.warehouseId,
             warehouseName: f.warehouseName,
             outboundType: f.bizType,
+            bizDate: f.bizDate ? f.bizDate : '',
             outboundDate: f.createdAt ? f.createdAt.split('T')[0] : '',
             status: 'completed',
             createdAt: f.createdAt,
@@ -80,9 +97,19 @@ const InventoryOutboundPage: React.FC = () => {
 
   const handleExport = async () => {
     try {
+      const params = new URLSearchParams();
+      params.set('page', '1');
+      params.set('pageSize', '10000');
+      params.set('flowType', 'out');
+      if (typeFilter) params.set('outboundType', typeFilter);
+      if (bizNo) params.set('bizNo', bizNo);
+      if (bizDateStart) params.set('bizDateStart', bizDateStart);
+      if (bizDateEnd) params.set('bizDateEnd', bizDateEnd);
+      if (createdAtStart) params.set('createdAtStart', createdAtStart);
+      if (createdAtEnd) params.set('createdAtEnd', createdAtEnd);
+      if (warehouseName) params.set('warehouseName', warehouseName);
       const res = await axiosForBackend.get(
-        `/api/inventory/flow?page=1&pageSize=10000&flowType=out` +
-        (typeFilter ? `&outboundType=${typeFilter}` : '')
+        `/api/inventory/flow?${params.toString()}`
       );
       const flows = res.data.items || [];
       const grouped: Record<string, any> = {};
@@ -95,6 +122,7 @@ const InventoryOutboundPage: React.FC = () => {
             warehouseId: f.warehouseId,
             warehouseName: f.warehouseName,
             outboundType: f.bizType,
+            bizDate: f.bizDate ? f.bizDate : '',
             outboundDate: f.createdAt ? f.createdAt.split('T')[0] : '',
             status: 'completed',
             createdAt: f.createdAt,
@@ -106,7 +134,8 @@ const InventoryOutboundPage: React.FC = () => {
         orderNo: '出库单号',
         warehouseName: '仓库',
         outboundType: '出库类型',
-        outboundDate: '出库日期',
+        bizDate: '单据日期',
+        outboundDate: '入库日期',
         status: '状态',
         createdAt: '创建时间',
       });
@@ -123,7 +152,7 @@ const InventoryOutboundPage: React.FC = () => {
           <h1 className="text-xl font-semibold text-gray-800">出库单</h1>
           <button
             onClick={handleAdd}
-            className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600"
+            className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-primary"
           >
             + 新增出库单
           </button>
@@ -140,11 +169,66 @@ const InventoryOutboundPage: React.FC = () => {
             <option key={k} value={k}>{v}</option>
           ))}
         </select>
+        <input
+          type="text"
+          placeholder="单号"
+          value={bizNo}
+          onChange={(e) => { setBizNo(e.target.value); setPage(1); }}
+          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary w-32"
+        />
+        <input
+          type="text"
+          placeholder="店仓名称"
+          value={warehouseName}
+          onChange={(e) => { setWarehouseName(e.target.value); setPage(1); }}
+          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary w-32"
+        />
+        <div className="flex items-center gap-1 text-sm text-gray-600">
+          <span>单据日期</span>
+          <input
+            type="date"
+            value={bizDateStart}
+            onChange={(e) => { setBizDateStart(e.target.value); setPage(1); }}
+            className="px-2 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
+          />
+          <span>~</span>
+          <input
+            type="date"
+            value={bizDateEnd}
+            onChange={(e) => { setBizDateEnd(e.target.value); setPage(1); }}
+            className="px-2 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
+          />
+        </div>
+        <div className="flex items-center gap-1 text-sm text-gray-600">
+          <span>入库日期</span>
+          <input
+            type="date"
+            value={createdAtStart}
+            onChange={(e) => { setCreatedAtStart(e.target.value); setPage(1); }}
+            className="px-2 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
+          />
+          <span>~</span>
+          <input
+            type="date"
+            value={createdAtEnd}
+            onChange={(e) => { setCreatedAtEnd(e.target.value); setPage(1); }}
+            className="px-2 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
+          />
+        </div>
         <button
           onClick={loadList}
-          className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600"
+          className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-primary"
         >
           查询
+        </button>
+        <button
+          onClick={() => {
+            setBizNo(''); setWarehouseName(''); setBizDateStart(''); setBizDateEnd('');
+            setCreatedAtStart(''); setCreatedAtEnd(''); setPage(1);
+          }}
+          className="px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded text-sm hover:bg-gray-50"
+        >
+          重置
         </button>
         <button
           onClick={handleExport}
@@ -161,7 +245,8 @@ const InventoryOutboundPage: React.FC = () => {
               <th className="px-4 py-3 text-left">出库单号</th>
               <th className="px-4 py-3 text-left">仓库</th>
               <th className="px-4 py-3 text-left">出库类型</th>
-              <th className="px-4 py-3 text-left">出库日期</th>
+              <th className="px-4 py-3 text-left">单据日期</th>
+              <th className="px-4 py-3 text-left">入库日期</th>
               <th className="px-4 py-3 text-center">状态</th>
               <th className="px-4 py-3 text-left">创建时间</th>
               <th className="px-4 py-3 text-left">操作</th>
@@ -178,6 +263,7 @@ const InventoryOutboundPage: React.FC = () => {
                   <td className="px-4 py-3 text-gray-700">{item.orderNo}</td>
                   <td className="px-4 py-3 text-gray-600">{item.warehouseName || '-'}</td>
                   <td className="px-4 py-3 text-gray-600">{typeMap[item.outboundType] || item.outboundType}</td>
+                  <td className="px-4 py-3 text-gray-500">{item.bizDate || '-'}</td>
                   <td className="px-4 py-3 text-gray-500">{item.outboundDate}</td>
                   <td className="px-4 py-3 text-center">
                     <StatusBadge tone="ok">已完成</StatusBadge>

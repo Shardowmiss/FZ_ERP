@@ -167,7 +167,7 @@ export default function InventoryFlowPage() {
             placeholder="SKU/物料编码" className="border border-gray-300 rounded px-3 py-1.5 text-sm w-40" />
         </div>
         <button onClick={handleSearch}
-          className="bg-primary text-white px-4 py-1.5 rounded text-sm hover:bg-blue-600">查询</button>
+          className="bg-primary text-white px-4 py-1.5 rounded text-sm hover:bg-primary">查询</button>
         <button onClick={handleExport}
           className="bg-white text-gray-700 border border-gray-300 px-4 py-1.5 rounded text-sm hover:bg-gray-50">导出</button>
       </div>

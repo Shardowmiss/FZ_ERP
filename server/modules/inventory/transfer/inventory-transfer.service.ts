@@ -10,7 +10,7 @@ import {
   DRIZZLE_DATABASE,
   type PostgresJsDatabase,
 } from '@lark-apaas/fullstack-nestjs-core';
-import { eq, and, count, desc, sql, inArray } from 'drizzle-orm';
+import { eq, and, count, desc, sql, inArray, like, gte, lte, lt } from 'drizzle-orm';
 import {
   inventoryTransfer,
   inventoryTransferItem,
@@ -84,8 +84,29 @@ export class InventoryTransferService {
     status?: string;
     fromWarehouseId?: string;
     toWarehouseId?: string;
+    /** 单号模糊查询（transfer_no） */
+    transferNo?: string;
+    /** 单据日期（transfer_date）起始 */
+    transferDateStart?: string;
+    /** 单据日期（transfer_date）截止（含当天） */
+    transferDateEnd?: string;
+    /** 出库日期（过账 _created_at）起始 */
+    createdAtStart?: string;
+    /** 出库日期（过账 _created_at）截止（含当天） */
+    createdAtEnd?: string;
   }): Promise<PaginationResult<InventoryTransfer>> {
-    const { page, pageSize, status, fromWarehouseId, toWarehouseId } = params;
+    const {
+      page,
+      pageSize,
+      status,
+      fromWarehouseId,
+      toWarehouseId,
+      transferNo,
+      transferDateStart,
+      transferDateEnd,
+      createdAtStart,
+      createdAtEnd,
+    } = params;
 
     const conditions = [];
     if (status) conditions.push(eq(inventoryTransfer.status, status));
@@ -93,6 +114,22 @@ export class InventoryTransferService {
       conditions.push(eq(inventoryTransfer.fromWarehouseId, fromWarehouseId));
     if (toWarehouseId)
       conditions.push(eq(inventoryTransfer.toWarehouseId, toWarehouseId));
+    // 单号模糊
+    if (transferNo)
+      conditions.push(like(inventoryTransfer.transferNo, `%${transferNo}%`));
+    // 单据日期（transfer_date）
+    if (transferDateStart)
+      conditions.push(gte(inventoryTransfer.transferDate, transferDateStart));
+    if (transferDateEnd)
+      conditions.push(lte(inventoryTransfer.transferDate, transferDateEnd));
+    // 出库日期（过账时间）
+    if (createdAtStart)
+      conditions.push(gte(inventoryTransfer.createdAt, new Date(createdAtStart)));
+    if (createdAtEnd) {
+      const endObj = new Date(createdAtEnd);
+      endObj.setDate(endObj.getDate() + 1);
+      conditions.push(lt(inventoryTransfer.createdAt, endObj));
+    }
     // 行级数据权限：调拨单的任一端仓库归属当前用户可见经销商即可见，防止跨租户越权读取
     const scopeCond = buildDealerScopeCondition(
       RequestContext.getDealerScope() ?? ALL_SCOPE,

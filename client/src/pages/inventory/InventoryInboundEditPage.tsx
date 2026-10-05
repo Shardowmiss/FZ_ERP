@@ -235,7 +235,7 @@ const InventoryInboundEditPage: React.FC = () => {
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-medium text-gray-700">入库明细</h3>
         {!viewOnly && (
-          <button onClick={addItem} className="text-sm text-primary hover:text-blue-600">+ 添加行</button>
+          <button onClick={addItem} className="text-sm text-primary hover:text-primary">+ 添加行</button>
         )}
       </div>
       <table className="w-full text-sm border border-gray-200">

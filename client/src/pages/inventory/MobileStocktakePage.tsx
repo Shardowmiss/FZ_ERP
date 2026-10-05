@@ -189,7 +189,7 @@ const MobileStocktakePage: React.FC = () => {
           />
           <button
             onClick={handleLookup}
-            className="px-4 py-3 bg-primary text-white rounded text-sm hover:bg-blue-600"
+            className="px-4 py-3 bg-primary text-white rounded text-sm hover:bg-primary"
           >
             查询
           </button>

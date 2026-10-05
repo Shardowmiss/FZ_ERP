@@ -3,7 +3,7 @@ import {
   DRIZZLE_DATABASE,
   type PostgresJsDatabase,
 } from '@lark-apaas/fullstack-nestjs-core';
-import { eq, and, count, desc, gte, lt } from 'drizzle-orm';
+import { eq, and, count, desc, gte, lt, like, lte } from 'drizzle-orm';
 import { inventoryFlow } from '@server/database/schema';
 import type { InventoryFlow, PaginationResult } from '@shared/api.interface';
 import { RequestContext, ALL_SCOPE } from '@server/common/context/request-context';
@@ -26,6 +26,15 @@ export class InventoryFlowService {
     materialId?: string;
     warehouseId?: string;
     flowType?: string;
+    /** 单据业务日期起始（inventory_flow.biz_date），对应出库/入库单的"单据日期" */
+    bizDateStart?: string;
+    /** 单据业务日期截止（含当天），对应出库/入库单的"单据日期" */
+    bizDateEnd?: string;
+    /** 单号模糊查询（biz_no） */
+    bizNo?: string;
+    /** 店仓名称模糊查询（warehouse_name） */
+    warehouseName?: string;
+    /** 过账日期起始（_created_at），对应出库单"入库日期"/入库单"出库日期" */
     startDate?: string;
     endDate?: string;
     /** keyset 游标：传入后走游标分页，忽略 page */
@@ -39,6 +48,10 @@ export class InventoryFlowService {
       materialId,
       warehouseId,
       flowType,
+      bizDateStart,
+      bizDateEnd,
+      bizNo,
+      warehouseName,
       startDate,
       endDate,
       cursor,
@@ -50,6 +63,13 @@ export class InventoryFlowService {
     if (materialId) conditions.push(eq(inventoryFlow.materialId, materialId));
     if (warehouseId) conditions.push(eq(inventoryFlow.warehouseId, warehouseId));
     if (flowType) conditions.push(eq(inventoryFlow.flowType, flowType));
+    // 单据业务日期（biz_date）：出库单"单据日期" / 入库单"单据日期"
+    if (bizDateStart) conditions.push(gte(inventoryFlow.bizDate, bizDateStart));
+    if (bizDateEnd) conditions.push(lte(inventoryFlow.bizDate, bizDateEnd));
+    // 单号模糊
+    if (bizNo) conditions.push(like(inventoryFlow.bizNo, `%${bizNo}%`));
+    // 店仓名称模糊
+    if (warehouseName) conditions.push(like(inventoryFlow.warehouseName, `%${warehouseName}%`));
     if (startDate) {
       conditions.push(gte(inventoryFlow.createdAt, new Date(startDate)));
     }
@@ -109,6 +129,7 @@ export class InventoryFlowService {
       unitPrice: row.unitPrice ? Number(row.unitPrice) : undefined,
       operator: row.operator ?? undefined,
       remark: row.remark ?? undefined,
+      bizDate: row.bizDate ? String(row.bizDate).slice(0, 10) : undefined,
       createdAt: row.createdAt.toISOString(),
     }));
 

@@ -22,12 +22,16 @@ export default function InventoryStocktakePage() {
   const [pageSize, setPageSize] = useState(20);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('');
+  const [warehouseName, setWarehouseName] = useState('');
+  const [stocktakeDateStart, setStocktakeDateStart] = useState('');
+  const [stocktakeDateEnd, setStocktakeDateEnd] = useState('');
 
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
 
   const STATUS_MAP: Record<string, { label: string; tone: StatusTone }> = {
     draft: { label: '草稿', tone: 'neutral' },
     approved: { label: '已审核', tone: 'ok' },
+    posted: { label: '已记账', tone: 'info' },
   };
 
   const fetchWarehouses = async () => {
@@ -40,12 +44,17 @@ export default function InventoryStocktakePage() {
   useEffect(() => {
     fetchList();
     fetchWarehouses();
-  }, [page, pageSize, status]);
+  }, [page, pageSize, status, warehouseName, stocktakeDateStart, stocktakeDateEnd]);
 
   const fetchList = async () => {
     setLoading(true);
     try {
-      const res = await inventoryApi.stocktake.list({ page, pageSize, status });
+      const params: any = { page, pageSize };
+      if (status) params.status = status;
+      if (warehouseName) params.warehouseName = warehouseName;
+      if (stocktakeDateStart) params.stocktakeDateStart = stocktakeDateStart;
+      if (stocktakeDateEnd) params.stocktakeDateEnd = stocktakeDateEnd;
+      const res = await inventoryApi.stocktake.list(params);
       setList(res.items);
       setTotal(res.total);
     } catch (e) {
@@ -64,7 +73,7 @@ export default function InventoryStocktakePage() {
   };
 
   const handleApprove = async (id: string) => {
-    if (!await showConfirm('确定审核？审核后将根据盘点结果生成库存调整。')) return;
+    if (!await showConfirm('确定审核？审核后单据锁定不可编辑，不改变库存。')) return;
     try {
       await inventoryApi.stocktake.approve(id);
       toast('审核成功');
@@ -72,6 +81,18 @@ export default function InventoryStocktakePage() {
     } catch (e) {
       logger.error('审核失败', e);
       toast(errMsg(e, '审核失败'));
+    }
+  };
+
+  const handlePost = async (id: string) => {
+    if (!await showConfirm('确定记账？记账后将按盘点差异调整库存数量与金额，产生盘盈/盘亏。')) return;
+    try {
+      await inventoryApi.stocktake.post(id);
+      toast('记账成功');
+      fetchList();
+    } catch (e) {
+      logger.error('记账失败', e);
+      toast(errMsg(e, '记账失败'));
     }
   };
 
@@ -106,6 +127,9 @@ export default function InventoryStocktakePage() {
     try {
       const params: any = { page: 1, pageSize: 10000 };
       if (status) params.status = status;
+      if (warehouseName) params.warehouseName = warehouseName;
+      if (stocktakeDateStart) params.stocktakeDateStart = stocktakeDateStart;
+      if (stocktakeDateEnd) params.stocktakeDateEnd = stocktakeDateEnd;
       const res = await inventoryApi.stocktake.list(params);
       const data = res.items.map((it: InventoryStocktake) => ({
         stocktakeNo: it.stocktakeNo,
@@ -132,7 +156,7 @@ export default function InventoryStocktakePage() {
       <div className="bg-white rounded-lg shadow-sm p-5">
         <div className="mb-4 flex items-center justify-between">
           <h1 className="text-xl font-semibold">盘点单</h1>
-          <button onClick={openCreate} className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-blue-600">
+          <button onClick={openCreate} className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-primary">
             + 新增盘点单
           </button>
         </div>
@@ -147,10 +171,31 @@ export default function InventoryStocktakePage() {
               <option key={k} value={k}>{v.label}</option>
             ))}
                       <option value="cancelled">已作废</option>
+                      <option value="posted">已记账</option>
 </select>
         </div>
+        <div className="flex flex-col">
+          <label className="text-xs text-gray-500 mb-1">店铺名称</label>
+          <input type="text" value={warehouseName} onChange={(e) => setWarehouseName(e.target.value)}
+            placeholder="店铺/仓库名称"
+            className="border border-gray-300 rounded px-3 py-1.5 text-sm w-36" />
+        </div>
+        <div className="flex flex-col">
+          <label className="text-xs text-gray-500 mb-1">单据日期</label>
+          <div className="flex items-center gap-1">
+            <input type="date" value={stocktakeDateStart} onChange={(e) => setStocktakeDateStart(e.target.value)}
+              className="border border-gray-300 rounded px-2 py-1.5 text-sm" />
+            <span className="text-gray-400">~</span>
+            <input type="date" value={stocktakeDateEnd} onChange={(e) => setStocktakeDateEnd(e.target.value)}
+              className="border border-gray-300 rounded px-2 py-1.5 text-sm" />
+          </div>
+        </div>
         <button onClick={() => { setPage(1); fetchList(); }}
-          className="bg-primary text-white px-4 py-1.5 rounded text-sm hover:bg-blue-600">查询</button>
+          className="bg-primary text-white px-4 py-1.5 rounded text-sm hover:bg-primary">查询</button>
+        <button onClick={() => {
+          setStatus(''); setWarehouseName(''); setStocktakeDateStart(''); setStocktakeDateEnd(''); setPage(1); fetchList();
+        }}
+          className="bg-gray-100 text-gray-600 px-4 py-1.5 rounded text-sm hover:bg-gray-200">重置</button>
         <button onClick={handleExport}
           className="bg-white text-gray-700 border border-gray-300 px-4 py-1.5 rounded text-sm hover:bg-gray-50">导出</button>
       </div>
@@ -187,6 +232,9 @@ export default function InventoryStocktakePage() {
                         <button onClick={() => handleDelete(item.id)} className="text-red-500 hover:underline">删除</button>
                                             <button onClick={() => handleVoid(item.id)} className="text-red-500 hover:text-red-600">作废</button>
 </>
+                    )}
+                    {item.status === 'approved' && (
+                      <button onClick={() => handlePost(item.id)} className="text-blue-500 hover:underline">记账</button>
                     )}
                   </td>
                 </tr>

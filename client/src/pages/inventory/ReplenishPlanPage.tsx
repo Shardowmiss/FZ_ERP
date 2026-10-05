@@ -214,7 +214,7 @@ const ReplenishPlanPage: React.FC = () => {
           <button
             onClick={handleCalc}
             disabled={calcLoading}
-            className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50"
+            className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-primary disabled:opacity-50"
           >
             {calcLoading ? '计算中...' : '计算建议量'}
           </button>
@@ -231,7 +231,7 @@ const ReplenishPlanPage: React.FC = () => {
             className={`mb-3 p-3 rounded text-sm ${
               freshness.freshnessAlert
                 ? 'bg-amber-50 border border-amber-300 text-amber-800'
-                : 'bg-blue-50 border border-blue-200 text-blue-700'
+                : 'bg-blue-50 border border-blue-200 text-primary/90'
             }`}
           >
             <b>数据截至时间：</b>

@@ -91,7 +91,7 @@ const BarcodePage: React.FC = () => {
           <button
             onClick={handleGenerate}
             disabled={generating}
-            className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50"
+            className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-primary disabled:opacity-50"
           >
             {generating ? '生成中...' : '为缺失条码的SKU生成条码'}
           </button>
@@ -124,7 +124,7 @@ const BarcodePage: React.FC = () => {
           />
           <button
             onClick={handleSearch}
-            className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600"
+            className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-primary"
           >
             查询
           </button>

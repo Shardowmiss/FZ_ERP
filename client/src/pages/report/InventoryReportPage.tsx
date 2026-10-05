@@ -216,7 +216,7 @@ export default function InventoryReportPage() {
                   {formatQty(summary.totalQty)}
                 </td>
                 <td colSpan={3}></td>
-                <td className="px-3 text-right font-medium text-blue-600">
+                <td className="px-3 text-right font-medium text-primary">
                   {formatAmount(summary.totalAmount)}
                 </td>
               </tr>

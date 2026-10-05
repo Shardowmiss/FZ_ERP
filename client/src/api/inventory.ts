@@ -35,11 +35,17 @@ export const inventoryApi = {
     remove: (id: string) => request<void>(`/api/inventory/transfer/${id}`, 'DELETE'),
   },
   stocktake: {
-    list: (params: PaginationParams & { status?: string }) =>
+    list: (params: PaginationParams & {
+      status?: string;
+      stocktakeDateStart?: string;
+      stocktakeDateEnd?: string;
+      warehouseName?: string;
+    }) =>
       request<PaginationResult<InventoryStocktake>>('/api/inventory/stocktake', 'GET', null, params),
     get: (id: string) => request<InventoryStocktake>(`/api/inventory/stocktake/${id}`),
     create: (data: any) => request<InventoryStocktake>('/api/inventory/stocktake', 'POST', data),
     approve: (id: string) => request<void>(`/api/inventory/stocktake/${id}/approve`, 'POST'),
+    post: (id: string) => request<void>(`/api/inventory/stocktake/${id}/post`, 'POST'),
     remove: (id: string) => request<void>(`/api/inventory/stocktake/${id}`, 'DELETE'),
 
     void: (id: string) => request<void>(`/api/inventory/stocktake/${id}/void`, 'POST'),

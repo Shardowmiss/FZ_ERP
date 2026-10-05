@@ -225,7 +225,7 @@ export default function InventoryQueryPage() {
                 placeholder="搜索SKU" className="border border-gray-300 rounded px-3 py-1.5 text-sm w-40" />
             </div>
              <button onClick={() => { setSkuPage(1); fetchSkuList(); }}
-               className="bg-primary text-white px-4 py-1.5 rounded text-sm hover:bg-blue-600">查询</button>
+               className="bg-primary text-white px-4 py-1.5 rounded text-sm hover:bg-primary">查询</button>
              <button onClick={handleExportSku}
                className="bg-white text-gray-700 border border-gray-300 px-4 py-1.5 rounded text-sm hover:bg-gray-50">导出</button>
            </div>
@@ -297,7 +297,7 @@ export default function InventoryQueryPage() {
                 placeholder="搜索" className="border border-gray-300 rounded px-3 py-1.5 text-sm w-40" />
             </div>
              <button onClick={() => { setMatPage(1); fetchMatList(); }}
-               className="bg-primary text-white px-4 py-1.5 rounded text-sm hover:bg-blue-600">查询</button>
+               className="bg-primary text-white px-4 py-1.5 rounded text-sm hover:bg-primary">查询</button>
              <button onClick={handleExportMaterial}
                className="bg-white text-gray-700 border border-gray-300 px-4 py-1.5 rounded text-sm hover:bg-gray-50">导出</button>
            </div>

@@ -137,7 +137,7 @@ const ReplenishSuggestionPage: React.FC = () => {
           />
           <button
             onClick={() => { setPage(1); loadList(); }}
-            className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-blue-600"
+            className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-primary"
           >
             查询
           </button>
