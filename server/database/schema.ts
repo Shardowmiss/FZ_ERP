@@ -2657,6 +2657,10 @@ export const salesOrder = pgTable("sales_order", {
   deliveryDate: date("delivery_date"),
   totalAmount: numeric("total_amount").notNull().default('0'),
   status: varchar("status", { length: 20 }).notNull().default('draft'),
+  // 来源：手动新增(manual) / 订货会(trade_show) / 补货计划(replenish_plan)。
+  // 与订货会产生的订单除来源不同外逻辑一致；默认 manual 即本功能新增的手动单。
+  sourceType: varchar("source_type", { length: 20 }).notNull().default('manual'),
+  sourceNo: varchar("source_no", { length: 50 }),
   remark: text("remark"),
   // 分销镜像可观测性：销售单记账后向下游生成采购单的结果反馈
   mirrorStatus: varchar("mirror_status", { length: 10 }),

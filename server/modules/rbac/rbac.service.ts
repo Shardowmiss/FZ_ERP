@@ -355,7 +355,17 @@ export class RbacService {
     { code: 'production:work_order', name: '生产-工单' },
     { code: 'production:material_issue', name: '生产-发料' },
     { code: 'production:finish_receipt', name: '生产-成品入库' },
-    { code: 'sales:order', name: '销售-订单' },
+    // 销售-订单：资源分组（type=group），下挂 7 个可独立授权的动作子节点。
+    // 既有的 warehouse 角色仍只持有分组码 `sales:order`，
+    // 由 ensureOperationalRoles 自动展开授予全部子码，保证零改造兼容。
+    { code: 'sales:order', name: '销售-订单', type: 'group' },
+    { code: 'sales:order:view', name: '查看', parent: 'sales:order', sortOrder: 1 },
+    { code: 'sales:order:create', name: '新增', parent: 'sales:order', sortOrder: 2 },
+    { code: 'sales:order:edit', name: '编辑', parent: 'sales:order', sortOrder: 3 },
+    { code: 'sales:order:approve', name: '审核', parent: 'sales:order', sortOrder: 4 },
+    { code: 'sales:order:delete', name: '删除', parent: 'sales:order', sortOrder: 5 },
+    { code: 'sales:order:void', name: '作废', parent: 'sales:order', sortOrder: 6 },
+    { code: 'sales:order:print', name: '打印', parent: 'sales:order', sortOrder: 7 },
     { code: 'sales:outbound', name: '销售-出库' },
     { code: 'sales:return', name: '销售-退货' },
     { code: 'sales:reconciliation', name: '销售-对账' },
@@ -630,6 +640,7 @@ export class RbacService {
         'inventory:warning',
         'base:warehouse',
         'sales:outbound',
+        'sales:order',
         'purchase:inbound',
         'report:inventory',
         'report:transfer',

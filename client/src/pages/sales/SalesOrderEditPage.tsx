@@ -3,6 +3,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { baseApi } from '@client/src/api/base';
 import { salesApi } from '@client/src/api/sales';
 import type { SalesOrder, SalesOrderItem, Dealer, Style } from '@shared/api.interface';
+import { SALES_ORDER_SOURCE_LABELS } from '@shared/api.interface';
 import { logger } from '@lark-apaas/client-toolkit/logger';
 import { toast } from 'sonner';
 import { PrintDialog } from '@client/src/components/print/PrintDialog';
@@ -33,6 +34,8 @@ export default function SalesOrderEditPage() {
   const [orderNo, setOrderNo] = useState('');
   const [formDealerName, setFormDealerName] = useState('');
   const [status, setStatus] = useState('');
+  const [sourceType, setSourceType] = useState('');
+  const [sourceNo, setSourceNo] = useState('');
   const [loading, setLoading] = useState(false);
 
   const [blocks, setBlocks] = useState<StyleBlockData[]>([]);
@@ -92,6 +95,8 @@ export default function SalesOrderEditPage() {
       setOrderNo(detail.orderNo);
       setFormDealerName(detail.customerName);
       setStatus(detail.status);
+      setSourceType(detail.sourceType || '');
+      setSourceNo(detail.sourceNo || '');
 
       const items = detail.items || [];
       if (items.length === 0) {
@@ -329,6 +334,13 @@ export default function SalesOrderEditPage() {
           disabled={viewOnly}
           className="border border-gray-300 rounded px-3 py-1.5 text-sm disabled:bg-gray-100"
         />
+      </div>
+      <div className="flex flex-col col-span-2">
+        <label className="text-xs text-gray-500 mb-1">来源</label>
+        <div className="px-1 py-1.5 text-sm text-gray-700">
+          {SALES_ORDER_SOURCE_LABELS[sourceType || ''] || (isNew ? SALES_ORDER_SOURCE_LABELS['manual'] : sourceType) || '-'}
+          {sourceNo ? `（${sourceNo}）` : ''}
+        </div>
       </div>
     </div>
   );

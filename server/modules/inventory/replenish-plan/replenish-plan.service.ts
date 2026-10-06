@@ -352,6 +352,7 @@ export class ReplenishPlanService {
             orderDate: today,
             totalAmount: '0',
             status: 'draft',
+            sourceType: 'replenish_plan',
             remark: dto.remark || '补货管理自动生成（经销商销售单）',
           })
           .returning();

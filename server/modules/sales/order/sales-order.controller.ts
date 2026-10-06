@@ -27,6 +27,7 @@ export class SalesOrderController {
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
     @Query('cursor') cursor?: string,
+    @Query('sourceType') sourceType?: string,
   ): Promise<PaginationResult<SalesOrder>> {
     return this.salesOrderService.list({
       page: parseInt(page, 10),
@@ -36,6 +37,7 @@ export class SalesOrderController {
       startDate,
       endDate,
       cursor,
+      sourceType,
     });
   }
 

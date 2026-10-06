@@ -66,6 +66,8 @@ interface ListQuery {
   status?: string;
   startDate?: string;
   endDate?: string;
+  /** 来源过滤：manual / trade_show / replenish_plan */
+  sourceType?: string;
   /** keyset 游标：传入后走游标分页（深翻页/无限滚动），忽略 page */
   cursor?: string;
 }
@@ -106,6 +108,8 @@ export class SalesOrderService {
       totalAmount: Number(row.totalAmount),
       status: row.status,
       remark: row.remark ?? undefined,
+      sourceType: row.sourceType,
+      sourceNo: row.sourceNo ?? undefined,
       createdAt: row.createdAt.toISOString(),
     };
   }
@@ -127,10 +131,11 @@ export class SalesOrderService {
   }
 
   async list(query: ListQuery): Promise<PaginationResult<SalesOrder>> {
-    const { page, pageSize, dealerId, status, startDate, endDate, cursor } = query;
+    const { page, pageSize, dealerId, status, startDate, endDate, sourceType, cursor } = query;
     const conditions = [];
     if (dealerId) conditions.push(eq(salesOrder.dealerId, dealerId));
     if (status) conditions.push(eq(salesOrder.status, status));
+    if (sourceType) conditions.push(eq(salesOrder.sourceType, sourceType));
     if (startDate) conditions.push(gte(salesOrder.orderDate, startDate));
     if (endDate) {
       // 半开区间上界：endDate 当天应包含在结果内（与 inventory-flow / report-purchase 的 +1 天约定一致）
@@ -284,6 +289,7 @@ export class SalesOrderService {
           deliveryDate: dto.deliveryDate ?? null,
           totalAmount: round2(totalAmount),
           status: SalesOrderStatus.DRAFT,
+          sourceType: 'manual',
           remark: dto.remark ?? null,
         })
         .returning();

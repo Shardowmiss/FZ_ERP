@@ -42,6 +42,7 @@ import type {
   PreOrderSkuSummaryItem,
   PaginationResult,
 } from '@shared/api.interface';
+import { SalesOrderStatus } from '@shared/api.interface';
 import { bulkUpsert } from '@server/common/batch';
 import { StockService, type StockChangeItem } from '@server/modules/inventory/stock/stock.service';
 
@@ -742,7 +743,9 @@ export class AllocationService {
             customerName: dealerName,
             orderDate: today,
             totalAmount: String(round2(orderTotalAmount)),
-            status: 'approved',
+            status: SalesOrderStatus.BOOKED,
+            sourceType: 'trade_show',
+            sourceNo: allocOrder.allocationNo,
             remark: `订货会配货单 ${allocOrder.allocationNo} 自动生成`,
           })
           .returning();

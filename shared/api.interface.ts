@@ -260,6 +260,14 @@ export const SALES_ORDER_STATUS_COLORS: Record<string, string> = {
   cancelled: 'bg-red-100 text-red-600',
 };
 
+export const SALES_ORDER_SOURCE_LABELS: Record<string, string> = {
+  manual: '手动新增',
+  trade_show: '订货会',
+  replenish_plan: '补货计划',
+};
+
+export const SALES_ORDER_SOURCE_VALUES: string[] = ['manual', 'trade_show', 'replenish_plan'];
+
 export const SalesOutboundStatus = {
   DRAFT: 'draft',
   AUDITED: 'audited',
@@ -426,6 +434,8 @@ export interface SalesOrder {
   totalAmount: number;
   status: string;
   remark?: string;
+  sourceType?: string;
+  sourceNo?: string;
   createdAt: string;
   items?: SalesOrderItem[];
 }

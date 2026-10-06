@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { salesApi } from '@client/src/api/sales';
 import { baseApi } from '@client/src/api/base';
 import type { SalesOrder, Dealer, PaginationResult } from '@shared/api.interface';
+import { SALES_ORDER_SOURCE_LABELS } from '@shared/api.interface';
 import { logger } from '@lark-apaas/client-toolkit/logger';
 import { toast } from 'sonner';
 import { showConfirm } from '@lark-apaas/client-toolkit';
@@ -23,6 +24,7 @@ const STATUS_MAP: Record<string, { label: string; tone: StatusTone }> = {
   draft: { label: '新增', tone: 'neutral' },
   audited: { label: '审核', tone: 'warn' },
   booked: { label: '记账', tone: 'info' },
+  cancelled: { label: '已作废', tone: 'danger' },
 };
 
 export default function SalesOrderPage() {
@@ -151,13 +153,21 @@ export default function SalesOrderPage() {
       if (endDate) params.endDate = endDate;
       if (keyword) params.keyword = keyword;
       const res: PaginationResult<SalesOrder> = await salesApi.order.list(params);
-      exportTableToCSV('销售订单', res.items as unknown as Record<string, unknown>[], {
+      const exportRows = (res.items as unknown as Array<Record<string, unknown>>).map(
+        (o: Record<string, unknown>) => ({
+          ...o,
+          sourceTypeLabel:
+            SALES_ORDER_SOURCE_LABELS[String(o.sourceType || '')] || o.sourceType || '-',
+        }),
+      );
+      exportTableToCSV('销售订单', exportRows, {
         orderNo: '订单编号',
         customerName: '经销商名称',
         orderDate: '订单日期',
         deliveryDate: '交期',
         totalAmount: '金额',
         status: '状态',
+        sourceTypeLabel: '来源',
       });
     } catch (e) {
       logger.error('导出失败', e);
@@ -282,7 +292,6 @@ export default function SalesOrderPage() {
             {dealers.map((c: Dealer) => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
-                      <option value="cancelled">已作废</option>
 </select>
         </div>
         <div className="flex flex-col">
@@ -351,15 +360,16 @@ export default function SalesOrderPage() {
               <th className="text-left px-4 py-2.5 font-medium text-gray-600">交期</th>
               <th className="text-right px-4 py-2.5 font-medium text-gray-600">金额</th>
               <th className="text-left px-4 py-2.5 font-medium text-gray-600">状态</th>
+              <th className="text-left px-4 py-2.5 font-medium text-gray-600">来源</th>
               <th className="text-left px-4 py-2.5 font-medium text-gray-600">操作</th>
             </tr>
           </thead>
           <tbody>
             {loading && (
-              <tr><td colSpan={7} className="text-center py-8 text-gray-400">加载中...</td></tr>
+              <tr><td colSpan={8} className="text-center py-8 text-gray-400">加载中...</td></tr>
             )}
             {!loading && orders.length === 0 && (
-              <tr><td colSpan={7} className="text-center py-8 text-gray-400">暂无数据</td></tr>
+              <tr><td colSpan={8} className="text-center py-8 text-gray-400">暂无数据</td></tr>
             )}
             {!loading && orders.map((order: SalesOrder) => {
               const st = STATUS_MAP[order.status] || { label: order.status, tone: 'neutral' };
@@ -373,6 +383,7 @@ export default function SalesOrderPage() {
                   <td className="px-4">
                     <StatusBadge tone={st.tone}>{st.label}</StatusBadge>
                   </td>
+                  <td className="px-4">{SALES_ORDER_SOURCE_LABELS[order.sourceType || ''] || order.sourceType || '-'}</td>
                   <td className="px-4">
                     <span key={`actions-${order.status}`} className="space-x-2 inline-flex items-center">
                       {order.status === 'draft' && (
@@ -385,6 +396,9 @@ export default function SalesOrderPage() {
                           )}
                           {hasPermission('sales:order:approve') && (
                             <button onClick={() => handleAudit(order.id)} className="text-green-500 hover:underline">审核</button>
+                          )}
+                          {hasPermission('sales:order:void') && (
+                            <button onClick={() => handleVoid(order.id)} className="text-red-500 hover:underline">作废</button>
                           )}
                           {hasPermission('sales:order:print') && (
                             <button onClick={() => handlePrintFromList(order.id)} className="text-primary hover:underline inline-flex items-center" title="打印">
