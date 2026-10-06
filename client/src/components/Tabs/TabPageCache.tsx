@@ -15,6 +15,7 @@ const MaterialPage = React.lazy(() => import('@client/src/pages/base/MaterialPag
 const MergeAuditPage = React.lazy(() => import('@client/src/pages/base/MergeAuditPage'));
 const SupplierPage = React.lazy(() => import('@client/src/pages/base/SupplierPage'));
 const WarehousePage = React.lazy(() => import('@client/src/pages/base/WarehousePage'));
+const ProductImportPage = React.lazy(() => import('@client/src/pages/base/ProductImportPage'));
 const StyleAttrDefPage = React.lazy(() => import('@client/src/pages/base/StyleAttrDefPage'));
 const DealerPage = React.lazy(() => import('@client/src/pages/base/DealerPage'));
 const StorePage = React.lazy(() => import('@client/src/pages/base/StorePage'));
@@ -194,6 +195,7 @@ const routePermissions: Record<string, string> = {
   '/omni': 'omni:manage',
   '/member': 'retail:view',
   '/base/member-merge-audit': 'member:merge',
+  '/base/product-import': 'base:import',
 };
 
 function getPermissionForPath(pathname: string): string | null {
@@ -215,6 +217,7 @@ function getRouteComponent(pathname: string): React.ComponentType | null {
     '/base/material': MaterialPage,
     '/base/supplier': SupplierPage,
     '/base/warehouse': WarehousePage,
+    '/base/product-import': ProductImportPage,
     '/base/style-attribute': StyleAttrDefPage,
     '/base/dealer': DealerPage,
     '/base/store': StorePage,

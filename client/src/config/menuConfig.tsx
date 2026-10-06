@@ -45,6 +45,7 @@ export const menuItems: MenuItem[] = [
       { key: 'style', label: '款号管理', path: '/base/style', permission: 'base:style' },
       { key: 'sku', label: 'SKU管理', path: '/base/sku', permission: 'base:sku' },
       { key: 'color', label: '颜色', path: '/product/color', permission: 'base:color' },
+      { key: 'color-group', label: '颜色组', path: '/base/color-group', permission: 'base:style' },
       { key: 'size-group', label: '尺码组', path: '/base/size-group', permission: 'base:sku' },
       { key: 'size', label: '尺码', path: '/product/size', permission: 'base:size' },
       { key: 'size-group-relation', label: '尺码组与尺码关系', path: '/product/size-group-relation', permission: 'base:size' },
@@ -63,6 +64,7 @@ export const menuItems: MenuItem[] = [
       { key: 'supplier', label: '供应商管理', path: '/base/supplier', permission: 'base:supplier' },
       { key: 'dealer', label: '经销商管理', path: '/base/dealer', permission: 'base:dealer' },
       { key: 'store', label: '店仓管理', path: '/base/store', permission: 'base:store' },
+      { key: 'warehouse', label: '仓库管理', path: '/base/warehouse', permission: 'base:warehouse' },
     ],
   },
   {
@@ -90,7 +92,7 @@ export const menuItems: MenuItem[] = [
       { key: 'work-order', label: '生产工单', path: '/production/work-order', permission: 'production:work_order' },
       { key: 'material-issue', label: '领料单', path: '/production/material-issue', permission: 'production:material_issue' },
       { key: 'finish-receipt', label: '完工入库单', path: '/production/finish-receipt', permission: 'production:finish_receipt' },
-      { key: 'subcontract-main', label: '委外管理', path: '/subcontract', permission: 'subcontract:manage' },
+      { key: 'subcontract-main', label: '委外管理', path: '/subcontract', permission: 'inventory:query' },
     ],
   },
   {

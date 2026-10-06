@@ -2,7 +2,7 @@
 /**
  * ERP 演示数据种子脚本（开发环境，可重复执行、幂等）
  * - 复用项目自带的 postgres@3.4.9 驱动
- * - 引用 erp_db 中已有主数据（customer/store/warehouse/supplier/material/sku/style/channel）
+ * - 引用 erp_db 中已有主数据（store/warehouse/supplier/material/sku/style/channel）；客户主数据已移除，销售单客户名称用固定演示值
  * - 为各"单据模块"插入少量连贯数据，便于点击模拟、发现问题
  * - 运行: node scripts/seed-demo-data.cjs
  */
@@ -35,7 +35,9 @@ const upsertId = async (table, col, val, obj) => {
 
 (async () => {
   console.log('== 读取主数据 ==');
-  const customers = await sql`SELECT id, name FROM customer LIMIT 6`;
+  // 客户主数据已移除（sales_order 仅保留 customer_name 自由文本，无 customer_id 外键）。
+  // 演示销售单的客户名称改用固定演示值，避免种子脚本在空库/新库上因查询已删除的 customer 表而直接崩溃。
+  const customers = [{ id: null, name: '华南连锁批发' }];
   const stores = await sql`SELECT id, name, store_type FROM store LIMIT 6`;
   const warehouses = await sql`SELECT id, name FROM warehouse LIMIT 6`;
   const suppliers = await sql`SELECT id, name FROM supplier LIMIT 6`;
@@ -61,9 +63,13 @@ const upsertId = async (table, col, val, obj) => {
     const p1 = n(s1.tag_price) || 199, p2 = n(s2.tag_price) || 299;
     const q1 = 10, q2 = 5, amt1 = p1 * q1, amt2 = p2 * q2, total = amt1 + amt2;
     const soId = await upsertId('sales_order', 'order_no', soNo, {
-      order_no: soNo, customer_id: c.id, customer_name: c.name, order_date: date(20),
-      delivery_date: date(15), total_amount: total, status: 'confirmed',
+      order_no: soNo, customer_name: c.name, order_date: date(20),
+      delivery_date: date(15), total_amount: total, status: 'draft',
     });
+    // 历史兼容：早期 seed 版本向 sales_order 写入了状态机无法识别的状态（如 'confirmed'），
+    // 导致该演示单在界面中无法渲染/流转。规范化回合法草稿态，使演示单可正常打开与操作。
+    // 幂等：仅当确为非法遗留值时更新，重复执行无副作用。
+    await sql`UPDATE sales_order SET status = 'draft' WHERE order_no = ${soNo} AND status = 'confirmed'`;
     const getItem = async (skuId) =>
       (await sql`SELECT id FROM sales_order_item WHERE order_id=${soId} AND sku_id=${skuId} LIMIT 1`)[0]?.id;
     let it1 = await getItem(s1.id);
@@ -75,7 +81,7 @@ const upsertId = async (table, col, val, obj) => {
     const w = W(0);
     let obId = await getId('sales_outbound', 'outbound_no', obNo);
     if (!obId) {
-      obId = await ins('sales_outbound', { outbound_no: obNo, order_id: soId, order_no: soNo, customer_id: c.id, customer_name: c.name, warehouse_id: w.id, warehouse_name: w.name, outbound_date: date(10), total_amount: total, cost_amount: n(s1.cost_price) * q1 + n(s2.cost_price) * q2, status: 'out' });
+      obId = await ins('sales_outbound', { outbound_no: obNo, order_id: soId, order_no: soNo, customer_name: c.name, warehouse_id: w.id, warehouse_name: w.name, outbound_date: date(10), total_amount: total, cost_amount: n(s1.cost_price) * q1 + n(s2.cost_price) * q2, status: 'out' });
       if (!(await guard('sales_outbound_item', 'outbound_id', obId))) {
         await ins('sales_outbound_item', { outbound_id: obId, order_item_id: it1, sku_id: s1.id, sku_code: s1.sku_code, style_no: s1.style_no, color: s1.color, size: s1.size, quantity: q1, price: p1, cost_price: n(s1.cost_price), amount: amt1, cost_amount: n(s1.cost_price) * q1, batch_no: 'B20260901' });
         await ins('sales_outbound_item', { outbound_id: obId, order_item_id: it2, sku_id: s2.id, sku_code: s2.sku_code, style_no: s2.style_no, color: s2.color, size: s2.size, quantity: q2, price: p2, cost_price: n(s2.cost_price), amount: amt2, cost_amount: n(s2.cost_price) * q2, batch_no: 'B20260901' });
@@ -83,14 +89,14 @@ const upsertId = async (table, col, val, obj) => {
     }
     const recNo = 'SEED-AR-2026-001';
     if (!(await guard('receivable', 'receivable_no', recNo))) {
-      await ins('receivable', { receivable_no: recNo, customer_id: c.id, customer_name: c.name, biz_type: 'sales_outbound', biz_no: obNo, amount: total, received_amount: 0, balance: total, due_date: date(-5), status: 'unpaid' });
+      await ins('receivable', { receivable_no: recNo, customer_name: c.name, biz_type: 'sales_outbound', biz_no: obNo, amount: total, received_amount: 0, balance: total, due_date: date(-5), status: 'unpaid' });
     }
     if (!(await guard('finance_receipt', 'receipt_no', 'SEED-RC-2026-001'))) {
-      await ins('finance_receipt', { receipt_no: 'SEED-RC-2026-001', receipt_date: date(8), customer_id: c.id, customer_name: c.name, amount: total * 0.6, payment_method: 'transfer', handler: '财务-王', status: 'confirmed', remark: '演示收款60%' });
+      await ins('finance_receipt', { receipt_no: 'SEED-RC-2026-001', receipt_date: date(8), customer_name: c.name, amount: total * 0.6, payment_method: 'transfer', handler: '财务-王', status: 'confirmed', remark: '演示收款60%' });
     }
     const rtNo = 'SEED-SR-2026-001';
     if (!(await guard('sales_return', 'return_no', rtNo))) {
-      const rtId = await ins('sales_return', { return_no: rtNo, outbound_id: obId, outbound_no: obNo, customer_id: c.id, customer_name: c.name, warehouse_id: w.id, warehouse_name: w.name, return_date: date(3), total_amount: amt1, status: 'returned' });
+      const rtId = await ins('sales_return', { return_no: rtNo, outbound_id: obId, outbound_no: obNo, customer_name: c.name, warehouse_id: w.id, warehouse_name: w.name, return_date: date(3), total_amount: amt1, status: 'returned' });
       await ins('sales_return_item', { return_id: rtId, sku_id: s1.id, sku_code: s1.sku_code, style_no: s1.style_no, color: s1.color, size: s1.size, quantity: 2, price: p1, amount: p1 * 2 });
     }
     report.sales = { soId, obId };
