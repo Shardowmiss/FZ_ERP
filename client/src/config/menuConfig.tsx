@@ -52,7 +52,6 @@ export const menuItems: MenuItem[] = [
       { key: 'style', label: '款号管理', path: '/base/style', permission: 'base:style' },
       { key: 'sku', label: 'SKU管理', path: '/base/sku', permission: 'base:sku' },
       { key: 'color', label: '颜色', path: '/product/color', permission: 'base:color' },
-      { key: 'color-group', label: '颜色组', path: '/base/color-group', permission: 'base:style' },
       { key: 'size-group', label: '尺码组', path: '/base/size-group', permission: 'base:sku' },
       { key: 'size', label: '尺码', path: '/product/size', permission: 'base:size' },
       { key: 'size-group-relation', label: '尺码组与尺码关系', path: '/product/size-group-relation', permission: 'base:size' },
