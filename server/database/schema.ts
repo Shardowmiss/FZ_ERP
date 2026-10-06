@@ -4138,4 +4138,52 @@ export const domainEvent = pgTable(
     index("idx_domain_event_type").on(table.eventType),
   ],
 );
+
+/* ============ 商品资料批量导入任务（款号 / SKU） ============
+ * 与迁移 0041_product_import_task.sql 三处同步（schema.ts ↔ 迁移 ↔ erp_test 重克隆）。
+ *
+ * 业务规则（用户确认）：
+ *   1) 导入任务记录每次上传的 Excel 原文件（file_url）+ 解析后的全量数据内容（rows）。
+ *   2) 状态机：draft（草稿，可反复重导覆盖）→ approved（审核通过，已批量写入商品库）；
+ *      重导时把同 type 的旧 draft 置为 superseded，实现「后一次导入覆盖前一次」。
+ *   3) summary / rows 均为 jsonb：summary 承载 { total, ok, existed, unsupported,
+ *      missingMasterData, inserted, skipped }；rows 承载逐行 { rowIndex, raw, status,
+ *      reason }，status ∈ { ok | existed | unsupported | missing_master }。
+ *   4) 审核写入商品库时「仅新增、跳过已存在」：款号调 StyleService.bulkImportStyle，
+ *      SKU 调 SkuService.bulkImport，二者均按唯一键跳过已存在记录。
+ */
+export const productImportTask = pgTable(
+  "product_import_task",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    // 导入类型：'style' = 款号批量导入；'sku' = SKU 批量导入
+    importType: varchar("import_type", { length: 16 }).notNull(),
+    // 状态：'draft' 草稿 / 'approved' 已审核入库 / 'superseded' 被后续重导覆盖
+    status: varchar("status", { length: 16 }).notNull().default("draft"),
+    // 上传的 Excel 原文件信息（留档）
+    fileName: varchar("file_name", { length: 255 }),
+    fileUrl: text("file_url"),
+    filePath: text("file_path"),
+    bucketId: varchar("bucket_id", { length: 100 }),
+    // 解析出的有效数据行数
+    totalRows: integer("total_rows").notNull().default(0),
+    // 校验汇总：{ total, ok, existed, unsupported, missingMasterData, inserted, skipped }
+    summary: jsonb("summary").notNull().default(sql`'{}'::jsonb`),
+    // 逐行明细：[{ rowIndex, raw, status, reason }]
+    rows: jsonb("rows").notNull().default(sql`'[]'::jsonb`),
+    // System field: Creation time (auto-filled, do not modify)
+    createdAt: customTimestamptz("_created_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
+    // System field: Creator（导入人，业务写入 RequestContext.getUserId()）
+    createdBy: userProfile("_created_by"),
+    // System field: Update time (auto-filled, do not modify)
+    updatedAt: customTimestamptz("_updated_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
+    // System field: Updater (auto-filled, do not modify)
+    updatedBy: userProfile("_updated_by"),
+  },
+  (table) => [
+    index("idx_product_import_type_status").on(table.importType, table.status),
+    index("idx_product_import_created").on(table.createdAt),
+  ],
+);
+export const productImportTaskTable = productImportTask;
 export const domainEventTable = domainEvent;

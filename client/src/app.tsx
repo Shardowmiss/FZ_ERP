@@ -19,6 +19,7 @@ import NotFound from './pages/NotFound/NotFound';
 
 const StylePage = React.lazy(() => import('./pages/base/StylePage'));
 const SkuPage = React.lazy(() => import('./pages/base/SkuPage'));
+const ProductImportPage = React.lazy(() => import('./pages/base/ProductImportPage'));
 const ColorGroupPage = React.lazy(() => import('./pages/base/ColorGroupPage'));
 const SizeGroupPage = React.lazy(() => import('./pages/base/SizeGroupPage'));
 const MaterialPage = React.lazy(() => import('./pages/base/MaterialPage'));
@@ -394,6 +395,10 @@ const RoutesComponent = () => {
           <Route
             path="base/sku"
             element={protectedWith(<SkuPage />, 'base:sku')}
+          />
+          <Route
+            path="base/product-import"
+            element={protectedWith(<ProductImportPage />, 'base:import')}
           />
           <Route
             path="base/size-group"

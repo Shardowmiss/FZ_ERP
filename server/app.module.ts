@@ -14,6 +14,7 @@ import { ErpCsrfGuard } from './common/guards/erp-csrf.guard';
 import { RbacService } from './modules/rbac/rbac.service';
 import { ViewModule } from './modules/view/view.module';
 import { BaseModule } from './modules/base/base.module';
+import { ProductImportModule } from './modules/product-import/product-import.module';
 import { BomModule } from './modules/bom/bom.module';
 import { PurchaseModule } from './modules/purchase/purchase.module';
 import { SalesModule } from './modules/sales/sales.module';
@@ -58,6 +59,7 @@ import { MetricsModule } from './modules/metrics/metrics.module';
     }),
     CommonModule,
     BaseModule,
+    ProductImportModule,
     BomModule,
     PurchaseModule,
     SalesModule,

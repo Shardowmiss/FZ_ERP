@@ -17,13 +17,33 @@ import {
   allocationOrder,
   preOrder,
 } from '@server/database/schema';
-import { eq, and, count, desc, or, ilike, gt, sql } from 'drizzle-orm';
+import { eq, and, count, desc, or, ilike, gt, sql, inArray } from 'drizzle-orm';
 import type { Style, Sku, StyleCreateAutoRequest } from '@shared/api.interface';
 import { CodeRuleService } from '../../system/code-rule/code-rule.service';
 import { escapeLike } from '@server/common/utils/escape-like';
 
 type StyleInsert = typeof style.$inferInsert;
 type SkuInsert = typeof sku.$inferInsert;
+
+/** 款号批量导入单行（来自 Excel 解析），用于「商品资料-批量导入」审核入库 */
+export interface StyleImportItem {
+  styleNo: string;
+  name: string;
+  colorGroupCode: string;
+  sizeGroupCode: string;
+  category?: string | null;
+  season?: string | null;
+  brand?: string | null;
+  wave?: string | null;
+  year?: string | null;
+  fit?: string | null;
+  subCategory?: string | null;
+  tagPrice?: number | null;
+  costPrice?: number | null;
+  supplyPrice?: number | null;
+  status?: string | null;
+  remark?: string | null;
+}
 
 function skuRowToDto(row: typeof sku.$inferSelect): Sku {
   return {
@@ -345,6 +365,96 @@ export class StyleService {
     const skus: Sku[] = skuRows.map((row) => skuRowToDto(row));
 
     return { ...styleDto, skus };
+  }
+
+  /** 批量导入款号（仅建 style 头，不自动生成 SKU 矩阵；按 styleNo 跳过已存在）。
+   *  用于「商品资料-批量导入」审核入库阶段；前端须先经 ProductImportService 校验。 */
+  async bulkImportStyle(items: StyleImportItem[]): Promise<{
+    total: number;
+    inserted: number;
+    skipped: number;
+    errors: { index: number; styleNo?: string; reason: string }[];
+  }> {
+    const errors: { index: number; styleNo?: string; reason: string }[] = [];
+    if (items.length === 0) {
+      return { total: 0, inserted: 0, skipped: 0, errors: [] };
+    }
+
+    // 批量解析色组 / 尺码组编码 → id
+    const cgCodes = [...new Set(items.map((i) => i.colorGroupCode).filter(Boolean))] as string[];
+    const sgCodes = [...new Set(items.map((i) => i.sizeGroupCode).filter(Boolean))] as string[];
+    const [cgRows, sgRows] = await Promise.all([
+      cgCodes.length
+        ? this.db.select({ id: colorGroup.id, code: colorGroup.code }).from(colorGroup).where(inArray(colorGroup.code, cgCodes))
+        : Promise.resolve([]),
+      sgCodes.length
+        ? this.db.select({ id: sizeGroup.id, code: sizeGroup.code }).from(sizeGroup).where(inArray(sizeGroup.code, sgCodes))
+        : Promise.resolve([]),
+    ]);
+    const cgMap = new Map(cgRows.map((r) => [r.code, r.id]));
+    const sgMap = new Map(sgRows.map((r) => [r.code, r.id]));
+
+    // 已存在的款号（按 styleNo）
+    const styleNos = items.map((i) => i.styleNo);
+    const existingRows = await this.db.select({ styleNo: style.styleNo }).from(style).where(inArray(style.styleNo, styleNos));
+    const existingSet = new Set(existingRows.map((r) => r.styleNo));
+
+    const seen = new Set<string>();
+    const toInsert: StyleInsert[] = [];
+    let skipped = 0;
+
+    for (let i = 0; i < items.length; i++) {
+      const it = items[i];
+      if (existingSet.has(it.styleNo)) {
+        skipped += 1;
+        continue;
+      }
+      if (seen.has(it.styleNo)) {
+        errors.push({ index: i, styleNo: it.styleNo, reason: '批内款号重复' });
+        continue;
+      }
+      const colorGroupId = cgMap.get(it.colorGroupCode);
+      if (!colorGroupId) {
+        errors.push({ index: i, styleNo: it.styleNo, reason: `色组编码不存在: ${it.colorGroupCode}` });
+        continue;
+      }
+      const sizeGroupId = sgMap.get(it.sizeGroupCode);
+      if (!sizeGroupId) {
+        errors.push({ index: i, styleNo: it.styleNo, reason: `尺码组编码不存在: ${it.sizeGroupCode}` });
+        continue;
+      }
+      seen.add(it.styleNo);
+      toInsert.push({
+        styleNo: it.styleNo,
+        name: it.name,
+        colorGroupId,
+        sizeGroupId,
+        category: it.category ?? null,
+        season: it.season ?? null,
+        brand: it.brand ?? null,
+        wave: it.wave ?? null,
+        year: it.year ?? null,
+        fit: it.fit ?? null,
+        subCategory: it.subCategory ?? null,
+        tagPrice: it.tagPrice !== undefined && it.tagPrice !== null ? String(it.tagPrice) : '0',
+        costPrice: it.costPrice !== undefined && it.costPrice !== null ? String(it.costPrice) : '0',
+        supplyPrice: it.supplyPrice !== undefined && it.supplyPrice !== null ? String(it.supplyPrice) : '0',
+        codeRuleId: null,
+        status: it.status ?? 'active',
+        remark: it.remark ?? null,
+        attributes: {} as any,
+      });
+    }
+
+    if (toInsert.length > 0) {
+      // 分批插入（每批 500）避免超长 SQL
+      const BATCH = 500;
+      for (let i = 0; i < toInsert.length; i += BATCH) {
+        await this.db.insert(style).values(toInsert.slice(i, i + BATCH));
+      }
+    }
+
+    return { total: items.length, inserted: toInsert.length, skipped, errors };
   }
 
   async update(
