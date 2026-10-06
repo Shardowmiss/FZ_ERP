@@ -3,6 +3,7 @@ import {
   useContext,
   useState,
   useEffect,
+  useRef,
   type ReactNode,
 } from 'react';
 import { rbacApi } from '@client/src/api/rbac';
@@ -33,6 +34,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const { setLanguage } = useI18n();
 
+  // 竞态护栏：标记「用户已显式登录/登出」，挂件的自动恢复请求晚到时不得覆盖登录后的最新态。
+  // 修复：正常模式残留旧 token 时，挂载自动发起的 me() 晚于 login() 返回会把新登录态回滚，
+  // 导致「提示登录成功却停在登录页」（无痕模式无旧 token 故不触发）。
+  const explicitAuthRef = useRef(false);
+
   // 登录后应用个人语种偏好（user.language 落库值），实现「个人用户在系统设置中单独配置语种」
   useEffect(() => {
     const lang = user?.language;
@@ -44,36 +50,45 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const token = localStorage.getItem(TOKEN_KEY);
     if (token) {
-      loadCurrentUser();
+      loadCurrentUser(token);
     } else {
       setIsLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const loadCurrentUser = async () => {
+  const loadCurrentUser = async (bootToken: string) => {
     try {
       const res = await rbacApi.me();
+      // 期间用户已显式登录（拿到更新的 token/用户），丢弃这次可能过期的启动态
+      if (explicitAuthRef.current) return;
       setUser(res.user);
       setMenus(res.menus);
       setPermissions(res.permissions);
     } catch (e) {
       logger.error('Failed to load current user', e);
-      localStorage.removeItem(TOKEN_KEY);
-      setUser(null);
-      setMenus([]);
-      setPermissions([]);
+      // 仅当 localStorage 里仍是当初那个失效 token 时才清理；若用户已登录换成新 token，绝不动它
+      if (!explicitAuthRef.current && localStorage.getItem(TOKEN_KEY) === bootToken) {
+        localStorage.removeItem(TOKEN_KEY);
+      }
+      if (!explicitAuthRef.current) {
+        setUser(null);
+        setMenus([]);
+        setPermissions([]);
+      }
     } finally {
-      setIsLoading(false);
+      if (!explicitAuthRef.current) setIsLoading(false);
     }
   };
 
   const login = async (username: string, password: string) => {
+    explicitAuthRef.current = true;
     const res = await rbacApi.login({ username, password });
     localStorage.setItem(TOKEN_KEY, res.token);
     setUser(res.user);
     setMenus(res.menus);
     setPermissions(res.permissions);
+    setIsLoading(false);
   };
 
   const logout = async () => {
@@ -86,6 +101,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     setMenus([]);
     setPermissions([]);
+    explicitAuthRef.current = false;
+    setIsLoading(false);
   };
 
   const hasPermission = (code: string) => {

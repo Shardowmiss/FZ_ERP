@@ -64,8 +64,6 @@ function installInterceptor(): void {
       config.headers = config.headers || {};
       config.headers[ERP_CSRF_HEADER_NAME] = csrf;
     }
-    if (!config.meta) config.meta = {};
-    config.meta.autoJumpToLogin = false;
     return config;
   });
 
@@ -76,9 +74,14 @@ function installInterceptor(): void {
         if (err.response?.headers) {
           delete err.response.headers['x-login-url'];
         }
-        localStorage.removeItem(TOKEN_KEY);
-        if (!isOnLoginPage()) {
-          redirectToLogin();
+        // suppressAuthRedirect：静默恢复（启动期 me()）的 401 是预期内的（旧 token 失效），
+        // 绝不可触发全局登出/整页跳登录——否则会与用户刚完成的登录竞态，把页面弹回登录页。
+        // 正常业务请求（会话中 token 真的过期）仍走原逻辑：清 token + 跳登录。
+        if (!err.config?.meta?.suppressAuthRedirect) {
+          localStorage.removeItem(TOKEN_KEY);
+          if (!isOnLoginPage()) {
+            redirectToLogin();
+          }
         }
       }
       return Promise.reject(err);

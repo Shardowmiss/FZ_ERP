@@ -14,7 +14,7 @@ export const rbacApi = {
   logout: () =>
     request<void>('/api/auth/logout', 'POST'),
   me: () =>
-    request<CurrentUserResponse>('/api/auth/me'),
+    request<CurrentUserResponse>('/api/auth/me', 'GET', undefined, undefined, { suppressAuthRedirect: true }),
   updateMyLanguage: (language: string) =>
     request<CurrentUserResponse>('/api/auth/me/language', 'PATCH', { language }),
 

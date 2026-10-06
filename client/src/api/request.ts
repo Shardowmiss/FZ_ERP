@@ -8,6 +8,7 @@ export async function request<T>(
   method: string = 'GET',
   data?: any,
   params?: any,
+  opts?: { suppressAuthRedirect?: boolean },
 ): Promise<T> {
   try {
     const token = localStorage.getItem(TOKEN_KEY) || '';
@@ -19,6 +20,7 @@ export async function request<T>(
       headers: {
         'x-auth-token': token,
       },
+      meta: opts?.suppressAuthRedirect ? { suppressAuthRedirect: true } : undefined,
     });
     return response.data as T;
   } catch (error: any) {
