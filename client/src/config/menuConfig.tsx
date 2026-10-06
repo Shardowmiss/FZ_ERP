@@ -227,9 +227,10 @@ export const menuItems: MenuItem[] = [
     icon: <CreditCard size={18} />,
     children: [
       // H2/H3：原为「不可达死路由」误判，实为真实功能，经 M3 单源注册后可达。
-      // 权限暂沿用 app.tsx 原状（未加门禁）= 登录即可访问，RBAC 硬化留后续。
-      { key: 'pos-cashier', label: 'POS收银', path: '/pos/cashier' },
-      { key: 'pricing', label: '价格管理', path: '/pricing' },
+      // 迭代B RBAC 硬化：门禁码 pos:cashier / pricing:manage 已在 rbac.service 目录登记，
+      // 由 store_manager 持有、super_admin 自动全有；菜单与路由均加门禁，无权限者不可见/不可访问。
+      { key: 'pos-cashier', label: 'POS收银', path: '/pos/cashier', permission: 'pos:cashier' },
+      { key: 'pricing', label: '价格管理', path: '/pricing', permission: 'pricing:manage' },
     ],
   },
 ];
@@ -487,10 +488,10 @@ export const routeComponents: Record<string, RouteEntry> = {
   '/analytics/lifecycle': { component: LifecyclePage, permission: 'dashboard:view' },
   '/analytics/bi': { component: BIPage, permission: 'dashboard:view' },
   '/omni': { component: OmniPage, permission: 'omni:manage' },
-  // H2
-  '/pos/cashier': { component: PosCashierPage },
-  // H3
-  '/pricing': { component: PricingPage },
+  // H2：POS收银 —— 门禁 pos:cashier（store_manager 持有，super_admin 自动全有）
+  '/pos/cashier': { component: PosCashierPage, permission: 'pos:cashier' },
+  // H3：价格管理 —— 门禁 pricing:manage
+  '/pricing': { component: PricingPage, permission: 'pricing:manage' },
   '/member': { component: MemberPage, permission: 'retail:view' },
   '/member/manage': { component: MemberManagePage, permission: 'member:manage' },
   '/member/level': { component: MemberLevelPage, permission: 'member:level' },
