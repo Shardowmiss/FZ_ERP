@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Controller,
   Get,
   Query,
@@ -14,6 +15,7 @@ export class ProfitController {
 
   @Get('order')
   async orderProfit(@Query('orderId') orderId: string): Promise<ProfitAnalysis> {
+    if (!orderId) throw new BadRequestException('orderId 必填');
     return this.profitService.getOrderProfit(orderId);
   }
 }

@@ -1005,6 +1005,9 @@ export class RbacService {
   async getUserDataScope(
     userId: string,
   ): Promise<{ type: 'all' | 'store'; storeIds: string[] }> {
+    // 本地令牌登录时平台注入的 userContext.userId 可能为空串，若直接以空串查 UUID 列会抛 500；
+    // 空 userId 视为初始/本地管理员，单租户模式下默认全量可见（与 rbac 文档规则 3 一致）。
+    if (!userId) return { type: 'all', storeIds: [] };
     if (await this.isSuperAdmin(userId)) {
       return { type: 'all', storeIds: [] };
     }

@@ -30,6 +30,7 @@ export class BomController {
   async getCostSimulation(
     @Query('styleId') styleId: string,
   ): Promise<CostSimulationResult> {
+    if (!styleId) throw new BadRequestException('styleId 必填');
     return this.bomService.getCostSimulation(styleId);
   }
 

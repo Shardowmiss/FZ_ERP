@@ -26,11 +26,6 @@ export class CodeRuleController {
     return this.codeRuleService.listRules();
   }
 
-  @Get(':id')
-  async getRule(@Param('id') id: string): Promise<CodeRule> {
-    return this.codeRuleService.getRule(id);
-  }
-
   @CheckPermission('system:config')
   @Post()
   async saveRule(@Body() body: {
@@ -69,5 +64,10 @@ export class CodeRuleController {
   @Get('brand-options')
   async getBrandOptions(): Promise<BrandCode[]> {
     return this.codeRuleService.getBrandOptions();
+  }
+
+  @Get(':id')
+  async getRule(@Param('id') id: string): Promise<CodeRule> {
+    return this.codeRuleService.getRule(id);
   }
 }

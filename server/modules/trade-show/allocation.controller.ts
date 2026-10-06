@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -32,6 +33,7 @@ export class AllocationController {
     @Query('tradeShowId') tradeShowId: string,
     @Query('brand') brand?: string,
   ): Promise<PreOrderSummary[]> {
+    if (!tradeShowId) throw new BadRequestException('tradeShowId 必填');
     return this.allocationService.getStyleSummary(tradeShowId, brand);
   }
 
