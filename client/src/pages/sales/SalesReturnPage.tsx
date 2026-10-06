@@ -11,6 +11,7 @@ import { PrintDialog } from '@client/src/components/print/PrintDialog';
 import { SkuDocPrintContent } from '@client/src/components/print/DocPrintContent';
 import type { SkuMatrixItem } from '@client/src/components/print/SkuMatrixTable';
 import { Printer, Plus } from 'lucide-react';
+import SalesFilterBar from '@client/src/components/SalesFilterBar';
 import { useAuth } from '@client/src/contexts/AuthContext';
 import { TableContainer } from '@client/src/components/ui/table-container';
 import { DataPagination } from '@client/src/components/ui/pagination';
@@ -94,6 +95,18 @@ export default function SalesReturnPage() {
   }, []);
 
   const handleSearch = () => { setPage(1); fetchList(); };
+
+  const handleReset = () => {
+    setStatus('');
+    setKeyword('');
+    setFilterWarehouse('');
+    setFilterDocStart(defaultDocStart);
+    setFilterDocEnd(defaultDocEnd);
+    setFilterReturnStart('');
+    setFilterReturnEnd('');
+    setPage(1);
+    fetchList();
+  };
 
   const handlePageSizeChange = (size: number) => {
     setPageSize(size);
@@ -237,59 +250,46 @@ export default function SalesReturnPage() {
         )}
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm p-4 mb-4 flex flex-wrap gap-3 items-end">
-        <div className="flex flex-col">
-          <label className="text-xs text-gray-500 mb-1">状态</label>
-          <select value={status} onChange={(e) => setStatus(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-1.5 text-sm w-32">
-            <option value="">全部</option>
-            {Object.entries(STATUS_MAP).map(([k, v]) => (
-              <option key={k} value={k}>{v.label}</option>
-            ))}
-                      <option value="cancelled">已作废</option>
-</select>
-        </div>
-        <div className="flex flex-col">
-          <label className="text-xs text-gray-500 mb-1">仓库</label>
-          <select value={filterWarehouse} onChange={(e) => setFilterWarehouse(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-1.5 text-sm w-40">
-            <option value="">全部</option>
-            {warehouseOptions.map((w: { id: string; code: string; name: string }) => (
-              <option key={w.id} value={w.id}>{w.name}</option>
-            ))}
-          </select>
-        </div>
-        <div className="flex flex-col">
-          <label className="text-xs text-gray-500 mb-1">单据日期</label>
-          <div className="flex items-center gap-1">
-            <input type="date" value={filterDocStart} onChange={(e) => setFilterDocStart(e.target.value)}
-              className="border border-gray-300 rounded px-2 py-1.5 text-sm" />
-            <span className="text-gray-400">至</span>
-            <input type="date" value={filterDocEnd} onChange={(e) => setFilterDocEnd(e.target.value)}
-              className="border border-gray-300 rounded px-2 py-1.5 text-sm" />
-          </div>
-        </div>
-        <div className="flex flex-col">
-          <label className="text-xs text-gray-500 mb-1">退货日期</label>
-          <div className="flex items-center gap-1">
-            <input type="date" value={filterReturnStart} onChange={(e) => setFilterReturnStart(e.target.value)}
-              className="border border-gray-300 rounded px-2 py-1.5 text-sm" />
-            <span className="text-gray-400">至</span>
-            <input type="date" value={filterReturnEnd} onChange={(e) => setFilterReturnEnd(e.target.value)}
-              className="border border-gray-300 rounded px-2 py-1.5 text-sm" />
-          </div>
-        </div>
-        <div className="flex flex-col">
-          <label className="text-xs text-gray-500 mb-1">搜索</label>
-          <input type="text" value={keyword} onChange={(e) => setKeyword(e.target.value)}
-            placeholder="退货单号/出库单号"
-            className="border border-gray-300 rounded px-3 py-1.5 text-sm w-48" />
-        </div>
-        <button onClick={handleSearch}
-          className="bg-primary text-white px-4 py-1.5 rounded text-sm hover:bg-primary">查询</button>
-        <button onClick={handleExport}
-          className="px-4 py-1.5 border border-gray-300 rounded text-sm hover:bg-gray-50">导出</button>
-       </div>
+      <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
+        <SalesFilterBar
+          onSearch={handleSearch}
+          onReset={handleReset}
+          dateStart={filterDocStart}
+          dateEnd={filterDocEnd}
+          onDateStartChange={setFilterDocStart}
+          onDateEndChange={setFilterDocEnd}
+          showStatus
+          status={status}
+          onStatusChange={setStatus}
+          statusOptions={[
+            ...Object.entries(STATUS_MAP).map(([k, v]) => ({ value: k, label: v.label })),
+            { value: 'cancelled', label: '已作废' },
+          ]}
+          showWarehouse
+          warehouseId={filterWarehouse}
+          onWarehouseChange={setFilterWarehouse}
+          warehouseOptions={warehouseOptions}
+          showKeyword
+          keyword={keyword}
+          onKeywordChange={setKeyword}
+          keywordPlaceholder="退货单号/出库单号"
+          showSecondaryDate
+          secondaryDateLabel="退货日期"
+          secondaryDateStart={filterReturnStart}
+          secondaryDateEnd={filterReturnEnd}
+          onSecondaryDateStartChange={setFilterReturnStart}
+          onSecondaryDateEndChange={setFilterReturnEnd}
+          extraButtons={
+            <button
+              type="button"
+              onClick={handleExport}
+              className="px-4 py-1.5 border border-gray-300 rounded text-sm hover:bg-gray-50"
+            >
+              导出
+            </button>
+          }
+        />
+      </div>
 
        <div className="bg-white rounded-lg shadow-sm">
         <TableContainer>

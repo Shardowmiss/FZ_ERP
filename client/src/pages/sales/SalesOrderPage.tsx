@@ -17,7 +17,7 @@ import { useAuth } from '@client/src/contexts/AuthContext';
 import { TableContainer } from '@client/src/components/ui/table-container';
 import { DataPagination } from '@client/src/components/ui/pagination';
 import { exportTableToCSV } from '@client/src/utils/export-csv';
-import { validateDateRange } from '@client/src/utils/date-utils';
+import SalesFilterBar from '@client/src/components/SalesFilterBar';
 import { errMsg } from '@/utils/errMsg';
 
 const STATUS_MAP: Record<string, { label: string; tone: StatusTone }> = {
@@ -130,11 +130,16 @@ export default function SalesOrderPage() {
   }, [page]);
 
   const handleSearch = () => {
-    const error = validateDateRange(startDate, endDate);
-    if (error) {
-      toast.error(error);
-      return;
-    }
+    setPage(1);
+    fetchList();
+  };
+
+  const handleReset = () => {
+    setDealerId('');
+    setStatus('');
+    setStartDate(def.startDate);
+    setEndDate(def.endDate);
+    setKeyword('');
     setPage(1);
     fetchList();
   };
@@ -280,73 +285,36 @@ export default function SalesOrderPage() {
         )}
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm p-4 mb-4 flex flex-wrap gap-3 items-end">
-        <div className="flex flex-col">
-          <label className="text-xs text-gray-500 mb-1">经销商</label>
-          <select
-            value={dealerId}
-            onChange={(e) => setDealerId(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-1.5 text-sm w-40"
-          >
-            <option value="">全部</option>
-            {dealers.map((c: Dealer) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
-</select>
-        </div>
-        <div className="flex flex-col">
-          <label className="text-xs text-gray-500 mb-1">状态</label>
-          <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-1.5 text-sm w-32"
-          >
-            <option value="">全部</option>
-            {Object.entries(STATUS_MAP).map(([k, v]) => (
-              <option key={k} value={k}>{v.label}</option>
-            ))}
-          </select>
-        </div>
-        <div className="flex flex-col">
-          <label className="text-xs text-gray-500 mb-1">开始日期</label>
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-1.5 text-sm"
-          />
-        </div>
-        <div className="flex flex-col">
-          <label className="text-xs text-gray-500 mb-1">结束日期</label>
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-1.5 text-sm"
-          />
-        </div>
-        <div className="flex flex-col">
-          <label className="text-xs text-gray-500 mb-1">搜索</label>
-          <input
-            type="text"
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
-            placeholder="单号/经销商"
-            className="border border-gray-300 rounded px-3 py-1.5 text-sm w-40"
-          />
-        </div>
-        <button
-          onClick={handleSearch}
-          className="bg-primary text-white px-4 py-1.5 rounded text-sm hover:bg-primary"
-        >
-          查询
-        </button>
-        <button
-          onClick={handleExport}
-          className="px-4 py-1.5 border border-gray-300 rounded text-sm hover:bg-gray-50"
-        >
-          导出
-        </button>
+      <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
+        <SalesFilterBar
+          onSearch={handleSearch}
+          onReset={handleReset}
+          dateStart={startDate}
+          dateEnd={endDate}
+          onDateStartChange={setStartDate}
+          onDateEndChange={setEndDate}
+          showDealer
+          dealerId={dealerId}
+          onDealerChange={setDealerId}
+          dealerOptions={dealers.map((d) => ({ id: d.id, name: d.name }))}
+          showStatus
+          status={status}
+          onStatusChange={setStatus}
+          statusOptions={Object.entries(STATUS_MAP).map(([k, v]) => ({ value: k, label: v.label }))}
+          showKeyword
+          keyword={keyword}
+          onKeywordChange={setKeyword}
+          keywordPlaceholder="单号/经销商"
+          extraButtons={
+            <button
+              type="button"
+              onClick={handleExport}
+              className="px-4 py-1.5 border border-gray-300 rounded text-sm hover:bg-gray-50"
+            >
+              导出
+            </button>
+          }
+        />
       </div>
 
       <div className="bg-white rounded-lg shadow-sm">

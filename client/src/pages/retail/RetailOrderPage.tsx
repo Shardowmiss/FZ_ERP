@@ -13,8 +13,9 @@ import { logger } from '@lark-apaas/client-toolkit/logger';
 import { toast } from 'sonner';
 import { showConfirm } from '@lark-apaas/client-toolkit';
 import {
-  Plus, Search, Printer,
+  Plus, Printer,
 } from 'lucide-react';
+import SalesFilterBar from '@client/src/components/SalesFilterBar';
 import { PrintDialog } from '@client/src/components/print/PrintDialog';
 import { SkuDocPrintContent } from '@client/src/components/print/DocPrintContent';
 import type { SkuMatrixItem } from '@client/src/components/print/SkuMatrixTable';
@@ -227,70 +228,27 @@ export default function RetailOrderPage() {
         </button>
       </div>
 
-      <div className="bg-white rounded p-4 mb-4 flex flex-wrap gap-3 items-end">
-        <div className="flex flex-col">
-          <label className="text-xs text-gray-500 mb-1">门店</label>
-          <select
-            value={filterStoreId}
-            onChange={(e) => setFilterStoreId(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-1.5 text-sm w-40"
-          >
-            <option value="">全部</option>
-            {storeOptions.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-          </select>
-        </div>
-        <div className="flex flex-col">
-          <label className="text-xs text-gray-500 mb-1">开始日期</label>
-          <input
-            type="date"
-            value={filterStartDate}
-            onChange={(e) => setFilterStartDate(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-1.5 text-sm"
-          />
-        </div>
-        <div className="flex flex-col">
-          <label className="text-xs text-gray-500 mb-1">结束日期</label>
-          <input
-            type="date"
-            value={filterEndDate}
-            onChange={(e) => setFilterEndDate(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-1.5 text-sm"
-          />
-        </div>
-        <div className="flex flex-col">
-          <label className="text-xs text-gray-500 mb-1">状态</label>
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-1.5 text-sm w-32"
-          >
-            <option value="">全部</option>
-            {Object.entries(STATUS_MAP).map(([k, v]) => (
-              <option key={k} value={k}>{v.label}</option>
-            ))}
-          </select>
-        </div>
-        <div className="flex flex-col">
-          <label className="text-xs text-gray-500 mb-1">关键字</label>
-          <div className="relative">
-            <Search size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              value={filterKeyword}
-              onChange={(e) => setFilterKeyword(e.target.value)}
-              placeholder="零售单号"
-              className="border border-gray-300 rounded pl-7 pr-3 py-1.5 text-sm w-44"
-            />
-          </div>
-        </div>
-        <button
-          onClick={handleSearch}
-          className="bg-primary text-white px-4 py-1.5 rounded text-sm hover:bg-primary"
-        >查询</button>
-        <button
-          onClick={handleReset}
-          className="bg-gray-100 text-gray-600 px-4 py-1.5 rounded text-sm hover:bg-gray-200"
-        >重置</button>
+      <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
+        <SalesFilterBar
+          onSearch={handleSearch}
+          onReset={handleReset}
+          dateStart={filterStartDate}
+          dateEnd={filterEndDate}
+          onDateStartChange={setFilterStartDate}
+          onDateEndChange={setFilterEndDate}
+          showStore
+          storeId={filterStoreId}
+          onStoreChange={setFilterStoreId}
+          storeOptions={storeOptions}
+          showStatus
+          status={filterStatus}
+          onStatusChange={setFilterStatus}
+          statusOptions={Object.entries(STATUS_MAP).map(([k, v]) => ({ value: k, label: v.label }))}
+          showKeyword
+          keyword={filterKeyword}
+          onKeywordChange={setFilterKeyword}
+          keywordPlaceholder="零售单号"
+        />
       </div>
 
       <div className="bg-white rounded overflow-hidden">
