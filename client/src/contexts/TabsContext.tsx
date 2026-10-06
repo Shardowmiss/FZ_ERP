@@ -9,6 +9,7 @@ import {
 } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSystemConfig } from './SystemConfigContext';
+import { menuLabelMap } from '../config/menuConfig';
 
 export interface TabItem {
   key: string;
@@ -37,100 +38,8 @@ const DASHBOARD_KEY = '/dashboard';
 const DASHBOARD_PATH = '/dashboard';
 const DASHBOARD_LABEL = '数据看板';
 
-function getMenuLabelMap(): Record<string, string> {
-  return {
-    '/dashboard': DASHBOARD_LABEL,
-    '/base/style': '款号管理',
-    '/base/sku': 'SKU管理',
-    '/base/color-group': '颜色组',
-    '/base/size-group': '尺码组',
-    '/base/material': '面辅料管理',
-    '/base/supplier': '供应商管理',
-    '/base/warehouse': '仓库档案',
-    '/base/dealer': '经销商管理',
-    '/base/store': '店仓管理',
-    '/base/merge-audit': '合并审计',
-    '/base/member-merge-audit': '会员合并审计',
-    '/base/style-attribute': '款号属性维护',
-    '/bom': 'BOM管理',
-    '/production/bom': 'BOM管理',
-    '/purchase/order': '面辅料采购订单',
-    '/purchase/inbound': '面辅料采购入库',
-    '/purchase/return': '面辅料采购退货',
-    '/purchase/garment-order': '采购订单',
-    '/purchase/garment-inbound': '采购入库',
-    '/purchase/garment-return': '采购退货',
-    '/purchase/reconciliation': '采购对账',
-    '/production/material-purchase-order': '面辅料采购订单',
-    '/production/material-purchase-inbound': '面辅料入库',
-    '/production/mrp': 'MRP运算',
-    '/production/cost': '成本核算',
-    '/production/work-order': '生产工单',
-    '/production/material-issue': '领料单',
-    '/production/finish-receipt': '完工入库单',
-    '/sales/order': '销售订单',
-    '/sales/outbound': '销售出库',
-    '/sales/return': '销售退货',
-    '/sales/reconciliation': '销售对账',
-    '/retail/order': '零售单',
-    '/retail/return': '零售退货单',
-    '/retail/report': '零售报表',
-    '/inventory/query': '库存查询',
-    '/inventory/flow': '库存流水',
-    '/inventory/inbound': '入库单',
-    '/inventory/outbound': '出库单',
-    '/inventory/transfer': '调拨单',
-    '/inventory/stocktake': '盘点单',
-    '/inventory/warning': '库存预警',
-    '/finance/receivable': '应收管理',
-    '/finance/payable': '应付管理',
-    '/finance/receipt': '收款单',
-    '/finance/payment': '付款单',
-    '/finance/profit': '毛利分析',
-    '/finance/month-close': '月结管理',
-    '/product/code-rule': '款号编码规则',
-    '/product/color': '颜色',
-    '/product/size': '尺码',
-    '/product/size-group-relation': '尺码组与尺码关系',
-    '/system/user': '用户管理',
-    '/system/role': '角色管理',
-    '/system/permission': '权限管理',
-    '/system/operation-log': '操作日志',
-    '/system/config': '系统配置',
-    '/trade-show/theme': '订货会主题',
-    '/trade-show/list': '订货会主单',
-    '/trade-show/pre-order': '预订单',
-    '/trade-show/summary': '预订汇总',
-    '/trade-show/allocation': '配货管理',
-    '/report/garment-purchase': '成衣采购查询',
-    '/report/material-purchase': '面辅料采购查询',
-    '/report/sales': '销售查询',
-    '/report/retail': '零售查询',
-    '/report/inventory': '库存查询',
-    '/report/transfer': '调拨查询',
-    '/report/stock-movement': '进销存查询',
-    '/report/pivot': '透视分析',
-    // 以下路径此前漏接，标签回退为原始英文路径名
-    '/inventory/barcode': '条码/批次',
-    '/inventory/mobile-stocktake': '移动盘点',
-    '/inventory/replenish': '补货建议（采购向）',
-    '/inventory/replenish-plan': '补货计划（门店向）',
-    '/inventory/replenish-template': '补货模板（门店向）',
-    '/omni': '全渠道订单',
-    '/subcontract': '委外管理',
-    '/member': '会员运营',
-    '/member/manage': '会员管理',
-    '/member/level': '会员等级',
-    '/analytics/forecast': 'AI销量预测',
-    '/analytics/lifecycle': '商品生命周期',
-    '/analytics/bi': '自助BI钻取',
-    '/pos/cashier': 'POS收银',
-    '/pricing': '价格管理',
-  };
-}
-
 export function getTabInfoFromPath(pathname: string): Omit<TabItem, 'closable'> {
-  const labelMap = getMenuLabelMap();
+  const labelMap = menuLabelMap;
   const sortedPaths = Object.keys(labelMap).sort((a, b) => b.length - a.length);
 
   for (const menuPath of sortedPaths) {

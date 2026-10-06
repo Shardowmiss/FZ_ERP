@@ -544,6 +544,32 @@ export const routePermissions: Record<string, string> = Object.fromEntries(
 );
 
 /**
+ * path -> 页签标题（替代 TabsContext 内第四套硬编码标签，迭代A 收口）。
+ * 单一真相源：优先取 menuItems（与菜单、路由同源，杜绝漂移）；
+ * 再补 routeComponents 有但菜单无的 orphan 路由标签（routeComponents 无 label 概念，需显式声明）。
+ * 副作用：/base/warehouse 由此自动归一为菜单权威值「仓库管理」（消旧硬编码「仓库档案」漂移）；
+ * 另自动补上旧 map 漏接的 /base/product-import、/inventory/hangtag-print、/inventory/unique-code-trace。
+ */
+export const menuLabelMap: Record<string, string> = (() => {
+  const m: Record<string, string> = {};
+  const collect = (items: MenuItem[]) => {
+    for (const it of items) {
+      if (it.path) m[it.path] = it.label;
+      if (it.children) collect(it.children as MenuItem[]);
+    }
+  };
+  collect(menuItems);
+  // orphan 路由（仅深链可达，菜单未登记）：routeComponents 有组件但无 label，须显式声明
+  Object.assign(m, {
+    '/bom': 'BOM管理',
+    '/purchase/order': '面辅料采购订单',
+    '/purchase/inbound': '面辅料采购入库',
+    '/purchase/return': '面辅料采购退货',
+  });
+  return m;
+})();
+
+/**
  * 路由-菜单一致性自检（仅开发期执行）。
  * - 错误：菜单 path 在 routeComponents 缺失组件 → 点击将渲染 <NotFound/>（回归阻断级）
  * - 告警：routeComponents 有但菜单无 → 孤儿路由（仅深链可达，保留但提示漂移）
