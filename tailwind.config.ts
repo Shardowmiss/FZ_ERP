@@ -4,6 +4,7 @@ export default {
   presets: [createTailwindPresetOfSimple()],
   content: [
     './client/src/**/*.{ts,tsx,css}',
+    './shared/**/*.{ts,tsx,css}',
   ],
   plugins: [],
 }
