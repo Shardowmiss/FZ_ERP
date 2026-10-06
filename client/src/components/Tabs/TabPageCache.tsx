@@ -91,7 +91,7 @@ const TabPageCache: React.FC = () => {
     return (
       <Suspense
         fallback={
-          <div className="flex items-center justify-center h-64">
+          <div className="flex items-center justify-center h-64 bg-gray-50">
             <div className="text-gray-400 text-sm">加载中...</div>
           </div>
         }
@@ -115,7 +115,7 @@ const TabPageCache: React.FC = () => {
         return (
           <div
             key={tab.key}
-            className="absolute inset-0 overflow-auto"
+            className="absolute inset-0 overflow-auto bg-gray-50"
             style={{ display: isActive ? 'block' : 'none' }}
           >
             {renderPage(tab.key, tab.path)}

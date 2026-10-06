@@ -254,7 +254,7 @@ const Layout: React.FC = () => {
           {!hasTabs ? (
             <WelcomePage />
           ) : (
-            <div className="h-full p-5">
+            <div className="h-full p-5 bg-gray-50">
               <ErrorBoundary
             key={location.pathname}
             fallbackRender={({ error, resetErrorBoundary }) => (

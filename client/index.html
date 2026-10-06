@@ -4,6 +4,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- 首屏不透明兜底：渲染阻塞内联样式，确保 html/body/#root 在首个字节即涂不透明画布色(#f3f4f6)，
+       不依赖 index.css 的 <link> 加载时机。ERP 以微前端嵌入平台(lark-apaas)时，平台自带主题背景图
+       会从 SPA 透明区域透出；此处消除首屏(含懒加载页面 Suspense 兜底期)的透出窗口。 -->
+  <style>
+    html, body, #root { background-color: #f3f4f6; min-height: 100%; }
+  </style>
   <link rel="icon" href="/favicon.svg">
   <title>妙搭</title>
   <script>
