@@ -17,6 +17,7 @@ import { CheckPermission } from '../../../common/decorators/check-permission.dec
 export class PurchaseInboundController {
   constructor(private readonly purchaseInboundService: PurchaseInboundService) {}
 
+  @CheckPermission('purchase:inbound:view')
   @Get()
   async list(
     @Query('page') page = '1',
@@ -44,12 +45,13 @@ export class PurchaseInboundController {
     });
   }
 
+  @CheckPermission('purchase:inbound:view')
   @Get(':id')
   async detail(@Param('id') id: string): Promise<PurchaseInbound> {
     return this.purchaseInboundService.getDetail(id);
   }
 
-  @CheckPermission('purchase:inbound')
+  @CheckPermission('purchase:inbound:create')
   @Post()
   async create(
     @Body()
@@ -64,19 +66,19 @@ export class PurchaseInboundController {
     return this.purchaseInboundService.create(body);
   }
 
-  @CheckPermission('purchase:inbound')
+  @CheckPermission('purchase:inbound:approve')
   @Post(':id/approve')
   async approve(@Param('id') id: string): Promise<void> {
     return this.purchaseInboundService.approve(id);
   }
 
-  @CheckPermission('purchase:inbound')
+  @CheckPermission('purchase:inbound:void')
   @Post(':id/void')
   async voidDoc(@Param('id') id: string): Promise<void> {
     return this.purchaseInboundService.voidDoc(id);
   }
 
-@CheckPermission('purchase:inbound')
+@CheckPermission('purchase:inbound:delete')
 @Delete(':id')
   async remove(@Param('id') id: string): Promise<void> {
     return this.purchaseInboundService.delete(id);

@@ -1,4 +1,5 @@
 import { StatusBadge, type StatusTone } from '@client/src/components/ui/status-badge';
+import CanButton from '@client/src/components/CanButton';
 import { PurchaseFilterBar } from '@client/src/components/PurchaseFilterBar';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -198,12 +199,14 @@ const GarmentPurchaseInboundPage: React.FC = () => {
       <div className="bg-white rounded-lg p-4 shadow-sm">
         <div className="flex items-center justify-between mb-3">
           <h1 className="text-xl font-semibold text-gray-800">采购入库</h1>
-          <button
-            onClick={openAdd}
-            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary flex items-center gap-1"
-          >
-             <Plus size={16} /> 新增采购入库
-          </button>
+          <CanButton menu="purchase:inbound" action="create">
+            <button
+              onClick={openAdd}
+              className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary flex items-center gap-1"
+            >
+               <Plus size={16} /> 新增采购入库
+            </button>
+          </CanButton>
         </div>
         <PurchaseFilterBar
           onSearch={() => { setPage(1); fetchList(); }}
@@ -312,32 +315,44 @@ const GarmentPurchaseInboundPage: React.FC = () => {
                   <td className="py-2 px-4 space-x-2">
                     {item.status === 'draft' && (
                       <>
-                        <button
-                          onClick={() => openEdit(item.id)}
-                          className="text-primary hover:text-primary"
-                        >编辑</button>
-                        <button
-                          onClick={() => { void handleApprove(item.id); }}
-                          className="text-green-500 hover:text-green-600"
-                        >审核</button>
-                        <button
-                          onClick={() => { void handleDelete(item.id); }}
-                          className="text-red-500 hover:text-red-600"
-                        >删除</button>
-                        <button onClick={() => handleVoid(item.id)} className="text-red-500 hover:text-red-600">作废</button>
+                        <CanButton menu="purchase:inbound" action="edit">
+                          <button
+                            onClick={() => openEdit(item.id)}
+                            className="text-primary hover:text-primary"
+                          >编辑</button>
+                        </CanButton>
+                        <CanButton menu="purchase:inbound" action="approve">
+                          <button
+                            onClick={() => { void handleApprove(item.id); }}
+                            className="text-green-500 hover:text-green-600"
+                          >审核</button>
+                        </CanButton>
+                        <CanButton menu="purchase:inbound" action="delete">
+                          <button
+                            onClick={() => { void handleDelete(item.id); }}
+                            className="text-red-500 hover:text-red-600"
+                          >删除</button>
+                        </CanButton>
+                        <CanButton menu="purchase:inbound" action="void">
+                          <button onClick={() => handleVoid(item.id)} className="text-red-500 hover:text-red-600">作废</button>
+                        </CanButton>
                       </>
                     )}
                     {item.status === 'approved' && (
-                      <button
-                        onClick={() => openEdit(item.id)}
-                        className="text-primary hover:text-primary"
-                      >验收</button>
+                      <CanButton menu="purchase:inbound" action="accept">
+                        <button
+                          onClick={() => openEdit(item.id)}
+                          className="text-primary hover:text-primary"
+                        >验收</button>
+                      </CanButton>
                     )}
                     {item.status === 'completed' && (
-                      <button
-                        onClick={() => openView(item.id)}
-                        className="text-primary hover:text-primary"
-                      >查看</button>
+                      <CanButton menu="purchase:inbound" action="view">
+                        <button
+                          onClick={() => openView(item.id)}
+                          className="text-primary hover:text-primary"
+                        >查看</button>
+                      </CanButton>
                     )}
                   </td>
                 </tr>

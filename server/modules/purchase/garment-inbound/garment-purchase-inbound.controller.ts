@@ -27,6 +27,7 @@ export class GarmentPurchaseInboundController {
     private readonly garmentPurchaseInboundService: GarmentPurchaseInboundService,
   ) {}
 
+  @CheckPermission('purchase:inbound:view')
   @Get()
   async list(
     @Query('page') page = '1',
@@ -54,12 +55,13 @@ export class GarmentPurchaseInboundController {
     });
   }
 
+  @CheckPermission('purchase:inbound:view')
   @Get(':id')
   async detail(@Param('id') id: string): Promise<GarmentPurchaseInbound> {
     return this.garmentPurchaseInboundService.getDetail(id);
   }
 
-  @CheckPermission('purchase:inbound')
+  @CheckPermission('purchase:inbound:view')
   @Get(':id/resolve-barcode')
   async resolveBarcode(
     @Param('id') id: string,
@@ -68,7 +70,7 @@ export class GarmentPurchaseInboundController {
     return this.garmentPurchaseInboundService.resolveBarcode(id, code ?? '');
   }
 
-  @CheckPermission('purchase:inbound')
+  @CheckPermission('purchase:inbound:create')
   @Post()
   async create(
     @Body()
@@ -77,13 +79,13 @@ export class GarmentPurchaseInboundController {
     return this.garmentPurchaseInboundService.create(body);
   }
 
-  @CheckPermission('purchase:inbound')
+  @CheckPermission('purchase:inbound:approve')
   @Post(':id/approve')
   async approve(@Param('id') id: string): Promise<void> {
     return this.garmentPurchaseInboundService.approve(id);
   }
 
-  @CheckPermission('purchase:inbound')
+  @CheckPermission('purchase:inbound:edit')
   @Put(':id')
   async update(
     @Param('id') id: string,
@@ -92,7 +94,7 @@ export class GarmentPurchaseInboundController {
     return this.garmentPurchaseInboundService.update(id, body);
   }
 
-  @CheckPermission('purchase:inbound')
+  @CheckPermission('purchase:inbound:accept')
   @Put(':id/acceptance')
   async saveAcceptance(
     @Param('id') id: string,
@@ -101,19 +103,19 @@ export class GarmentPurchaseInboundController {
     return this.garmentPurchaseInboundService.saveAcceptance(id, body);
   }
 
-  @CheckPermission('purchase:inbound')
+  @CheckPermission('purchase:inbound:accept')
   @Post(':id/complete-acceptance')
   async completeAcceptance(@Param('id') id: string): Promise<GarmentPurchaseInbound> {
     return this.garmentPurchaseInboundService.completeAcceptance(id);
   }
 
-  @CheckPermission('purchase:inbound')
+  @CheckPermission('purchase:inbound:void')
   @Post(':id/void')
   async voidDoc(@Param('id') id: string): Promise<void> {
     return this.garmentPurchaseInboundService.voidDoc(id);
   }
 
-@CheckPermission('purchase:inbound')
+@CheckPermission('purchase:inbound:delete')
 @Delete(':id')
   async remove(@Param('id') id: string): Promise<void> {
     return this.garmentPurchaseInboundService.delete(id);

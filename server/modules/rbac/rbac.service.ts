@@ -305,15 +305,22 @@ export class RbacService {
   /**
    * 权限目录（权威清单）。
    *
-   * 任何新增的“写入口权限码”都应在本清单登记：应用启动时幂等地写入
-   * rbac_permission，并确保超级管理员角色（super_admin）持有全部权限，
-   * 避免“新加 @CheckPermission 但库里没有对应码 / 管理员未授权”导致管理员被锁死。
+   * 支持「资源树 + 动作子节点」模型：
+   * - `type: 'group'` 表示资源/模块分组（如 `purchase:inbound`），
+   *   其下挂的 `parent: 'purchase:inbound'` 子码即为可独立授权的动作
+   *   （view/create/edit/approve/accept/void/delete）。
+   * - `type: 'api'` 为普通写入口权限码；`type: 'menu'` 为菜单门控码。
+   * - `parent` 指向上级分组的 code；`sortOrder` 控制同组内子节点排序。
    *
-   * 命名约定沿用既有 54 码目录（module:resource，如 purchase:order）；
-   * 下方补登了此前缺码的模块（base:dealer / base:store / member / omni /
-   * subcontract / tradeshow:manage）。
+   * 任何新增的“写入口权限码”都应在本清单登记……
    */
-  private static readonly PERMISSION_CATALOG: { code: string; name: string }[] = [
+  private static readonly PERMISSION_CATALOG: {
+    code: string;
+    name: string;
+    type?: 'api' | 'group' | 'menu';
+    parent?: string;
+    sortOrder?: number;
+  }[] = [
     { code: 'dashboard', name: '仪表盘' },
     { code: 'dashboard:view', name: '仪表盘-查看' },
     { code: 'base:style', name: '基础-款式' },
@@ -327,7 +334,17 @@ export class RbacService {
     { code: 'base:dealer', name: '基础-经销商' },
     { code: 'base:store', name: '基础-门店' },
     { code: 'purchase:order', name: '采购-订单' },
-    { code: 'purchase:inbound', name: '采购-入库' },
+    // 采购-入库：资源分组（type=group），下挂 7 个可独立授权的动作子节点。
+    // 既有的 purchasing / warehouse 角色仍只持有分组码 `purchase:inbound`，
+    // 由 ensureOperationalRoles 自动展开授予全部子码，保证零改造兼容。
+    { code: 'purchase:inbound', name: '采购-入库', type: 'group' },
+    { code: 'purchase:inbound:view', name: '查看', parent: 'purchase:inbound', sortOrder: 1 },
+    { code: 'purchase:inbound:create', name: '新增', parent: 'purchase:inbound', sortOrder: 2 },
+    { code: 'purchase:inbound:edit', name: '编辑', parent: 'purchase:inbound', sortOrder: 3 },
+    { code: 'purchase:inbound:approve', name: '审核', parent: 'purchase:inbound', sortOrder: 4 },
+    { code: 'purchase:inbound:accept', name: '验收', parent: 'purchase:inbound', sortOrder: 5 },
+    { code: 'purchase:inbound:void', name: '作废', parent: 'purchase:inbound', sortOrder: 6 },
+    { code: 'purchase:inbound:delete', name: '删除', parent: 'purchase:inbound', sortOrder: 7 },
     { code: 'purchase:return', name: '采购-退货' },
     { code: 'purchase:reconciliation', name: '采购-对账' },
     { code: 'production:bom', name: '生产-BOM' },
@@ -401,16 +418,36 @@ export class RbacService {
    * 由 AppModule.onModuleInit 调用一次。
    */
   async ensureRbacCatalog(): Promise<void> {
+    // 第 1 遍：按目录 upsert 全部权限码（含 type 纠正，分组码由此从 'api' 改 'group'）。
+    // 子节点的 parentId 暂留空，第 2 遍回填，避免插入时无法预知父节点 UUID。
+    const catalogRows = RbacService.PERMISSION_CATALOG.map((p) => ({
+      code: p.code,
+      name: p.name,
+      type: p.type ?? 'api',
+      sortOrder: p.sortOrder ?? 0,
+    }));
     await this.db
       .insert(rbacPermission)
-      .values(
-        RbacService.PERMISSION_CATALOG.map((p) => ({
-          code: p.code,
-          name: p.name,
-          type: 'api',
-        })),
-      )
-      .onConflictDoNothing({ target: rbacPermission.code });
+      .values(catalogRows)
+      .onConflictDoUpdate({
+        target: rbacPermission.code,
+        set: {
+          name: sql`excluded.name`,
+          type: sql`excluded.type`,
+          sortOrder: sql`excluded.sort_order`,
+        },
+      });
+
+    // 第 2 遍：按目录 parent 回填 parentId（子查询定位父节点 id，幂等可重跑）。
+    for (const p of RbacService.PERMISSION_CATALOG) {
+      if (!p.parent) continue;
+      await this.db
+        .update(rbacPermission)
+        .set({
+          parentId: sql`(SELECT id FROM rbac_permission WHERE code = ${p.parent})`,
+        })
+        .where(eq(rbacPermission.code, p.code));
+    }
 
     await this.db
       .insert(rbacRole)
@@ -618,6 +655,16 @@ export class RbacService {
     const codeToId = new Map<string, string>();
     for (const r of permRows) codeToId.set(r.code, r.id);
 
+    // 构建 分组码 -> 子动作码列表 映射（用于向后兼容：持有分组码即连带授予其全部子动作码）
+    const groupChildren = new Map<string, string[]>();
+    for (const p of RbacService.PERMISSION_CATALOG) {
+      if (p.parent) {
+        const arr = groupChildren.get(p.parent) ?? [];
+        arr.push(p.code);
+        groupChildren.set(p.parent, arr);
+      }
+    }
+
     for (const def of RbacService.OPERATIONAL_ROLES) {
       const existing = await this.db
         .select({ id: rbacRole.id })
@@ -644,6 +691,16 @@ export class RbacService {
         const pid = codeToId.get(code);
         if (pid) targetIds.push(pid);
         else skipped.push(code);
+        // 分组码：连带授予其全部子动作码。purchase:inbound 同时是前端菜单/路由门控码，
+        // 既有的 purchasing / warehouse 角色只声明了分组码，须展开子码以免动作权限缺失。
+        const kids = groupChildren.get(code);
+        if (kids) {
+          for (const kc of kids) {
+            const kpid = codeToId.get(kc);
+            if (kpid) targetIds.push(kpid);
+            else skipped.push(kc);
+          }
+        }
       }
       if (skipped.length > 0) {
         this.logger.warn(

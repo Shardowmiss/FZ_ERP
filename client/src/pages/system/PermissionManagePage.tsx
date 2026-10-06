@@ -43,7 +43,10 @@ function findAncestorMenus(
     return false;
   };
   dfs(tree);
-  return path.filter((n: PermissionTreeNode) => n.type === 'menu');
+  // 分组节点（type='group'）同样作为祖先参与自动勾选，确保勾选动作子码时父分组码一并勾上
+  return path.filter(
+    (n: PermissionTreeNode) => n.type === 'menu' || n.type === 'group',
+  );
 }
 
 /**
@@ -63,7 +66,9 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
   onToggle,
 }) => {
   const isMenu = node.type === 'menu';
-  const hasChildren = isMenu && node.children && node.children.length > 0;
+  // 分组节点（type='group'，如采购-入库）与菜单一样可展开、可折叠、加粗显示
+  const isExpandable = isMenu || node.type === 'group';
+  const hasChildren = isExpandable && node.children && node.children.length > 0;
   const [expanded, setExpanded] = useState<boolean>(true);
 
   /**
@@ -105,12 +110,12 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
         className="flex items-center gap-2 py-1.5 px-2 hover:bg-gray-50 rounded cursor-pointer"
         style={{ paddingLeft: `${depth * 20 + 8}px` }}
         onClick={() => {
-          if (isMenu && hasChildren) {
+          if (hasChildren) {
             setExpanded(!expanded);
           }
         }}
       >
-        {isMenu && hasChildren ? (
+        {hasChildren ? (
           <span className="text-gray-400 w-4 h-4 flex items-center justify-center shrink-0">
             {expanded ? (
               <ChevronDown size={14} />
@@ -131,7 +136,7 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
         />
         <span
           className={`text-sm ${
-            isMenu ? 'font-medium text-gray-800' : 'text-gray-600'
+            isExpandable ? 'font-medium text-gray-800' : 'text-gray-600'
           }`}
         >
           {node.name}
