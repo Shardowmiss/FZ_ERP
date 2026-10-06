@@ -11,7 +11,14 @@ import { Separator } from '@client/src/components/ui/separator';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@client/src/components/ui/table';
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose,
+} from '@client/src/components/ui/dialog';
 import { publicTraceQrUrl } from '@client/src/api/uniqueCode';
+import { hangtagApi } from '@client/src/api/hangtag';
+import HangtagPreview from '@client/src/components/hangtag/HangtagPreview';
+import HangtagTemplateEditor from '@client/src/components/hangtag/HangtagTemplateEditor';
+import { SAMPLE_DATA, type HangtagTemplateFull } from '@client/src/components/hangtag/types';
 
 /* ------------------------------------------------------------------ *
  * 吊牌打印页（预览 + 批量打印 + 打印日志）
@@ -36,14 +43,6 @@ interface StyleGrid {
   colors: string[];
   sizes: string[];
   cells: GridCell[];
-}
-
-interface TemplateRow {
-  id: string;
-  code: string;
-  name: string;
-  contentConfig?: any;
-  styleConfig?: any;
 }
 
 interface UniqueCodeConfig {
@@ -86,7 +85,7 @@ const SOURCE_LABEL: Record<string, string> = {
 };
 
 const HangtagPrintPage: React.FC = () => {
-  const [templates, setTemplates] = useState<TemplateRow[]>([]);
+  const [templates, setTemplates] = useState<HangtagTemplateFull[]>([]);
   const [templateId, setTemplateId] = useState('');
   const [cfg, setCfg] = useState<UniqueCodeConfig | null>(null);
   const [includeUniqueCode, setIncludeUniqueCode] = useState(true);
@@ -106,13 +105,17 @@ const HangtagPrintPage: React.FC = () => {
   const [result, setResult] = useState<PrintResult | null>(null);
   const [logs, setLogs] = useState<LogRow[]>([]);
 
+  // 模板设计器
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState<HangtagTemplateFull | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+
   const loadMeta = useCallback(async () => {
     try {
-      const [tplRes, cfgRes] = await Promise.all([
-        axiosForBackend.get('/api/hangtag/templates'),
+      const [tpls, cfgRes] = await Promise.all([
+        hangtagApi.listTemplates(),
         axiosForBackend.get('/api/hangtag/config'),
       ]);
-      const tpls = tplRes.data || [];
       setTemplates(tpls);
       if (tpls.length) setTemplateId((prev) => prev || tpls[0].id);
       setCfg(cfgRes.data || null);
@@ -209,6 +212,12 @@ const HangtagPrintPage: React.FC = () => {
     [grid],
   );
 
+  /** 当前选中的模板（含 contentConfig / styleConfig） */
+  const currentTemplate = useMemo(
+    () => templates.find((t) => t.id === templateId) || null,
+    [templates, templateId],
+  );
+
   /** 唯一码示例（演示前缀 + 补零 + 校验位效果） */
   const uniqueCodeSample = useMemo(() => {
     if (!cfg?.enabled || !cfg.length) return null;
@@ -266,6 +275,36 @@ const HangtagPrintPage: React.FC = () => {
     }
   };
 
+  /** 打开模板设计器（新建 / 编辑） */
+  const openEditor = (tpl: HangtagTemplateFull | null) => {
+    setEditingTemplate(tpl);
+    setEditorOpen(true);
+  };
+
+  /** 删除当前模板（由确认弹窗的「删除」按钮触发） */
+  const handleDeleteTemplate = async () => {
+    if (!currentTemplate) return;
+    try {
+      await hangtagApi.deleteTemplate(currentTemplate.id);
+      toast.success('模板已删除');
+      const list = await hangtagApi.listTemplates();
+      setTemplates(list);
+      if (templateId === currentTemplate.id) setTemplateId(list[0]?.id || '');
+    } catch (e: any) {
+      logger.error('删除模板失败', e);
+      toast.error(e?.response?.data?.message || '删除失败');
+    } finally {
+      setDeleteOpen(false);
+    }
+  };
+
+  /** 保存模板后刷新列表并选中 */
+  const handleSaved = async (saved: HangtagTemplateFull) => {
+    const list = await hangtagApi.listTemplates();
+    setTemplates(list);
+    setTemplateId(saved.id);
+  };
+
   return (
     <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
@@ -292,16 +331,37 @@ const HangtagPrintPage: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border rounded-lg p-4">
         <div className="space-y-1">
           <Label>吊牌模板</Label>
-          <select
-            className="w-full border rounded-md h-9 px-2 text-sm bg-background"
-            value={templateId}
-            onChange={(e) => setTemplateId(e.target.value)}
-          >
-            <option value="">请选择模板</option>
-            {templates.map((t) => (
-              <option key={t.id} value={t.id}>{t.name}（{t.code}）</option>
-            ))}
-          </select>
+          <div className="flex items-center gap-2">
+            <select
+              className="flex-1 border rounded-md h-9 px-2 text-sm bg-background"
+              value={templateId}
+              onChange={(e) => setTemplateId(e.target.value)}
+            >
+              <option value="">请选择模板</option>
+              {templates.map((t) => (
+                <option key={t.id} value={t.id}>{t.name}（{t.code}）</option>
+              ))}
+            </select>
+            <Button variant="outline" size="sm" onClick={() => openEditor(null)}>
+              新增模板
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={!currentTemplate}
+              onClick={() => openEditor(currentTemplate)}
+            >
+              编辑
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              disabled={!currentTemplate}
+              onClick={() => setDeleteOpen(true)}
+            >
+              删除
+            </Button>
+          </div>
         </div>
 
         <div className="space-y-1">
@@ -409,32 +469,38 @@ const HangtagPrintPage: React.FC = () => {
 
           <Separator />
 
-          {/* 步骤 3：预览 */}
-          <div className="space-y-2">
-            <div className="font-medium text-sm">吊牌预览</div>
-            <div className="flex flex-wrap gap-2">
-              {grid.cells.filter((x) => Number(x.quantity || 0) > 0).slice(0, 8).map((x) => (
-                <div key={cellKey(x.color, x.size)} className="border rounded-md p-3 w-40 text-xs space-y-1">
-                  <div className="font-semibold">{grid.styleNo}</div>
-                  <div className="text-muted-foreground truncate">{grid.styleName}</div>
-                  <div>{x.color} / {x.size}</div>
-                  <div>¥ {x.quantity} 张</div>
-                  {cfg?.enabled && includeUniqueCode && uniqueCodeSample && (
-                    <div className="font-mono text-[10px] break-all">唯一码 {uniqueCodeSample}</div>
-                  )}
-                </div>
-              ))}
-              {grid.cells.filter((x) => Number(x.quantity || 0) > 0).length === 0 && (
-                <div className="text-sm text-muted-foreground">请先设置数量</div>
-              )}
-            </div>
-          </div>
-
           <div className="flex justify-end gap-2">
             <Button onClick={doPrint} disabled={printing}>
               {printing ? '打印中…' : `批量打印（${totalQty} 张）`}
             </Button>
           </div>
+        </div>
+      )}
+
+      {/* 吊牌预览（按所选模板布局渲染） */}
+      {currentTemplate ? (
+        <div className="border rounded-lg p-4 space-y-2">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="font-medium text-sm">吊牌预览（模板：{currentTemplate.name}）</div>
+            <Button size="sm" variant="outline" onClick={() => openEditor(currentTemplate)}>
+              编辑模板
+            </Button>
+          </div>
+          <div className="overflow-auto">
+            <HangtagPreview
+              content={currentTemplate.contentConfig}
+              style={currentTemplate.styleConfig}
+              data={SAMPLE_DATA}
+              maxWidth={360}
+            />
+          </div>
+          <div className="text-xs text-muted-foreground">
+            预览使用样例数据；实际打印按取数结果（款号 / 颜色 / 尺码 / 数量 / 唯一码 / 溯源二维码）填充。
+          </div>
+        </div>
+      ) : (
+        <div className="border rounded-lg p-4 text-sm text-muted-foreground">
+          请先在上方选择或新增一个吊牌模板，预览将按模板布局渲染。
         </div>
       )}
 
@@ -539,6 +605,34 @@ const HangtagPrintPage: React.FC = () => {
           </Table>
         </div>
       </div>
+
+      {/* 删除模板确认弹窗 */}
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>删除吊牌模板</DialogTitle>
+            <DialogDescription>
+              确定删除模板「{currentTemplate?.name}」？该操作不可撤销，已生成的打印记录不受影响。
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <DialogClose asChild>
+              <Button variant="outline" size="sm">取消</Button>
+            </DialogClose>
+            <Button variant="destructive" size="sm" onClick={handleDeleteTemplate}>
+              删除
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 模板设计器（新增 / 编辑吊牌模板） */}
+      <HangtagTemplateEditor
+        open={editorOpen}
+        onClose={() => setEditorOpen(false)}
+        template={editingTemplate}
+        onSaved={handleSaved}
+      />
     </div>
   );
 };
