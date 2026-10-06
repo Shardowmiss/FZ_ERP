@@ -70,7 +70,6 @@ export const menuItems: MenuItem[] = [
       { key: 'supplier', label: '供应商管理', path: '/base/supplier', permission: 'base:supplier' },
       { key: 'dealer', label: '经销商管理', path: '/base/dealer', permission: 'base:dealer' },
       { key: 'store', label: '店仓管理', path: '/base/store', permission: 'base:store' },
-      { key: 'warehouse', label: '仓库管理', path: '/base/warehouse', permission: 'base:warehouse' },
     ],
   },
   {
