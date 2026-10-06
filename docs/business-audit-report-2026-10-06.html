@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ERP 业务功能全量审计报告 · 2026-10-06</title>
+<style>
+  :root{
+    --bg:#f5f7fa; --panel:#fff; --ink:#1f2933; --sub:#52606d; --line:#e4e7eb;
+    --brand:#2f5fff; --brand-dark:#1e40c4;
+    --high:#d64545; --med:#e8a33d; --low:#3aa675; --info:#5b7fff;
+    --code:#0f2942; --codebg:#f0f3f7;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.65;font-size:14px}
+  .wrap{max-width:1080px;margin:0 auto;padding:32px 24px 80px}
+  header.top{background:linear-gradient(135deg,#1e40c4,#2f5fff);color:#fff;border-radius:14px;padding:28px 32px;margin-bottom:28px;box-shadow:0 8px 24px rgba(47,95,255,.18)}
+  header.top h1{margin:0 0 6px;font-size:24px;letter-spacing:.5px}
+  header.top .meta{opacity:.92;font-size:13px}
+  header.top .meta b{font-weight:600}
+  h2{font-size:19px;margin:38px 0 14px;padding-left:12px;border-left:4px solid var(--brand);color:var(--brand-dark)}
+  h3{font-size:16px;margin:24px 0 10px;color:var(--ink)}
+  p{margin:8px 0}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin:16px 0;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+  th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+  th{background:#f0f3f9;font-weight:600;color:var(--sub);white-space:nowrap}
+  tr:nth-child(even) td{background:#fafbfc}
+  code{background:var(--codebg);color:var(--code);padding:1px 6px;border-radius:5px;font-family:"SFMono-Regular",Consolas,monospace;font-size:12.5px}
+  .sev{display:inline-block;font-weight:700;padding:2px 9px;border-radius:20px;font-size:12px;color:#fff;white-space:nowrap}
+  .sev.high{background:var(--high)} .sev.med{background:var(--med)} .sev.low{background:var(--low)} .sev.info{background:var(--info)}
+  .tag{display:inline-block;font-size:11.5px;padding:1px 7px;border-radius:5px;background:#eef2ff;color:var(--brand-dark);border:1px solid #dbe4ff;margin:1px 2px}
+  ul{margin:8px 0 8px 4px;padding-left:20px} li{margin:4px 0}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:14px 0}
+  .card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+  .card .n{font-size:26px;font-weight:700;color:var(--brand)}
+  .card .l{font-size:12.5px;color:var(--sub);margin-top:2px}
+  .callout{border:1px solid #f3d6a0;background:#fff8ec;border-radius:10px;padding:14px 16px;margin:14px 0}
+  .callout.danger{border-color:#f1b4b4;background:#fdf0f0}
+  .callout.ok{border-color:#bfe6cf;background:#f1faf4}
+  .callout b{color:var(--ink)}
+  .path{font-family:monospace;font-size:12px;color:#0f2942}
+  footer{margin-top:40px;color:var(--sub);font-size:12px;text-align:center;border-top:1px solid var(--line);padding-top:16px}
+  a{color:var(--brand-dark)}
+  .pill{font-size:11px;padding:1px 6px;border-radius:4px;background:#eef2ff;color:var(--brand-dark)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1>ERP 业务功能全量审计报告</h1>
+  <div class="meta">
+    审计立项 <b>#698–#702</b> · 审计性质 <b>只读不改码</b> · 出具日期 <b>2026-10-06</b><br/>
+    覆盖维度：① 前端页面/路由可达性 ② 后端单据状态机与业务操作 ③ 真实 PG 单据数据 sanity ④ 服装行业契合度与功能缺失 ⑤ 运行时可达性<br/>
+    验证环境：PG 16.15（端口 5434，库 <code>erp_db</code>）· ERP 服务 <code>:3000</code> · 分支 <code>erp</code>（HEAD <code>bb4b6da</code>，领先 <code>origin/erp</code> 5 commit，未推送）
+  </div>
+</header>
+
+<!-- ============ 总览 ============ -->
+<h2>一、检查结果总览</h2>
+<div class="grid">
+  <div class="card"><div class="n">4</div><div class="l">审计维度（均已取证）</div></div>
+  <div class="card"><div class="n" style="color:var(--high)">3</div><div class="l">High 级阻断问题</div></div>
+  <div class="card"><div class="n" style="color:var(--med)">3</div><div class="l">Med 级一致性问题</div></div>
+  <div class="card"><div class="n" style="color:var(--low)">4</div><div class="l">Low 级技术债</div></div>
+</div>
+
+<table>
+  <thead><tr><th>维度</th><th>结论</th><th>严重项</th><th>整体评价</th></tr></thead>
+  <tbody>
+    <tr><td>① 前端页面/路由可达性</td><td>存在不可达入口与门禁不一致</td><td>3 High + 2 Med</td><td><span class="sev med">需修</span></td></tr>
+    <tr><td>② 后端单据状态机 / 业务操作</td><td>状态机与枚举一致；存在 1 行非法种子数据</td><td>1 High（数据）</td><td><span class="sev med">基本正常</span></td></tr>
+    <tr><td>③ 真实 PG 单据数据 sanity</td><td>无孤儿 / 无负库存 / 无空 FK；唯一异常为种子行</td><td>1 High（同②）</td><td><span class="sev ok">健康</span></td></tr>
+    <tr><td>④ 服装行业契合度 / 功能缺失</td><td>款/色/码/SKU/唯一码/吊牌/订货会/补货/多级经销 高度契合</td><td>0</td><td><span class="sev ok">高契合</span></td></tr>
+    <tr><td>⑤ 运行时可达性</td><td>构建产物存在；<code>:3000/client/</code> 返回 HTTP 200 + 合法 HTML</td><td>0</td><td><span class="sev ok">正常</span></td></tr>
+  </tbody>
+</table>
+
+<div class="callout ok">
+  <b>核心结论：</b>系统后端业务模型与真实数据整体健康，无数据完整性事故；主要风险集中在<b>前端导航层</b>（3 个不可达入口 + 1 处门禁不一致）与<b>1 行非法种子数据</b>（销售订单 <code>confirmed</code> 僵尸行）。服装行业适配度高，无重大功能缺失。建议优先处置 High 级项，再评估 Med/Low 迭代。
+</div>
+
+<!-- ============ 维度① 前端 ============ -->
+<h2>二、维度①：前端页面 / 路由可达性（#698）</h2>
+<div class="callout danger">
+  <b>架构根因（务必先理解）：</b><code>client/src/components/Layout.tsx</code> 全文<b>未 import 也未渲染 <code>&lt;Routes&gt;</code></b>，而是直接渲染 <code>&lt;TabPageCache/&gt;</code>。因此 <code>app.tsx</code> 中嵌套在 <code>/</code> 下的约 138 条 <code>&lt;Route&gt;</code><b>实际不参与页面渲染</b>。页面真正由 <code>TabPageCache.getRouteComponent(pathname)</code> 按路径查表渲染（返回 <code>null</code> 即渲染 <code>&lt;NotFound/&gt;</code>）。<br/>
+  可达性真相源 = <b>菜单 <code>config/menuConfig.tsx</code></b> + <b><code>TabPageCache.exactMap</code> / <code>routePermissions</code></b> + <b><code>TabsContext.labelMap</code></b> 三套映射，须人工同步，极易漂移。<code>app.tsx</code> 的 <code>&lt;Route&gt;</code> 仅作“声明”，漏接映射的页面点开即 404。
+</div>
+
+<h3>问题明细</h3>
+<table>
+  <thead><tr><th>级别</th><th>问题</th><th>证据（文件:行）</th><th>影响</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><span class="sev high">High</span></td>
+      <td><span class="path">/base/product-import</span>（「批量导入」）菜单可见但点开即 404</td>
+      <td>菜单 <code>menuConfig.tsx:54</code>（permission <code>base:import</code>）；<code>app.tsx:400</code> 有 <code>&lt;Route&gt;</code>；但 <code>TabPageCache.exactMap</code>(209–295) 无此项 → <code>getRouteComponent</code> 返回 null → <code>TabPageCache.tsx:385-388</code> 渲染 <code>NotFound</code>。后端 API 已存在（<code>api/productImport.ts</code>）。</td>
+      <td>运营点「批量导入」菜单看到空白/404，已上线的导入功能不可达</td>
+    </tr>
+    <tr>
+      <td><span class="sev high">High</span></td>
+      <td><span class="path">/pos/cashier</span>（POS 收银）无导航入口、不可达</td>
+      <td>仅 <code>app.tsx:954</code> 有 <code>&lt;Route&gt;</code>；<code>TabPageCache.exactMap</code> 无映射、<code>menuConfig</code> 无菜单项 → 无任何入口可进入</td>
+      <td>ERP 前端内嵌 POS 收银功能缺失导航（功能是否仍需内嵌需业务决策）</td>
+    </tr>
+    <tr>
+      <td><span class="sev high">High</span></td>
+      <td><span class="path">/pricing</span>（价格管理）无导航入口、不可达</td>
+      <td>仅 <code>app.tsx:958</code> 有 <code>&lt;Route&gt;</code>；<code>TabPageCache.exactMap</code> 无映射、<code>menuConfig</code> 无菜单项</td>
+      <td>价格管理功能缺失导航入口（业务是否需要在 ERP 内管理价格需决策）</td>
+    </tr>
+    <tr>
+      <td><span class="sev med">Med</span></td>
+      <td><span class="path">/subcontract</span> 门禁不一致：菜单码 ≠ 页面码</td>
+      <td>菜单 <code>menuConfig.tsx:93</code> → <code>subcontract:manage</code>；页面 <code>TabPageCache.tsx:190</code> <code>routePermissions</code> → <code>inventory:query</code></td>
+      <td>持有 <code>subcontract:manage</code> 但无 <code>inventory:query</code> 的用户：菜单可见，点开被页面级拦截 → 403/空白</td>
+    </tr>
+    <tr>
+      <td><span class="sev med">Med</span></td>
+      <td><span class="path">/base/color-group</span>、<span class="path">/base/warehouse</span> 有组件+映射但无菜单入口</td>
+      <td><code>TabPageCache.exactMap:213,217</code> 有映射；<code>menuConfig</code> 79 个菜单项无此项</td>
+      <td>仅能手输 URL 访问，运营无法在菜单中发现 → 功能“隐形”</td>
+    </tr>
+    <tr>
+      <td><span class="sev med">Med</span></td>
+      <td>总根因：<code>app.tsx</code> 的 <code>&lt;Route&gt;</code> 不参与渲染，三映射人工同步易漂移</td>
+      <td><code>Layout.tsx</code> 无 <code>&lt;Routes&gt;</code>；<code>app.tsx</code> 与 <code>TabPageCache</code>/<code>menuConfig</code> 各自维护</td>
+      <td>每次新增页面都需同步 3 处，漏接即产生不可达（本次 3 High 即由此而来）</td>
+    </tr>
+    <tr>
+      <td><span class="sev low">Low</span></td>
+      <td>裸 ID 详情路由（<code>/module/:id</code> 无 <code>/edit</code>）返回 404</td>
+      <td><code>TabPageCache.editPageMap</code>(297–332) 仅匹配 <code>/new</code> 或 <code>*/edit</code>；裸 ID 返回 null → <code>NotFound</code></td>
+      <td>直接访问裸 ID URL 报 404；正常流程走 <code>*/edit</code> 不受影响</td>
+    </tr>
+    <tr>
+      <td><span class="sev low">Low</span></td>
+      <td><code>Keep.tsx</code> 未接入的废弃组件（死代码）</td>
+      <td><code>TabPageCache</code> 实际引用 <code>keepStrategy</code>，<code>Keep.tsx</code> 未被引用</td>
+      <td>代码冗余，无功能影响</td>
+    </tr>
+    <tr>
+      <td><span class="sev low">Low</span></td>
+      <td>迁移 <code>0005_rbac_permissions_seed.sql</code> 缺 newer 权限码</td>
+      <td>该文件为 bootstrap 种子（固定 54 码），缺 <code>base:import</code>/<code>tradeshow:theme</code>/<code>md:merge</code>/<code>member:merge</code>/<code>inventory:replenish-*</code> 等</td>
+      <td><b>已复核：运行时真相源是 <code>ensureRbacCatalog()</code>（<code>app.module.ts:141</code>）每次启动幂等写入 <code>PERMISSION_CATALOG</code> 全码并授 super_admin，无实时漂移。</b>仅 fresh-DB bootstrap 场景需刷新</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ============ 维度② 状态机 ============ -->
+<h2>三、维度②：后端单据状态机与业务操作（#699）</h2>
+<h3>销售订单状态机核验（结论：与枚举一致，正常）</h3>
+<table>
+  <thead><tr><th>操作</th><th>前置状态</th><th>目标状态</th><th>代码位置</th></tr></thead>
+  <tbody>
+    <tr><td>新增 create</td><td>—</td><td><code>draft</code></td><td><code>sales-order.service.ts:291</code>（默认 DRAFT）</td></tr>
+    <tr><td>审核 audit</td><td><code>draft</code></td><td><code>audited</code></td><td>校验 <code>status===DRAFT</code> · <code>:506</code></td></tr>
+    <tr><td>反审 cancelAudit</td><td><code>audited</code></td><td><code>draft</code></td><td><code>:559</code></td></tr>
+    <tr><td>记账 book</td><td><code>audited</code></td><td><code>booked</code></td><td>校验 <code>AUDITED</code> · <code>:575</code></td></tr>
+    <tr><td>作废 voidDoc / 删除 delete</td><td><code>draft</code> 仅</td><td><code>cancelled</code></td><td><code>:445</code> / <code>:474</code>（走 <code>document-void.ts</code>）</td></tr>
+  </tbody>
+</table>
+<p>枚举定义于 <code>shared/api.interface.ts:238-243</code>：<code>draft / audited / booked / cancelled</code>；<code>schema.ts:2659</code> 中 <code>sales_order.status</code> 为 <code>varchar(20)</code> <b>无 CHECK 约束</b>（自由文本，故非法值可入库但不受状态机保护）。</p>
+
+<div class="callout danger">
+  <b>High（数据异常）：种子行 <code>SEED-SO-2026-001</code> 为“僵尸行”</b><br/>
+  真库核验：<code>status='confirmed'</code>（非法枚举值，不在 <code>SalesOrderStatus</code> 内）且 <code>dealer_id</code> 为空。<br/>
+  后果：① 所有状态转换均无法执行（audit 需 DRAFT、book 需 AUDITED、delete 需 DRAFT）→ 该行永久卡死；② 前端 <code>SalesOrderPage.tsx:23-27</code> 的 <code>STATUS_MAP</code> 无该值，UI 显示原始字符串 “confirmed” 无中文标签（第 375 行兜底 <code>|| { label: order.status }</code>）；③ 销售订单代表下级经销商预定单，缺 <code>dealer_id</code> 关联属数据完整性瑕疵。<br/>
+  <b>建议：</b>将该种子行 <code>status</code> 修正为合法值（如 <code>draft</code> 或 <code>booked</code>）并补 <code>dealer_id</code>；或直接删除该行（需用户确认是否保留演示数据）。代价：低（纯数据修正）。
+</div>
+
+<!-- ============ 维度③ 真PG ============ -->
+<h2>四、维度③：真实 PG 单据数据 sanity（#700）</h2>
+<p>PG 16.15 实跑，对全量单据表做行数 / 孤儿 / 外键 / 库存 / 状态分布核查。</p>
+<table>
+  <thead><tr><th>核查项</th><th>结果</th><th>说明</th></tr></thead>
+  <tbody>
+    <tr><td>子表孤儿（FK 悬挂）</td><td><span class="sev ok">0</span></td><td>gpo_sku/gpo、ginb_sku/ginb、preorder_item/preorder、alloc_item/alloc、ro_item/ro、so_item/so、sob_item/sob 全部 0 孤儿</td></tr>
+    <tr><td>库存异常</td><td><span class="sev ok">0</span></td><td><code>inventory_stock.quantity</code> 无负数/零；<code>inventory_flow</code> 无负数</td></tr>
+    <tr><td>表头 FK 空值</td><td><span class="sev ok">0</span></td><td><code>retail_order.store_id</code>、<code>sales_outbound.warehouse_id</code>、<code>inventory_transfer</code> 两端点均非空</td></tr>
+    <tr><td><code>source_type</code> 回填</td><td><span class="sev ok">0 空</span></td><td>迁移 <code>0042_sales_order_source.sql</code> 已生效</td></tr>
+    <tr><td>种子行状态合法性</td><td><span class="sev high">1 异常</span></td><td><code>sales_order</code> 种子行 <code>status='confirmed'</code>（非法）+ <code>dealer_id</code> 空（见维度②）</td></tr>
+  </tbody>
+</table>
+
+<h3>种子数据规模（行数）</h3>
+<table>
+  <thead><tr><th>模块</th><th>表</th><th>行数</th><th>模块</th><th>表</th><th>行数</th></tr></thead>
+  <tbody>
+    <tr><td>款式/SKU</td><td>style / sku / color / size</td><td>22 / 166 / 12 / 9</td><td>零售</td><td>retail_order</td><td>586</td></tr>
+    <tr><td>销售</td><td>sales_order / sales_outbound / sales_return</td><td>1 / 1 / 1</td><td>订货会</td><td>pre_order / allocation_order</td><td>56 / 10</td></tr>
+    <tr><td>采购</td><td>purchase_order / garment_purchase_order / garment_purchase_inbound</td><td>2 / 12 / 11</td><td>补货</td><td>replenish_plan</td><td>1</td></tr>
+    <tr><td>主数据</td><td>store / dealer / warehouse / supplier / member</td><td>74 / 178 / 190 / 45 / 13</td><td>库存</td><td>inventory_stock / inventory_flow</td><td>650 / 3</td></tr>
+  </tbody>
+</table>
+<p class="callout"><b>注：</b><code>inventory_inbound</code> / <code>inventory_outbound</code> 表<b>不存在</b>——入库/出库页面基于 <code>inventory_flow</code> 流水账（设计如此，非缺陷）。多级经销商层级真实存在（一级~五级经销商 + 直营店仓 + 中央总仓，共 190 仓），库存按仓分布正常。</p>
+
+<!-- ============ 维度④ 服装 ============ -->
+<h2>五、维度④：服装行业契合度与功能缺失（#701）</h2>
+<div class="callout ok">
+  <b>整体评价：高度契合，无重大功能缺失。</b>核心服装领域模型齐备：
+</div>
+<table>
+  <thead><tr><th>服装业务要素</th><th>系统落地</th><th>评价</th></tr></thead>
+  <tbody>
+    <tr><td>款式 master（款/季/波/年/品类/版型/品牌/生命周期）</td><td><code>style</code> 含 season/wave/year/category/fit/brand/lifecycle_status + 三层价（tag_price/cost_price/supply_price）</td><td><span class="sev ok">✓</span></td></tr>
+    <tr><td>款色码 → SKU + 条码</td><td><code>sku</code>（style_id/color_id/size_id/barcode/sku_code）</td><td><span class="sev ok">✓</span></td></tr>
+    <tr><td>唯一码（吊牌唯一码）全生命周期</td><td><code>doc_unique_code</code> + <code>doc_unique_code_archive</code> + <code>unique_code_stock</code></td><td><span class="sev ok">✓</span></td></tr>
+    <tr><td>吊牌 / 条码打印</td><td><code>hangtag_print_task/_item/_template</code> + <code>style_barcode(_config)</code></td><td><span class="sev ok">✓</span></td></tr>
+    <tr><td>订货会 → 预购 → 配货</td><td><code>trade_show</code> / <code>pre_order</code> / <code>allocation_order</code></td><td><span class="sev ok">✓</span></td></tr>
+    <tr><td>补货（计划/建议/模板）</td><td><code>replenish_plan</code> / <code>replenish_suggestion</code> / <code>replenish_template</code></td><td><span class="sev ok">✓</span></td></tr>
+    <tr><td>多级经销商层级 + 店仓合一</td><td>一级~五级经销商 + 直营店仓 + 中央总仓（190 仓）</td><td><span class="sev ok">✓</span></td></tr>
+  </tbody>
+</table>
+<h3>改进建议（非缺失，属体验/一致性）</h3>
+<ul>
+  <li><b>价格管理导航</b>：<code>/pricing</code> 功能已存在但无入口（见维度① High），若业务需在 ERP 内管理价格应补全导航。</li>
+  <li><b>基础资料菜单完整性</b>：<code>color-group</code> / <code>warehouse</code> 等页面已实现但无菜单项，运营不可发现。</li>
+  <li><b>委外门禁统一</b>：<code>/subcontract</code> 菜单码与页面码不一致（见维度① Med）。</li>
+</ul>
+
+<!-- ============ 维度⑤ 运行时 ============ -->
+<h2>六、维度⑤：运行时可达性（#702）</h2>
+<table>
+  <thead><tr><th>检查项</th><th>结果</th></tr></thead>
+  <tbody>
+    <tr><td>构建产物</td><td><code>dist/client</code> + <code>dist/server</code> 均存在（<code>build:client</code> / <code>build:server</code> 通过）</td></tr>
+    <tr><td>服务端口</td><td><code>curl --noproxy '*' http://localhost:3000/client/</code> → <b>HTTP 200</b> + 合法 HTML</td></tr>
+    <tr><td>启动自检</td><td><code>ensureRbacCatalog()</code> 在 <code>app.module.ts:141</code> 每次启动幂等写权限码；失败仅记日志不中断端口监听</td></tr>
+  </tbody>
+</table>
+<div class="callout ok"><b>结论：</b>系统可正常构建、启动并对外服务，运行时层面无阻断。</div>
+
+<!-- ============ 分级建议 ============ -->
+<h2>七、分级建议处理办法（汇总）</h2>
+<table>
+  <thead><tr><th>级别</th><th>编号</th><th>问题</th><th>建议处理</th><th>代价</th></tr></thead>
+  <tbody>
+    <tr><td><span class="sev high">High</span></td><td>H1</td><td><code>/base/product-import</code> 菜单有但页面漏接 → 404</td><td>在 <code>TabPageCache.exactMap</code> 加 <code>'/base/product-import': ProductImportPage</code>（组件已存在），并确认 <code>app.tsx</code> 懒加载声明一致</td><td>低（小时级）</td></tr>
+    <tr><td><span class="sev high">High</span></td><td>H2</td><td><code>/pos/cashier</code> 不可达</td><td>业务决策：若 ERP 需内嵌 POS 收银 → 建页面+菜单+映射三处补全；否则从 <code>app.tsx</code> 移除死路由</td><td>中（需决策+页面）</td></tr>
+    <tr><td><span class="sev high">High</span></td><td>H3</td><td><code>/pricing</code> 不可达</td><td>同上：补全导航或移除死路由（视价格管理业务归属而定）</td><td>中（需决策）</td></tr>
+    <tr><td><span class="sev high">High</span></td><td>H4</td><td>销售订单种子行 <code>confirmed</code> + <code>dealer_id</code> 空（僵尸行）</td><td>修正 <code>status</code> 为合法值（draft/booked）并补 <code>dealer_id</code>，或删除该行（需用户确认是否保留演示数据）</td><td>低（数据修正）</td></tr>
+    <tr><td><span class="sev med">Med</span></td><td>M1</td><td><code>/subcontract</code> 菜单码 ≠ 页面码</td><td>统一两处门禁码（建议统一为 <code>subcontract:manage</code> 或从 catalog 取单一码）</td><td>低</td></tr>
+    <tr><td><span class="sev med">Med</span></td><td>M2</td><td><code>color-group</code> / <code>warehouse</code> 无菜单入口</td><td>按业务需要补菜单项，或确认属废弃页面并清理</td><td>低</td></tr>
+    <tr><td><span class="sev med">Med</span></td><td>M3</td><td>三映射（app.tsx / menuConfig / TabPageCache）人工同步易漂移</td><td>排期架构收敛：以 <code>menuConfig</code> 为单一真相源自动生成路由与映射，消除漏接根因</td><td>高（架构重构，可排期）</td></tr>
+    <tr><td><span class="sev low">Low</span></td><td>L1</td><td>迁移 0005 缺 newer 权限码</td><td>可选：刷新 0005 对齐 catalog，或文档注明运行时不依赖该迁移（<code>ensureRbacCatalog</code> 自愈）</td><td>低</td></tr>
+    <tr><td><span class="sev low">Low</span></td><td>L2</td><td><code>Keep.tsx</code> 死代码</td><td>清理未接入组件</td><td>低</td></tr>
+    <tr><td><span class="sev low">Low</span></td><td>L3</td><td>裸 ID 详情路由 404</td><td>统一详情页入口为 <code>*/edit</code>（已在 editPageMap 匹配）</td><td>低</td></tr>
+  </tbody>
+</table>
+
+<div class="callout">
+  <b>迭代优先级建议：</b>
+  <span class="pill">第 1 批（必做，低风险）</span> H1 + H4 + M1 + M2 + L1/L2/L3 —— 纯前端映射/门禁修正与种子数据修正，小时~天级，不影响后端模型。<br/>
+  <span class="pill">第 2 批（需业务决策）</span> H2 + H3 —— POS 收银 / 价格管理是否需在 ERP 内嵌导航，需产品侧确认范围。<br/>
+  <span class="pill">第 3 批（架构排期）</span> M3 —— 单一真相源重构，根治“漏接即 404”类问题，建议作为后续技术债专项。
+</div>
+
+<!-- ============ 附录 ============ -->
+<h2>八、验证方法与证据索引</h2>
+<ul>
+  <li><b>前端映射取证：</b>Grep <code>menuConfig.tsx</code> / <code>app.tsx</code> / <code>TabPageCache.tsx</code> 三处，交叉比对 79 个菜单项与 <code>exactMap</code>(209–295) 的覆盖差集；人工读 <code>Layout.tsx</code> 确认无 <code>&lt;Routes&gt;</code>。</li>
+  <li><b>状态机取证：</b>读 <code>sales-order.service.ts</code>（:291/:445/:474/:506/:559/:575）与 <code>shared/api.interface.ts:238-243</code> 枚举比对。</li>
+  <li><b>真 PG 取证：</b><code>psql -p 5434 -d erp_db</code> 执行行数/孤儿(<code>information_schema.columns</code> 校正列名)/FK 空值/库存符号/状态分布核查，迭代修正列名假设后全部跑通。</li>
+  <li><b>运行时取证：</b><code>curl --noproxy '*' http://localhost:3000/client/</code> → 200；核验 <code>dist/client</code>+<code>dist/server</code> 存在。</li>
+  <li><b>权限真相源复核：</b>读 <code>migrations/0005_rbac_permissions_seed.sql</code>（bootstrap 54 码）与 <code>rbac.service.ts:430</code> <code>ensureRbacCatalog</code> + <code>app.module.ts:141</code>，确认运行时不依赖迁移、自愈无漂移。</li>
+</ul>
+
+<footer>
+  本报告为只读审计产出（#698–#702），未改动任何业务代码与数据。所有结论均基于本机实跑 PG 与源码交叉核验。<br/>
+  下一步：由用户评估是否进入迭代（建议按本报告“第 1/2/3 批”节奏推进）。Git 状态：erp 分支领先 origin/erp 5 commit，是否 <code>git push origin erp</code> 由用户决定。
+</footer>
+
+</div>
+</body>
+</html>
