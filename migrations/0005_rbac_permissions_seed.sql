@@ -1,8 +1,34 @@
 -- ============================================================
--- 0005 RBAC 权限种子
--- 问题：原系统前端 app.tsx 引用了 ~54 个权限码，但库内无任何 rbac_permission 记录，
---       导致所有受保护路由在 protectedWith 校验时因 hasMenu(code)=false 而 403 锁死。
--- 本脚本幂等（ON CONFLICT DO NOTHING）地写入全部权限码，并创建 super_admin 角色持有全部权限。
+-- 0005 RBAC 权限种子（FROZEN BOOTSTRAP SNAPSHOT — v2.3.0，共 59 码）
+-- ------------------------------------------------------------
+-- 历史问题：早期前端 app.tsx 引用 ~54 个权限码，但库内无任何 rbac_permission 记录，
+--   导致受保护路由在 protectedWith 校验时因 hasMenu(code)=false 而 403 锁死。
+--   本脚本幂等（ON CONFLICT DO NOTHING）写入一份初始权限码 + 创建 super_admin 角色，
+--   并授予 super_admin 全部已写码。
+--
+-- ⚠️ 本文件是「一次性 bootstrap 快照」，**不是**权限目录的权威来源。
+--   运行时权威真相源 = RbacService.ensureRbacCatalog()
+--   （server/app.module.ts:141 的 onModuleInit，每次启动幂等 upsert）——
+--   它会把 server/modules/rbac/rbac.service.ts 的 PERMISSION_CATALOG
+--   （当前 85 码，含 purchase:inbound:* / sales:order:* 动作子码）全量写入
+--   并授权 super_admin，无实时漂移。故本文件缺失的码**不影响运行时**。
+--
+-- 审计 L1 处置（business-audit-report-2026-10-06.html）：
+--   报告指出的「缺 newer 权限码」已复核为**非缺陷**——仅 fresh-DB bootstrap 窗口需关注，
+--   而该窗口同样由 ensureRbacCatalog 首次启动自愈覆盖。据此选择
+--   「文档注明运行时不依赖该迁移」，**不**将本文件扩展到镜像 PERMISSION_CATALOG
+--   （否则会重新制造「人工同步的第二真相源」，正是 M3 单源重构想要根除的漂移根因）。
+--
+-- 本快照未播种、但运行时由 ensureRbacCatalog 自动补齐的码（27 个）：
+--   dashboard:view, base:import, base:color, base:size,
+--   purchase:inbound:{view,create,edit,approve,accept,void,delete},
+--   sales:order:{view,create,edit,approve,delete,void,print},
+--   inventory:replenish-plan, inventory:replenish-template, inventory:warning,
+--   pos:receiver:manage, tradeshow:theme, member:merge, member:level,
+--   md:merge, product:barcode
+--
+-- 注：本文件含一枚 catalog 已无对应项的孤儿码 base:customer（customer 表已删除），
+--   保留无害——ensureRbacCatalog 仅做加法不删除，且该码从无引用。
 -- ============================================================
 
 -- 1) 写入全部权限码（type 统一为 api）
