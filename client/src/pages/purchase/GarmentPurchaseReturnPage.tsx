@@ -1,4 +1,5 @@
 import { StatusBadge, type StatusTone } from '@client/src/components/ui/status-badge';
+import { PurchaseFilterBar } from '@client/src/components/PurchaseFilterBar';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search } from 'lucide-react';
@@ -185,74 +186,56 @@ const GarmentPurchaseReturnPage: React.FC = () => {
              <Plus size={16} /> 新增采购退货
           </button>
         </div>
-        <div className="flex flex-wrap items-center gap-3 text-sm">
-          <div className="flex items-center gap-1">
-            <span className="text-gray-600">状态：</span>
-            <select
-              value={filterStatus}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                setFilterStatus(e.target.value);
-                setPage(1);
-              }}
-              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
+        <PurchaseFilterBar
+          onSearch={() => { setPage(1); fetchList(); }}
+          onReset={() => {
+            setFilterStatus('');
+            setKeyword('');
+            setFilterWarehouse('');
+            setFilterDocStart(defaultDocStart);
+            setFilterDocEnd(defaultDocEnd);
+            setFilterReturnStart('');
+            setFilterReturnEnd('');
+            setPage(1);
+            fetchList();
+          }}
+          dateLabel="单据日期"
+          dateStart={filterDocStart}
+          dateEnd={filterDocEnd}
+          onDateStartChange={setFilterDocStart}
+          onDateEndChange={setFilterDocEnd}
+          showSecondaryDate
+          secondaryDateLabel="退货日期"
+          secondaryDateStart={filterReturnStart}
+          secondaryDateEnd={filterReturnEnd}
+          onSecondaryDateStartChange={setFilterReturnStart}
+          onSecondaryDateEndChange={setFilterReturnEnd}
+          showStatus
+          status={filterStatus}
+          onStatusChange={setFilterStatus}
+          statusOptions={[
+            { value: 'draft', label: '草稿' },
+            { value: 'approved', label: '已审' },
+            { value: 'completed', label: '已完成' },
+          ]}
+          showWarehouse
+          warehouseId={filterWarehouse}
+          onWarehouseChange={setFilterWarehouse}
+          warehouseOptions={warehouseOptions}
+          showKeyword
+          keyword={keyword}
+          onKeywordChange={setKeyword}
+          keywordPlaceholder="搜索退货单号"
+          extraButtons={
+            <button
+              type="button"
+              onClick={() => { void handleExport(); }}
+              className="px-4 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50"
             >
-              <option value="">全部</option>
-              <option value="draft">草稿</option>
-              <option value="approved">已审</option>
-              <option value="completed">已完成</option>
-                        <option value="cancelled">已作废</option>
-</select>
-          </div>
-           <div className="flex items-center gap-1">
-             <div className="relative">
-               <Search size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400" />
-               <input
-                 type="text"
-                 value={keyword}
-                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setKeyword(e.target.value)}
-                 placeholder="搜索退货单号"
-                 className="border border-gray-300 rounded pl-7 pr-2 py-1 text-sm focus:outline-none focus:border-primary w-44"
-               />
-            </div>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-gray-600">仓库：</span>
-            <select
-              value={filterWarehouse}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilterWarehouse(e.target.value)}
-              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
-            >
-              <option value="">全部</option>
-              {warehouseOptions.map((w: { id: string; code: string; name: string }) => (
-                <option key={w.id} value={w.id}>{w.name}</option>
-              ))}
-            </select>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-gray-600">单据日期：</span>
-            <input type="date" value={filterDocStart} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilterDocStart(e.target.value)} className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary" />
-            <span className="text-gray-400">至</span>
-            <input type="date" value={filterDocEnd} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilterDocEnd(e.target.value)} className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary" />
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-gray-600">退货日期：</span>
-            <input type="date" value={filterReturnStart} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilterReturnStart(e.target.value)} className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary" />
-            <span className="text-gray-400">至</span>
-            <input type="date" value={filterReturnEnd} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilterReturnEnd(e.target.value)} className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary" />
-          </div>
-          <button
-            onClick={() => { setPage(1); fetchList(); }}
-            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary flex items-center gap-1"
-          >
-            <Search size={14} /> 查询
-          </button>
-           <button
-             onClick={() => { void handleExport(); }}
-             className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50"
-           >
-             导出
-           </button>
-         </div>
+              导出
+            </button>
+          }
+        />
        </div>
 
        <div className="bg-white rounded-lg shadow-sm p-5">

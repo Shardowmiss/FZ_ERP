@@ -1,4 +1,5 @@
 import { StatusBadge, type StatusTone } from '@client/src/components/ui/status-badge';
+import { PurchaseFilterBar } from '@client/src/components/PurchaseFilterBar';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search } from 'lucide-react';
@@ -13,8 +14,8 @@ import { errMsg } from '@/utils/errMsg';
 import { useDefaultDocDate } from '@client/src/hooks/useDefaultDocDate';
 
 const statusLabel: Record<string, string> = {
-  draft: '草稿',
-  approved: '已审',
+  draft: '待审核',
+  approved: '已审核',
   completed: '已完成',
   cancelled: '已作废',
 };
@@ -113,6 +114,10 @@ const GarmentPurchaseInboundPage: React.FC = () => {
     navigate(`/purchase/garment-inbound/${id}/edit?view=1`);
   };
 
+  const openEdit = (id: string): void => {
+    navigate(`/purchase/garment-inbound/${id}/edit`);
+  };
+
   const handlePageSizeChange = (size: number): void => {
     setPageSize(size);
     setPage(1);
@@ -200,84 +205,61 @@ const GarmentPurchaseInboundPage: React.FC = () => {
              <Plus size={16} /> 新增采购入库
           </button>
         </div>
-        <div className="flex flex-wrap items-center gap-3 text-sm">
-          <div className="flex items-center gap-1">
-            <span className="text-gray-600">供应商：</span>
-            <select
-              value={filterSupplier}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilterSupplier(e.target.value)}
-              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
+        <PurchaseFilterBar
+          onSearch={() => { setPage(1); fetchList(); }}
+          onReset={() => {
+            setFilterSupplier('');
+            setFilterStatus('');
+            setKeyword('');
+            setFilterWarehouse('');
+            setFilterDocStart(defaultDocStart);
+            setFilterDocEnd(defaultDocEnd);
+            setFilterInboundStart('');
+            setFilterInboundEnd('');
+            setPage(1);
+            fetchList();
+          }}
+          dateLabel="单据日期"
+          dateStart={filterDocStart}
+          dateEnd={filterDocEnd}
+          onDateStartChange={setFilterDocStart}
+          onDateEndChange={setFilterDocEnd}
+          showSecondaryDate
+          secondaryDateLabel="入库日期"
+          secondaryDateStart={filterInboundStart}
+          secondaryDateEnd={filterInboundEnd}
+          onSecondaryDateStartChange={setFilterInboundStart}
+          onSecondaryDateEndChange={setFilterInboundEnd}
+          showSupplier
+          supplierId={filterSupplier}
+          onSupplierChange={setFilterSupplier}
+          supplierOptions={supplierOptions}
+          showStatus
+          status={filterStatus}
+          onStatusChange={setFilterStatus}
+          statusOptions={[
+            { value: 'draft', label: '待审核' },
+            { value: 'approved', label: '已审核' },
+            { value: 'completed', label: '已完成' },
+          ]}
+          showWarehouse
+          warehouseId={filterWarehouse}
+          onWarehouseChange={setFilterWarehouse}
+          warehouseOptions={warehouseOptions}
+          showKeyword
+          keyword={keyword}
+          onKeywordChange={setKeyword}
+          keywordPlaceholder="搜索采购单号"
+          extraButtons={
+            <button
+              type="button"
+              onClick={() => { void handleExport(); }}
+              className="px-4 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50"
             >
-              <option value="">全部</option>
-              {supplierOptions.map((s: { id: string; code: string; name: string }) => (
-                <option key={s.id} value={s.id}>{s.name}</option>
-              ))}
-                        <option value="cancelled">已作废</option>
-</select>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-gray-600">状态：</span>
-            <select
-              value={filterStatus}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilterStatus(e.target.value)}
-              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
-            >
-              <option value="">全部</option>
-              <option value="draft">草稿</option>
-              <option value="approved">已审</option>
-              <option value="completed">已完成</option>
-            </select>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="relative">
-              <Search size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                value={keyword}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setKeyword(e.target.value)}
-                placeholder="搜索采购单号"
-                className="border border-gray-300 rounded pl-7 pr-2 py-1 text-sm focus:outline-none focus:border-primary w-44"
-              />
-            </div>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-gray-600">仓库：</span>
-            <select
-              value={filterWarehouse}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilterWarehouse(e.target.value)}
-              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
-            >
-              <option value="">全部</option>
-              {warehouseOptions.map((w: { id: string; code: string; name: string }) => (
-                <option key={w.id} value={w.id}>{w.name}</option>
-              ))}
-            </select>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-gray-600">单据日期：</span>
-            <input type="date" value={filterDocStart} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilterDocStart(e.target.value)} className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary" />
-            <span className="text-gray-400">至</span>
-            <input type="date" value={filterDocEnd} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilterDocEnd(e.target.value)} className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary" />
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-gray-600">入库日期：</span>
-            <input type="date" value={filterInboundStart} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilterInboundStart(e.target.value)} className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary" />
-            <span className="text-gray-400">至</span>
-            <input type="date" value={filterInboundEnd} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilterInboundEnd(e.target.value)} className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary" />
-          </div>
-          <button
-            onClick={() => { setPage(1); fetchList(); }}
-            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary flex items-center gap-1"
-          >
-            <Search size={14} /> 查询
-          </button>
-          <button
-            onClick={() => { void handleExport(); }}
-            className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50"
-          >
-            导出
-          </button>
-        </div>
+              导出
+            </button>
+          }
+        />
       </div>
 
       <div className="bg-white rounded-lg shadow-sm p-5">
@@ -331,6 +313,10 @@ const GarmentPurchaseInboundPage: React.FC = () => {
                     {item.status === 'draft' && (
                       <>
                         <button
+                          onClick={() => openEdit(item.id)}
+                          className="text-primary hover:text-primary"
+                        >编辑</button>
+                        <button
                           onClick={() => { void handleApprove(item.id); }}
                           className="text-green-500 hover:text-green-600"
                         >审核</button>
@@ -338,14 +324,20 @@ const GarmentPurchaseInboundPage: React.FC = () => {
                           onClick={() => { void handleDelete(item.id); }}
                           className="text-red-500 hover:text-red-600"
                         >删除</button>
-                                            <button onClick={() => handleVoid(item.id)} className="text-red-500 hover:text-red-600">作废</button>
-</>
+                        <button onClick={() => handleVoid(item.id)} className="text-red-500 hover:text-red-600">作废</button>
+                      </>
                     )}
-                    {(item.status === 'approved' || item.status === 'completed') && (
-                       <button
-                         onClick={() => openView(item.id)}
-                         className="text-primary hover:text-primary"
-                       >查看</button>
+                    {item.status === 'approved' && (
+                      <button
+                        onClick={() => openEdit(item.id)}
+                        className="text-primary hover:text-primary"
+                      >验收</button>
+                    )}
+                    {item.status === 'completed' && (
+                      <button
+                        onClick={() => openView(item.id)}
+                        className="text-primary hover:text-primary"
+                      >查看</button>
                     )}
                   </td>
                 </tr>

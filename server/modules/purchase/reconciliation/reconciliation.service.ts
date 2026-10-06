@@ -138,6 +138,12 @@ export class PurchaseReconciliationService {
 
   async preview(params: PreviewParams): Promise<PurchaseReconPreview> {
     const { supplierId, startDate, endDate } = params;
+    // 半开区间上界：endDate 当天应包含在结果内（与 inventory-flow / report-purchase 的 +1 天约定一致）
+    let endExclusive: string | undefined;
+    if (endDate) {
+      const [y, m, d] = endDate.split('-').map(Number);
+      endExclusive = new Date(Date.UTC(y, m - 1, d + 1)).toISOString().slice(0, 10);
+    }
 
     const [inboundRows, returnRows] = await Promise.all([
       this.db
@@ -153,7 +159,7 @@ export class PurchaseReconciliationService {
             eq(purchaseInbound.supplierId, supplierId),
             eq(purchaseInbound.status, 'approved'),
             gte(purchaseInbound.inboundDate, startDate),
-            lt(purchaseInbound.inboundDate, endDate),
+            lt(purchaseInbound.inboundDate, endExclusive),
           ),
         )
         .orderBy(desc(purchaseInbound.inboundDate)),

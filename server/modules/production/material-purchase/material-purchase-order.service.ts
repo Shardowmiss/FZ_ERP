@@ -123,7 +123,12 @@ export class MaterialPurchaseOrderService {
     if (supplierId) conditions.push(eq(materialPurchaseOrder.supplierId, supplierId));
     if (status) conditions.push(eq(materialPurchaseOrder.status, status));
     if (startDate) conditions.push(gte(materialPurchaseOrder.orderDate, startDate));
-    if (endDate) conditions.push(lt(materialPurchaseOrder.orderDate, endDate));
+    if (endDate) {
+      // 半开区间上界：endDate 当天应包含在结果内（与 inventory-flow / report-purchase 的 +1 天约定一致）
+      const [y, m, d] = endDate.split('-').map(Number);
+      const endExclusive = new Date(Date.UTC(y, m - 1, d + 1)).toISOString().slice(0, 10);
+      conditions.push(lt(materialPurchaseOrder.orderDate, endExclusive));
+    }
 
     // 行级数据权限：仅可见当前用户所属经销商的供应商关联面辅料采购订单
     const scopeCond = buildDealerScopeCondition(

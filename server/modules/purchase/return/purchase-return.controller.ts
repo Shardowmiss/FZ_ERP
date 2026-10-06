@@ -9,7 +9,12 @@ import {
 } from '@nestjs/common';
 import { NeedLogin } from '@lark-apaas/fullstack-nestjs-core';
 import { PurchaseReturnService } from './purchase-return.service';
-import type { PaginationResult, PurchaseReturn } from '@shared/api.interface';
+import type {
+  PaginationResult,
+  PurchaseReturn,
+  PurchaseReturnCreateDto,
+  ReturnContext,
+} from '@shared/api.interface';
 import { CheckPermission } from '../../../common/decorators/check-permission.decorator';
 
 @NeedLogin()
@@ -44,6 +49,11 @@ export class PurchaseReturnController {
     });
   }
 
+  @Get('return-context')
+  async returnContext(): Promise<ReturnContext> {
+    return this.purchaseReturnService.getReturnContext();
+  }
+
   @Get(':id')
   async detail(@Param('id') id: string): Promise<PurchaseReturn> {
     return this.purchaseReturnService.getDetail(id);
@@ -53,17 +63,7 @@ export class PurchaseReturnController {
   @Post()
   async create(
     @Body()
-    body: {
-      inboundId: string;
-      returnDate: string;
-      remark?: string;
-      items: {
-        materialId: string;
-        quantity: number;
-        price: number;
-        batchNo?: string;
-      }[];
-    },
+    body: PurchaseReturnCreateDto,
   ): Promise<PurchaseReturn> {
     return this.purchaseReturnService.create(body);
   }

@@ -1,4 +1,5 @@
 import { StatusBadge, type StatusTone } from '@client/src/components/ui/status-badge';
+import { PurchaseFilterBar } from '@client/src/components/PurchaseFilterBar';
 import React, { useState, useEffect } from 'react';
 import { Plus, Search } from 'lucide-react';
 import { toast } from 'sonner';
@@ -191,61 +192,26 @@ const PurchaseReconciliationPage: React.FC = () => {
             <Plus size={16} /> 新建对账
           </button>
         </div>
-        <div className="flex flex-wrap items-center gap-3 text-sm">
-          <div className="flex items-center gap-1">
-            <span className="text-gray-600">供应商：</span>
-            <select
-              value={filterSupplier}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilterSupplier(e.target.value)}
-              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
-            >
-              <option value="">全部</option>
-              {supplierOptions.map((s) => (
-                <option key={s.id} value={s.id}>{s.name}</option>
-              ))}
-            </select>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-gray-600">状态：</span>
-            <select
-              value={filterStatus}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilterStatus(e.target.value)}
-              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
-            >
-              <option value="">全部</option>
-              <option value="draft">草稿</option>
-              <option value="confirmed">已确认</option>
-            </select>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-gray-600">期间：</span>
-            <input
-              type="date"
-              value={filterStartDate}
-              onChange={(e) => setFilterStartDate(e.target.value)}
-              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
-            />
-            <span className="text-gray-400">~</span>
-            <input
-              type="date"
-              value={filterEndDate}
-              onChange={(e) => setFilterEndDate(e.target.value)}
-              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
-            />
-          </div>
-          <button
-            onClick={handleSearch}
-            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary flex items-center gap-1"
-          >
-            <Search size={14} /> 查询
-          </button>
-          <button
-            onClick={handleReset}
-            className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50"
-          >
-            重置
-          </button>
-        </div>
+        <PurchaseFilterBar
+          onSearch={handleSearch}
+          onReset={handleReset}
+          dateLabel="期间"
+          dateStart={filterStartDate}
+          dateEnd={filterEndDate}
+          onDateStartChange={setFilterStartDate}
+          onDateEndChange={setFilterEndDate}
+          showSupplier
+          supplierId={filterSupplier}
+          onSupplierChange={setFilterSupplier}
+          supplierOptions={supplierOptions}
+          showStatus
+          status={filterStatus}
+          onStatusChange={setFilterStatus}
+          statusOptions={[
+            { value: 'draft', label: '草稿' },
+            { value: 'confirmed', label: '已确认' },
+          ]}
+        />
       </div>
 
       <div className="bg-white rounded-lg shadow-sm p-5">

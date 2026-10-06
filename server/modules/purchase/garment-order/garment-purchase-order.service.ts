@@ -112,7 +112,12 @@ export class GarmentPurchaseOrderService {
     if (supplierId) conditions.push(eq(garmentPurchaseOrder.supplierId, supplierId));
     if (status) conditions.push(eq(garmentPurchaseOrder.status, status));
     if (startDate) conditions.push(gte(garmentPurchaseOrder.orderDate, startDate));
-    if (endDate) conditions.push(lt(garmentPurchaseOrder.orderDate, endDate));
+    if (endDate) {
+      // 半开区间上界：endDate 当天应包含在结果内（与 inventory-flow / report-purchase 的 +1 天约定一致）
+      const [y, m, d] = endDate.split('-').map(Number);
+      const endExclusive = new Date(Date.UTC(y, m - 1, d + 1)).toISOString().slice(0, 10);
+      conditions.push(lt(garmentPurchaseOrder.orderDate, endExclusive));
+    }
     if (keyword) conditions.push(sql`${garmentPurchaseOrder.orderNo} like ${'%' + keyword + '%'}`);
     if (styleNo) {
       conditions.push(

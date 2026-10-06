@@ -1285,12 +1285,20 @@ export const garmentPurchaseReturnSku = pgTable("garment_purchase_return_sku", {
 export const garmentPurchaseReturn = pgTable("garment_purchase_return", {
   id: uuid("id").primaryKey().defaultRandom(),
   returnNo: varchar("return_no", { length: 50 }).notNull().unique(),
-  inboundId: uuid("inbound_id").notNull(),
-  inboundNo: varchar("inbound_no", { length: 50 }).notNull(),
-  supplierId: uuid("supplier_id").notNull(),
-  supplierName: varchar("supplier_name", { length: 200 }).notNull(),
+  // 关联采购入库单：解耦后可为空（支持批量/无单退货），历史单据仍保留原值
+  inboundId: uuid("inbound_id"),
+  inboundNo: varchar("inbound_no", { length: 50 }),
+  supplierId: uuid("supplier_id"),
+  supplierName: varchar("supplier_name", { length: 200 }),
+  // 业务归属经销商：HQ 退货为 NULL，经销商退货=本经销商，用于行级数据隔离
+  dealerId: uuid("dealer_id"),
+  // 退货店仓（货物来源）
   warehouseId: uuid("warehouse_id").notNull(),
   warehouseName: varchar("warehouse_name", { length: 200 }).notNull(),
+  // 收货方（多态）：supplier=供应商（总部退货）；store=上级经销商店仓（经销商退货）
+  receiverType: varchar("receiver_type", { length: 20 }).notNull().default('supplier'),
+  receiverId: uuid("receiver_id"),
+  receiverName: varchar("receiver_name", { length: 200 }),
   returnDate: date("return_date").notNull(),
   totalAmount: numeric("total_amount").notNull().default('0'),
   totalQty: numeric("total_qty").notNull().default('0'),
@@ -1311,6 +1319,8 @@ export const garmentPurchaseReturn = pgTable("garment_purchase_return", {
     WHEN (current_setting('app.user_id'::text, true) = ''::text) THEN NULL`),
 }, (table) => [
   uniqueIndex("garment_purchase_return_return_no_key").on(table.returnNo),
+  index("idx_gpr_dealer").on(table.dealerId),
+  index("idx_gpr_receiver").on(table.receiverId),
   index("idx_gpr_source_doc").on(table.sourceDocId),
   index("idx_gpr_downstream").on(table.downstreamOrgId),
 ]);
@@ -1330,6 +1340,10 @@ export const garmentPurchaseInboundSku = pgTable("garment_purchase_inbound_sku",
   price: numeric("price").notNull().default('0'),
   amount: numeric("amount").notNull().default('0'),
   batchNo: varchar("batch_no", { length: 50 }),
+  // 验收数量：仓库实际到货扫码/手填录入，验收环节按此值真正入库
+  acceptedQty: numeric("accepted_qty").notNull().default('0'),
+  // SKU 货号：冗余自 sku.sku_code，供扫码录入与明细展示
+  skuCode: varchar("sku_code", { length: 100 }),
   // System field: Creation time (auto-filled, do not modify)
   createdAt: customTimestamptz("_created_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
   // System field: Creator (auto-filled, do not modify)
@@ -2699,12 +2713,21 @@ export const purchaseReturnItem = pgTable("purchase_return_item", {
 export const purchaseReturn = pgTable("purchase_return", {
   id: uuid("id").primaryKey().defaultRandom(),
   returnNo: varchar("return_no", { length: 50 }).notNull().unique(),
-  inboundId: uuid("inbound_id").notNull(),
-  inboundNo: varchar("inbound_no", { length: 50 }).notNull(),
-  supplierId: uuid("supplier_id").notNull(),
-  supplierName: varchar("supplier_name", { length: 200 }).notNull(),
+  // 关联采购入库单：解耦后可为空（支持批量/无单退货），历史单据仍保留原值
+  inboundId: uuid("inbound_id"),
+  inboundNo: varchar("inbound_no", { length: 50 }),
+  // 供应商（收货方为供应商时填充；经销商账户退货无供应商，可为空）
+  supplierId: uuid("supplier_id"),
+  supplierName: varchar("supplier_name", { length: 200 }),
+  // 业务归属经销商：HQ 退货为 NULL，经销商退货=本经销商，用于行级数据隔离
+  dealerId: uuid("dealer_id"),
+  // 退货店仓（货物来源）
   warehouseId: uuid("warehouse_id").notNull(),
   warehouseName: varchar("warehouse_name", { length: 200 }).notNull(),
+  // 收货方（多态）：supplier=供应商（总部退货）；store=上级经销商店仓（经销商退货）
+  receiverType: varchar("receiver_type", { length: 20 }).notNull().default('supplier'),
+  receiverId: uuid("receiver_id"),
+  receiverName: varchar("receiver_name", { length: 200 }),
   returnDate: date("return_date").notNull(),
   totalAmount: numeric("total_amount").notNull().default('0'),
   status: varchar("status", { length: 20 }).notNull().default('draft'),
@@ -2719,6 +2742,9 @@ export const purchaseReturn = pgTable("purchase_return", {
   updatedBy: userProfile("_updated_by"),
 }, (table) => [
   uniqueIndex("purchase_return_return_no_key").on(table.returnNo),
+  index("idx_purchase_return_inbound").on(table.inboundId),
+  index("idx_purchase_return_dealer").on(table.dealerId),
+  index("idx_purchase_return_receiver").on(table.receiverId),
   foreignKey({
     columns: [table.inboundId],
     foreignColumns: [purchaseInbound.id],
@@ -2729,6 +2755,11 @@ export const purchaseReturn = pgTable("purchase_return", {
     foreignColumns: [warehouse.id],
     name: "purchase_return_warehouse_id_fkey",
   }),
+  foreignKey({
+    columns: [table.dealerId],
+    foreignColumns: [dealer.id],
+    name: "purchase_return_dealer_id_fkey",
+  }).onDelete("restrict"),
 ]);
 
 export const purchaseInboundItem = pgTable("purchase_inbound_item", {

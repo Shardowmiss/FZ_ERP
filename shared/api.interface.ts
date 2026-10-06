@@ -347,15 +347,54 @@ export interface PurchaseInboundItem {
   batchNo?: string;
 }
 
+export interface PurchaseReturnReceiver {
+  type: 'supplier' | 'store';
+  id: string;
+  name: string;
+}
+
+export interface PurchaseReturnCreateDto {
+  inboundId?: string;
+  // HQ 退货必填（前端提交）；经销商退货由服务端按经销层级解析，可省略
+  warehouseId?: string;
+  returnDate: string;
+  remark?: string;
+  // HQ 退货必填（收货方=供应商）；经销商退货由服务端解析（收货方=上级店仓），可省略
+  receiver?: PurchaseReturnReceiver;
+  items: Array<{
+    materialId: string;
+    quantity: number;
+    price: number;
+    batchNo?: string;
+  }>;
+}
+
+/** 退货新增页上下文：决定 UI 形态（总部可编辑 / 经销商只读自动解析）。 */
+export interface ReturnContext {
+  accountType: 'hq' | 'dealer';
+  dealerId?: string;
+  dealerName?: string;
+  returnWarehouse: { id: string; name: string; readonly: boolean };
+  receiver: {
+    type: 'supplier' | 'store';
+    readonly: boolean;
+    store?: { id: string; name: string; dealerId: string; dealerName: string };
+  };
+}
+
 export interface PurchaseReturn {
   id: string;
   returnNo: string;
-  inboundId: string;
-  inboundNo: string;
-  supplierId: string;
-  supplierName: string;
+  inboundId?: string | null;
+  inboundNo?: string | null;
+  supplierId?: string | null;
+  supplierName?: string | null;
+  dealerId?: string | null;
   warehouseId: string;
   warehouseName: string;
+  receiverType: 'supplier' | 'store';
+  receiverId?: string | null;
+  receiverName?: string | null;
   returnDate: string;
   totalAmount: number;
   status: string;
@@ -1509,6 +1548,57 @@ export interface GarmentPurchaseInboundSku {
   price: number;
   amount: number;
   batchNo?: string;
+  // 验收数量：仓库实际到货录入，验收环节按此真正入库
+  acceptedQty?: number;
+  // SKU 货号：冗余自 sku.sku_code，供扫码识别与展示
+  skuCode?: string;
+}
+
+// 审核前编辑：重写表头与明细（仅 draft 状态可调用）
+export interface GarmentPurchaseInboundUpdateDto {
+  warehouseId: string;
+  warehouseName: string;
+  inboundDate: string;
+  remark?: string;
+  skus: {
+    id?: string;
+    orderSkuId?: string;
+    styleId: string;
+    styleNo: string;
+    skuId: string;
+    color: string;
+    size: string;
+    quantity: number;
+    price: number;
+    batchNo?: string;
+  }[];
+}
+
+// 验收进度保存 / 完成验收：录入各明细累计验收数量
+export interface GarmentPurchaseInboundAcceptItem {
+  id: string;
+  acceptedQty: number;
+}
+export interface GarmentPurchaseInboundAcceptDto {
+  skus: GarmentPurchaseInboundAcceptItem[];
+}
+
+// 扫码解析结果：根据条码识别款式/颜色/尺码，并定位到本单明细单元格
+export interface GarmentPurchaseInboundResolveResult {
+  found: boolean;
+  // found=false 时给出提示文案
+  message?: string;
+  styleId?: string;
+  styleNo?: string;
+  skuId?: string;
+  color?: string;
+  size?: string;
+  skuCode?: string;
+  // 命中的本单明细 id（用于前端把验收数量 +1）
+  inboundSkuId?: string;
+  // 本单该单元格的计划数量与已录入验收数量
+  plannedQty?: number;
+  acceptedQty?: number;
 }
 
 export interface GarmentPurchaseInboundCreateDto {
@@ -1533,12 +1623,16 @@ export interface GarmentPurchaseInboundCreateDto {
 export interface GarmentPurchaseReturn {
   id: string;
   returnNo: string;
-  inboundId: string;
-  inboundNo: string;
-  supplierId: string;
-  supplierName: string;
+  inboundId?: string | null;
+  inboundNo?: string | null;
+  supplierId?: string | null;
+  supplierName?: string | null;
+  dealerId?: string | null;
   warehouseId: string;
   warehouseName: string;
+  receiverType: 'supplier' | 'store';
+  receiverId?: string | null;
+  receiverName?: string | null;
   returnDate: string;
   totalAmount: number;
   totalQty: number;
@@ -1564,9 +1658,13 @@ export interface GarmentPurchaseReturnSku {
 }
 
 export interface GarmentPurchaseReturnCreateDto {
-  inboundId: string;
+  inboundId?: string;
+  // HQ 退货必填（前端提交）；经销商退货由服务端按经销层级解析，可省略
+  warehouseId?: string;
   returnDate: string;
   remark?: string;
+  // HQ 退货必填（收货方=供应商）；经销商退货由服务端解析（收货方=上级店仓），可省略
+  receiver?: PurchaseReturnReceiver;
   skus: {
     inboundSkuId?: string;
     styleId: string;

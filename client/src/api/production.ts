@@ -46,6 +46,14 @@ export const garmentPurchaseApi = {
         '/api/purchase/garment-inbound', 'GET', null, params),
     get: (id: string) => request<GarmentPurchaseInbound>(`/api/purchase/garment-inbound/${id}`),
     create: (data: any) => request<GarmentPurchaseInbound>('/api/purchase/garment-inbound', 'POST', data),
+    // 审核前编辑：仅 draft 状态可调用
+    update: (id: string, data: any) => request<GarmentPurchaseInbound>(`/api/purchase/garment-inbound/${id}`, 'PUT', data),
+    // 保存验收进度：仅 approved 状态可调用，不真正入库，仅记录验收数量
+    saveAcceptance: (id: string, data: any) => request<GarmentPurchaseInbound>(`/api/purchase/garment-inbound/${id}/acceptance`, 'PUT', data),
+    // 完成验收：按累计验收数量真正增减库存、生成应付、回写订单已收数量，状态置 completed
+    completeAcceptance: (id: string) => request<GarmentPurchaseInbound>(`/api/purchase/garment-inbound/${id}/complete-acceptance`, 'POST'),
+    // 扫码解析：根据条码识别款式/颜色/尺码并定位本单明细
+    resolveBarcode: (id: string, code: string) => request<any>(`/api/purchase/garment-inbound/${id}/resolve-barcode?code=${encodeURIComponent(code)}`, 'GET'),
     approve: (id: string) => request<void>(`/api/purchase/garment-inbound/${id}/approve`, 'POST'),
     remove: (id: string) => request<void>(`/api/purchase/garment-inbound/${id}`, 'DELETE'),
 

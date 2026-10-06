@@ -1,4 +1,5 @@
 import { StatusBadge, type StatusTone } from '@client/src/components/ui/status-badge';
+import { PurchaseFilterBar } from '@client/src/components/PurchaseFilterBar';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { axiosForBackend } from '@lark-apaas/client-toolkit/utils/getAxiosForBackend';
@@ -253,101 +254,61 @@ const PurchaseReturnPage: React.FC = () => {
         </button>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3 mb-4 p-3 bg-gray-50 rounded">
-        <select
-          value={filterSupplier}
-          onChange={(e) => { setFilterSupplier(e.target.value); setPage(1); }}
-          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
-        >
-          <option value="">全部供应商</option>
-          {supplierOptions.map((s: { id: string; code: string; name: string }) => (
-            <option key={s.id} value={s.id}>{s.name}</option>
-          ))}
-        </select>
-        <select
-          value={filterWarehouse}
-          onChange={(e) => { setFilterWarehouse(e.target.value); setPage(1); }}
-          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
-        >
-          <option value="">全部仓库</option>
-          {warehouseOptions.map((w: { id: string; code: string; name: string }) => (
-            <option key={w.id} value={w.id}>{w.name}</option>
-          ))}
-        </select>
-        <div className="flex items-center gap-1">
-          <span className="text-gray-600 text-sm">单据日期：</span>
-          <input
-            type="date"
-            value={filterDocStart}
-            onChange={(e) => { setFilterDocStart(e.target.value); setPage(1); }}
-            className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
-          />
-          <span className="text-gray-400">至</span>
-          <input
-            type="date"
-            value={filterDocEnd}
-            onChange={(e) => { setFilterDocEnd(e.target.value); setPage(1); }}
-            className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
-          />
-        </div>
-        <div className="flex items-center gap-1">
-          <span className="text-gray-600 text-sm">退货日期：</span>
-          <input
-            type="date"
-            value={filterStartDate}
-            onChange={(e) => { setFilterStartDate(e.target.value); setPage(1); }}
-            className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
-          />
-          <span className="text-gray-400">至</span>
-          <input
-            type="date"
-            value={filterEndDate}
-            onChange={(e) => { setFilterEndDate(e.target.value); setPage(1); }}
-            className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
-          />
-        </div>
-        <input
-          type="text"
-          placeholder="搜索单号/供应商"
-          value={keyword}
-          onChange={(e) => setKeyword(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded text-sm w-52 focus:outline-none focus:border-primary"
-        />
-        <select
-          value={statusFilter}
-          onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-          className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
-        >
-          <option value="">全部状态</option>
-          <option value="draft">草稿（未出库）</option>
-          <option value="approved">已审核</option>
-          <option value="cancelled">已作废</option>
-        </select>
-        <button
-          onClick={() => { setPage(1); loadList(); }}
-          className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-primary"
-        >
-          查询
-        </button>
-        <button
-          onClick={handleExport}
-          className="px-4 py-2 border border-gray-300 rounded text-sm hover:bg-gray-50"
-        >
-          导出
-        </button>
-        <button
-          onClick={() => {
-            setKeyword(''); setStatusFilter('draft');
-            setFilterDocStart(defaultDocStart); setFilterDocEnd(defaultDocEnd);
-            setFilterStartDate(''); setFilterEndDate('');
-            setFilterSupplier(''); setFilterWarehouse('');
-            setPage(1); setTimeout(loadList, 0);
+        <PurchaseFilterBar
+          onSearch={() => { setPage(1); loadList(); }}
+          onReset={() => {
+            setKeyword('');
+            setStatusFilter('draft');
+            setFilterDocStart(defaultDocStart);
+            setFilterDocEnd(defaultDocEnd);
+            setFilterStartDate('');
+            setFilterEndDate('');
+            setFilterSupplier('');
+            setFilterWarehouse('');
+            setPage(1);
+            loadList();
           }}
-          className="px-4 py-2 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300"
-        >
-          重置
-        </button>
-      </div>
+          dateLabel="单据日期"
+          dateStart={filterDocStart}
+          dateEnd={filterDocEnd}
+          onDateStartChange={setFilterDocStart}
+          onDateEndChange={setFilterDocEnd}
+          showSecondaryDate
+          secondaryDateLabel="退货日期"
+          secondaryDateStart={filterStartDate}
+          secondaryDateEnd={filterEndDate}
+          onSecondaryDateStartChange={setFilterStartDate}
+          onSecondaryDateEndChange={setFilterEndDate}
+          showSupplier
+          supplierId={filterSupplier}
+          onSupplierChange={setFilterSupplier}
+          supplierOptions={supplierOptions}
+          showStatus
+          status={statusFilter}
+          onStatusChange={setStatusFilter}
+          statusOptions={[
+            { value: 'draft', label: '草稿（未出库）' },
+            { value: 'approved', label: '已审核' },
+            { value: 'cancelled', label: '已作废' },
+          ]}
+          showWarehouse
+          warehouseId={filterWarehouse}
+          onWarehouseChange={setFilterWarehouse}
+          warehouseOptions={warehouseOptions}
+          showKeyword
+          keyword={keyword}
+          onKeywordChange={setKeyword}
+          keywordPlaceholder="搜索单号/供应商"
+          extraButtons={
+            <button
+              type="button"
+              onClick={() => { void handleExport(); }}
+              className="px-4 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50"
+            >
+              导出
+            </button>
+          }
+        />
 
       <TableContainer>
         <table className="w-full text-sm">

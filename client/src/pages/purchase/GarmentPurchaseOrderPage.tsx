@@ -1,4 +1,5 @@
 import { StatusBadge, type StatusTone } from '@client/src/components/ui/status-badge';
+import { PurchaseFilterBar } from '@client/src/components/PurchaseFilterBar';
 import React, { useState, useEffect } from 'react';
 import { useDefaultDocDate } from '@client/src/hooks/useDefaultDocDate';
 import { useNavigate } from 'react-router-dom';
@@ -10,7 +11,6 @@ import { showConfirm } from '@lark-apaas/client-toolkit';
 import { TableContainer } from '@client/src/components/ui/table-container';
 import { DataPagination } from '@client/src/components/ui/pagination';
 import { exportTableToCSV } from '@client/src/utils/export-csv';
-import { validateDateRange } from '@client/src/utils/date-utils';
 import { errMsg } from '@/utils/errMsg';
 
 const statusLabel: Record<string, string> = {
@@ -199,81 +199,49 @@ const GarmentPurchaseOrderPage: React.FC = () => {
              <Plus size={16} /> 新增采购订单
           </button>
         </div>
-        <div className="flex flex-wrap items-center gap-3 text-sm">
-          <div className="flex items-center gap-1">
-            <span className="text-gray-600">供应商：</span>
-            <select
-              value={filterSupplier}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilterSupplier(e.target.value)}
-              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
+        <PurchaseFilterBar
+          onSearch={() => { setPage(1); fetchList(); }}
+          onReset={() => {
+            setFilterSupplier('');
+            setFilterStatus('');
+            setKeyword('');
+            setFilterStartDate(def.startDate);
+            setFilterEndDate(def.endDate);
+            setPage(1);
+            fetchList();
+          }}
+          dateLabel="单据日期"
+          dateStart={filterStartDate}
+          dateEnd={filterEndDate}
+          onDateStartChange={setFilterStartDate}
+          onDateEndChange={setFilterEndDate}
+          showSupplier
+          supplierId={filterSupplier}
+          onSupplierChange={setFilterSupplier}
+          supplierOptions={supplierOptions}
+          showStatus
+          status={filterStatus}
+          onStatusChange={setFilterStatus}
+          statusOptions={[
+            { value: 'draft', label: '草稿' },
+            { value: 'pending', label: '待审' },
+            { value: 'approved', label: '已审' },
+            { value: 'completed', label: '已完成' },
+          ]}
+          showKeyword
+          keyword={keyword}
+          onKeywordChange={setKeyword}
+          keywordPlaceholder="搜索单号"
+          extraButtons={
+            <button
+              type="button"
+              onClick={() => { void handleExport(); }}
+              className="px-4 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50"
             >
-              <option value="">全部</option>
-              {supplierOptions.map((s: { id: string; code: string; name: string }) => (
-                <option key={s.id} value={s.id}>{s.name}</option>
-              ))}
-                        <option value="cancelled">已作废</option>
-</select>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-gray-600">状态：</span>
-            <select
-              value={filterStatus}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilterStatus(e.target.value)}
-              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
-            >
-              <option value="">全部</option>
-              <option value="draft">草稿</option>
-              <option value="pending">待审</option>
-              <option value="approved">已审</option>
-              <option value="completed">已完成</option>
-            </select>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-gray-600">日期：</span>
-            <input
-              type="date"
-              value={filterStartDate}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilterStartDate(e.target.value)}
-              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
-            />
-            <span className="text-gray-400">~</span>
-            <input
-              type="date"
-              value={filterEndDate}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilterEndDate(e.target.value)}
-              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
-            />
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="relative">
-              <Search size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                value={keyword}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setKeyword(e.target.value)}
-                placeholder="搜索单号"
-                className="border border-gray-300 rounded pl-7 pr-2 py-1 text-sm focus:outline-none focus:border-primary w-44"
-              />
-            </div>
-          </div>
-          <button
-            onClick={() => {
-              const error = validateDateRange(filterStartDate, filterEndDate);
-              if (error) { toast.error(error); return; }
-              setPage(1);
-              fetchList();
-            }}
-            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary flex items-center gap-1"
-          >
-            <Search size={14} /> 查询
-          </button>
-          <button
-            onClick={() => { void handleExport(); }}
-            className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50"
-          >
-            导出
-          </button>
-        </div>
+              导出
+            </button>
+          }
+        />
       </div>
 
       <div className="bg-white rounded-lg shadow-sm p-5">

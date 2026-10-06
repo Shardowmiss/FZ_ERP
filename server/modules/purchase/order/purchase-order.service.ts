@@ -127,7 +127,12 @@ export class PurchaseOrderService {
     if (supplierId) conditions.push(eq(purchaseOrder.supplierId, supplierId));
     if (status) conditions.push(eq(purchaseOrder.status, status));
     if (startDate) conditions.push(gte(purchaseOrder.orderDate, startDate));
-    if (endDate) conditions.push(lt(purchaseOrder.orderDate, endDate));
+    if (endDate) {
+      // 半开区间上界：endDate 当天应包含在结果内（与 inventory-flow / report-purchase 的 +1 天约定一致）
+      const [y, m, d] = endDate.split('-').map(Number);
+      const endExclusive = new Date(Date.UTC(y, m - 1, d + 1)).toISOString().slice(0, 10);
+      conditions.push(lt(purchaseOrder.orderDate, endExclusive));
+    }
     // 行级数据权限：仅可见当前用户所属经销商的供应商所下采购订单，防止跨租户越权读取
     const scopeCond = buildDealerScopeCondition(
       RequestContext.getDealerScope() ?? ALL_SCOPE,
@@ -553,7 +558,12 @@ export class PurchaseOrderService {
     ];
     if (supplierId) conditions.push(eq(purchaseOrder.supplierId, supplierId));
     if (startDate) conditions.push(gte(purchaseOrder.orderDate, startDate));
-    if (endDate) conditions.push(lt(purchaseOrder.orderDate, endDate));
+    if (endDate) {
+      // 半开区间上界：endDate 当天应包含在结果内（与 inventory-flow / report-purchase 的 +1 天约定一致）
+      const [y, m, d] = endDate.split('-').map(Number);
+      const endExclusive = new Date(Date.UTC(y, m - 1, d + 1)).toISOString().slice(0, 10);
+      conditions.push(lt(purchaseOrder.orderDate, endExclusive));
+    }
     // 行级数据权限：可导入列表同样仅可见当前用户所属经销商的数据
     const scopeCond = buildDealerScopeCondition(
       RequestContext.getDealerScope() ?? ALL_SCOPE,

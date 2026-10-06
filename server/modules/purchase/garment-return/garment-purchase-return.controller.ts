@@ -12,6 +12,7 @@ import { GarmentPurchaseReturnService } from './garment-purchase-return.service'
 import type {
   GarmentPurchaseReturn,
   GarmentPurchaseReturnCreateDto,
+  ReturnContext,
   PaginationResult,
 } from '@shared/api.interface';
 import { CheckPermission } from '../../../common/decorators/check-permission.decorator';
@@ -44,6 +45,11 @@ export class GarmentPurchaseReturnController {
       startDate,
       endDate,
     });
+  }
+
+  @Get('return-context')
+  async returnContext(): Promise<ReturnContext> {
+    return this.garmentPurchaseReturnService.getReturnContext();
   }
 
   @Get(':id')

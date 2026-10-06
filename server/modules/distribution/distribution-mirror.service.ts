@@ -26,6 +26,7 @@ import type {
 } from '@shared/api.interface';
 import { GarmentPurchaseOrderService } from '../purchase/garment-order/garment-purchase-order.service';
 import { GarmentPurchaseReturnService } from '../purchase/garment-return/garment-purchase-return.service';
+import { RequestContext } from '@server/common/context/request-context';
 
 type TxLike =
   PostgresJsDatabase |
@@ -339,15 +340,24 @@ export class DistributionMirrorService {
       }
 
       // ===== 原子镜像：下游采购退货单创建 + 追溯字段回填 + 销售侧状态回填，全部在一个事务内 =====
+      // 该退货单归属于下游分销商：以「下游经销商」身份进入 create，由服务端按经销层级
+      // 自动解析退货店仓（本店仓）与收货方（上级经销商店仓），并设置 dealerId。
       const created: GarmentPurchaseReturn = await this.db.transaction(async (tx) => {
-        const ret = await this.garmentPurchaseReturnService.create(
+        const ret = await RequestContext.run(
           {
-            inboundId: gpi.id,
-            returnDate: sr.returnDate,
-            remark: `分销镜像：上游销售退货单 ${sr.returnNo}`,
-            skus: returnSkus,
+            requestId: `mirror-sales-return-${salesReturnId}`,
+            dealerScope: { type: 'dealer', dealerIds: [ctx.downstreamDealerId] },
           },
-          tx,
+          () =>
+            this.garmentPurchaseReturnService.create(
+              {
+                inboundId: gpi.id,
+                returnDate: sr.returnDate,
+                remark: `分销镜像：上游销售退货单 ${sr.returnNo}`,
+                skus: returnSkus,
+              },
+              tx,
+            ),
         );
 
         await tx

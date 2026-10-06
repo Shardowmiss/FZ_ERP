@@ -2,8 +2,9 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { garmentPurchaseApi, baseApi } from '@client/src/api';
 import type { GarmentPurchaseInbound, GarmentPurchaseOrder, Sku } from '@shared/api.interface';
-import GarmentSkuMatrixTable, { type SkuQtyPriceMatrix } from './GarmentSkuMatrixTable';
+import GarmentSkuMatrixTable, { type SkuQtyPriceMatrix, type MatrixMode } from './GarmentSkuMatrixTable';
 import DocPage from '@client/src/components/DocPage/DocPage';
+import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { errMsg } from '@/utils/errMsg';
 
@@ -17,6 +18,8 @@ interface StyleBlock {
 }
 
 const BACK_PATH = '/purchase/garment-inbound';
+
+type PageMode = 'new' | 'edit' | 'accept' | 'view';
 
 const GarmentPurchaseInboundEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -41,6 +44,22 @@ const GarmentPurchaseInboundEditPage: React.FC = () => {
 
   const [inboundNo, setInboundNo] = useState<string>('');
   const [status, setStatus] = useState<string>('');
+
+  // 扫码录入状态
+  const [scanCode, setScanCode] = useState<string>('');
+
+  const pageMode: PageMode = viewOnly
+    ? 'view'
+    : isNew
+      ? 'new'
+      : status === 'draft'
+        ? 'edit'
+        : status === 'approved'
+          ? 'accept'
+          : 'view';
+  const matrixMode: MatrixMode = pageMode === 'new' ? 'edit' : pageMode;
+  const showSave = !viewOnly && (isNew || status === 'draft');
+  const headerDisabled = viewOnly || pageMode === 'accept' || pageMode === 'view';
 
   // Load options
   useEffect(() => {
@@ -111,6 +130,7 @@ const GarmentPurchaseInboundEditPage: React.FC = () => {
       quantity: number;
       price: number;
       id?: string;
+      acceptedQty?: number;
     }[],
   ): Promise<StyleBlock[]> => {
     const styleIds: string[] = Array.from(new Set(skus.map((s) => s.styleId)));
@@ -128,6 +148,7 @@ const GarmentPurchaseInboundEditPage: React.FC = () => {
           matrix[sku.color][sku.size] = {
             qty: existing?.quantity || 0,
             price: existing?.price || 0,
+            acceptedQty: existing?.acceptedQty || 0,
           };
           orderSkuIdMap[sku.color][sku.size] = existing?.id || '';
         }
@@ -177,6 +198,7 @@ const GarmentPurchaseInboundEditPage: React.FC = () => {
           matrix[sku.color][sku.size] = {
             qty: remaining,
             price: existing?.price || 0,
+            acceptedQty: 0,
           };
           orderSkuIdMap[sku.color][sku.size] = existing?.id || '';
         }
@@ -214,20 +236,23 @@ const GarmentPurchaseInboundEditPage: React.FC = () => {
     styleId: string,
     color: string,
     size: string,
-    field: 'qty' | 'price',
+    field: 'qty' | 'acceptedQty',
     value: number,
   ): void => {
-    if (field === 'price') return;
     setStyleBlocks((prev) =>
       prev.map((b: StyleBlock) => {
         if (b.styleId !== styleId) return b;
         const colorObj = b.qtyPriceMatrix[color] || {};
-        const existing = colorObj[size] || { qty: 0, price: 0 };
+        const existing = colorObj[size] || { qty: 0, price: 0, acceptedQty: 0 };
+        const updated =
+          field === 'acceptedQty'
+            ? { ...existing, acceptedQty: value }
+            : { ...existing, qty: value };
         return {
           ...b,
           qtyPriceMatrix: {
             ...b.qtyPriceMatrix,
-            [color]: { ...colorObj, [size]: { ...existing, qty: value } },
+            [color]: { ...colorObj, [size]: updated },
           },
         };
       }),
@@ -277,8 +302,22 @@ const GarmentPurchaseInboundEditPage: React.FC = () => {
     return result;
   };
 
+  // 验收明细：返回各单元格累计验收数量（按入库单明细 id）
+  const buildAcceptItems = (): { id: string; acceptedQty: number }[] => {
+    const result: { id: string; acceptedQty: number }[] = [];
+    for (const block of styleBlocks) {
+      for (const sku of block.skuList) {
+        const cell = block.qtyPriceMatrix[sku.color]?.[sku.size];
+        const sid = block.orderSkuIdMap[sku.color]?.[sku.size] || '';
+        if (!sid) continue;
+        result.push({ id: sid, acceptedQty: cell?.acceptedQty || 0 });
+      }
+    }
+    return result;
+  };
+
   const validateForm = (): boolean => {
-    if (!formOrderId) {
+    if (isNew && !formOrderId) {
       toast('请选择采购订单');
       return false;
     }
@@ -298,34 +337,131 @@ const GarmentPurchaseInboundEditPage: React.FC = () => {
     return true;
   };
 
-  const buildData = () => {
-    const skus = buildSkus();
-    const warehouse = warehouseOptions.find((w) => w.id === formWarehouseId);
-    return {
-      orderId: formOrderId,
-      warehouseId: formWarehouseId,
-      warehouseName: warehouse?.name || '',
-      inboundDate: formInboundDate,
-      remark: formRemark || undefined,
-      skus,
-    };
-  };
-
   const handleSave = async (): Promise<void> => {
     if (!validateForm()) return;
-    const data = buildData();
     setSaving(true);
     try {
       if (isNew) {
-        await garmentPurchaseApi.inbound.create(data);
+        const skus = buildSkus();
+        const warehouse = warehouseOptions.find((w) => w.id === formWarehouseId);
+        await garmentPurchaseApi.inbound.create({
+          orderId: formOrderId,
+          warehouseId: formWarehouseId,
+          warehouseName: warehouse?.name || '',
+          inboundDate: formInboundDate,
+          remark: formRemark || undefined,
+          skus,
+        });
       } else {
-        // inbound only has create, no update
-        await garmentPurchaseApi.inbound.create(data);
+        const skus = buildSkus().map((s) => ({ ...s, orderSkuId: s.orderSkuId || undefined }));
+        const warehouse = warehouseOptions.find((w) => w.id === formWarehouseId);
+        await garmentPurchaseApi.inbound.update(id!, {
+          warehouseId: formWarehouseId,
+          warehouseName: warehouse?.name || '',
+          inboundDate: formInboundDate,
+          remark: formRemark || undefined,
+          skus,
+        });
       }
       toast('保存成功');
       navigate(BACK_PATH);
     } catch (e) {
       toast(errMsg(e, '保存失败'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // 扫码录入：解析条码 → 命中本单明细 → 验收数量 +1（超量弹确认）
+  const inboundSkuCellMap = useMemo(() => {
+    const map: Record<string, { styleId: string; color: string; size: string }> = {};
+    for (const b of styleBlocks) {
+      for (const sku of b.skuList) {
+        const sid = b.orderSkuIdMap[sku.color]?.[sku.size] || '';
+        if (sid) map[sid] = { styleId: b.styleId, color: sku.color, size: sku.size };
+      }
+    }
+    return map;
+  }, [styleBlocks]);
+
+  const handleScan = async (): Promise<void> => {
+    const code = scanCode.trim();
+    if (!code || !id) return;
+    try {
+      const res = await garmentPurchaseApi.inbound.resolveBarcode(id, code);
+      if (!res.found || !res.inboundSkuId) {
+        toast.error(res.message || '该商品不存在');
+        setScanCode('');
+        return;
+      }
+      const cellInfo = inboundSkuCellMap[res.inboundSkuId];
+      if (!cellInfo) {
+        toast.error('该商品不存在');
+        setScanCode('');
+        return;
+      }
+      const { styleId, color, size } = cellInfo;
+      const block = styleBlocks.find((b) => b.styleId === styleId);
+      const cell = block?.qtyPriceMatrix[color]?.[size];
+      const current = cell?.acceptedQty || 0;
+      const planned = res.plannedQty ?? cell?.qty ?? 0;
+      const next = current + 1;
+      if (next > planned) {
+        const ok = window.confirm(
+          `验收数量 ${next} 超出本单计划数量 ${planned}，是否继续录入？`,
+        );
+        if (!ok) {
+          setScanCode('');
+          return;
+        }
+      }
+      setStyleBlocks((prev) =>
+        prev.map((b) => {
+          if (b.styleId !== styleId) return b;
+          const colorObj = b.qtyPriceMatrix[color] || {};
+          const existing = colorObj[size] || { qty: 0, price: 0, acceptedQty: 0 };
+          return {
+            ...b,
+            qtyPriceMatrix: {
+              ...b.qtyPriceMatrix,
+              [color]: { ...colorObj, [size]: { ...existing, acceptedQty: next } },
+            },
+          };
+        }),
+      );
+      setScanCode('');
+    } catch (e) {
+      toast(errMsg(e, '扫码解析失败'));
+    }
+  };
+
+  const handleSaveAcceptance = async (): Promise<void> => {
+    if (!id) return;
+    const items = buildAcceptItems();
+    if (items.length === 0) {
+      toast('无验收明细');
+      return;
+    }
+    setSaving(true);
+    try {
+      await garmentPurchaseApi.inbound.saveAcceptance(id, { skus: items });
+      toast('验收进度已保存');
+    } catch (e) {
+      toast(errMsg(e, '保存失败'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCompleteAcceptance = async (): Promise<void> => {
+    if (!id) return;
+    setSaving(true);
+    try {
+      await garmentPurchaseApi.inbound.completeAcceptance(id);
+      toast('完成验收');
+      navigate(BACK_PATH);
+    } catch (e) {
+      toast(errMsg(e, '完成验收失败'));
     } finally {
       setSaving(false);
     }
@@ -379,7 +515,7 @@ const GarmentPurchaseInboundEditPage: React.FC = () => {
           onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
             setFormWarehouseId(e.target.value)
           }
-          disabled={viewOnly}
+          disabled={headerDisabled}
           className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-500"
         >
           <option value="">请选择</option>
@@ -400,7 +536,7 @@ const GarmentPurchaseInboundEditPage: React.FC = () => {
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             setFormInboundDate(e.target.value)
           }
-          disabled={viewOnly}
+          disabled={headerDisabled}
           className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-500"
         />
       </div>
@@ -412,7 +548,7 @@ const GarmentPurchaseInboundEditPage: React.FC = () => {
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             setFormRemark(e.target.value)
           }
-          disabled={viewOnly}
+          disabled={headerDisabled}
           placeholder="请输入备注"
           className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-500"
         />
@@ -420,9 +556,38 @@ const GarmentPurchaseInboundEditPage: React.FC = () => {
     </div>
   );
 
+  const scanBar = pageMode === 'accept' && (
+    <div className="flex items-center gap-2">
+      <input
+        autoFocus
+        value={scanCode}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setScanCode(e.target.value)}
+        onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            void handleScan();
+          }
+        }}
+        placeholder="扫描条形码录入验收数量（回车）"
+        className="flex-1 px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
+      />
+      <Button size="sm" variant="outline" onClick={() => void handleScan()}>
+        解析
+      </Button>
+    </div>
+  );
+
   const detailContent = (
     <div className="space-y-4">
       <h2 className="text-sm font-medium text-gray-700">明细</h2>
+
+      {pageMode === 'accept' && (
+        <div className="bg-blue-50 border border-blue-200 rounded p-3 text-sm text-blue-700">
+          验收模式：扫描条形码自动识别款式/颜色/尺码并在对应「验收数量」+1；不在本单内将提示「该商品不存在」，超出计划数量将询问是否继续。
+        </div>
+      )}
+
+      {scanBar}
 
       {styleBlocks.length === 0 && (
         <div className="text-center py-12 text-gray-400 text-sm border border-dashed border-gray-300 rounded">
@@ -442,7 +607,7 @@ const GarmentPurchaseInboundEditPage: React.FC = () => {
               </span>
               <span className="text-gray-500 text-sm">{block.styleName}</span>
               <span className="text-xs text-gray-500 ml-auto">
-                单价从采购单带入，不可修改
+                {pageMode === 'accept' ? '验收数量可录入' : '单价从采购单带入，不可修改'}
               </span>
             </div>
           </div>
@@ -453,8 +618,8 @@ const GarmentPurchaseInboundEditPage: React.FC = () => {
               onChange={(color, size, field, value) =>
                 handleMatrixChange(block.styleId, color, size, field, value)
               }
-              readOnly={viewOnly}
-              showPrice={true}
+              readOnly={pageMode === 'view'}
+              mode={matrixMode}
             />
           </div>
         </div>
@@ -479,6 +644,18 @@ const GarmentPurchaseInboundEditPage: React.FC = () => {
     </div>
   );
 
+  const acceptActions =
+    pageMode === 'accept' ? (
+      <>
+        <Button size="sm" variant="outline" onClick={() => void handleSaveAcceptance()} disabled={saving}>
+          保存验收进度
+        </Button>
+        <Button size="sm" onClick={() => void handleCompleteAcceptance()} disabled={saving}>
+          完成验收
+        </Button>
+      </>
+    ) : null;
+
   return (
     <DocPage
       title="采购入库"
@@ -486,8 +663,9 @@ const GarmentPurchaseInboundEditPage: React.FC = () => {
       status={status}
       backPath={BACK_PATH}
       viewOnly={viewOnly}
-      onSave={!viewOnly && isNew ? handleSave : undefined}
+      onSave={showSave ? handleSave : undefined}
       saving={saving}
+      extraActions={acceptActions}
       header={loading || isLoading ? <div className="text-center py-8 text-gray-400">加载中...</div> : headerForm}
     >
       {loading || isLoading ? (

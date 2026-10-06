@@ -8,19 +8,23 @@ import {
 } from '@nestjs/common';
 import { voidDraftDocument } from '@server/common/document-void';
 import { DRIZZLE_DATABASE, type PostgresJsDatabase } from '@lark-apaas/fullstack-nestjs-core';
-import { eq, and, desc, count, sql, inArray, gte, lte, like, or } from 'drizzle-orm';
+import { and, desc, count, sql, inArray, gte, lte, like, or, eq } from 'drizzle-orm';
 import {
   purchaseReturn,
   purchaseReturnItem,
-  purchaseInbound,
-  purchaseInboundItem,
-  payable,
   material,
   materialStock,
+  payable,
+  dealer,
+  store,
+  warehouse,
+  supplier,
 } from '@server/database/schema';
 import type {
   PurchaseReturn,
   PurchaseReturnItem,
+  PurchaseReturnCreateDto,
+  ReturnContext,
   PaginationResult,
 } from '@shared/api.interface';
 import { StockService } from '../../inventory/stock/stock.service';
@@ -29,21 +33,6 @@ import { round2, round3, round4 } from '../../../common/utils/money';
 import { RequestContext, ALL_SCOPE } from '@server/common/context/request-context';
 import { buildDealerScopeCondition } from '@server/common/data-scope/dealer-scope';
 import { assertWriteWithinScope } from '@server/common/data-scope/write-scope';
-
-
-
-
-interface CreateReturnDto {
-  inboundId: string;
-  returnDate: string;
-  remark?: string;
-  items: {
-    materialId: string;
-    quantity: number;
-    price: number;
-    batchNo?: string;
-  }[];
-}
 
 interface ListQuery {
   page: number;
@@ -87,12 +76,16 @@ export class PurchaseReturnService {
     return {
       id: row.id,
       returnNo: row.returnNo,
-      inboundId: row.inboundId,
-      inboundNo: row.inboundNo,
-      supplierId: row.supplierId,
-      supplierName: row.supplierName,
+      inboundId: row.inboundId ?? null,
+      inboundNo: row.inboundNo ?? null,
+      supplierId: row.supplierId ?? null,
+      supplierName: row.supplierName ?? null,
+      dealerId: row.dealerId ?? null,
       warehouseId: row.warehouseId,
       warehouseName: row.warehouseName,
+      receiverType: row.receiverType as 'supplier' | 'store',
+      receiverId: row.receiverId ?? null,
+      receiverName: row.receiverName ?? null,
       returnDate: row.returnDate,
       totalAmount: Number(row.totalAmount),
       status: row.status,
@@ -178,10 +171,10 @@ export class PurchaseReturnService {
   }
 
   async getDetail(id: string): Promise<PurchaseReturn> {
-    // 行级数据权限：即使通过 ID 直查，也须落在当前用户可见经销商范围内
+    // 行级数据权限：即使通过 ID 直查，也须落在当前用户可见经销商范围内（直连 dealerId 列）
     const scopeCond = buildDealerScopeCondition(
       RequestContext.getDealerScope() ?? ALL_SCOPE,
-      { kind: 'viaSupplier', column: purchaseReturn.supplierId },
+      { kind: 'dealerColumn', column: purchaseReturn.dealerId },
     );
     const where = scopeCond
       ? and(eq(purchaseReturn.id, id), scopeCond)
@@ -205,129 +198,141 @@ export class PurchaseReturnService {
   }
 
   /**
-   * 校验退货明细：物料存在性 + 数量不超过原入库数量 - 已退货数量
+   * 退货新增页上下文：依据当前账号类型决定 UI 形态。
+   * - 总部(HQ)：退货店仓与收货方(供应商)均可在前端编辑；
+   * - 经销商：退货店仓=本店仓、收货方=上级经销商店仓，均由服务端解析且只读。
    */
-  private async validateReturnItems(
-    inboundId: string,
-    items: { materialId: string; quantity: number }[],
-    excludeReturnId?: string,
-  ): Promise<void> {
-    // 查询原入库单明细
-    const inboundItems = await this.db
-      .select()
-      .from(purchaseInboundItem)
-      .where(eq(purchaseInboundItem.inboundId, inboundId));
-
-    if (inboundItems.length === 0) {
-      throw new BadRequestException('原入库单无明细');
+  async getReturnContext(): Promise<ReturnContext> {
+    const scope = RequestContext.getDealerScope() ?? ALL_SCOPE;
+    if (scope.type === 'all') {
+      return {
+        accountType: 'hq',
+        returnWarehouse: { id: '', name: '', readonly: false },
+        receiver: { type: 'supplier', readonly: false },
+      };
     }
 
-    // 构建原入库数量 Map
-    const inboundQtyMap = new Map<string, number>();
-    for (const ii of inboundItems) {
-      inboundQtyMap.set(ii.materialId, Number(ii.quantity));
+    const dealerId = scope.dealerIds[0];
+    const [cur] = await this.db.select().from(dealer).where(eq(dealer.id, dealerId));
+
+    // 本经销商的店仓（退货店仓）
+    const [myStore] = await this.db
+      .select({ id: store.id, name: store.name, warehouseId: store.warehouseId })
+      .from(store)
+      .where(eq(store.dealerId, dealerId));
+    let returnWarehouse = { id: '', name: '', readonly: true as const };
+    if (myStore?.warehouseId) {
+      const [wh] = await this.db
+        .select({ name: warehouse.name })
+        .from(warehouse)
+        .where(eq(warehouse.id, myStore.warehouseId));
+      returnWarehouse = {
+        id: myStore.warehouseId,
+        name: wh?.name ?? myStore.name,
+        readonly: true,
+      };
     }
 
-    // 校验物料是否在原入库单中
-    for (const item of items) {
-      if (!inboundQtyMap.has(item.materialId)) {
-        throw new ConflictException('物料不在原入库单中');
+    // 上级经销商的店仓（收货方）
+    let parentStore:
+      | { id: string; name: string; dealerId: string; dealerName: string }
+      | undefined;
+    if (cur?.parentId) {
+      const [parent] = await this.db.select().from(dealer).where(eq(dealer.id, cur.parentId));
+      const [ps] = await this.db
+        .select({ id: store.id, name: store.name })
+        .from(store)
+        .where(eq(store.dealerId, cur.parentId));
+      if (ps) {
+        parentStore = {
+          id: ps.id,
+          name: ps.name,
+          dealerId: parent?.id ?? '',
+          dealerName: parent?.name ?? '',
+        };
       }
     }
 
-    // 查询已审核的退货数量（按 inbound_id + material_id 汇总）
-    const materialIds = items.map((item) => item.materialId);
-    const returnedRows = await this.db
-      .select({
-        materialId: purchaseReturnItem.materialId,
-        returnedQty: sql<number>`sum(${purchaseReturnItem.quantity})`,
-      })
-      .from(purchaseReturnItem)
-      .innerJoin(purchaseReturn, eq(purchaseReturnItem.returnId, purchaseReturn.id))
-      .where(
-        and(
-          eq(purchaseReturn.inboundId, inboundId),
-          eq(purchaseReturn.status, 'approved'),
-          inArray(purchaseReturnItem.materialId, materialIds),
-          ...(excludeReturnId ? [sql`${purchaseReturn.id} != ${excludeReturnId}`] : []),
-        ),
-      )
-      .groupBy(purchaseReturnItem.materialId);
-
-    const returnedQtyMap = new Map<string, number>();
-    for (const row of returnedRows) {
-      returnedQtyMap.set(row.materialId, Number(row.returnedQty ?? 0));
-    }
-
-    // 校验数量
-    for (const item of items) {
-      const origQty = inboundQtyMap.get(item.materialId) ?? 0;
-      const returnedQty = returnedQtyMap.get(item.materialId) ?? 0;
-      const available = origQty - returnedQty;
-      if (item.quantity > available + 0.0001) {
-        throw new ConflictException('退货数量超过原入库数量');
-      }
-    }
+    return {
+      accountType: 'dealer',
+      dealerId,
+      dealerName: cur?.name,
+      returnWarehouse,
+      receiver: { type: 'store', readonly: true, store: parentStore },
+    };
   }
 
-  async create(dto: CreateReturnDto): Promise<PurchaseReturn> {
+  async create(dto: PurchaseReturnCreateDto): Promise<PurchaseReturn> {
     if (!dto.items || dto.items.length === 0) {
       throw new BadRequestException('退货明细不能为空');
     }
 
-    // 校验入库单
-    const inboundRows = await this.db
-      .select()
-      .from(purchaseInbound)
-      .where(eq(purchaseInbound.id, dto.inboundId));
-    if (inboundRows.length === 0) {
-      throw new BadRequestException('入库单不存在');
-    }
-    if (inboundRows[0].status !== 'approved') {
-      throw new BadRequestException('只能基于已审核的入库单退货');
-    }
-    const inbound = inboundRows[0];
+    const scope = RequestContext.getDealerScope() ?? ALL_SCOPE;
+    const isHq = scope.type === 'all';
+    const curDealerId: string | null = isHq ? null : scope.dealerIds[0];
 
-    await assertWriteWithinScope(this.db, { supplierId: inbound.supplierId });
+    let warehouseId: string;
+    let warehouseName: string;
+    let dealerId: string | null = curDealerId;
+    let receiverType: 'supplier' | 'store';
+    let receiverId: string;
+    let receiverName: string;
+    let supplierId: string | null = null;
+    let supplierName: string | null = null;
 
-    // 校验退货明细物料和数量
-    await this.validateReturnItems(dto.inboundId, dto.items);
-
-    // 校验退货总金额不超过原单可退金额
-    const approvedReturnRows = await this.db
-      .select({ totalAmount: purchaseReturn.totalAmount })
-      .from(purchaseReturn)
-      .where(
-        and(
-          eq(purchaseReturn.inboundId, dto.inboundId),
-          eq(purchaseReturn.status, 'approved'),
-        ),
-      );
-    const returnedAmount = approvedReturnRows.reduce(
-      (sum: number, row) => sum + Number(row.totalAmount),
-      0,
-    );
-    const inboundTotal = Number(inbound.totalAmount);
-    const availableAmount = inboundTotal - returnedAmount;
-    // 先计算本次退货总金额（与后面计算逻辑一致）
-    let createTotalAmount = 0;
-    for (const item of dto.items) {
-      createTotalAmount += Number(item.quantity) * Number(item.price);
+    if (isHq) {
+      // 总部：退货店仓与收货方(供应商)由前端提交，服务端校验存在性
+      if (!dto.warehouseId) throw new BadRequestException('请选择退货店仓');
+      if (!dto.receiver || dto.receiver.type !== 'supplier' || !dto.receiver.id) {
+        throw new BadRequestException('请选择收货供应商');
+      }
+      const [wh] = await this.db
+        .select({ id: warehouse.id, name: warehouse.name })
+        .from(warehouse)
+        .where(eq(warehouse.id, dto.warehouseId));
+      if (!wh) throw new BadRequestException('退货店仓不存在');
+      const [sup] = await this.db
+        .select({ id: supplier.id, name: supplier.name })
+        .from(supplier)
+        .where(eq(supplier.id, dto.receiver.id));
+      if (!sup) throw new BadRequestException('收货供应商不存在');
+      warehouseId = wh.id;
+      warehouseName = wh.name;
+      receiverType = 'supplier';
+      receiverId = sup.id;
+      receiverName = sup.name;
+      supplierId = sup.id;
+      supplierName = sup.name;
+    } else {
+      // 经销商：退货店仓与收货方由服务端按经销层级解析，忽略前端提交防篡改
+      const ctx = await this.getReturnContext();
+      if (!ctx.returnWarehouse.id) {
+        throw new BadRequestException('当前经销商无关联店仓，无法退货');
+      }
+      if (!ctx.receiver.store) {
+        throw new BadRequestException('当前经销商无上级经销商店仓，无法退货');
+      }
+      warehouseId = ctx.returnWarehouse.id;
+      warehouseName = ctx.returnWarehouse.name;
+      receiverType = 'store';
+      receiverId = ctx.receiver.store.id;
+      receiverName = ctx.receiver.store.name;
     }
-    if (createTotalAmount > availableAmount + 0.01) {
-      throw new ConflictException('退货金额超过原单金额');
-    }
 
-    // 取物料信息
-    const materialIds = dto.items.map((item) => item.materialId);
+    // 写权限校验（HQ 超管直接放行；经销商校验店仓归属）
+    await assertWriteWithinScope(this.db, {
+      dealerId,
+      warehouseId,
+      supplierId: receiverType === 'supplier' ? receiverId : null,
+    });
+
+    // 物料存在性 + 退货店仓库存充足（仅控库存，不控原单上限，支持批量退货）
+    const materialIds = dto.items.map((i) => i.materialId);
     const matRows = await this.db
       .select()
       .from(material)
-      .where(sql`${material.id} = ANY(ARRAY[${sql.join(materialIds.map((mid) => sql`${mid}`), sql`, `)}]::uuid[])`);
-    const matMap = new Map<string, typeof material.$inferSelect>();
-    for (const m of matRows) {
-      matMap.set(m.id, m);
-    }
+      .where(inArray(material.id, materialIds));
+    const matMap = new Map(matRows.map((m) => [m.id, m]));
 
     let totalAmount = 0;
     const returnItems: {
@@ -344,30 +349,31 @@ export class PurchaseReturnService {
     for (const item of dto.items) {
       const qty = Number(item.quantity);
       const prc = Number(item.price);
-      if (qty <= 0 || prc < 0) {
-        throw new BadRequestException('数量或单价不合法');
+      if (!Number.isFinite(qty) || qty <= 0) {
+        throw new BadRequestException('退货数量必须大于 0');
+      }
+      if (!Number.isFinite(prc) || prc < 0) {
+        throw new BadRequestException('退货单价不合法');
       }
       const mat = matMap.get(item.materialId);
       if (!mat) {
         throw new BadRequestException(`物料不存在: ${item.materialId}`);
       }
-      const amt = qty * prc;
-      totalAmount += amt;
-
-      // 校验库存是否足够
-      const stockRows = await this.db
+      // 校验退货店仓库存是否充足
+      const [stk] = await this.db
         .select()
         .from(materialStock)
         .where(
           and(
             eq(materialStock.materialId, item.materialId),
-            eq(materialStock.warehouseId, inbound.warehouseId),
+            eq(materialStock.warehouseId, warehouseId),
           ),
         );
-      if (stockRows.length === 0 || Number(stockRows[0].quantity) < qty) {
-        throw new BadRequestException(`物料 ${mat.name} 库存不足，无法退货`);
+      if (!stk || Number(stk.quantity) < qty) {
+        throw new BadRequestException(`物料 ${mat.name} 在退货店仓库存不足，无法退货`);
       }
-
+      const amt = qty * prc;
+      totalAmount += amt;
       returnItems.push({
         materialId: mat.id,
         materialCode: mat.code,
@@ -382,17 +388,20 @@ export class PurchaseReturnService {
 
     const created = await this.db.transaction(async (tx) => {
       const returnNo = await this.generateReturnNo(tx, dto.returnDate);
-
-      const inserted = await tx
+      const [inserted] = await tx
         .insert(purchaseReturn)
         .values({
           returnNo,
-          inboundId: inbound.id,
-          inboundNo: inbound.inboundNo,
-          supplierId: inbound.supplierId,
-          supplierName: inbound.supplierName,
-          warehouseId: inbound.warehouseId,
-          warehouseName: inbound.warehouseName,
+          inboundId: dto.inboundId ?? null,
+          inboundNo: null,
+          supplierId,
+          supplierName,
+          dealerId,
+          warehouseId,
+          warehouseName,
+          receiverType,
+          receiverId,
+          receiverName,
           returnDate: dto.returnDate,
           totalAmount: round2(totalAmount),
           status: 'draft',
@@ -400,7 +409,7 @@ export class PurchaseReturnService {
         })
         .returning();
 
-      const returnId = inserted[0].id;
+      const returnId = inserted.id;
       await tx.insert(purchaseReturnItem).values(
         returnItems.map((item) => ({
           ...item,
@@ -408,7 +417,7 @@ export class PurchaseReturnService {
         })),
       );
 
-      return inserted[0];
+      return inserted;
     });
 
     return this.getDetail(created.id);
@@ -432,15 +441,23 @@ export class PurchaseReturnService {
       .from(purchaseReturnItem)
       .where(eq(purchaseReturnItem.returnId, id));
 
-    // 审核时再次校验退货数量（防止并发或期间其他退货已审核）
-    await this.validateReturnItems(
-      ret.inboundId,
-      itemRows.map((item) => ({
-        materialId: item.materialId,
-        quantity: Number(item.quantity),
-      })),
-      id,
-    );
+    // 审核时再次校验退货店仓库存充足（防止并发或其他单据已消耗）
+    for (const item of itemRows) {
+      const [stk] = await this.db
+        .select()
+        .from(materialStock)
+        .where(
+          and(
+            eq(materialStock.materialId, item.materialId),
+            eq(materialStock.warehouseId, ret.warehouseId),
+          ),
+        );
+      if (!stk || Number(stk.quantity) < Number(item.quantity)) {
+        throw new ConflictException(
+          `物料 ${item.materialName} 在退货店仓库存不足，无法审核退货`,
+        );
+      }
+    }
 
     await this.db.transaction(async (tx) => {
       // 1. 更新退货单状态
@@ -465,35 +482,23 @@ export class PurchaseReturnService {
       }));
       await this.stockService.batchChangeStock(tx, stockChanges);
 
-      // 3. 冲减应付：找对应的 payable（bizNo = 入库单号）
-      const payableRows = await tx
-        .select()
-        .from(payable)
-        .where(
-          and(
-            eq(payable.bizNo, ret.inboundNo),
-            eq(payable.bizType, 'purchase_inbound'),
-          ),
-        );
-      if (payableRows.length > 0) {
-        const p = payableRows[0];
-        const returnAmt = Number(ret.totalAmount);
-        const curBalance = Number(p.balance);
-        if (returnAmt > curBalance + 0.01) {
-          throw new ConflictException('退货金额超过原单金额');
-        }
-        const newAmount = Number(p.amount) - returnAmt;
-        const newBalance = curBalance - returnAmt;
-        await tx
-          .update(payable)
-          .set({
-            amount: round2(newAmount),
-            balance: round2(newBalance),
-            status: newBalance <= 0.01 ? 'paid' : p.status,
-            updatedAt: new Date(),
-          })
-          .where(eq(payable.id, p.id));
+      // 3. 总部退货（收货方=供应商）：生成应付红冲（负数应付单，冲减该供应商往来）
+      if (ret.receiverType === 'supplier' && ret.supplierId) {
+        const payableNo = `APR-${ret.returnNo}`;
+        await tx.insert(payable).values({
+          payableNo,
+          supplierId: ret.supplierId,
+          supplierName: ret.supplierName ?? '',
+          bizType: 'purchase_return',
+          bizNo: ret.returnNo,
+          amount: round2(-Number(ret.totalAmount)),
+          paidAmount: '0',
+          balance: round2(-Number(ret.totalAmount)),
+          status: 'unpaid',
+          remark: `采购退货冲减应付 ${ret.returnNo}`,
+        });
       }
+      // 经销商退货（收货方=上级店仓）为内部调拨，不产生应付。
     });
   }
 

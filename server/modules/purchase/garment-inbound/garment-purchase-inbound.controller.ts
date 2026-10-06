@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Post,
+  Put,
   Query,
 } from '@nestjs/common';
 import { NeedLogin } from '@lark-apaas/fullstack-nestjs-core';
@@ -12,6 +13,9 @@ import { GarmentPurchaseInboundService } from './garment-purchase-inbound.servic
 import type {
   GarmentPurchaseInbound,
   GarmentPurchaseInboundCreateDto,
+  GarmentPurchaseInboundUpdateDto,
+  GarmentPurchaseInboundAcceptDto,
+  GarmentPurchaseInboundResolveResult,
   PaginationResult,
 } from '@shared/api.interface';
 import { CheckPermission } from '../../../common/decorators/check-permission.decorator';
@@ -56,6 +60,15 @@ export class GarmentPurchaseInboundController {
   }
 
   @CheckPermission('purchase:inbound')
+  @Get(':id/resolve-barcode')
+  async resolveBarcode(
+    @Param('id') id: string,
+    @Query('code') code?: string,
+  ): Promise<GarmentPurchaseInboundResolveResult> {
+    return this.garmentPurchaseInboundService.resolveBarcode(id, code ?? '');
+  }
+
+  @CheckPermission('purchase:inbound')
   @Post()
   async create(
     @Body()
@@ -68,6 +81,30 @@ export class GarmentPurchaseInboundController {
   @Post(':id/approve')
   async approve(@Param('id') id: string): Promise<void> {
     return this.garmentPurchaseInboundService.approve(id);
+  }
+
+  @CheckPermission('purchase:inbound')
+  @Put(':id')
+  async update(
+    @Param('id') id: string,
+    @Body() body: GarmentPurchaseInboundUpdateDto,
+  ): Promise<GarmentPurchaseInbound> {
+    return this.garmentPurchaseInboundService.update(id, body);
+  }
+
+  @CheckPermission('purchase:inbound')
+  @Put(':id/acceptance')
+  async saveAcceptance(
+    @Param('id') id: string,
+    @Body() body: GarmentPurchaseInboundAcceptDto,
+  ): Promise<GarmentPurchaseInbound> {
+    return this.garmentPurchaseInboundService.saveAcceptance(id, body);
+  }
+
+  @CheckPermission('purchase:inbound')
+  @Post(':id/complete-acceptance')
+  async completeAcceptance(@Param('id') id: string): Promise<GarmentPurchaseInbound> {
+    return this.garmentPurchaseInboundService.completeAcceptance(id);
   }
 
   @CheckPermission('purchase:inbound')

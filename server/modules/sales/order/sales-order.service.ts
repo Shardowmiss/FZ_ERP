@@ -132,7 +132,12 @@ export class SalesOrderService {
     if (dealerId) conditions.push(eq(salesOrder.dealerId, dealerId));
     if (status) conditions.push(eq(salesOrder.status, status));
     if (startDate) conditions.push(gte(salesOrder.orderDate, startDate));
-    if (endDate) conditions.push(lt(salesOrder.orderDate, endDate));
+    if (endDate) {
+      // 半开区间上界：endDate 当天应包含在结果内（与 inventory-flow / report-purchase 的 +1 天约定一致）
+      const [y, m, d] = endDate.split('-').map(Number);
+      const endExclusive = new Date(Date.UTC(y, m - 1, d + 1)).toISOString().slice(0, 10);
+      conditions.push(lt(salesOrder.orderDate, endExclusive));
+    }
     // 行级数据权限：客户主数据已移除，销售订单不再按经销商隔离（unscoped，全量可见）；如需经销商隔离须为销售单增加 dealer_id 列
     const scopeCond = buildDealerScopeCondition(
       RequestContext.getDealerScope() ?? ALL_SCOPE,
