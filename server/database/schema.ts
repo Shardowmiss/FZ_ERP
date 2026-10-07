@@ -2923,6 +2923,13 @@ export const bomItem = pgTable("bom_item", {
   usagePerPiece: numeric("usage_per_piece").notNull().default('0'),
   lossRate: numeric("loss_rate").notNull().default('0'),
   bomType: varchar("bom_type", { length: 20 }).notNull().default('main'),
+  // 多级 BOM 层级（迁移 0049）：
+  //   parentItemId 指向父级明细行；NULL = 一级部件（直接挂成衣）
+  //   level 层级深度，1 = 一级部件。有父级时由触发器强制为「父级 level + 1」，
+  //   并保证父级与本行同属一个 BOM（跨 BOM 挂父会被 trg_bom_item_parent_guard 拒绝）。
+  //   存量 7 条明细已回填 level=1 / parentItemId=NULL，行为与改造前完全一致。
+  parentItemId: uuid("parent_item_id"),
+  level: integer("level").notNull().default(1),
   remark: text("remark"),
   // System field: Creation time (auto-filled, do not modify)
   createdAt: customTimestamptz("_created_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
@@ -2933,6 +2940,12 @@ export const bomItem = pgTable("bom_item", {
   // System field: Updater (auto-filled, do not modify)
   updatedBy: userProfile("_updated_by"),
 }, (table) => [
+  // 多级 BOM 递归展开索引（迁移 0049）：
+  //   自关联外键与触发器（父级同 BOM、level=父级+1）由迁移脚本管理，
+  //   此处仅声明查询索引，与库内 idx_bom_item_bom_parent / _parent / _level 对齐。
+  index("idx_bom_item_bom_parent").on(table.bomId, table.parentItemId),
+  index("idx_bom_item_parent").on(table.parentItemId),
+  index("idx_bom_item_level").on(table.level),
   foreignKey({
     columns: [table.bomId],
     foreignColumns: [bom.id],

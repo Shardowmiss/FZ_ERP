@@ -161,6 +161,14 @@ export interface BomItem {
   usagePerPiece: number;
   lossRate: number;
   bomType: string;
+  /**
+   * 多级 BOM（迁移 0049）：
+   *   parentItemId 指向父级明细行；null = 一级部件（直接挂成衣）
+   *   level 层级深度，1 = 一级部件
+   * 服装典型结构：成衣 ← 裁片件 ← 面料/里布
+   */
+  parentItemId?: string | null;
+  level?: number;
   remark?: string;
 }
 

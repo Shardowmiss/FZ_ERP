@@ -39,6 +39,15 @@ interface CreateBomDto {
     lossRate: number;
     bomType: string;
     remark?: string;
+    /**
+     * 多级 BOM（迁移 0049）：父级明细的临时引用号（父项自身的 tempRef）。
+     * 明细行 id 在 INSERT 后才生成，故同批内建立父子关系需用 tempRef 互指，
+     * 服务端会按 tempRef 二次回填 parent_item_id。
+     * 不传 = 一级部件（直接挂成衣），与改造前行为一致。
+     */
+    parentRef?: string;
+    /** 本行的临时引用号，供子项通过 parentRef 指向自己 */
+    tempRef?: string;
   }[];
 }
 
@@ -51,6 +60,8 @@ interface UpdateBomDto {
     lossRate: number;
     bomType: string;
     remark?: string;
+    parentRef?: string;
+    tempRef?: string;
   }[];
 }
 
@@ -126,6 +137,9 @@ export class BomService {
       usagePerPiece: Number(row.usagePerPiece),
       lossRate: Number(row.lossRate),
       bomType: row.bomType,
+      // 多级 BOM 层级（迁移 0049）：前端据此渲染层级树
+      parentItemId: row.parentItemId ?? null,
+      level: row.level,
       remark: row.remark ?? undefined,
     }));
 
@@ -229,7 +243,35 @@ export class BomService {
         };
       });
 
-      await tx.insert(bomItem).values(itemValues);
+      // 多级 BOM（迁移 0049）：先插入全部明细（parent_item_id 暂空），
+      // 再按 tempRef 回填父子关系。因明细 id 在 INSERT 后才生成，
+      // 同批内父子互引无法在一次 values 里完成。
+      const insertedRows = await tx
+        .insert(bomItem)
+        .values(itemValues)
+        .returning({ id: bomItem.id, materialId: bomItem.materialId });
+
+      // 建立 tempRef -> id 映射（同批内引用）
+      const refToId = new Map<string, string>();
+      dto.items.forEach((item, idx) => {
+        if (item.tempRef && insertedRows[idx]) {
+          refToId.set(item.tempRef, insertedRows[idx].id);
+        }
+      });
+
+      // 回填 parent_item_id（仅当子项的 parentRef 能在同批找到对应行）
+      for (let idx = 0; idx < dto.items.length; idx++) {
+        const item = dto.items[idx];
+        if (!item.parentRef) continue;
+        const parentId = refToId.get(item.parentRef);
+        const selfId = insertedRows[idx]?.id;
+        if (parentId && selfId) {
+          await tx
+            .update(bomItem)
+            .set({ parentItemId: parentId })
+            .where(eq(bomItem.id, selfId));
+        }
+      }
 
       return bomRow;
     });
@@ -322,7 +364,30 @@ export class BomService {
               remark: item.remark,
             };
           });
-          await tx.insert(bomItem).values(itemValues);
+          // 多级 BOM（迁移 0049）：同 create 逻辑，插入后按 tempRef 回填父子关系
+          const insertedRows = await tx
+            .insert(bomItem)
+            .values(itemValues)
+            .returning({ id: bomItem.id });
+
+          const refToId = new Map<string, string>();
+          items.forEach((item, idx) => {
+            if (item.tempRef && insertedRows[idx]) {
+              refToId.set(item.tempRef, insertedRows[idx].id);
+            }
+          });
+          for (let idx = 0; idx < items.length; idx++) {
+            const item = items[idx];
+            if (!item.parentRef) continue;
+            const parentId = refToId.get(item.parentRef);
+            const selfId = insertedRows[idx]?.id;
+            if (parentId && selfId) {
+              await tx
+                .update(bomItem)
+                .set({ parentItemId: parentId })
+                .where(eq(bomItem.id, selfId));
+            }
+          }
         }
       }
     });

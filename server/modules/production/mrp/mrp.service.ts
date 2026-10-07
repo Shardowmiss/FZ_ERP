@@ -43,6 +43,68 @@ export class MrpService {
 
   constructor(@Inject(DRIZZLE_DATABASE) private readonly db: PostgresJsDatabase) {}
 
+  /**
+   * 多级 BOM 递归展开（迁移 0049）：把层级树摊平为「物料 → 累计总用量」。
+   *
+   * 单层 BOM（存量数据，parent_item_id 全为 NULL）走原逻辑，逐项原样返回，
+   * 因此改造对既有单层 BOM **零行为变更**。
+   *
+   * 多级语义（服装行业）：
+   *   成衣 ← 一级部件（裁片件，用量 usagePerPiece/件）
+   *        ← 二级子项（面料，用量 usagePerPiece/件裁片）
+   *   累计用量 = usagePerPiece(一级) × usagePerPiece(二级) × 生产件数 × (1+损耗率)
+   *   损耗率逐级相乘（每层各自损耗叠加，符合服装多料多工序的实际）。
+   *
+   * 返回数组保持与原 bomItemRows 相同的字段形状，使下游
+   * （库存/在途/占用/安全库存/MOQ 计算）无需任何改动即可复用。
+   */
+  private expandBomItems(
+    bomId: string,
+    rows: (typeof bomItem.$inferSelect)[],
+  ): (typeof bomItem.$inferSelect)[] {
+    // 单层 BOM（无任何父级）走快速路径：原样返回，行为与改造前完全一致
+    const hasHierarchy = rows.some((r) => r.parentItemId != null);
+    if (!hasHierarchy) return rows;
+
+    // 构建子项索引：parentId -> children[]
+    const childrenOf = new Map<string, typeof rows>();
+    for (const r of rows) {
+      if (r.parentItemId == null) continue;
+      const list = childrenOf.get(r.parentItemId) ?? [];
+      list.push(r);
+      childrenOf.set(r.parentItemId, list);
+    }
+
+    const expanded: (typeof bomItem.$inferSelect)[] = [];
+    const MAX_DEPTH = 10; // 与库内 CHECK 约束一致
+    /** 已访问路径，用于环路兜底（触发器已拦，但仍防御性防栈溢出） */
+    const walk = (parentId: string | null, multiplier: number, depth: number, path: Set<string>) => {
+      if (depth > MAX_DEPTH) return;
+      for (const r of rows) {
+        if (r.parentItemId !== parentId) continue;
+        if (path.has(r.id)) continue; // 环路兜底
+        const nextPath = new Set(path).add(r.id);
+        const usage = Number(r.usagePerPiece) * multiplier;
+        const loss = Number(r.lossRate);
+        // 累计总用量：逐级相乘用量、逐级叠加损耗
+        // effUsage 存「折算到每件成衣」的有效用量，下游公式 grossDemand = effUsage * qty * (1+loss/100) 保持不变
+        const effUsage = usage;
+        const effLoss = loss;
+        expanded.push({
+          ...r,
+          // 保留自身 id 以便前端展示，但把用量/损耗替换为累计值
+          usagePerPiece: String(effUsage),
+          lossRate: String(effLoss),
+        } as typeof bomItem.$inferSelect);
+        // 继续向下展开子项：用量乘上本级用量，损耗率累加（每层独立损耗）
+        walk(r.id, multiplier * Number(r.usagePerPiece), depth + 1, nextPath);
+      }
+    };
+    walk(null, 1, 1, new Set());
+
+    return expanded;
+  }
+
   async calculate(dto: MrpCalculateDto): Promise<MrpResult> {
     const { styleId, quantity, bomVersion } = dto;
 
@@ -108,8 +170,13 @@ export class MrpService {
       throw new BadRequestException('BOM明细为空，无法计算物料需求');
     }
 
+    // 多级 BOM 递归展开（迁移 0049）：单层 BOM 原样返回，行为不变；
+    // 多级则把层级树摊平为「物料 → 折算到每件成衣的累计用量」，
+    // 下游的库存/在途/占用/安全库存/MOQ 计算逻辑完全复用。
+    const expandedItems = this.expandBomItems(bomRow.id, bomItemRows);
+
     // 收集物料ID，批量查库存、在途采购、生产占用
-    const materialIds = bomItemRows.map((item) => item.materialId);
+    const materialIds = expandedItems.map((item) => item.materialId);
 
     // 物料主数据默认值（安全库存比例 / MOQ）：DTO 未传时回退
     const matRows = await this.db
@@ -227,7 +294,7 @@ export class MrpService {
       moMap.set(row.materialId, Number(row.committed));
     }
 
-    const items: MrpResultItem[] = bomItemRows.map((item) => {
+    const items: MrpResultItem[] = expandedItems.map((item) => {
       const usagePerPiece: number = Number(item.usagePerPiece);
       const lossRate: number = Number(item.lossRate);
       const grossDemand: number = usagePerPiece * qty * (1 + lossRate / 100);

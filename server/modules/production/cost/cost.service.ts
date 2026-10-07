@@ -25,6 +25,42 @@ export class CostService {
 
   constructor(@Inject(DRIZZLE_DATABASE) private readonly db: PostgresJsDatabase) {}
 
+  /**
+   * 多级 BOM 递归展开（迁移 0049）：把层级树摊平为「物料 → 折算到每件成衣的累计用量」。
+   *
+   * 服装行业典型结构：成衣 ← 裁片件 ← 面料/里布。成本需逐级摊分到
+   * 最底层实际采购物料，才能得到真实的单件料本。
+   *
+   * 单层 BOM（存量数据 parent_item_id 全 NULL）走快速路径原样返回，
+   * 因此对既有数据零行为变更。
+   */
+  private expandBomItems(
+    rows: (typeof bomItem.$inferSelect)[],
+  ): (typeof bomItem.$inferSelect)[] {
+    if (!rows.some((r) => r.parentItemId != null)) return rows;
+
+    const expanded: (typeof bomItem.$inferSelect)[] = [];
+    const MAX_DEPTH = 10;
+
+    const walk = (parentId: string | null, multiplier: number, depth: number, path: Set<string>) => {
+      if (depth > MAX_DEPTH) return;
+      for (const r of rows) {
+        if (r.parentItemId !== parentId) continue;
+        if (path.has(r.id)) continue; // 环路兜底
+        // 累计用量 = 各级用量连乘（折算到「每件成衣」）
+        const effUsage = Number(r.usagePerPiece) * multiplier;
+        expanded.push({
+          ...r,
+          usagePerPiece: String(effUsage),
+        } as typeof bomItem.$inferSelect);
+        walk(r.id, multiplier * Number(r.usagePerPiece), depth + 1, new Set(path).add(r.id));
+      }
+    };
+    walk(null, 1, 1, new Set());
+
+    return expanded;
+  }
+
   async calculate(dto: CostCalculateDto): Promise<ProductionCostResult> {
     const { styleId, quantity, bomVersion } = dto;
 
@@ -79,8 +115,13 @@ export class CostService {
       throw new BadRequestException('BOM明细为空，无法计算成本');
     }
 
+    // 多级 BOM 递归展开（迁移 0049）：把层级树摊平为「物料 → 折算到每件成衣的累计用量」，
+    // 从而支持「成衣 ← 裁片件 ← 面料」的逐级成本摊分。
+    // 单层 BOM（存量数据）原样返回，行为与改造前完全一致。
+    const expandedItems = this.expandBomItems(bomItemRows);
+
     // 批量查物料标准价
-    const materialIds = bomItemRows.map((item) => item.materialId);
+    const materialIds = expandedItems.map((item) => item.materialId);
     const materialRows = await this.db
       .select()
       .from(material)
@@ -95,7 +136,7 @@ export class CostService {
     let auxiliaryMaterialCost: number = 0;
     let packagingCost: number = 0;
 
-    for (const item of bomItemRows) {
+    for (const item of expandedItems) {
       const mat = materialMap.get(item.materialId);
       if (!mat) {
         continue;
