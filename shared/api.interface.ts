@@ -1933,7 +1933,22 @@ export interface PivotField {
   key: string;
   label: string;
   type: PivotDimensionType | 'measure';
-  category: 'time' | 'org' | 'product' | 'other' | 'measure';
+  /**
+   * 分类。`semantic` 表示该条目来自动态语义层（pivot_semantic 表，迁移 0061），
+   * 分类名由后端语义层下发，故类型上并入 string。
+   */
+  category: 'time' | 'org' | 'product' | 'other' | 'measure' | 'semantic';
+}
+
+/** 语义层接口返回的分组结构（迁移 0061） */
+export interface PivotSemanticsResponse {
+  /** category → 字段列表；category 名称由后端语义层配置 */
+  groups: Record<
+    string,
+    Array<{ key: string; label: string; kind: string; valueFormat: string }>
+  >;
+  /** 当前用户是否可见毛利/成本（finance:profit） */
+  canSeeProfit: boolean;
 }
 
 export interface PivotValueConfig {

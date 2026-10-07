@@ -265,3 +265,63 @@ export function sortRowsByValue(
     return dir === 'asc' ? (av ?? 0) - (bv ?? 0) : (bv ?? 0) - (av ?? 0);
   });
 }
+
+/* ============================================================
+ * 语义层驱动（迁移 0061）
+ *
+ * 此前维度/指标清单在本文件硬编码，后端加一个维度要改前后端两处。
+ * 现在改为优先读后端语义接口（pivot_semantic 表）：
+ *   - 接口可用 → 用后端返回的标签与分类（含新增维度，前端无需改代码）
+ *   - 接口失败 → 回退下面的静态清单，透视功能不受影响
+ *
+ * 毛利/成本属敏感指标，无 finance:profit 权限时后端不下发，
+ * 前端也因此不会显示——与接口层的剥离逻辑同源。
+ * ============================================================ */
+
+/** 毛利/成本：敏感指标，无权限时不展示（与后端 finance:profit 判断一致） */
+export const PROFIT_FIELD_KEYS = new Set(['cost', 'profit']);
+
+/** 静态兜底清单（后端语义接口不可用时使用）。新增维度请一并更新此处仅为兜底。 */
+export const FALLBACK_DIMENSION_FIELDS: PivotField[] = [
+  ...DIMENSION_FIELDS,
+  // 服装核心维度（迁移 0061 新增，静态兜底用；正常走接口）
+  { key: 'season', label: '上市季节', type: 'string', category: 'product' },
+  { key: 'member', label: '会员/非会员', type: 'string', category: 'product' },
+  { key: 'memberNo', label: '会员号', type: 'string', category: 'product' },
+  { key: 'channel', label: '渠道', type: 'string', category: 'org' },
+  { key: 'cashier', label: '收银员', type: 'string', category: 'org' },
+];
+
+export const FALLBACK_MEASURE_FIELDS: PivotField[] = [
+  ...MEASURE_FIELDS,
+  { key: 'returnQty', label: '退货件数', type: 'measure', category: 'measure' },
+  { key: 'returnAmount', label: '退货额', type: 'measure', category: 'measure' },
+  { key: 'netAmount', label: '净销售额', type: 'measure', category: 'measure' },
+  { key: 'sellThrough', label: '售罄率', type: 'measure', category: 'measure' },
+];
+
+/**
+ * 把后端语义接口返回的分组结构转成本地 PivotField[] 两份清单。
+ * kind=dimension → 维度；kind=measure → 指标。
+ * canSeeProfit=false 时后端已过滤掉敏感项，此处再兜底一次（双保险）。
+ */
+export function fieldsFromSemantics(
+  groups: Record<string, Array<{ key: string; label: string; kind: string; valueFormat: string }>>,
+  canSeeProfit: boolean,
+): { dimensions: PivotField[]; measures: PivotField[] } {
+  const dimensions: PivotField[] = [];
+  const measures: PivotField[] = [];
+  for (const fields of Object.values(groups ?? {})) {
+    for (const f of fields ?? []) {
+      if (!canSeeProfit && PROFIT_FIELD_KEYS.has(f.key)) continue;
+      const target = f.kind === 'measure' ? measures : dimensions;
+      target.push({
+        key: f.key,
+        label: f.label,
+        type: f.kind === 'measure' ? 'measure' : 'string',
+        category: 'semantic',
+      });
+    }
+  }
+  return { dimensions, measures };
+}

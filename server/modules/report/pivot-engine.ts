@@ -163,10 +163,19 @@ function getPivotFieldWhitelist(dataSource: PivotDataSource): PivotFieldWhitelis
       'brand', 'category', 'subCategory', 'dealer', 'warehouse',
       'styleNo', 'styleName', 'color', 'size', 'outboundNo',
       'store',
+      // 服装核心维度（评估报告实测「业务问不出来的」那批，逐项落地）
+      'season',    // 上市季节：春夏秋冬，支撑季节性销售与清货分析
+      'member',    // 会员/非会员：会员消费占比
+      'memberNo',  // 具体会员：会员画像与复购
+      'channel',   // 渠道：POS 门店 / 线上
+      'cashier',   // 收银员/导购：导购业绩（现有可算口径）
     ];
     salesDims.forEach((d: string) => dimensions.add(d));
     // sales 数据源指标
-    const salesMeasures = ['quantity', 'amount', 'cost', 'profit', 'discount', 'avgPrice'];
+    const salesMeasures = [
+      'quantity', 'amount', 'cost', 'profit', 'discount', 'avgPrice',
+      'returnQty', 'returnAmount', 'netAmount', 'sellThrough', // 退货与售罄（服装核心）
+    ];
     salesMeasures.forEach((m: string) => measures.add(m));
     return { dimensions, measures };
   }
@@ -219,7 +228,11 @@ function getSalesDimColName(dim: string, source: 'outbound' | 'retail'): string 
     brand: 'st.brand',
     category: 'st.category',
     subCategory: 'st.sub_category',
-    dealer: 'so.dealer_id',
+    // 服装核心维度：上市季节（st 已在两分支 JOIN，无额外 SQL 成本）
+    season: "COALESCE(NULLIF(st.season, ''), '未标注')",
+    // dealer_id 是 uuid 类型，必须 ::text —— 否则与零售侧的字符串字面量
+    // UNION 时 PG 无法统一类型（报 invalid input syntax for type uuid: ""）
+    dealer: "COALESCE(so.dealer_id::text, '（未分配经销商）')",
     warehouse: 'so.warehouse_name',
     styleNo: 'soi.style_no',
     styleName: 'st.name',
@@ -231,6 +244,19 @@ function getSalesDimColName(dim: string, source: 'outbound' | 'retail'): string 
     brand: 'st.brand',
     category: 'st.category',
     subCategory: 'st.sub_category',
+    // 服装核心维度
+    season: "COALESCE(NULLIF(st.season, ''), '未标注')",
+    // 会员/非会员：member_id 为空即散客。会员消费对比是零售基础分析
+    member: "(CASE WHEN ro.member_id IS NOT NULL AND ro.member_id <> '' THEN '会员' ELSE '非会员' END)",
+    memberNo: 'ro.member_id',
+    // 渠道：POS 门店 / 线上等（retail_order.source）
+    channel: "COALESCE(NULLIF(ro.source, ''), '未知渠道')",
+    // 收银员（导购业绩分析的现有可算口径）
+    cashier: "COALESCE(NULLIF(ro.cashier_name, ''), '未记录')",
+    // 经销商只存在于出库单（sales_outbound.dealer_id），零售单无此概念。
+    // 若直接 UNION 会报 `invalid input syntax for type uuid: ""`
+    // （出库侧有值、零售侧被拼成空串），故零售侧输出固定占位文案。
+    dealer: "'（零售无经销商）'",
     store: 'ro.store_name',
     styleNo: 'roi.style_no',
     styleName: 'st.name',
@@ -805,7 +831,100 @@ export class PivotEngineService {
       return sql`${aggFn}(${sql.raw(amtCol)}::numeric / NULLIF(${sql.raw(qtyCol)}::numeric, 0))`;
     }
 
+    /* ---------- 服装零售核心指标：退货与售罄 ---------- */
+
+    // 退货额：按「同一款号+颜色+尺码」关联原零售单累计退销量，
+    // 再按成交单价折算金额。retail_return_item 冗余了 sku/style/color/size，
+    // 故可与零售明细直接对齐，无需回表查原单。
+    if (v.key === 'returnQty') {
+      if (source !== 'retail') return sql`0::numeric`;
+      const sub = this.returnQtySubquery(source);
+      return sql`${aggFn}(COALESCE((${sub}), 0))`;
+    }
+    if (v.key === 'returnAmount') {
+      if (source !== 'retail') return sql`0::numeric`;
+      const sub = this.returnAmountSubquery(source);
+      return sql`${aggFn}(COALESCE((${sub}), 0))`;
+    }
+    // 净销售额 = 销售额 - 退货额（服装零售最常问的口径）
+    if (v.key === 'netAmount') {
+      if (source !== 'retail') {
+        return sql`${aggFn}(${sql.raw('soi.amount')}::numeric)`;
+      }
+      const sub = this.returnAmountSubquery(source);
+      return sql`${aggFn}(roi.line_amount::numeric - COALESCE((${sub}), 0))`;
+    }
+    // 售罄率 = 销量 / (销量 + 期末现货)。
+    // 现货取成品仓（type='finished'）同 SKU 的 inventory_stock 合计；
+    // 出库分支无零售语义故返回 0。分母加 1e-9 防除零。
+    if (v.key === 'sellThrough') {
+      if (source !== 'retail') return sql`0::numeric`;
+      const stockSub = this.finishedStockSubquery(source);
+      return sql`${aggFn}(
+        ${sql.raw('roi.quantity')}::numeric
+        / NULLIF(
+          ${sql.raw('roi.quantity')}::numeric
+          + COALESCE((${stockSub}), 0)::numeric
+          + 0.000000001, 0)
+      )`;
+    }
+
     return sql`NULL::numeric`;
+  }
+
+  /**
+   * 退货量子查询：按 style_no+color+size 汇总已生效退货单的退货件数。
+   *
+   * 只统计 status='refunded'（已审核退款、货已回库），与 retail-report 的
+   * 口径一致；draft 状态的退货单尚未生效，计入会让退货率虚高。
+   * 用 LEFT JOIN LATERAL 而非标量子查询，避免同一条明细被重复计算。
+   */
+  private returnQtySubquery(source: 'outbound' | 'retail'): SQL {
+    if (source !== 'retail') return sql`NULL`;
+    return sql`(
+      SELECT SUM(COALESCE(rri.quantity, 0))
+      FROM retail_return_item rri
+      INNER JOIN retail_return rr ON rr.id = rri.return_id
+      WHERE rr.status = 'refunded'
+        AND COALESCE(rri.style_no, '') = COALESCE(roi.style_no, '')
+        AND COALESCE(rri.color, '') = COALESCE(roi.color, '')
+        AND COALESCE(rri.size, '') = COALESCE(roi.size, '')
+    )`;
+  }
+
+  /** 退货额子查询：退货件数 × 本行成交单价（deal 用行内均价，缺则用 tag_price） */
+  private returnAmountSubquery(source: 'outbound' | 'retail'): SQL {
+    if (source !== 'retail') return sql`NULL`;
+    return sql`(
+      SELECT SUM(
+        COALESCE(rri.quantity, 0)
+        * CASE
+            WHEN roi.deal_price::numeric > 0 THEN roi.deal_price::numeric
+            ELSE COALESCE(roi.tag_price::numeric, 0)
+          END
+      )
+      FROM retail_return_item rri
+      INNER JOIN retail_return rr ON rr.id = rri.return_id
+      WHERE rr.status = 'refunded'
+        AND COALESCE(rri.style_no, '') = COALESCE(roi.style_no, '')
+        AND COALESCE(rri.color, '') = COALESCE(roi.color, '')
+        AND COALESCE(rri.size, '') = COALESCE(roi.size, '')
+    )`;
+  }
+
+  /** 成品仓现货子查询：同 SKU 在成品仓的合计库存（售罄率分母用） */
+  private finishedStockSubquery(source: 'outbound' | 'retail'): SQL {
+    if (source !== 'retail') return sql`NULL`;
+    return sql`(
+      SELECT COALESCE(SUM(ist.quantity), 0)
+      FROM inventory_stock ist
+      INNER JOIN warehouse w ON w.id = ist.warehouse_id
+      WHERE w.type = 'finished'
+        AND ist.stock_type = 'normal'
+        AND COALESCE(ist.style_no, '') = COALESCE(roi.style_no, '')
+        AND COALESCE(ist.color, '') = COALESCE(roi.color, '')
+        AND COALESCE(ist.size, '') = COALESCE(roi.size, '')
+    )`;
   }
 
   /**

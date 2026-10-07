@@ -1761,6 +1761,39 @@ export const reportPivotTemplate = pgTable("report_pivot_template", {
   index("idx_report_pivot_template_owner_created").on(table.ownerUserId, table.createdAt),
 ]);
 
+/**
+ * 透视语义层（迁移 0061）
+ *
+ * 把维度/指标的 key、中文标签、分类、格式化、敏感标记从代码搬到配置表，
+ * 让业务/实施新增分析维度只需 INSERT 一行，不必改前后端代码发版。
+ *
+ * 边界：语义层只控制「哪些可用/叫什么/归类」，**代码仍控制「怎么算」**
+ * （物理 SQL 由 pivot-engine 的白名单实现），故配置无法凭空注入 SQL。
+ * 代码白名单同时作为兜底——配置表故障时透视功能不受影响。
+ */
+export const pivotSemantic = pgTable("pivot_semantic", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  key: varchar("key", { length: 64 }).notNull(),
+  label: varchar("label", { length: 100 }).notNull(),
+  kind: varchar("kind", { length: 20 }).notNull(),
+  /** 适用数据源，逗号分隔（sales 含出库+零售两分支，故允许多值） */
+  dataSources: varchar("data_sources", { length: 200 }).notNull(),
+  category: varchar("category", { length: 50 }).notNull().default('其他'),
+  sortOrder: integer("sort_order").notNull().default(100),
+  valueFormat: varchar("value_format", { length: 20 }).notNull().default('sum'),
+  /** 敏感指标（毛利/成本）：controller 结合 finance:profit 剥离 */
+  sensitive: boolean("sensitive").notNull().default(false),
+  enabled: boolean("enabled").notNull().default(true),
+  remark: text("remark"),
+  // System field: Creation time (auto-filled, do not modify)
+  createdAt: customTimestamptz("_created_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  // System field: Update time (auto-filled, do not modify)
+  updatedAt: customTimestamptz("_updated_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => [
+  uniqueIndex("uk_pivot_semantic_key").on(table.key),
+  index("idx_pivot_semantic_enabled").on(table.dataSources, table.enabled),
+]);
+
 export const retailOrder = pgTable("retail_order", {
   id: uuid("id").primaryKey().defaultRandom(),
   retailNo: varchar("retail_no", { length: 32 }).notNull().unique(),

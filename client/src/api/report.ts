@@ -11,6 +11,7 @@ import type {
   PivotConfig,
   PivotResponse,
   PivotTemplateItem,
+  PivotSemanticsResponse,
 } from '@shared/api.interface';
 
 export interface ReportQueryParams {
@@ -159,4 +160,11 @@ export const reportApi = {
   /** 删除我的模板 */
   deletePivotTemplate: (id: string): Promise<{ success: boolean }> =>
     request<{ success: boolean }>(`/api/report/pivot/templates/${id}`, 'DELETE'),
+
+  /**
+   * 透视语义清单（迁移 0061）：维度/指标的标签、分类、格式化与毛利可见性。
+   * 前端维度选择器读本接口，新增维度时无需再维护前端中文字典。
+   */
+  pivotSemantics: (): Promise<PivotSemanticsResponse> =>
+    request<PivotSemanticsResponse>('/api/report/pivot/semantics', 'GET'),
 };

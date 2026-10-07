@@ -13,16 +13,18 @@ import type {
 } from '@shared/api.interface';
 import { reportApi } from '@client/src/api/report';
 import {
-  DIMENSION_FIELDS,
-  MEASURE_FIELDS,
+  DIMENSION_FIELDS as FALLBACK_DIM_FIELDS,
+  MEASURE_FIELDS as FALLBACK_MEASURE_LIST,
   DIMENSION_GROUPS,
   DATA_SOURCE_OPTIONS,
   TEMPLATES,
-  getFieldLabel,
+  getFieldLabel as staticGetFieldLabel,
   isMeasureField,
   exportToCSV,
   getDateRange,
   sortRowsByValue,
+  fieldsFromSemantics,
+  PROFIT_FIELD_KEYS,
 } from './pivot-utils';
 import {
   DropZonePanel,
@@ -80,6 +82,7 @@ export default function PivotAnalysisPage() {
     // 两者失败均静默降级：模板是增强功能，不应阻塞分析主流程。
     loadMyTemplates();
     loadLastQuery();
+    loadSemantics();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -148,6 +151,47 @@ export default function PivotAnalysisPage() {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
   }, [dataSource, rows, cols, values, filters, fetchData]);
+
+  /* ========== 语义层（迁移 0061） ========== */
+
+  /**
+   * 维度/指标清单：优先取后端语义接口（含业务自助新增的维度），
+   * 接口不可用时回退静态兜底清单，保证透视功能永不因语义层不可用而中断。
+   */
+  const [dimensionFields, setDimensionFields] = useState(FALLBACK_DIM_FIELDS);
+  const [measureFields, setMeasureFields] = useState(FALLBACK_MEASURE_LIST);
+  /** 当前用户是否可见毛利/成本（finance:profit），false 时前端不展示这两项 */
+  const [canSeeProfit, setCanSeeProfit] = useState(true);
+
+  const loadSemantics = useCallback(async () => {
+    try {
+      const res = await reportApi.pivotSemantics();
+      const { dimensions, measures } = fieldsFromSemantics(res.groups, res.canSeeProfit);
+      // 后端返回为空时保留兜底清单，避免出现「维度选择器全空」的坏体验
+      if (dimensions.length > 0) setDimensionFields(dimensions);
+      if (measures.length > 0) setMeasureFields(measures);
+      setCanSeeProfit(res.canSeeProfit);
+    } catch (e) {
+      logger.warn('语义清单加载失败，使用静态兜底清单', e);
+    }
+  }, []);
+
+  /** 字段中文标签：优先用语义层下发的标签，回退静态字典 */
+  const getFieldLabel = useCallback(
+    (key: string): string => {
+      const hit =
+        dimensionFields.find((f) => f.key === key) ??
+        measureFields.find((f) => f.key === key);
+      return hit?.label ?? staticGetFieldLabel(key);
+    },
+    [dimensionFields, measureFields],
+  );
+
+  /** 当前可用的指标清单：无 finance:profit 时剔除毛利/成本 */
+  const availableMeasureFields = useMemo(
+    () => (canSeeProfit ? measureFields : measureFields.filter((f) => !PROFIT_FIELD_KEYS.has(f.key))),
+    [canSeeProfit, measureFields],
+  );
 
   /* ========== 模板：系统预置 + 我的模板（迁移 0060） ========== */
 
@@ -491,8 +535,8 @@ export default function PivotAnalysisPage() {
           onDragStart={handleDragStart}
           onRemoveFromZone={removeFromZone}
           dimensionGroups={DIMENSION_GROUPS}
-          dimensionFields={DIMENSION_FIELDS}
-          measureFields={MEASURE_FIELDS}
+          dimensionFields={dimensionFields}
+          measureFields={availableMeasureFields}
         />
 
         {/* Right: Main area */}

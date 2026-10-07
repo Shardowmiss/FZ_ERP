@@ -10,6 +10,7 @@ import { ReportTransferService } from './report-transfer.service';
 import { ReportStockMovementService } from './report-stock-movement.service';
 import { PivotEngineService } from './pivot-engine';
 import { PivotTemplateService } from './pivot-template.service';
+import { PivotSemanticService } from './pivot-semantic.service';
 
 /**
  * 报表模块。
@@ -31,6 +32,8 @@ import { PivotTemplateService } from './pivot-template.service';
     PivotEngineService,
     // 透视个人模板（迁移 0060）：按 owner 隔离，仅 ReportController 内部使用
     PivotTemplateService,
+    // 透视语义层（迁移 0061）：维度/指标元数据 + 启动期自检
+    PivotSemanticService,
   ],
   exports: [ReportService],
 })
