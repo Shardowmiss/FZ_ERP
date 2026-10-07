@@ -2383,6 +2383,12 @@ export const inventoryStock = pgTable("inventory_stock", {
   unitPrice: numeric("unit_price").notNull().default('0'),
   // 库存金额 = quantity * unitPrice（盘点记账后维护，其余出入库暂不维护）
   amount: numeric("amount").notNull().default('0'),
+  // 库存类型（服装零售核心维度，迁移 0048）：
+  //   normal 正常品 / defective 残次品 / sample 样品 / leftover 尾货 / clearance 清仓
+  //   使同一 SKU 在同一仓库可并存多种类型（如 正常品 50 件 + 残次品 2 件），
+  //   解决此前「瑕疵款只能当正品回库、样品占用正品库存、尾货无法单独清理」的问题。
+  //   存量数据已回填为 'normal'，业务行为与改造前完全一致。
+  stockType: varchar("stock_type", { length: 20 }).notNull().default('normal'),
   // System field: Creation time (auto-filled, do not modify)
   createdAt: customTimestamptz("_created_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
   // System field: Creator (auto-filled, do not modify)
@@ -2392,8 +2398,11 @@ export const inventoryStock = pgTable("inventory_stock", {
   // System field: Updater (auto-filled, do not modify)
   updatedBy: userProfile("_updated_by"),
 }, (table) => [
-  uniqueIndex("idx_inventory_stock_sku_wh").on(table.skuId, table.warehouseId),
-  uniqueIndex("uk_inventory_stock_warehouse_sku").on(table.warehouseId, table.skuId),
+  // 唯一索引纳入 stock_type（迁移 0048）：原 (skuId, warehouseId) 唯一约束
+  // 会锁死「一 SKU 一仓只有一行数量」，导致多类型库存无法并存。
+  uniqueIndex("idx_inventory_stock_sku_wh_type").on(table.skuId, table.warehouseId, table.stockType),
+  uniqueIndex("uk_inventory_stock_warehouse_sku_type").on(table.warehouseId, table.skuId, table.stockType),
+  index("idx_inventory_stock_type").on(table.stockType),
   foreignKey({
     columns: [table.skuId],
     foreignColumns: [sku.id],

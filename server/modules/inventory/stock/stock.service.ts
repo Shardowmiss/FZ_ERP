@@ -16,6 +16,23 @@ import { bulkUpsert } from '@server/common/batch';
 
 export type ItemType = 'sku' | 'material';
 
+/**
+ * 库存类型（服装零售核心维度，迁移 0048）。
+ * 与 inventory_stock.stock_type 的 CHECK 约束保持一致。
+ */
+export const STOCK_TYPES = [
+  'normal',
+  'defective',
+  'sample',
+  'leftover',
+  'clearance',
+] as const;
+
+export type StockType = (typeof STOCK_TYPES)[number];
+
+/** 缺省库存类型：存量数据与未显式指定的业务一律走 normal，行为与改造前一致 */
+export const DEFAULT_STOCK_TYPE: StockType = 'normal';
+
 export interface StockChangeItem {
   warehouseId: string;
   warehouseName: string;
@@ -38,6 +55,17 @@ export interface StockChangeItem {
   /** material 展示字段，已知时传入可减少一次查询 */
   materialCode?: string;
   materialName?: string;
+  /**
+   * 库存类型（服装零售核心维度，迁移 0048）：
+   *   'normal' 正常品（默认，存量行为） / 'defective' 残次品 / 'sample' 样品
+   *   / 'leftover' 尾货 / 'clearance' 清仓
+   *
+   * 为可选字段，**不传等价于 'normal'**，因此 18 个调用方 service
+   * （采购/销售/零售/调拨/盘点/生产/委外/订货会）无需改动即保持原有行为。
+   * 只有明确需要把库存记入非正常品类的单据才显式传入（如残次品退货入库、
+   * 样品领用、季末尾货清理）。
+   */
+  stockType?: StockType;
 }
 
 type TxLike = PostgresJsDatabase | Parameters<Parameters<PostgresJsDatabase['transaction']>[0]>[0];
@@ -66,12 +94,22 @@ export class StockService {
   /**
    * 单个 SKU 库存扣减：原子 UPDATE + 数量校验
    * 数量不足抛 ConflictException('库存不足')
+   *
+   * stockType（迁移 0048）：按库存类型定位/扣减对应行。缺省 normal，
+   * 保证未传该参数的 18 个调用方行为与改造前完全一致。
    */
   private async decreaseSkuStock(
     tx: TxLike,
-    params: { skuId: string; warehouseId: string; qty: number; skuCode?: string },
+    params: {
+      skuId: string;
+      warehouseId: string;
+      qty: number;
+      skuCode?: string;
+      stockType?: StockType;
+    },
   ): Promise<void> {
     const { skuId, warehouseId, qty, skuCode } = params;
+    const stockType = params.stockType ?? DEFAULT_STOCK_TYPE;
     const result = await tx
       .update(inventoryStock)
       .set({
@@ -81,6 +119,7 @@ export class StockService {
         and(
           eq(inventoryStock.skuId, skuId),
           eq(inventoryStock.warehouseId, warehouseId),
+          eq(inventoryStock.stockType, stockType),
           sql`${inventoryStock.quantity} >= ${round3(qty)}::numeric`,
         ),
       )
@@ -95,7 +134,7 @@ export class StockService {
 
   /**
    * 单个 SKU 库存增加：INSERT ... ON CONFLICT DO UPDATE (upsert)
-   * 依赖 idx_inventory_stock_sku_wh 唯一索引
+   * 依赖 idx_inventory_stock_sku_wh_type 唯一索引（含 stock_type，迁移 0048）
    */
   private async increaseSkuStock(
     tx: TxLike,
@@ -108,9 +147,11 @@ export class StockService {
       warehouseId: string;
       warehouseName: string;
       qty: number;
+      stockType?: StockType;
     },
   ): Promise<void> {
     const { skuId, skuCode, styleNo, color, size, warehouseId, warehouseName, qty } = params;
+    const stockType = params.stockType ?? DEFAULT_STOCK_TYPE;
     await tx
       .insert(inventoryStock)
       .values({
@@ -122,9 +163,10 @@ export class StockService {
         warehouseId,
         warehouseName,
         quantity: round3(qty),
+        stockType,
       })
       .onConflictDoUpdate({
-        target: [inventoryStock.skuId, inventoryStock.warehouseId],
+        target: [inventoryStock.skuId, inventoryStock.warehouseId, inventoryStock.stockType],
         set: {
           quantity: sql`${inventoryStock.quantity} + EXCLUDED.quantity`,
         },
@@ -271,15 +313,18 @@ export class StockService {
             warehouseId: item.warehouseId,
             qty: Math.abs(item.qtyDelta),
             skuCode: item.skuCode,
+            stockType: item.stockType,
           });
         }
       }
 
-      // 再增加（批量多值 upsert；同一 sku+仓库的多次增加先按键合并累加，避免单条多值 ON CONFLICT 同键冲突）
+      // 再增加（批量多值 upsert；同一 sku+仓库+类型的多次增加先按键合并累加，
+      // 避免单条多值 ON CONFLICT 同键冲突。合并键含 stockType，迁移 0048）
       const skuIncreaseMap = new Map<string, (typeof inventoryStock.$inferInsert)>();
       for (const item of filled) {
         if (item.qtyDelta > 0) {
-          const key = `${item.skuId}|${item.warehouseId}`;
+          const itemStockType = item.stockType ?? DEFAULT_STOCK_TYPE;
+          const key = `${item.skuId}|${item.warehouseId}|${itemStockType}`;
           const q = round3(item.qtyDelta);
           const exist = skuIncreaseMap.get(key);
           if (exist) {
@@ -294,6 +339,7 @@ export class StockService {
               warehouseId: item.warehouseId,
               warehouseName: item.warehouseName,
               quantity: q,
+              stockType: itemStockType,
             });
           }
         }
@@ -304,7 +350,7 @@ export class StockService {
           tx,
           inventoryStock,
           skuIncreaseRows,
-          [inventoryStock.skuId, inventoryStock.warehouseId],
+          [inventoryStock.skuId, inventoryStock.warehouseId, inventoryStock.stockType],
           { quantity: sql`${inventoryStock.quantity} + EXCLUDED.quantity` },
         );
       }
