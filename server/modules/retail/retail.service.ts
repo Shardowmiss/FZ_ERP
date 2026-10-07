@@ -10,12 +10,13 @@ import {
   DRIZZLE_DATABASE,
   type PostgresJsDatabase,
 } from '@lark-apaas/fullstack-nestjs-core';
-import { eq, and, count, desc, sql, gte, lt, lte, like, or } from 'drizzle-orm';
+import { eq, and, count, desc, sql, gte, lt, lte, like, or, inArray } from 'drizzle-orm';
 import type { SQL } from 'drizzle-orm';
 import {
   retailOrder,
   retailOrderItem,
   retailReturn,
+  retailReturnItem,
   store,
   sku,
   warehouse,
@@ -71,6 +72,8 @@ export interface SettleRetailDto {
 export interface CreateReturnItemDto {
   retailItemId: string;
   quantity: number;
+  /** 退货原因（尺码不合适/质量问题/客户改变主意…），服装行业退货率分析必需 */
+  reason?: string | null;
 }
 
 export interface CreateReturnDto {
@@ -720,7 +723,29 @@ export class RetailService {
     }
     const result = this.mapRetailReturn(row);
 
-    // Parse return items from remark and enrich with original item data
+    // 退货行项目：优先读明细表（迁移 0057 起为权威来源）；
+    // 明细表为空时回退解析 remark 编码，兼容尚未回填的历史单据。
+    const persistedItems = await this.db
+      .select()
+      .from(retailReturnItem)
+      .where(eq(retailReturnItem.returnId, id));
+
+    if (persistedItems.length > 0) {
+      result.items = persistedItems.map((it) => ({
+        retailItemId: it.retailItemId ?? '',
+        skuId: it.skuId ?? '',
+        skuCode: it.skuCode ?? '',
+        color: it.color ?? undefined,
+        size: it.size ?? undefined,
+        quantity: Number(it.quantity),
+        dealPrice: it.dealPrice != null ? Number(it.dealPrice) : 0,
+        amount: it.lineAmount != null ? Number(it.lineAmount) : 0,
+        reason: it.reason ?? undefined,
+      }));
+      return result;
+    }
+
+    // Legacy fallback: 解析 remark 编码并补全原零售明细数据
     const itemRefs = this.parseReturnItemsFromRemark(row.remark);
     if (itemRefs.length > 0) {
       const originalItems = await this.db
@@ -902,6 +927,42 @@ export class RetailService {
         })
         .returning({ id: retailReturn.id, returnNo: retailReturn.returnNo });
 
+      // 写入零售退货明细（迁移 0057 补齐的明细表）。
+      // 冗余原零售明细的 SKU/价格字段，使退货统计无需再 JOIN 原单；
+      // deal_price × quantity 作为本行退货金额，保证明细合计 = 主表 totalAmount。
+      if (items.length > 0) {
+        const origItemIds = items.map((it) => it.retailItemId);
+        const origRows = await tx
+          .select()
+          .from(retailOrderItem)
+          .where(inArray(retailOrderItem.id, origItemIds));
+        const origMap = new Map(origRows.map((r) => [r.id, r]));
+
+        await tx.insert(retailReturnItem).values(
+          items.map((it) => {
+            const orig = origMap.get(it.retailItemId);
+            const qty = Number(round3(it.quantity));
+            const deal = orig?.dealPrice != null ? Number(orig.dealPrice) : null;
+            return {
+              returnId: inserted.id,
+              retailItemId: it.retailItemId,
+              skuId: orig?.skuId ?? null,
+              skuCode: orig?.skuCode ?? null,
+              styleNo: orig?.styleNo ?? null,
+              color: orig?.color ?? null,
+              size: orig?.size ?? null,
+              quantity: String(qty),
+              tagPrice: orig?.tagPrice != null ? String(orig.tagPrice) : null,
+              dealPrice: orig?.dealPrice != null ? String(orig.dealPrice) : null,
+              lineAmount: deal != null ? String(round3(deal * qty)) : null,
+              reason: it.reason ?? null,
+              createdBy: userId,
+              updatedBy: userId,
+            };
+          }),
+        );
+      }
+
       return inserted;
     });
 
@@ -1035,8 +1096,23 @@ export class RetailService {
     // changes while supporting item-level operations. The items are
     // also exposed via the detail endpoint by parsing from remark.
 
-    // Get items from remark (set during create)
-    const returnItems = this.parseReturnItemsFromRemark(returnRow.remark);
+    // Get items: 优先读明细表（迁移 0057 起为权威来源）；
+    // 若明细表为空（历史单据尚未回填），回退解析 remark 编码，双保险不丢数据。
+    let returnItems: Array<{ retailItemId: string; quantity: number }> = [];
+    const persistedItems = await this.db
+      .select({
+        retailItemId: retailReturnItem.retailItemId,
+        quantity: retailReturnItem.quantity,
+      })
+      .from(retailReturnItem)
+      .where(eq(retailReturnItem.returnId, id));
+    if (persistedItems.length > 0) {
+      returnItems = persistedItems
+        .filter((i) => i.retailItemId != null)
+        .map((i) => ({ retailItemId: i.retailItemId as string, quantity: Number(i.quantity) }));
+    } else {
+      returnItems = this.parseReturnItemsFromRemark(returnRow.remark);
+    }
     if (returnItems.length === 0) {
       // Fallback: restock all original items (whole-order return)
       // (Should not happen if createReturn was used, but safe fallback)

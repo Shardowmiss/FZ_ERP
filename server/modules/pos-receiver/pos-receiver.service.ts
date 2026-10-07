@@ -8,7 +8,7 @@ import {
   DRIZZLE_DATABASE,
   type PostgresJsDatabase,
 } from '@lark-apaas/fullstack-nestjs-core';
-import { eq, and, sql, inArray, desc } from 'drizzle-orm';
+import { eq, and, sql, inArray, desc, like } from 'drizzle-orm';
 import {
   store,
   warehouse,
@@ -21,6 +21,8 @@ import {
   posDailySettle,
   retailOrder,
   retailOrderItem,
+  retailReturn,
+  retailReturnItem,
   inventoryStocktake,
   inventoryStocktakeItem,
   sku,
@@ -28,10 +30,12 @@ import {
 import { bulkInsert } from '@server/common/batch';
 import { randomUUID } from 'node:crypto';
 import { MemberWalletService } from '@server/modules/member/member-wallet.service';
+import { StockService } from '@server/modules/inventory/stock/stock.service';
 import type {
   PosSalesPayload,
   PosStocktakePayload,
   PosReturnPayload,
+  PosReturnItemPayload,
   PosRequisitionPayload,
   PosEodPayload,
   PosReceiveResult,
@@ -70,6 +74,26 @@ function isUniqueViolation(e: unknown): boolean {
   return !!err.message && /duplicate key/i.test(err.message);
 }
 
+/**
+ * 拼接上行零售单的 remark：业务备注 + POS 原始单号留痕。
+ *
+ * POS 退货上行时需按原销售单定位 ERP 零售单，pos_receive_log 虽可反查，
+ * 但零售单自身留痕 POS 单号可让双向对账、退货对账与报表口径都无需跨表联查。
+ * 格式固定为 `[POS:{posDocNo}]`，解析见 extractPosOrderNoFromRemark。
+ */
+function buildSalesRemark(remark: unknown, posDocNo: string): string {
+  const base = remark ? String(remark) : '';
+  const tag = `[POS:${posDocNo}]`;
+  return base ? `${tag} ${base}` : tag;
+}
+
+/** 从零售单 remark 中提取 POS 原始单号；非上行单据返回 null */
+export function extractPosOrderNoFromRemark(remark: string | null | undefined): string | null {
+  if (!remark) return null;
+  const m = remark.match(/^\[POS:([^\]]+)\]/);
+  return m ? m[1] : null;
+}
+
 @Injectable()
 export class PosReceiverService {
   private readonly logger = new Logger(PosReceiverService.name);
@@ -77,6 +101,7 @@ export class PosReceiverService {
   constructor(
     @Inject(DRIZZLE_DATABASE) private readonly db: PostgresJsDatabase,
     private readonly walletService: MemberWalletService,
+    private readonly stockService: StockService,
   ) {}
 
   /* ---------------- S3 会员钱包：POS 上行积分/储值事件入账 ---------------- */
@@ -384,8 +409,13 @@ export class PosReceiverService {
         payMethods:
           (payload.payMethods ?? payload.pay_methods ?? []) as unknown as object,
         itemCount: items.length,
-        status: 'completed',
-        remark: payload.remark ? String(payload.remark) : null,
+        // 受 ck_retail_order_status 约束（迁移 0054 收紧为
+        // draft/settled/returned/refunded）。POS 上行的是**已结算**零售单，
+        // 故用 settled 而非历史的 completed——后者已被约束拒绝，会导致上行全盘失败。
+        status: 'settled',
+        // 留痕 POS 原始单号：便于双向对账与后续 POS 退货按原单定位
+        // （pos_receive_log 亦可反查，但零售单自身留痕更利于排查与报表）。
+        remark: buildSalesRemark(payload.remark, posDocNo),
       });
       if (items.length) {
         await bulkInsert(
@@ -431,7 +461,10 @@ export class PosReceiverService {
         warehouseName: resolved.warehouseName ?? '',
         stocktakeDate: toDate(payload.stocktakeDate ?? payload.stocktake_date),
         itemType: 'sku', // 受 ck_inventory_stocktake_item_type 约束
-        status: 'completed',
+        // 受 ck_inventory_stocktake_status 约束（迁移 0056 收紧为
+        // draft/approved/posted）。POS 上行的是门店**已完成**盘点并已调账的结果，
+        // 故直接落终态 posted，跳过 ERP 侧的草稿→审核→过账流程。
+        status: 'posted',
         remark: payload.remark ? String(payload.remark) : null,
       });
       if (items.length) {
@@ -502,7 +535,183 @@ export class PosReceiverService {
           })),
         );
       }
+
+      /* --------- 接入 ERP 真实零售退货体系（本次打通的核心） ---------
+       * 此前 POS 退货只落 pos_return 影子表：库存不回库、退货金额不进零售报表，
+       * 导致「门店卖了又退」这条链路在 ERP 侧完全不可见。
+       * 现在额外生成真实 retail_return + retail_return_item（迁移 0057），
+       * 并通过 StockService 把货回补到门店仓，使零售退货闭环。
+       *
+       * 定位原零售单的顺序：
+       *   ① 直接按 POS 销售单号反查 pos_receive_log（权威映射）
+       *   ② 兜底按 [POS:xxx] 标记扫零售单 remark（兼容历史数据）
+       * 定位不到则跳过真实退货落库，仅保留影子记录——不因单笔缺原单而整体失败。
+       */
+      const posOrderNo = String(payload.posOrderNo ?? payload.pos_order_no ?? '');
+      if (posOrderNo && resolved.warehouseId) {
+        const original = await this.resolveOriginalRetailByPosOrderNo(tx, posOrderNo);
+        if (original) {
+          await this.buildRealRetailReturn(tx, {
+            erpNo,
+            posReturnNo: posDocNo,
+            originalRetail: original,
+            storeId: resolved.storeId,
+            storeName: resolved.storeName ?? '',
+            warehouseId: resolved.warehouseId,
+            warehouseName: resolved.warehouseName ?? '',
+            returnDate: toDate(payload.returnDate ?? payload.return_date),
+            totalAmount: num(payload.totalAmount ?? payload.total_amount),
+            reason: payload.reason ? String(payload.reason) : null,
+            remark: payload.remark ? String(payload.remark) : null,
+            items,
+          });
+        } else {
+          this.logger.warn(
+            `[POS接收] 退货 ${posDocNo} 未找到原销售单 ${posOrderNo}，仅落影子表 pos_return`,
+          );
+        }
+      }
     });
+  }
+
+  /**
+   * 按 POS 销售单号反查 ERP 零售单。
+   * 优先走 pos_receive_log 的权威映射；兜底扫 remark 的 [POS:xxx] 标记。
+   */
+  private async resolveOriginalRetailByPosOrderNo(
+    tx: Tx,
+    posOrderNo: string,
+  ): Promise<typeof retailOrder.$inferSelect | undefined> {
+    const [mapped] = await tx
+      .select({ erpNo: posReceiveLog.erpNo })
+      .from(posReceiveLog)
+      .where(
+        and(
+          eq(posReceiveLog.bizType, 'sales'),
+          eq(posReceiveLog.posDocNo, posOrderNo),
+          eq(posReceiveLog.status, 'success'),
+        ),
+      )
+      .limit(1);
+    if (mapped?.erpNo) {
+      const [row] = await tx
+        .select()
+        .from(retailOrder)
+        .where(eq(retailOrder.retailNo, mapped.erpNo))
+        .limit(1);
+      if (row) return row;
+    }
+    // 兜底：按 remark 标记匹配（上行 sales 自迁移 0058 起写入该标记）
+    const candidates = await tx
+      .select()
+      .from(retailOrder)
+      .where(like(retailOrder.remark, `[POS:${posOrderNo}]%`))
+      .limit(1);
+    return candidates[0];
+  }
+
+  /**
+   * 生成真实零售退货单 + 明细，并把货回补到门店仓库存。
+   *
+   * 与 ERP 侧 retail.service.refundReturn 的差别：POS 上行的是**已完成的退货**
+   * （门店已收银退款、货已确认returned），故直接落终态 refunded 并即时回库，
+   * 不再走 ERP 的 draft → refundReturn 两步流程，避免门店端二次审核。
+   */
+  private async buildRealRetailReturn(
+    tx: Tx,
+    ctx: {
+      erpNo: string;
+      posReturnNo: string;
+      originalRetail: typeof retailOrder.$inferSelect;
+      storeId: string;
+      storeName: string;
+      warehouseId: string;
+      warehouseName: string;
+      returnDate: string;
+      totalAmount?: number | string;
+      reason: string | null;
+      remark: string | null;
+      items: PosReturnItemPayload[];
+    },
+  ): Promise<void> {
+    const { originalRetail, items, warehouseId, warehouseName } = ctx;
+
+    // 取原零售明细，按 SKU 匹配退货行；匹配不到的行仍写入（保留原始行项目）
+    const originalItems = await tx
+      .select()
+      .from(retailOrderItem)
+      .where(eq(retailOrderItem.retailId, originalRetail.id));
+    const origBySku = new Map(
+      originalItems.map((i) => [`${i.skuCode}|${i.color ?? ''}|${i.size ?? ''}`, i]),
+    );
+    const origByCode = new Map(originalItems.map((i) => [i.skuCode, i]));
+
+    const returnId = randomUUID();
+    await tx.insert(retailReturn).values({
+      id: returnId,
+      returnNo: ctx.erpNo,
+      originalRetailId: originalRetail.id,
+      originalRetailNo: originalRetail.retailNo,
+      storeId: ctx.storeId,
+      storeName: ctx.storeName,
+      returnDate: ctx.returnDate,
+      totalAmount: String(num(ctx.totalAmount ?? 0) || this.sumReturnAmount(items)),
+      refundMethods: [],
+      // 门店已完成退款，直接落终态（ck_retail_return_status 为 28 值模板，含 refunded）
+      status: 'refunded',
+      remark: `[POS:${ctx.posReturnNo}] ${ctx.remark ?? ''}`.trim(),
+    });
+
+    const detailRows = items.map((it) => {
+      const skuCode = String(it.skuCode ?? it.sku_code ?? '');
+      const color = it.color ?? null;
+      const size = it.size ?? null;
+      const orig =
+        origBySku.get(`${skuCode}|${color ?? ''}|${size ?? ''}`) ?? origByCode.get(skuCode);
+      const qty = num(it.quantity);
+      const deal = orig?.dealPrice != null ? Number(orig.dealPrice) : null;
+      return {
+        id: randomUUID(),
+        returnId,
+        retailItemId: orig?.id ?? null,
+        skuId: orig?.skuId ?? null,
+        skuCode,
+        styleNo: String(it.styleNo ?? it.style_no ?? orig?.styleNo ?? ''),
+        color: color ?? orig?.color ?? null,
+        size: size ?? orig?.size ?? null,
+        quantity: String(qty),
+        tagPrice: orig?.tagPrice != null ? String(orig.tagPrice) : null,
+        dealPrice: orig?.dealPrice != null ? String(orig.dealPrice) : null,
+        lineAmount: String(num(it.amount) || (deal != null ? Math.round(deal * qty * 100) / 100 : 0)),
+        reason: ctx.reason,
+        remark: 'POS上行退货',
+      };
+    });
+    if (detailRows.length) {
+      await bulkInsert(tx, retailReturnItem, detailRows);
+    }
+
+    // 回补门店仓库存（POS 退货已确认收货，须真实增加库存）
+    const stockChanges = detailRows
+      .filter((r) => r.skuId && Number(r.quantity) > 0)
+      .map((r) => ({
+        warehouseId,
+        warehouseName,
+        skuId: r.skuId as string,
+        itemType: 'sku' as const,
+        qtyDelta: Number(r.quantity),
+        flowType: 'retail_return_in' as const,
+        bizNo: ctx.erpNo,
+        remark: `POS上行零售退货入库: ${ctx.posReturnNo}`,
+      }));
+    if (stockChanges.length) {
+      await this.stockService.batchChangeStock(tx, stockChanges as never);
+    }
+  }
+
+  /** POS 退货明细金额合计（payload 未带 totalAmount 时兜底计算） */
+  private sumReturnAmount(items: PosReturnItemPayload[]): number {
+    return items.reduce((sum, it) => sum + num(it.amount), 0);
   }
 
   receiveTransferRequest(

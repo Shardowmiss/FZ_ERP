@@ -1250,7 +1250,7 @@ export interface RetailReturn {
   status: string;
   remark?: string;
   createdAt: string;
-  items?: { retailItemId: string; skuId: string; skuCode: string; color?: string; size?: string; quantity: number; dealPrice: number; amount: number }[];
+  items?: { retailItemId: string; skuId: string; skuCode: string; color?: string; size?: string; quantity: number; dealPrice: number; amount: number; reason?: string }[];
 }
 
 export interface RetailReportSummary {

@@ -1687,6 +1687,46 @@ export const retailOrderItem = pgTable("retail_order_item", {
   index("idx_retail_item_retail_id").on(table.retailId),
 ]);
 
+/**
+ * 零售退货明细（迁移 0057 补齐）
+ *
+ * 此前退货行项目被 JSON 编码进 retail_return.remark（前缀 __return_items__），
+ * 退款时再解析回库。该设计下 remark 一旦被业务覆盖即丢失退货明细，
+ * 且无法按 SKU/颜色/尺码统计退货率、无法对原零售明细做外键校验。
+ * 本表补齐后 remark 仅保留业务备注文本。
+ *
+ * 字段冗余原零售明细（sku/价格等），使退货报表无需 JOIN 原单即可统计，
+ * 也避免原单明细被修改后历史退货金额失真。
+ */
+export const retailReturnItem = pgTable("retail_return_item", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  returnId: uuid("return_id").notNull().references(() => retailReturn.id, { onDelete: "cascade" }),
+  /** 来源零售明细；原单行被删时置 NULL，保留历史退货记录 */
+  retailItemId: uuid("retail_item_id").references(() => retailOrderItem.id, { onDelete: "set null" }),
+  skuId: uuid("sku_id"),
+  skuCode: varchar("sku_code", { length: 100 }),
+  styleNo: varchar("style_no", { length: 100 }),
+  color: varchar("color", { length: 50 }),
+  size: varchar("size", { length: 50 }),
+  quantity: numeric("quantity", { precision: 18, scale: 3 }).notNull(),
+  tagPrice: numeric("tag_price", { precision: 18, scale: 2 }),
+  dealPrice: numeric("deal_price", { precision: 18, scale: 2 }),
+  lineAmount: numeric("line_amount", { precision: 18, scale: 2 }),
+  reason: varchar("reason", { length: 200 }),
+  remark: text("remark"),
+  // System field: Creation time (auto-filled, do not modify)
+  createdAt: customTimestamptz("_created_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  createdBy: userProfile("_created_by"),
+  // System field: Update time (auto-filled, do not modify)
+  updatedAt: customTimestamptz("_updated_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedBy: userProfile("_updated_by"),
+}, (table) => [
+  index("idx_retail_return_item_return").on(table.returnId),
+  index("idx_retail_return_item_retail_item").on(table.retailItemId),
+  index("idx_retail_return_item_sku").on(table.skuId),
+  index("idx_retail_return_item_reason").on(table.reason),
+]);
+
 export const retailOrder = pgTable("retail_order", {
   id: uuid("id").primaryKey().defaultRandom(),
   retailNo: varchar("retail_no", { length: 32 }).notNull().unique(),
