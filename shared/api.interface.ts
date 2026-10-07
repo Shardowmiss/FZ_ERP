@@ -39,6 +39,22 @@ export interface Size {
   name: string;
   sortOrder: number;
   status: string;
+  /**
+   * 服装人体尺寸基准（迁移 0051，对齐 GB/T 1335 常用成人号型）：
+   * 用于按顾客体型推荐尺码、核对缩水后尺寸变化、关联尺码表。
+   * 同一尺码在不同款式可由款号覆盖；null 表示该维度不适用
+   * （如均码无胸腰臀、上衣不填裤内长）。
+   */
+  bodyHeight?: number | null; // 人体身高 cm
+  bodyWeight?: number | null; // 人体体重 kg
+  chest?: number | null;       // 胸围 cm
+  waist?: number | null;       // 腰围 cm
+  hip?: number | null;         // 臀围 cm
+  shoulder?: number | null;    // 肩宽 cm
+  neck?: number | null;        // 领围 cm
+  sleeve?: number | null;      // 袖长 cm
+  lengthCm?: number | null;    // 衣长 cm
+  inseam?: number | null;      // 裤内长 cm
   remark?: string;
   createdAt: string;
 }

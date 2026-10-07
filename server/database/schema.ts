@@ -4079,6 +4079,22 @@ export const size = pgTable("size", {
   name: varchar("name", { length: 100 }).notNull(),
   sortOrder: integer("sort_order").notNull().default(0),
   status: varchar("status", { length: 20 }).notNull().default('active'),
+  // 服装人体尺寸维度（迁移 0051）：
+  //   此前 size 仅有 code/name，尺码只能作为纯字符串码，无法按顾客体型推荐尺码、
+  //   无法核对面料缩水后成衣尺寸变化、无法关联尺码表。
+  //   以下为「号」体系基准值（对齐 GB/T 1335 常用成人号型），
+  //   同一尺码在不同款式可由 style 覆盖；NULL 表示该维度不适用
+  //   （如均码无胸腰臀、上衣不填裤内长）。
+  bodyHeight: numeric("body_height", { precision: 5, scale: 1 }), // 人体身高 cm
+  bodyWeight: numeric("body_weight", { precision: 5, scale: 1 }), // 人体体重 kg
+  chest: numeric("chest", { precision: 5, scale: 1 }),           // 胸围 cm
+  waist: numeric("waist", { precision: 5, scale: 1 }),           // 腰围 cm
+  hip: numeric("hip", { precision: 5, scale: 1 }),               // 臀围 cm
+  shoulder: numeric("shoulder", { precision: 5, scale: 1 }),     // 肩宽 cm
+  neck: numeric("neck", { precision: 5, scale: 1 }),             // 领围 cm
+  sleeve: numeric("sleeve", { precision: 5, scale: 1 }),         // 袖长 cm
+  lengthCm: numeric("length_cm", { precision: 5, scale: 1 }),    // 衣长 cm
+  inseam: numeric("inseam", { precision: 5, scale: 1 }),         // 裤内长 cm
   remark: text("remark"),
   // System field: Creation time (auto-filled, do not modify)
   createdAt: customTimestamptz("_created_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
@@ -4091,6 +4107,9 @@ export const size = pgTable("size", {
 }, (table) => [
   uniqueIndex("size_code_key").on(table.code),
   index("idx_size_status").on(table.status),
+  // 人体尺寸索引（迁移 0051）：按身高/体重区间筛尺码（体型推荐核心查询）
+  index("idx_size_body_height").on(table.bodyHeight),
+  index("idx_size_body_weight").on(table.bodyWeight),
 ]);
 
 // ---------------------------------------------------------------------------

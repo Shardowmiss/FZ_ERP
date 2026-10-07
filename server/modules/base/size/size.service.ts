@@ -28,6 +28,17 @@ export class SizeService extends BaseCrudService<
       name: row.name,
       sortOrder: Number(row.sortOrder ?? 0),
       status: row.status,
+      // 服装人体尺寸（迁移 0051）：null 表示该维度不适用（如均码、上衣无裤内长）
+      bodyHeight: row.bodyHeight != null ? Number(row.bodyHeight) : null,
+      bodyWeight: row.bodyWeight != null ? Number(row.bodyWeight) : null,
+      chest: row.chest != null ? Number(row.chest) : null,
+      waist: row.waist != null ? Number(row.waist) : null,
+      hip: row.hip != null ? Number(row.hip) : null,
+      shoulder: row.shoulder != null ? Number(row.shoulder) : null,
+      neck: row.neck != null ? Number(row.neck) : null,
+      sleeve: row.sleeve != null ? Number(row.sleeve) : null,
+      lengthCm: row.lengthCm != null ? Number(row.lengthCm) : null,
+      inseam: row.inseam != null ? Number(row.inseam) : null,
       remark: row.remark ?? undefined,
       createdAt: row.createdAt.toISOString(),
     };
