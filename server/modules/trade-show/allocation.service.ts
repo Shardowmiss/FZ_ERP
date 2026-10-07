@@ -1044,7 +1044,10 @@ export class AllocationService {
           tx,
           inventoryStock,
           inTransitRows,
-          [inventoryStock.skuId, inventoryStock.warehouseId],
+          // 冲突目标须与唯一索引 idx_inventory_stock_sku_wh_type 一致
+          // （含 stockType，迁移 0048 起），否则订货会配货审核会报
+          // "no unique or exclusion constraint matching the ON CONFLICT specification"。
+          [inventoryStock.skuId, inventoryStock.warehouseId, inventoryStock.stockType],
           { inTransitQty: sql`${inventoryStock.inTransitQty} + EXCLUDED.in_transit_qty` },
         );
       }

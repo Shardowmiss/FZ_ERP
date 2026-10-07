@@ -555,7 +555,11 @@ export class InventoryTransferService {
             tx,
             inventoryStock,
             [...inTransitMap.values()],
-            [inventoryStock.skuId, inventoryStock.warehouseId],
+            // 冲突目标须与唯一索引 idx_inventory_stock_sku_wh_type 一致
+            // （含 stockType，迁移 0048 起）。若沿用旧的 (skuId, warehouseId)
+            // 会报 "there is no unique or exclusion constraint matching
+            // the ON CONFLICT specification"，导致调拨审核失败。
+            [inventoryStock.skuId, inventoryStock.warehouseId, inventoryStock.stockType],
             {
               inTransitQty: sql`${inventoryStock.inTransitQty} + EXCLUDED.in_transit_qty`,
             },
