@@ -368,12 +368,16 @@ export class RealErpAdapter {
   }
 
   private upstreamPath(bizType: string): string {
+    // ERP 接收端控制器为 @Controller('api/pos-receiver')，故必须带完整前缀。
+    // ⚠ 原实现只拼 '/sales'，实际请求打到 {base}/sales（缺 /api/pos-receiver 段），
+    //   ERP 返回 404 "Cannot POST /client/sales"，且重试 3 次全部失败——
+    //   即上行从未真正成功过。现按 ERP 侧真实路由补全前缀。
     const map: Record<string, string> = {
-      sales: '/sales',
-      returns: '/returns',
-      stocktakes: '/stocktakes',
-      transfer_requests: '/transfer-requests',
-      eod: '/eods',
+      sales: '/api/pos-receiver/sales',
+      returns: '/api/pos-receiver/returns',
+      stocktakes: '/api/pos-receiver/stocktakes',
+      transfer_requests: '/api/pos-receiver/transfer-requests',
+      eod: '/api/pos-receiver/eods',
     };
     const path = map[bizType];
     if (!path) {

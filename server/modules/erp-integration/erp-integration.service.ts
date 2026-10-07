@@ -22,7 +22,6 @@ import {
 } from '@server/database/schema';
 import { eq, and, count, desc, sql, gte, lte, inArray, or, isNull } from 'drizzle-orm';
 import { chunk, BATCH_SIZE } from '@server/common/batch';
-import { MockErpService } from './mock-erp.service';
 import { RealErpAdapter } from './real-erp.adapter';
 import { PromotionSyncService } from './promotion-sync.service';
 import type {
@@ -40,7 +39,7 @@ import type {
  * 适配器新增/改名列时这里会跟着变，避免两处定义漂移。
  */
 type ErpMemberFeedRow = Awaited<
-  ReturnType<MockErpService['getMembers']>
+  ReturnType<RealErpAdapter['getMembers']>
 >['members'][number];
 
 /** 被隔离的冲突行（只跳过自己，不影响同批其余会员） */
@@ -69,7 +68,6 @@ export class ErpIntegrationService {
 
   constructor(
     @Inject(DRIZZLE_DATABASE) private readonly db: PostgresJsDatabase,
-    private readonly mockErpService: MockErpService,
     private readonly realErpAdapter: RealErpAdapter,
     private readonly promotionSync: PromotionSyncService,
     ) {
@@ -77,7 +75,7 @@ export class ErpIntegrationService {
   }
 
   async getConnectionStatus(): Promise<ErpConnectionStatus> {
-    const connected = this.mockErpService.isConnected();
+    const connected = this.realErpAdapter.isConnected();
 
     // 统计同步状态
     const [downstreamResult, upstreamPendingResult, upstreamFailedResult] =
@@ -117,7 +115,7 @@ export class ErpIntegrationService {
   }
 
   async toggleConnection(online: boolean, operatorId?: string | null): Promise<ErpConnectionStatus> {
-    this.mockErpService.setConnected(online);
+    this.realErpAdapter.setConnected(online);
     // P0-2：ERP 连接开关审计
     await auditAction(this.db, {
       storeId: null,
@@ -201,11 +199,11 @@ export class ErpIntegrationService {
     try {
       switch (type) {
         case 'styles': {
-          const data = await this.mockErpService.getStyles();
+          const data = await this.realErpAdapter.getStyles();
           count = data.total;
           // P1-4：整批主数据写入包在一个事务里；中途任一步失败整体回滚，
           // 避免「颜色已写、款式写到一半崩溃」留下半成品主数据。
-          // 注意：mockErpService.getStyles() 的网络调用在事务外，避免长事务。
+          // 注意：realErpAdapter.getStyles() 的网络调用在事务外，避免长事务。
           // P1-5：原先颜色/尺码/款式/SKU 在循环内逐行 insert（N+1 写尖峰），
           // 在百店全量同步时形成海量往返；改为分批批量 upsert（每批 BATCH_SIZE）。
           await this.db.transaction(async (tx) => {
@@ -320,7 +318,7 @@ export class ErpIntegrationService {
           break;
         }
         case 'members': {
-          const data = await this.mockErpService.getMembers();
+          const data = await this.realErpAdapter.getMembers();
           const r = await this.syncMembersDownstream(data.members ?? []);
           count = r.upserted;
           response =
@@ -335,13 +333,17 @@ export class ErpIntegrationService {
           break;
         }
         case 'stock': {
-          const data = await this.mockErpService.getStock('default');
+          // 传空串 = 拉取**全部**门店仓库存（RealErpAdapter 内按 truthy 判断走无 WHERE 分支）。
+          // ⚠ 此前硬编码 'default'，而 ERP 门店仓 code 实为 ST-D01-WH/ST-D02-WH 等，
+          //   并无 'default' 这个仓 → 该分支永远返回 0 条，库存下行形同虚设。
+          const data = await this.realErpAdapter.getStock('');
           count = data.length;
           response = `同步 ${data.length} 条库存成功`;
           break;
         }
         case 'transfers': {
-          const data = await this.mockErpService.getTransfers('default');
+          // 同上：空串 = 全部门店仓的调拨单（目的仓为门店仓的成衣到店单）。
+          const data = await this.realErpAdapter.getTransfers('');
           // P1-1a：调拨单为门店维度（toLocation→门店 code 映射），且需 pos_transfer_request
           // 增加 erpNo 来源键做幂等。故暂保持「读取即记录日志」，不落库；待引入门店维度后补齐。
           count = data.length;
@@ -349,7 +351,7 @@ export class ErpIntegrationService {
           break;
         }
         case 'prices': {
-          const data = await this.mockErpService.getPrices();
+          const data = await this.realErpAdapter.getPrices();
           // P1-1a：由「仅 count」改为真实更新 pos_style 款级价格（styleId 幂等）。
           // 价格源为 SKU 级，pos_style 仅存款级，按 styleId 聚合取末值。
           if (data.length > 0) {
