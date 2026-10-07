@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Download, ChevronDown, ChevronUp } from 'lucide-react';
+import { Search, Download, ChevronDown, ChevronUp, Save, History, Trash2 } from 'lucide-react';
 import type { PivotDataSource } from '@shared/api.interface';
 
 interface ToolbarProps {
@@ -32,6 +32,14 @@ interface ToolbarProps {
   onExport?: () => void;
   dataSourceOptions: { value: PivotDataSource; label: string }[];
   templateOptions: { name: string }[];
+  /** 保存为我的模板（迁移 0060） */
+  onSaveMyTemplate: () => void;
+  /** 恢复我最后一次查询 */
+  onRestoreLastQuery: () => void;
+  /** 删除当前选中的我的模板（系统预置模板不可删，故需该集合判断） */
+  onDeleteMyTemplate: () => void;
+  /** 我的模板名集合——用于决定「删除」按钮是否可用 */
+  myTemplateNames: string[];
 }
 
 const labelCls = 'text-xs text-gray-500 mr-1 flex-shrink-0';
@@ -69,6 +77,10 @@ export function Toolbar({
   onExport,
   dataSourceOptions,
   templateOptions,
+  onSaveMyTemplate,
+  onRestoreLastQuery,
+  onDeleteMyTemplate,
+  myTemplateNames,
 }: ToolbarProps) {
   const [expanded, setExpanded] = useState(false);
 
@@ -117,6 +129,32 @@ export function Toolbar({
               </option>
             ))}
           </select>
+          {/* 保存为我的模板：把当前行列/指标/筛选/时间窗存成个人模板，仅自己可见 */}
+          <button
+            onClick={onSaveMyTemplate}
+            title="保存为我的模板"
+            className="px-2 py-1 border border-gray-300 text-gray-700 text-xs rounded hover:bg-gray-50 transition-colors flex items-center gap-1 h-7 ml-1"
+          >
+            <Save size={13} /> 保存
+          </button>
+          {/* 恢复我最后一次查询（自动记录，无需手动保存） */}
+          <button
+            onClick={onRestoreLastQuery}
+            title="恢复我上一次查询"
+            className="px-2 py-1 border border-gray-300 text-gray-700 text-xs rounded hover:bg-gray-50 transition-colors flex items-center gap-1 h-7 ml-1"
+          >
+            <History size={13} /> 上次
+          </button>
+          {/* 仅当选中的是「我的模板」时才可删，系统预置模板不提供删除 */}
+          {myTemplateNames.includes(templateName) && (
+            <button
+              onClick={onDeleteMyTemplate}
+              title="删除我的模板"
+              className="px-2 py-1 border border-gray-300 text-red-600 text-xs rounded hover:bg-red-50 transition-colors flex items-center gap-1 h-7 ml-1"
+            >
+              <Trash2 size={13} />
+            </button>
+          )}
         </div>
 
         <div className="flex-1" />

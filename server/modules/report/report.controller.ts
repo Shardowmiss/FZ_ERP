@@ -1,6 +1,8 @@
-import { Controller, Get, Post, Body, Query } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Body, Query, Param, Req } from '@nestjs/common';
 import { NeedLogin } from '@lark-apaas/fullstack-nestjs-core';
+import type { Request } from 'express';
 import { ReportService } from './report.service';
+import { PivotTemplateService } from './pivot-template.service';
 import type {
   ReportPurchaseItem,
   ReportSalesItem,
@@ -50,7 +52,10 @@ interface StockMovementReportResponse {
 @NeedLogin()
 @Controller('api/report')
 export class ReportController {
-  constructor(private readonly reportService: ReportService) {}
+  constructor(
+    private readonly reportService: ReportService,
+    private readonly pivotTemplateService: PivotTemplateService,
+  ) {}
 
   @Get('purchase')
   async purchaseReport(
@@ -205,5 +210,58 @@ export class ReportController {
   @Post('pivot')
   async pivot(@Body() body: PivotConfig): Promise<PivotResponse> {
     return this.reportService.getPivotData(body);
+  }
+
+  /* ============ 透视个人模板（迁移 0060） ============
+   * 全部接口按 req.userContext.userId 做 owner 隔离：
+   * 只能读写自己的模板，DB 层 where 恒带 owner 条件，不存在越权可能。
+   */
+
+  /** 我的模板列表（含「最后一次查询」标记，最近更新在前） */
+  @CheckPermission('report:pivot')
+  @Get('pivot/templates')
+  async listPivotTemplates(@Req() req: Request) {
+    return this.pivotTemplateService.listMine(req.userContext.userId);
+  }
+
+  /** 保存为我的模板（同名则覆盖，便于「调好参数存回原模板」） */
+  @CheckPermission('report:pivot')
+  @Post('pivot/templates')
+  async savePivotTemplate(
+    @Req() req: Request,
+    @Body() body: { name: string; config: PivotConfig; remark?: string },
+  ) {
+    return this.pivotTemplateService.save(req.userContext.userId, body);
+  }
+
+  /** 记住我最后一次查询（每次查询后调用，自动覆盖旧的） */
+  @CheckPermission('report:pivot')
+  @Post('pivot/templates/last')
+  async rememberPivotLastQuery(
+    @Req() req: Request,
+    @Body() body: PivotConfig,
+  ) {
+    return this.pivotTemplateService.rememberLastQuery(
+      req.userContext.userId,
+      body,
+    );
+  }
+
+  /** 恢复我最后一次查询；从未记录过返回 null（前端走默认，不报错） */
+  @CheckPermission('report:pivot')
+  @Get('pivot/templates/last')
+  async getPivotLastQuery(@Req() req: Request) {
+    return this.pivotTemplateService.getLastQuery(req.userContext.userId);
+  }
+
+  /** 删除我的模板（owner 条件在 where 内，越权会得到「不存在」） */
+  @CheckPermission('report:pivot')
+  @Delete('pivot/templates/:id')
+  async deletePivotTemplate(
+    @Req() req: Request,
+    @Param('id') id: string,
+  ) {
+    await this.pivotTemplateService.remove(req.userContext.userId, id);
+    return { success: true };
   }
 }

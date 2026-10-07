@@ -1727,6 +1727,40 @@ export const retailReturnItem = pgTable("retail_return_item", {
   index("idx_retail_return_item_reason").on(table.reason),
 ]);
 
+/**
+ * 透视分析个人模板（迁移 0060）
+ *
+ * 此前透视「模板」是前端硬编码常量（pivot-utils.ts 的 TEMPLATES），业务人员
+ * 无法保存自己的分析格式、刷新即丢失。本表提供两个能力：
+ *   1) 保存为我的模板：仅 owner 可见/可用/可删，不同用户可同名；
+ *   2) 记住我最后一次查询：is_last_used 标记，每用户至多一条，自动覆盖。
+ *
+ * config 用 jsonb 存完整查询配置——透视结构会随语义层演进而增字段，
+ * jsonb 免迁移；仅把 dataSource 抽为列供列表过滤排序。
+ */
+export const reportPivotTemplate = pgTable("report_pivot_template", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  ownerUserId: userProfile("owner_user_id").notNull(),
+  name: varchar("name", { length: 100 }).notNull(),
+  /** 完整查询配置：dataSource/rows/cols/values/filters/时间窗/排序 */
+  config: jsonb("config").notNull(),
+  dataSource: varchar("data_source", { length: 50 }).notNull(),
+  /** 是否为「我最后一次查询」；DB 层用部分唯一索引保证每用户至多一条 */
+  isLastUsed: boolean("is_last_used").notNull().default(false),
+  remark: text("remark"),
+  // System field: Creation time (auto-filled, do not modify)
+  createdAt: customTimestamptz("_created_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  createdBy: userProfile("_created_by"),
+  // System field: Update time (auto-filled, do not modify)
+  updatedAt: customTimestamptz("_updated_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedBy: userProfile("_updated_by"),
+}, (table) => [
+  // 同一用户内模板名唯一；不同用户可重名（owner_user_id 在前）
+  uniqueIndex("uk_report_pivot_template_owner_name").on(table.ownerUserId, table.name),
+  // 列表页按「我的模板 + 最近在前」查询
+  index("idx_report_pivot_template_owner_created").on(table.ownerUserId, table.createdAt),
+]);
+
 export const retailOrder = pgTable("retail_order", {
   id: uuid("id").primaryKey().defaultRandom(),
   retailNo: varchar("retail_no", { length: 32 }).notNull().unique(),

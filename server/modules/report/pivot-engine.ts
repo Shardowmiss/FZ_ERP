@@ -33,6 +33,15 @@ interface DataSourceBase {
   joins: string;
   dateCol: string;
   statusCol: string;
+  /**
+   * 该数据源「计入报表」的合法状态集合（权威来源=服务层实际写入值）。
+   *
+   * 为什么不写死成 `= 'approved'`：本项目已两次踩过报表口径与写入侧枚举不匹配的坑
+   * ——#751 零售开单被 CHECK 阻断、#753 零售透视因过滤 `approved` 导致 97.6% 数据不可见。
+   * 把合法状态显式声明在此处，口径可审计、可对账，且新增状态时只需改这一处。
+   * 空数组表示该数据源不做状态过滤（如 inventory_stock 是快照表，本无状态概念）。
+   */
+  validStatuses: string[];
   storeIdCol: string;
   aliasMap: Record<string, string>;
   valueColMap: Record<string, string>;
@@ -45,12 +54,20 @@ interface PivotFieldWhitelist {
 
 const TIME_DIMENSIONS = ['date', 'year', 'month', 'quarter', 'week', 'day'];
 
+/**
+ * 零售单计入报表的合法状态（权威同源：retail-report.service.ts 的 activeStatuses）。
+ * 抽取为常量是为了让「透视口径」与「零售报表口径」显式对齐——此前二者不一致，
+ * 导致透视表漏掉全部 settled 零售数据。凡改动此处，须同步核对 retail-report.service.ts。
+ */
+const RETAIL_ACTIVE_STATUSES = ['settled', 'returned'];
+
 function getDataSourceBase(dataSource: PivotDataSource): DataSourceBase {
   const empty: DataSourceBase = {
     fromTable: '',
     joins: '',
     dateCol: '',
     statusCol: '',
+    validStatuses: [],
     storeIdCol: '',
     aliasMap: {},
     valueColMap: {},
@@ -63,6 +80,8 @@ function getDataSourceBase(dataSource: PivotDataSource): DataSourceBase {
       base.joins = 'INNER JOIN garment_purchase_inbound gpi ON gpis.inbound_id = gpi.id LEFT JOIN style st ON gpis.style_id = st.id';
       base.dateCol = 'gpi.inbound_date';
       base.statusCol = 'gpi.status';
+      // purchase-inbound.service.ts 实际写入 draft/approved；入库单以 approved 为有效态
+      base.validStatuses = ['approved'];
       base.aliasMap = {
         brand: 'st.brand',
         category: 'st.category',
@@ -102,6 +121,11 @@ function getDataSourceBase(dataSource: PivotDataSource): DataSourceBase {
       base.joins = 'INNER JOIN inventory_transfer it ON iti.transfer_id = it.id LEFT JOIN sku s ON iti.sku_id = s.id LEFT JOIN style st ON s.style_id = st.id';
       base.dateCol = 'it.transfer_date';
       base.statusCol = 'it.status';
+      // inventory-transfer.service.ts 实际写入 draft/in_transit/completed/accepted/cancelled。
+      // 原实现硬编码 = 'approved'，而该值在 inventory_transfer 中根本不存在（0 行），
+      // 导致 15 单 completed 调拨全部不可见。此处按「已完成调账」口径取 completed + accepted，
+      // 排除草稿/在途/已取消（与 inventory_stock.status 的合法枚举一致）。
+      base.validStatuses = ['completed', 'accepted'];
       base.aliasMap = {
         brand: 'st.brand',
         category: 'st.category',
@@ -384,8 +408,18 @@ export class PivotEngineService {
 
     const whereParts: SQL[] = [];
 
-    if (ds.statusCol) {
-      whereParts.push(sql`${sql.raw(ds.statusCol)} = 'approved'`);
+    if (ds.statusCol && ds.validStatuses.length > 0) {
+      // 口径改为「按数据源声明的合法状态集合」，不再硬编码 = 'approved'。
+      // 这修复了 purchase / transfer 两个数据源：'approved' 在
+      // garment_purchase_inbound（仅 approved 有效）与 inventory_transfer
+      // （枚举为 draft/in_transit/completed/accepted/cancelled）中并非都成立，
+      // 原实现导致 transfer 的 15 单 completed 全部不可见。
+      whereParts.push(
+        sql`${sql.raw(ds.statusCol)} IN (${sql.join(
+          ds.validStatuses.map((s: string) => sql`${s}`),
+          sql`, `,
+        )})`,
+      );
     }
     // P1-c④ 强制时间窗：透视是全表 GROUP BY，无界时 `ORDER BY ... LIMIT ${maxRows}`
     // 也救不了——必须先把扫描范围限制在时间窗内。win 已在函数开头算好（sales 分支共用）。
@@ -538,7 +572,12 @@ export class PivotEngineService {
       retailValSelects.push(sql`${expr}::numeric as ${sql.identifier(vKey)}`);
     }
 
-    const retailWhereParts: SQL[] = [sql`ro.status = 'approved'`];
+    // 零售口径：与 retail-report.service.ts:75 的 activeStatuses 保持一致（settled/returned）。
+    // 原为 = 'approved'，而 retail_order 实际写入 draft/settled/returned/refunded，
+    // 'approved' 库中 0 行 → 596 单 / 115.8 万元对透视表全部不可见（漏 97.6%）。
+    const retailWhereParts: SQL[] = [
+      sql`ro.status IN (${sql.join(RETAIL_ACTIVE_STATUSES.map((s: string) => sql`${s}`), sql`, `)})`,
+    ];
     if (win) {
       retailWhereParts.push(sql`ro.sale_date >= ${win.start}`);
       retailWhereParts.push(sql`ro.sale_date < ${win.endExclusive}`);

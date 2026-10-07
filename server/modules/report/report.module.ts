@@ -9,6 +9,7 @@ import { ReportInventoryService } from './report-inventory.service';
 import { ReportTransferService } from './report-transfer.service';
 import { ReportStockMovementService } from './report-stock-movement.service';
 import { PivotEngineService } from './pivot-engine';
+import { PivotTemplateService } from './pivot-template.service';
 
 /**
  * 报表模块。
@@ -28,6 +29,8 @@ import { PivotEngineService } from './pivot-engine';
     ReportTransferService,
     ReportStockMovementService,
     PivotEngineService,
+    // 透视个人模板（迁移 0060）：按 owner 隔离，仅 ReportController 内部使用
+    PivotTemplateService,
   ],
   exports: [ReportService],
 })

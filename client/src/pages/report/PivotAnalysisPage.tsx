@@ -9,6 +9,7 @@ import type {
   PivotAggType,
   PivotConfig,
   PivotRow,
+  PivotTemplateItem,
 } from '@shared/api.interface';
 import { reportApi } from '@client/src/api/report';
 import {
@@ -36,6 +37,8 @@ import { Toolbar } from './pivot-toolbar';
 export default function PivotAnalysisPage() {
   const [dataSource, setDataSource] = useState<PivotDataSource>('sales');
   const [templateName, setTemplateName] = useState<string>('月度销售趋势');
+  /** 我的模板（迁移 0060）。系统预置 TEMPLATES 仍是全局的，个人模板只本人可见。 */
+  const [myTemplates, setMyTemplates] = useState<PivotTemplateItem[]>([]);
   const [rows, setRows] = useState<string[]>(['styleNo']);
   const [cols, setCols] = useState<string[]>(['month']);
   const [values, setValues] = useState<PivotValueConfig[]>([
@@ -73,8 +76,33 @@ export default function PivotAnalysisPage() {
     setStartDate(range.startDate);
     setEndDate(range.endDate);
     fetchData();
+    // 载入我的模板 + 上次查询（迁移 0060）。
+    // 两者失败均静默降级：模板是增强功能，不应阻塞分析主流程。
+    loadMyTemplates();
+    loadLastQuery();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  /**
+   * 把当前界面状态打包为一份 PivotConfig。
+   * 「保存为我的模板」与「记住我最后一次查询」共用此函数——
+   * 两处口径必须一致，否则会出现「存的模板和实际查的不一样」的困惑。
+   */
+  const buildCurrentConfig = useCallback(
+    (): PivotConfig => ({
+      dataSource,
+      filters: filters.map((k) => ({ key: k, values: [] })),
+      rows,
+      cols,
+      values,
+      startDate: startDate || undefined,
+      endDate: endDate || undefined,
+      brand: brand || undefined,
+      storeIds: storeIds.length > 0 ? storeIds : undefined,
+      keyword: keyword || undefined,
+    }),
+    [dataSource, filters, rows, cols, values, startDate, endDate, brand, storeIds, keyword],
+  );
 
   const fetchData = useCallback(async () => {
     if (values.length === 0) {
@@ -83,18 +111,7 @@ export default function PivotAnalysisPage() {
     }
     setLoading(true);
     try {
-      const body: PivotConfig = {
-        dataSource,
-        filters: filters.map((k) => ({ key: k, values: [] })),
-        rows,
-        cols,
-        values,
-        startDate: startDate || undefined,
-        endDate: endDate || undefined,
-        brand: brand || undefined,
-        storeIds: storeIds.length > 0 ? storeIds : undefined,
-        keyword: keyword || undefined,
-      };
+      const body = buildCurrentConfig();
       const res = await reportApi.pivot(body);
 
       if (templateName === '门店销售排行') {
@@ -111,13 +128,16 @@ export default function PivotAnalysisPage() {
         }
       }
       setResponse(res);
+      // 记住我最后一次查询（迁移 0060）：查询成功即记录，业务人员下次打开
+      // 页面可一键恢复，无需手动保存。失败静默——不影响本次分析结果。
+      reportApi.rememberPivotLastQuery(body).catch(() => undefined);
     } catch (e) {
       logger.error('加载透视表失败', e);
       toast.error('加载透视表失败');
     } finally {
       setLoading(false);
     }
-  }, [dataSource, rows, cols, values, filters, startDate, endDate, brand, storeIds, keyword, templateName]);
+  }, [buildCurrentConfig, dataSource, rows, cols, values, filters, startDate, endDate, brand, storeIds, keyword, templateName]);
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -129,16 +149,126 @@ export default function PivotAnalysisPage() {
     };
   }, [dataSource, rows, cols, values, filters, fetchData]);
 
-  const applyTemplate = (name: string) => {
-    const tpl = TEMPLATES.find((t) => t.name === name);
-    if (!tpl) return;
+  /* ========== 模板：系统预置 + 我的模板（迁移 0060） ========== */
+
+  /**
+   * 下拉选项 = 我的模板 + 系统预置。
+   * 我的模板排在前面（业务人员高频使用自己保存的），系统预置加「预置」后缀区分，
+   * 避免同名时用户误以为自己的模板被覆盖。
+   */
+  const mergedTemplates = useMemo(
+    () => [
+      ...myTemplates.map((t) => ({ name: t.name })),
+      ...TEMPLATES.filter((t) => !myTemplates.some((m) => m.name === t.name)).map((t) => ({
+        name: `${t.name}（预置）`,
+        rawName: t.name,
+      })),
+    ],
+    [myTemplates],
+  );
+
+  /**
+   * 从一份查询配置恢复全部界面状态。
+   * 系统预置 TEMPLATES 与个人模板结构一致（都是 PivotConfig 子集），
+   * 故用同一套恢复逻辑，避免两处行为漂移。
+   */
+  const applyConfig = (
+    name: string,
+    tpl: {
+      dataSource: string;
+      rows: string[];
+      cols: string[];
+      values: Array<{ key: string; label: string; agg: string }>;
+      filters?: Array<{ key: string; values: string[] }>;
+      startDate?: string;
+      endDate?: string;
+      brand?: string;
+      keyword?: string;
+    },
+  ) => {
     setTemplateName(name);
-    setDataSource(tpl.dataSource);
-    setRows(tpl.rows);
-    setCols(tpl.cols);
-    setValues(tpl.values);
-    setFilters([]);
+    setDataSource(tpl.dataSource as typeof dataSource);
+    setRows(tpl.rows ?? []);
+    setCols(tpl.cols ?? []);
+    setValues((tpl.values ?? []) as typeof values);
+    setFilters(
+      (tpl.filters ?? []).map((f) => f.key),
+    );
+    // 时间窗：模板里存了就恢复，没存则保留当前选择（避免把用户设的区间清掉）
+    if (tpl.startDate) setStartDate(tpl.startDate);
+    if (tpl.endDate) setEndDate(tpl.endDate);
+    if (tpl.brand !== undefined) setBrand(tpl.brand);
+    if (tpl.keyword !== undefined) setKeyword(tpl.keyword);
   };
+
+  /** 统一入口：系统预置与个人模板共用（按名称查找，个人模板优先） */
+  const applyTemplate = (name: string) => {
+    const mine = myTemplates.find((t) => t.name === name);
+    if (mine) {
+      applyConfig(name, mine.config);
+      return;
+    }
+    const preset = TEMPLATES.find(
+      (t) => t.name === name || `${t.name}（预置）` === name,
+    );
+    if (preset) applyConfig(preset.name, preset);
+  };
+
+  /** 载入「我最后一次查询」；从未保存过则保持默认，不打扰用户 */
+  const loadLastQuery = useCallback(async () => {
+    try {
+      const cfg = await reportApi.getPivotLastQuery();
+      if (cfg) {
+        applyConfig('我最后一次查询', cfg);
+        toast('已恢复上次查询');
+      }
+    } catch {
+      // 恢复失败静默降级：不影响用户正常分析
+    }
+  }, []);
+
+  /** 保存当前配置为我的模板 */
+  const handleSaveTemplate = async (name: string) => {
+    if (!name || !name.trim()) {
+      toast('请输入模板名称');
+      return;
+    }
+    try {
+      await reportApi.savePivotTemplate({ name: name.trim(), config: buildCurrentConfig() });
+      await loadMyTemplates();
+      setTemplateName(name.trim());
+      toast(`已保存模板「${name.trim()}」`);
+    } catch (e) {
+      toast(`保存失败：${(e as Error).message}`);
+    }
+  };
+
+  /** 删除我的模板 */
+  const handleDeleteTemplate = async (name: string) => {
+    const tpl = myTemplates.find((t) => t.name === name);
+    if (!tpl || tpl.isLastUsed) {
+      if (tpl?.isLastUsed) toast('「我最后一次查询」由系统自动维护，无需删除');
+      return;
+    }
+    try {
+      await reportApi.deletePivotTemplate(tpl.id);
+      await loadMyTemplates();
+      if (templateName === name) setTemplateName('');
+      toast(`已删除模板「${name}」`);
+    } catch (e) {
+      toast(`删除失败：${(e as Error).message}`);
+    }
+  };
+
+  /** 拉取我的模板（排除「最后一次」——它由系统维护，不作为可管理模板展示） */
+  const loadMyTemplates = useCallback(async () => {
+    try {
+      const list = await reportApi.listPivotTemplates();
+      setMyTemplates(list.filter((t) => !t.isLastUsed));
+    } catch {
+      setMyTemplates([]);
+    }
+  }, []);
 
   const handleDatePreset = (preset: string) => {
     setDatePreset(preset);
@@ -396,7 +526,17 @@ export default function PivotAnalysisPage() {
             onReset={handleReset}
             onExport={handleExport}
             dataSourceOptions={DATA_SOURCE_OPTIONS}
-            templateOptions={TEMPLATES}
+            templateOptions={mergedTemplates}
+            onSaveMyTemplate={() => {
+              // 用 prompt 收集模板名：透视工具栏已有足够控件，此处不再叠加一层弹窗
+              const name = window.prompt('给这次分析起个名字（仅你可见）', templateName || '');
+              if (name) handleSaveTemplate(name);
+            }}
+            onRestoreLastQuery={loadLastQuery}
+            onDeleteMyTemplate={() => {
+              if (templateName) handleDeleteTemplate(templateName);
+            }}
+            myTemplateNames={myTemplates.map((t) => t.name)}
           />
 
           {/* Config zones - horizontal */}

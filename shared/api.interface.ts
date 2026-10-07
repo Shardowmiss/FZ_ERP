@@ -1957,6 +1957,25 @@ export interface PivotConfig {
   allowFullRange?: boolean;
 }
 
+/**
+ * 透视个人模板（迁移 0060）。
+ *
+ * 每个用户独立保存自己的分析格式：模板仅本人可见/可用/可删，
+ * 服务端所有查询恒带 owner 条件，不存在越权可能。
+ * `isLastUsed` 为 true 的那条即「我最后一次查询」，每用户至多一条。
+ */
+export interface PivotTemplateItem {
+  id: string;
+  name: string;
+  /** 完整查询配置，点击模板即恢复到 rows/cols/values/筛选/时间窗 */
+  config: PivotConfig;
+  dataSource: PivotDataSource;
+  isLastUsed: boolean;
+  remark?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface PivotResultCell {
   value: number | null;
   formatted: string;
