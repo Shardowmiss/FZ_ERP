@@ -171,6 +171,7 @@ export const menuItems: MenuItem[] = [
       { key: 'report-transfer', label: '调拨查询', path: '/report/transfer', permission: 'report:transfer' },
       { key: 'report-stock-movement', label: '进销存查询', path: '/report/stock-movement', permission: 'report:stockmovement' },
       { key: 'report-pivot', label: '透视分析', path: '/report/pivot', permission: 'report:pivot' },
+      { key: 'report-pivot-semantics', label: '透视字段配置', path: '/report/pivot/semantics', permission: 'system:config' },
       { key: 'analytics-forecast', label: 'AI销量预测', path: '/analytics/forecast', permission: 'dashboard:view' },
       { key: 'analytics-lifecycle', label: '商品生命周期', path: '/analytics/lifecycle', permission: 'dashboard:view' },
       { key: 'analytics-bi', label: '自助BI钻取', path: '/analytics/bi', permission: 'dashboard:view' },
@@ -378,6 +379,7 @@ const AllocationPage = React.lazy(() => import('@client/src/pages/trade-show/All
 const ThemePage = React.lazy(() => import('@client/src/pages/trade-show/ThemePage'));
 
 const PivotAnalysisPage = React.lazy(() => import('@client/src/pages/report/PivotAnalysisPage'));
+const PivotSemanticAdminPage = React.lazy(() => import('@client/src/pages/report/PivotSemanticAdminPage'));
 const GarmentPurchaseReportPage = React.lazy(() =>
   import('@client/src/pages/report').then((m) => ({ default: m.GarmentPurchaseReportPage })));
 const MaterialPurchaseReportPage = React.lazy(() =>
@@ -518,6 +520,9 @@ export const routeComponents: Record<string, RouteEntry> = {
   '/report/transfer': { component: TransferReportPage, permission: 'report:transfer' },
   '/report/stock-movement': { component: StockMovementPage, permission: 'report:stockmovement' },
   '/report/pivot': { component: PivotAnalysisPage, permission: 'report:pivot' },
+  // 语义层管理用 system:config（配置权限）而非 report:pivot（使用权限）：
+  // 能查数≠ 能改全局口径，后者只应给管理员/实施。菜单项挂在系统配置下同此口径。
+  '/report/pivot/semantics': { component: PivotSemanticAdminPage, permission: 'system:config' },
 };
 
 /** path -> 列表/详情组件（TabPageCache 渲染用） */

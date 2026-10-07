@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { DRIZZLE_DATABASE, type PostgresJsDatabase } from '@lark-apaas/fullstack-nestjs-core';
 import { asc, eq, sql } from 'drizzle-orm';
 import { pivotSemantic } from '@server/database/schema';
@@ -112,6 +112,218 @@ export class PivotSemanticService {
   invalidateCache(): void {
     this.cache = null;
   }
+
+  /* ===================== 管理端写操作（#758语义层管理界面） =====================
+   * 设计约束：**语义层只能「开放已实现的 key」，不能凭空创造 SQL。**
+   * 因此 create() 必须拿引擎白名单做闸门——这是把#757 的边界设计
+   * 从「口头约定」变成「代码强制」的一步。否则有人往表里塞个引擎不认的 key，
+   * 业务点透视才发现是「非法字段」，配置者却不知道错在哪。
+   */
+
+  /** 列出全部语义（含停用），供管理页展示；启用中的才带缓存，故此处不走 listEnabled */
+  async listAll(): Promise<SemanticRow[]> {
+    const rows = await this.db
+      .select()
+      .from(pivotSemantic)
+      .orderBy(asc(pivotSemantic.sortOrder));
+    return rows as SemanticRow[];
+  }
+
+  /**
+   * 新增语义。
+   *
+   * @param engineSupported 引擎白名单快照（形如 `{ sales: Set<string>, ... }`）
+   * @param actorId 操作人，写入 remark 便于日后追溯「这条是谁加的」
+   */
+  async create(
+    input: CreateSemanticInput,
+    engineSupported: Record<string, Set<string>>,
+    actorId: string,
+  ): Promise<SemanticRow> {
+    const key = (input.key ?? '').trim();
+    if (!key) throw new BadRequestException('字段 key 不能为空');
+    if (!/^[a-zA-Z][a-zA-Z0-9_]{0,63}$/.test(key)) {
+      throw new BadRequestException('字段 key 只能由字母/数字/下划线组成，且须以字母开头');
+    }
+    if (!input.label?.trim()) throw new BadRequestException('中文标签不能为空');
+
+    const dataSources = requireDataSources(input.dataSources);
+    assertEngineSupports(key, dataSources, engineSupported, input.kind);
+
+    const [exist] = await this.db
+      .select({ key: pivotSemantic.key })
+      .from(pivotSemantic)
+      .where(eq(pivotSemantic.key, key))
+      .limit(1);
+    if (exist) throw new BadRequestException(`字段 key「${key}」已存在，请直接编辑`);
+
+    const [row] = await this.db
+      .insert(pivotSemantic)
+      .values({
+        key,
+        label: input.label.trim(),
+        kind: input.kind,
+        dataSources: dataSources.join(','),
+        category: input.category?.trim() || '其他',
+        sortOrder: input.sortOrder ?? 100,
+        valueFormat: input.valueFormat ?? 'sum',
+        sensitive: input.sensitive ?? false,
+        enabled: input.enabled ?? true,
+        remark: input.remark?.trim() || `由 ${actorId} 于语义层管理界面新增`,
+      })
+      .returning();
+    this.invalidateCache();
+    this.logger.log(`语义层新增：${key}（${dataSources.join(',')}）by ${actorId}`);
+    return row as SemanticRow;
+  }
+
+  /** 编辑语义。key 不可改（它是代码侧的物理标识，改了等于换字段） */
+  async update(
+    key: string,
+    patch: UpdateSemanticInput,
+    engineSupported: Record<string, Set<string>>,
+  ): Promise<SemanticRow> {
+    const [row] = await this.db
+      .select()
+      .from(pivotSemantic)
+      .where(eq(pivotSemantic.key, key))
+      .limit(1);
+    if (!row) throw new NotFoundException(`字段 key「${key}」不存在`);
+
+    // 若改了数据源/类型，需重新过引擎闸门（可能改成引擎不支持的组合）
+    const nextSources = patch.dataSources !== undefined
+      ? requireDataSources(patch.dataSources)
+      : (row.dataSources.split(',').map((s: string) => s.trim()));
+    const nextKind = patch.kind ?? (row.kind as 'dimension' | 'measure');
+    assertEngineSupports(key, nextSources, engineSupported, nextKind);
+
+    const [updated] = await this.db
+      .update(pivotSemantic)
+      .set({
+        ...(patch.label !== undefined ? { label: patch.label.trim() } : {}),
+        ...(patch.category !== undefined ? { category: patch.category.trim() || '其他' } : {}),
+        ...(patch.sortOrder !== undefined ? { sortOrder: patch.sortOrder } : {}),
+        ...(patch.valueFormat !== undefined ? { valueFormat: patch.valueFormat } : {}),
+        ...(patch.sensitive !== undefined ? { sensitive: patch.sensitive } : {}),
+        ...(patch.enabled !== undefined ? { enabled: patch.enabled } : {}),
+        ...(patch.remark !== undefined ? { remark: patch.remark } : {}),
+        ...(patch.dataSources !== undefined ? { dataSources: nextSources.join(',') } : {}),
+        updatedAt: new Date().toISOString(),
+      })
+      .where(eq(pivotSemantic.key, key))
+      .returning();
+    this.invalidateCache();
+    this.logger.log(`语义层更新：${key}`);
+    return updated as SemanticRow;
+  }
+
+  /**
+   * 删除语义。
+   *
+   * **刻意不提供「删除」，只提供停用（enabled=false）**：字段 key 是业务已保存的
+   * 个人模板（report_pivot_template 的 config 里存着 key 数组）的一部分，
+   * 删掉后老模板会带着失效 key 在用户点开时抛 400。停用则是可逆的安全操作。
+   * 需要清理失效模板由用户自己删模板。
+   */
+  async remove(key: string): Promise<{ success: boolean }> {
+    const [row] = await this.db
+      .update(pivotSemantic)
+      .set({ enabled: false, updatedAt: new Date().toISOString() })
+      .where(eq(pivotSemantic.key, key))
+      .returning({ key: pivotSemantic.key });
+    this.invalidateCache();
+    if (!row) throw new NotFoundException(`字段 key「${key}」不存在`);
+    this.logger.log(`语义层停用：${key}（保留 key 以免历史模板失效）`);
+    return { success: true };
+  }
+}
+
+/** 校验 key 是否被引擎在**所有**所选数据源实现 */
+function assertEngineSupports(
+  key: string,
+  dataSources: string[],
+  engineSupported: Record<string, Set<string>>,
+  kind: string,
+): void {
+  const bad: string[] = [];
+  for (const ds of dataSources) {
+    const set = engineSupported[ds];
+    if (!set) {
+      bad.push(`${ds}(未知数据源)`);
+      continue;
+    }
+    if (!set.has(key)) bad.push(ds);
+  }
+  if (bad.length > 0) {
+    throw new BadRequestException(
+      `引擎尚未实现字段「${key}」在数据源 ${bad.join('、')} 下的${kind === 'dimension' ? '维度' : '指标'}表达式，` +
+        `配置表只能开放已实现的字段（不能凭空生成 SQL）。请改选其他数据源，或由研发在 pivot-engine 中实现后再配置。`,
+    );
+  }
+}
+
+/**
+ * 归一化数据源列表并**强制非空 + 全合法**。
+ *
+ * 为什么不能只做过滤：单纯过滤会把 `[]` / `''` / 全非法值都归一化成 `[]`，
+ * 若直接写库，data_sources 变成空串——该字段在所有数据源上都会消失，
+ * 且因为它仍 enabled，管理页看不出异常，只是「透视里找不到这个字段」。
+ * update() 曾缺这道闸（create() 有），实测可把 warehouse 的范围静默清空。
+ * 另外「部分非法」也不能静默丢弃：配置者会以为「采购」已生效，
+ * 直到业务查不出数才发现。故两种情况都明确报错。
+ * 要下线字段请用 enabled=false（有明确语义且在管理页可见）。
+ */
+function requireDataSources(input: string | string[]): string[] {
+  const raw = Array.isArray(input) ? input : input.split(',');
+  const trimmed = raw.map((s) => String(s).trim()).filter((s) => s.length > 0);
+  const valid = new Set(['sales', 'purchase', 'inventory', 'transfer']);
+  const arr = Array.from(new Set(trimmed.filter((s) => valid.has(s))));
+  if (arr.length === 0) {
+    throw new BadRequestException(
+      '至少保留一个适用数据源。若要下线该字段，请用「停用」（enabled=false）而不是清空数据源。',
+    );
+  }
+  // 部分非法时明确报错，而不是悄悄丢弃——静默丢弃会让配置者
+  // 以为「采购」已生效，实际被过滤掉，直到业务查不出数才发现。
+  const unknown = trimmed.filter((s) => !valid.has(s));
+  if (unknown.length > 0) {
+    throw new BadRequestException(
+      `未知的数据源：${unknown.join('、')}。合法值为 sales / purchase / inventory / transfer。`,
+    );
+  }
+  return arr;
+}
+
+export interface SemanticRow extends SemanticField {
+  enabled: boolean;
+  remark: string | null;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+}
+
+export interface CreateSemanticInput {
+  key: string;
+  label: string;
+  kind: 'dimension' | 'measure';
+  dataSources: string | string[];
+  category?: string;
+  sortOrder?: number;
+  valueFormat?: 'sum' | 'avg' | 'count' | 'ratio' | 'amount';
+  sensitive?: boolean;
+  enabled?: boolean;
+  remark?: string;
+}
+
+export interface UpdateSemanticInput {
+  label?: string;
+  kind?: 'dimension' | 'measure';
+  dataSources?: string | string[];
+  category?: string;
+  sortOrder?: number;
+  valueFormat?: 'sum' | 'avg' | 'count' | 'ratio' | 'amount';
+  sensitive?: boolean;
+  enabled?: boolean;
+  remark?: string;
 }
 
 export interface SemanticField {

@@ -1951,6 +1951,50 @@ export interface PivotSemanticsResponse {
   canSeeProfit: boolean;
 }
 
+/* ========== 透视语义层管理（#758） ========== */
+
+/** 管理页的一行语义（= pivot_semantic 表一行 + 引擎实现状态） */
+export interface PivotSemanticAdminItem {
+  key: string;
+  label: string;
+  kind: string;
+  dataSources: string;
+  category: string;
+  sortOrder: number;
+  valueFormat: string;
+  sensitive: boolean;
+  enabled: boolean;
+  remark: string | null;
+  /** 引擎是否已在所有所选数据源实现该 key（false 时该字段查不出数） */
+  implemented: boolean;
+  /** 未实现的数据源清单 */
+  missingIn: string[];
+}
+
+/** 引擎白名单快照：数据源 → 引擎已实现的维度/指标 key */
+export type PivotSupportedFields = Record<
+  string,
+  { dimensions: string[]; measures: string[] }
+>;
+
+export interface PivotSemanticAdminResponse {
+  items: PivotSemanticAdminItem[];
+  supported: PivotSupportedFields;
+}
+
+export interface PivotSemanticInput {
+  key?: string;
+  label: string;
+  kind: 'dimension' | 'measure';
+  dataSources: string[];
+  category?: string;
+  sortOrder?: number;
+  valueFormat?: 'sum' | 'avg' | 'count' | 'ratio' | 'amount';
+  sensitive?: boolean;
+  enabled?: boolean;
+  remark?: string;
+}
+
 export interface PivotValueConfig {
   key: string;
   label: string;

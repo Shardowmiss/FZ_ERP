@@ -1,10 +1,15 @@
-import { Controller, Get, Post, Delete, Body, Query, Param, Req } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Query, Param, Req } from '@nestjs/common';
 import { NeedLogin } from '@lark-apaas/fullstack-nestjs-core';
 import type { Request } from 'express';
 import { ReportService } from './report.service';
 import { PivotTemplateService } from './pivot-template.service';
 import { RbacService } from '../rbac/rbac.service';
 import { PivotSemanticService } from './pivot-semantic.service';
+import { PivotEngineService } from './pivot-engine';
+import type {
+  CreateSemanticInput,
+  UpdateSemanticInput,
+} from './pivot-semantic.service';
 import type {
   ReportPurchaseItem,
   ReportSalesItem,
@@ -59,6 +64,7 @@ export class ReportController {
     private readonly pivotTemplateService: PivotTemplateService,
     private readonly rbacService: RbacService,
     private readonly semanticService: PivotSemanticService,
+    private readonly pivotEngineService: PivotEngineService,
   ) {}
 
   /**
@@ -345,5 +351,67 @@ export class ReportController {
   ) {
     await this.pivotTemplateService.remove(req.userContext.userId, id);
     return { success: true };
+  }
+
+  /* ============ 透视语义层管理（#758） ============
+   * 权限码用system:config（系统-配置），**不复用 report:pivot**。
+   * 理由：report:pivot 的语义是「能用透视分析查数」，而这里是「能改动全局分析口径」——
+   * 前者是使用权限（应发给业务分析岗），后者是配置权限（只应发给管理员/实施）。
+   * 若复用 report:pivot，等于任何能用透视的导购都能改全局维度定义。
+   */
+  private engineWhitelist(): Record<string, Set<string>> {
+    const raw = this.pivotEngineService.listSupportedFields();
+    const out: Record<string, Set<string>> = {};
+    for (const [ds, v] of Object.entries(raw)) {
+      out[ds] = new Set<string>([...v.dimensions, ...v.measures]);
+    }
+    return out;
+  }
+
+  /** 语义层全量列表（含停用）+ 引擎白名单快照，供管理页做「已实现/未实现」对照 */
+  @CheckPermission('system:config')
+  @Get('pivot/semantic-admin')
+  async pivotSemanticAdmin() {
+    const [rows, supported] = await Promise.all([
+      this.semanticService.listAll(),
+      Promise.resolve(this.pivotEngineService.listSupportedFields()),
+    ]);
+    // 逐行标注引擎实现状态：配置者据此判断「这条能查出数吗」
+    const withStatus = rows.map((r) => {
+      const sources = r.dataSources.split(',').map((s) => s.trim());
+      const missing = sources.filter(
+        (ds) => !(supported[ds]?.dimensions ?? []).includes(r.key)
+          && !(supported[ds]?.measures ?? []).includes(r.key),
+      );
+      return { ...r, implemented: missing.length === 0, missingIn: missing };
+    });
+    return { items: withStatus, supported };
+  }
+
+  /** 新增语义（引擎未实现的 key 会被拒绝，见 service 层 assertEngineSupports） */
+  @CheckPermission('system:config')
+  @Post('pivot/semantic-admin')
+  async createPivotSemantic(@Req() req: Request, @Body() body: CreateSemanticInput) {
+    return this.semanticService.create(body, this.engineWhitelist(), req.userContext.userId);
+  }
+
+  /** 编辑语义（key 不可改） */
+  @CheckPermission('system:config')
+  @Put('pivot/semantic-admin/:key')
+  async updatePivotSemantic(
+    @Req() req: Request,
+    @Param('key') key: string,
+    @Body() body: UpdateSemanticInput,
+  ) {
+    const row = await this.semanticService.update(key, body, this.engineWhitelist());
+    // 若被当前用户本人改动，留痕
+    return row;
+  }
+
+  /** 停用语义（保留 key，避免历史个人模板失效） */
+  @CheckPermission('system:config')
+  @Delete('pivot/semantic-admin/:key')
+  async disablePivotSemantic(@Param('key') key: string) {
+    return this.semanticService.remove(key);
   }
 }

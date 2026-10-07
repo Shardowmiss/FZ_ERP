@@ -12,6 +12,8 @@ import type {
   PivotResponse,
   PivotTemplateItem,
   PivotSemanticsResponse,
+  PivotSemanticAdminResponse,
+  PivotSemanticInput,
 } from '@shared/api.interface';
 
 export interface ReportQueryParams {
@@ -167,4 +169,28 @@ export const reportApi = {
    */
   pivotSemantics: (): Promise<PivotSemanticsResponse> =>
     request<PivotSemanticsResponse>('/api/report/pivot/semantics', 'GET'),
+
+  /* ========== 透视语义层管理（#758） ==========
+   * 权限码为 system:config（系统-配置），与 report:pivot 分开——
+   * 用透视是使用权限，改全局口径是配置权限，不可混同。
+   */
+
+  /** 语义全量列表（含停用）+ 引擎白名单快照 */
+  pivotSemanticAdmin: (): Promise<PivotSemanticAdminResponse> =>
+    request<PivotSemanticAdminResponse>('/api/report/pivot/semantic-admin', 'GET'),
+
+  /** 新增语义（引擎未实现的 key 服务端会拒绝） */
+  createPivotSemantic: (body: PivotSemanticInput): Promise<{ key: string }> =>
+    request<{ key: string }>('/api/report/pivot/semantic-admin', 'POST', body),
+
+  /** 编辑语义（key 不可改） */
+  updatePivotSemantic: (
+    key: string,
+    body: Partial<PivotSemanticInput>,
+  ): Promise<{ key: string }> =>
+    request<{ key: string }>(`/api/report/pivot/semantic-admin/${key}`, 'PUT', body),
+
+  /** 停用语义（保留 key，避免历史个人模板失效） */
+  disablePivotSemantic: (key: string): Promise<{ success: boolean }> =>
+    request<{ success: boolean }>(`/api/report/pivot/semantic-admin/${key}`, 'DELETE'),
 };

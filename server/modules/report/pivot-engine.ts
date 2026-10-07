@@ -112,7 +112,7 @@ function getDataSourceBase(dataSource: PivotDataSource): DataSourceBase {
         color: 'ist.color',
         size: 'ist.size',
       };
-      base.valueColMap = { quantity: 'ist.quantity' };
+      base.valueColMap = { quantity: 'ist.quantity', amount: 'ist.amount' };
       return base;
     }
     case 'transfer': {
@@ -184,8 +184,38 @@ function getPivotFieldWhitelist(dataSource: PivotDataSource): PivotFieldWhitelis
   Object.keys(ds.aliasMap).forEach((k: string) => dimensions.add(k));
   // 指标：valueColMap 的 key 加上通用计算指标
   Object.keys(ds.valueColMap).forEach((k: string) => measures.add(k));
-  // 通用派生指标（基于 valueColMap 中的列计算得出）
-  const derivedMeasures = ['cost', 'profit', 'discount', 'avgPrice'];
+
+  /* 通用派生指标：**按底层表实际拥有的列逐个开放**，不再无条件全开。
+   *
+   * 缺陷（#758 探针实测发现，非推演）：此前此处无条件把
+   * cost/profit/discount/avgPrice 四个派生指标加进所有数据源的白名单，
+   * 但派生指标的表达式依赖 `valueColMap` 里的**金额/成本列**，
+   * 而三个非销售数据源的基础表并不都有这些列：
+   *   - garment_purchase_inbound_sku：有 amount、quantity，**无 cost_amount**
+   *   - inventory_stock：有 amount、quantity，无 cost_amount
+   *   - inventory_transfer_item：**只有 quantity**，连 amount 都没有
+   * 于是白名单「宣称支持」→ 用户在界面上能选→ 查询时 PG 报
+   * `column "cost_amount" does not exist`（HTTP 500，而非应有的 400「非法字段」）。
+   * 实测 12 个组合中7 个崩溃（purchase/inventory 的 cost+profit、
+   * transfer 的 cost+profit+avgPrice）。
+   *
+   * 为什么此前没被发现：这些组合默认不在语义表里被业务选中，
+   * 且销售数据源走的是另一套表达式（buildSalesValueExpr），不受此处影响。
+   *
+   * 修法：让白名单与底层列严格一致——「没有金额列就没有 avgPrice」，
+   * 从源头消除「可选但必崩」的组合。语义层管理页#758 依赖这层白名单
+   * 作为「可开放清单」，若白名单撒谎，配置者会被引导去配一个必崩的字段。
+   */
+  const hasAmount = 'amount' in ds.valueColMap;
+  const hasCost = 'cost' in ds.valueColMap;
+  const hasTagPrice = 'tagPrice' in ds.valueColMap;
+  const hasQty = 'quantity' in ds.valueColMap;
+  const derivedMeasures: string[] = [];
+  if (hasCost) derivedMeasures.push('cost');
+  if (hasAmount && hasCost) derivedMeasures.push('profit');
+  if (hasTagPrice) derivedMeasures.push('discount');
+  // 均价 = 金额 / 数量，缺一不可（调拨明细表无金额列，故 transfer 无均价）
+  if (hasAmount && hasQty) derivedMeasures.push('avgPrice');
   derivedMeasures.forEach((m: string) => measures.add(m));
 
   return { dimensions, measures };
@@ -282,6 +312,27 @@ export class PivotEngineService {
   private readonly logger = new Logger(PivotEngineService.name);
 
   constructor(@Inject(DRIZZLE_DATABASE) private readonly db: PostgresJsDatabase) {}
+
+  /**
+   * 暴露各数据源的引擎白名单（维度/指标 key），供语义层管理页做「已实现 / 未实现」对照。
+   *
+   * 为什么要暴露：语义层管理页需要让配置者知道——**只有引擎实现的 key 才能真正查出数**。
+   * 语义表可以「开放」一个已实现的 key（改标签/分类/排序/敏感标记），但不能凭空造出新 SQL。
+   * 若不暴露，配置者只能靠「保存后透视报非法字段」来试错，代价高且难以自查。
+   *
+   * 只读快照，不参与执行授权：真正的放行判定仍在 validatePivotConfig 内。
+   */
+  listSupportedFields(): Record<string, { dimensions: string[]; measures: string[] }> {
+    const out: Record<string, { dimensions: string[]; measures: string[] }> = {};
+    for (const ds of VALID_DATA_SOURCES) {
+      const wl = getPivotFieldWhitelist(ds);
+      out[ds] = {
+        dimensions: [...wl.dimensions].sort(),
+        measures: [...wl.measures].sort(),
+      };
+    }
+    return out;
+  }
 
   async run(config: PivotConfig): Promise<PivotResponse> {
     validatePivotConfig(config);
