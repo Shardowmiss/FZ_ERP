@@ -38,6 +38,10 @@ export interface StyleImportItem {
   year?: string | null;
   fit?: string | null;
   subCategory?: string | null;
+  /** 上市日期（迁移 0050，YYYY-MM-DD）：支撑上市天数/首周售罄率等服装零售指标 */
+  launchDate?: string | null;
+  /** 季末清货阈值（天，0-365，默认 90）：0 表示不做自动清货判定 */
+  clearanceDays?: number;
   tagPrice?: number | null;
   costPrice?: number | null;
   supplyPrice?: number | null;
@@ -76,6 +80,10 @@ function styleRowToDto(row: typeof style.$inferSelect): Style {
     fit: row.fit ?? undefined,
     brand: row.brand ?? undefined,
     wave: row.wave ?? undefined,
+    // 上市日期与季末清货阈值（迁移 0050）
+    // 注：drizzle 的 date 列在 select 中返回 'YYYY-MM-DD' 字符串，非 Date 对象
+    launchDate: row.launchDate ?? null,
+    clearanceDays: Number(row.clearanceDays ?? 90),
     tagPrice: Number(row.tagPrice ?? 0),
     costPrice: Number(row.costPrice ?? 0),
     supplyPrice: Number(row.supplyPrice ?? 0),
@@ -198,6 +206,10 @@ export class StyleService {
          subCategory: dto.subCategory,
          fit: dto.fit,
          wave: dto.wave ?? null,
+         // 上市日期与季末清货阈值（迁移 0050）：未传时 launchDate 留 NULL 由业务补录，
+         // clearanceDays 未传则用库默认值 90。
+         launchDate: dto.launchDate ?? null,
+         ...(dto.clearanceDays !== undefined ? { clearanceDays: dto.clearanceDays } : {}),
          tagPrice: dto.tagPrice !== undefined ? String(dto.tagPrice) : '0',
          costPrice: dto.costPrice !== undefined ? String(dto.costPrice) : '0',
          supplyPrice: dto.supplyPrice !== undefined ? String(dto.supplyPrice) : '0',

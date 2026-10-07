@@ -71,6 +71,16 @@ export interface Style {
   fit?: string;
   brand?: string;
   wave?: string;
+  /**
+   * 上市日期（迁移 0050）：支撑「上市天数 / 上市首周售罄率」等服装零售核心指标。
+   * 存量已由 wave（如 2026AW → 当年 09-01）回填部分款号。
+   */
+  launchDate?: string | null;
+  /**
+   * 季末清货阈值（天，默认 90）。超过「上市日期 + clearanceDays」视为过季，
+   * 可触发清货折扣建议；置 0 表示不做自动清货判定。
+   */
+  clearanceDays?: number;
   tagPrice: number;
   costPrice: number;
   supplyPrice: number;
@@ -961,6 +971,10 @@ export interface StyleCreateAutoRequest {
   subCategory: string;
   fit: string;
   wave?: string;
+  /** 上市日期（迁移 0050，YYYY-MM-DD）：支撑上市天数/首周售罄率等服装零售指标 */
+  launchDate?: string | null;
+  /** 季末清货阈值（天，0-365，默认 90）：0 表示不做自动清货判定 */
+  clearanceDays?: number;
   tagPrice: number;
   costPrice: number;
   supplyPrice: number;

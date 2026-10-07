@@ -3119,6 +3119,14 @@ export const style = pgTable("style", {
   category: varchar("category", { length: 100 }),
   season: varchar("season", { length: 50 }),
   wave: varchar("wave", { length: 50 }),
+  // 上市日期与季末清货阈值（迁移 0050，服装零售核心指标）：
+  //   launchDate 用于计算「上市天数 / 上市首周售罄率」，支撑新品与老品判定、
+  //   订货会上新节奏复盘；存量已由 wave（如 2026AW → 当年 09-01）回填 10 款。
+  //   clearanceDays 为季末清货阈值（默认 90 天，服装春夏/秋冬两季常见周期），
+  //   超过「上市日期 + clearanceDays」即视为过季，可触发清货折扣建议。
+  //   置 0 表示不做自动清货判定。CHECK 约束限定 0-365。
+  launchDate: date("launch_date"),
+  clearanceDays: integer("clearance_days").notNull().default(90),
   tagPrice: numeric("tag_price").default('0'),
   costPrice: numeric("cost_price").default('0'),
   supplyPrice: numeric("supply_price").default('0'),
@@ -3155,6 +3163,9 @@ export const style = pgTable("style", {
   index("idx_style_category").on(table.category),
   index("idx_style_brand").on(table.brand),
   index("idx_style_merged_into").on(table.mergedInto),
+  // 上市日期索引（迁移 0050）：新品/老品筛选与季末清货扫描
+  index("idx_style_launch_date").on(table.launchDate),
+  index("idx_style_season_launch").on(table.season, table.launchDate),
   foreignKey({
     columns: [table.colorGroupId],
     foreignColumns: [colorGroup.id],
