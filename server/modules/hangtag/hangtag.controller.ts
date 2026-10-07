@@ -33,7 +33,7 @@ import { HangtagService } from './hangtag.service';
  *
  * 注：受全局 AuthGuard 保护，需携带有效 x-auth-token。
  */
-@Controller('hangtag')
+@Controller('api/hangtag')
 export class HangtagController {
   constructor(private readonly svc: HangtagService) {}
 

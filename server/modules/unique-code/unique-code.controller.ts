@@ -52,7 +52,7 @@ const PERMISSIVE_VALIDATION = new ValidationPipe({
  *
  * 受全局 AuthGuard 保护，需携带有效 x-auth-token。
  */
-@Controller('unique-code')
+@Controller('api/unique-code')
 export class UniqueCodeController {
   constructor(private readonly svc: UniqueCodeService) {}
 

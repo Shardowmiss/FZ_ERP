@@ -21,7 +21,7 @@ import { UniqueCodeService } from './unique-code.service';
  * 与内部 /api/unique-code/trace（含操作人、内部单号）区分，避免内部信息外泄。
  */
 @Public()
-@Controller('trace-public')
+@Controller('api/trace-public')
 export class TracePublicController {
   constructor(private readonly svc: UniqueCodeService) {}
 

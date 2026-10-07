@@ -20,7 +20,7 @@ import { OpsService, ValidationParams } from './ops.service';
  * 注：接口受全局 AuthGuard 保护，需携带有效 x-auth-token；未声明 @CheckPermission，
  * 默认放行（运维为内部角色）。
  */
-@Controller('ops')
+@Controller('api/ops')
 export class OpsController {
   constructor(private readonly ops: OpsService) {}
 

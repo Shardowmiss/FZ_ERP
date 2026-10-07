@@ -19,7 +19,7 @@ import {
  * 所有端点均通过 x-auth-token 解析当前登录用户，并按其绑定的分销节点子树
  * 过滤数据，确保“一级/二级分销商只能看到自己节点（及下级）的采购单”。
  */
-@Controller('distribution/portal')
+@Controller('api/distribution/portal')
 export class DistributionPortalController {
   constructor(
     private readonly rbacService: RbacService,

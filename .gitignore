@@ -96,3 +96,6 @@ logs/
 
 # 测试构建产物
 dist-test/
+
+# 数据库备份（pg_dump 产物，禁止入库）
+BAK/

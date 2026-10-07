@@ -8,7 +8,7 @@ import type { ConsistencyReport, ConsistencyRunSummary } from './consistency.typ
  * 主数据一致性校验对外接口（P2-3）。
  * 复用既有 `system:config` 权限码（系统-配置，超管已持有），避免引入未注册码导致全员 403。
  */
-@Controller('system/consistency')
+@Controller('api/system/consistency')
 @NeedLogin()
 @CheckPermission('system:config')
 export class ConsistencyController {
