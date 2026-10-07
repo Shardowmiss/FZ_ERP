@@ -132,6 +132,41 @@ const SkuPage: React.FC = () => {
     toast('导出功能开发中');
   };
 
+  // 按款号的「色组 × 尺码组」笛卡尔积批量生成 SKU 矩阵（幂等：重复点击不会产生重复 SKU）
+  const [matrixStyleId, setMatrixStyleId] = useState('');
+  const [generating, setGenerating] = useState(false);
+
+  const handleGenerateMatrix = async () => {
+    if (!matrixStyleId) {
+      toast('请先选择要生成矩阵的款号');
+      return;
+    }
+    if (generating) return;
+    setGenerating(true);
+    try {
+      const res = await baseApi.sku.generateMatrix(matrixStyleId);
+      if (res.inserted > 0) {
+        toast.success(
+          `款号 ${res.styleNo}：${res.colors} 色 × ${res.sizes} 码 = ${res.total} 个 SKU，已新增 ${res.inserted} 个` +
+            (res.skipped > 0 ? `，跳过已存在 ${res.skipped} 个` : ''),
+        );
+      } else {
+        toast.info(
+          `款号 ${res.styleNo}：矩阵已完整（${res.total} 个），本次无需新增` +
+            (res.skipped > 0 ? `，跳过 ${res.skipped} 个` : ''),
+        );
+      }
+      setPage(1);
+      setStyleFilter(matrixStyleId);
+      setSearchStyleId(matrixStyleId);
+      fetchData();
+    } catch (e) {
+      toast(errMsg(e, '生成 SKU 矩阵失败'));
+    } finally {
+      setGenerating(false);
+    }
+  };
+
   const renderStatus = (status: string) => {
     if (status === 'active') {
       return <StatusBadge tone="ok">启用</StatusBadge>;
@@ -144,7 +179,24 @@ const SkuPage: React.FC = () => {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold">SKU管理</h2>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-500">SKU由款号自动生成，仅支持编辑</span>
+          <span className="text-sm text-gray-500">SKU由款号的色组×尺码组批量生成，生成后可编辑</span>
+          <select
+            value={matrixStyleId}
+            onChange={(e) => setMatrixStyleId(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary min-w-[180px]"
+          >
+            <option value="">选择款号…</option>
+            {styleOptions.map((s) => (
+              <option key={s.id} value={s.id}>{s.styleNo} - {s.name}</option>
+            ))}
+          </select>
+          <button
+            className="px-4 py-2 bg-primary text-white text-sm rounded hover:opacity-90 transition-opacity disabled:opacity-50"
+            onClick={handleGenerateMatrix}
+            disabled={generating}
+          >
+            {generating ? '生成中…' : '生成矩阵'}
+          </button>
           <button
             className="px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded hover:bg-gray-50 transition-colors flex items-center gap-1"
             onClick={handleExport}

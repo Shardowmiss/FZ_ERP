@@ -1,6 +1,6 @@
 import { Injectable, Inject, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { DRIZZLE_DATABASE, type PostgresJsDatabase } from '@lark-apaas/fullstack-nestjs-core';
-import { sku, style, color, size } from '@server/database/schema';
+import { sku, style, color, size, colorGroupColor, sizeGroupSize } from '@server/database/schema';
 import { eq, and, count, desc, or, ilike, inArray } from 'drizzle-orm';
 import type { Sku } from '@shared/api.interface';
 import { escapeLike } from '@server/common/utils/escape-like';
@@ -308,5 +308,167 @@ export class SkuService {
     }
 
     return { total: items.length, inserted, skipped, errors };
+  }
+
+  /**
+   * 按款号的「色组 × 尺码组」笛卡尔积批量生成 SKU 矩阵。
+   *
+   * 服装建档的核心效率痛点：一个 5 色 × 6 码的款需 30 个 SKU，
+   * 逐条手录或先在 Excel 拼好再导入，200 款即 5000+ 条人工录入。
+   *
+   * 幂等保证（两道防线）：
+   *   1) 预检：查询已存在的 (styleId, colorId, sizeId)，批内去重 + 库内去重；
+   *   2) 插入：ON CONFLICT DO NOTHING 兜住并发场景
+   *      （依赖唯一索引 idx_sku_style_color_id_size_id）。
+   * 因此重复调用同一款号不会产生重复 SKU，也不会报错。
+   *
+   * skuCode 规则沿用现有库既有格式：`{styleNo}-{色CODE}-{码CODE}`
+   * （如 AW26-001-AP-L），与存量 166 个 SKU 保持一致。
+   * 注意用的是颜色/尺码的 **code** 而非 name，与存量数据口径相同。
+   */
+  async generateMatrix(
+    styleId: string,
+  ): Promise<{
+    styleNo: string;
+    total: number;      // 应收矩阵数（色数 × 码数）
+    inserted: number;   // 实际新增
+    skipped: number;    // 已存在而跳过
+    colors: number;
+    sizes: number;
+  }> {
+    // 1) 取款号及其色组/尺码组
+    const [st] = await this.db
+      .select({
+        id: style.id,
+        styleNo: style.styleNo,
+        colorGroupId: style.colorGroupId,
+        sizeGroupId: style.sizeGroupId,
+      })
+      .from(style)
+      .where(eq(style.id, styleId))
+      .limit(1);
+    if (!st) {
+      throw new NotFoundException(`款式不存在: ${styleId}`);
+    }
+
+    // 2) 取色组成员（按 sortOrder 稳定排序，保证生成顺序可预期）
+    const colorRows = await this.db
+      .select({ id: color.id, code: color.code, name: color.name })
+      .from(colorGroupColor)
+      .innerJoin(color, eq(color.id, colorGroupColor.colorId))
+      .where(eq(colorGroupColor.colorGroupId, st.colorGroupId))
+      .orderBy(colorGroupColor.sortOrder, color.code);
+
+    // 3) 取尺码组成员
+    const sizeRows = await this.db
+      .select({ id: size.id, code: size.code, name: size.name })
+      .from(sizeGroupSize)
+      .innerJoin(size, eq(size.id, sizeGroupSize.sizeId))
+      .where(eq(sizeGroupSize.sizeGroupId, st.sizeGroupId))
+      .orderBy(sizeGroupSize.sortOrder, size.code);
+
+    if (colorRows.length === 0) {
+      throw new BadRequestException(
+        `款号 ${st.styleNo} 的色组没有成员，请先在「色组管理」中为该色组添加颜色`,
+      );
+    }
+    if (sizeRows.length === 0) {
+      throw new BadRequestException(
+        `款号 ${st.styleNo} 的尺码组没有成员，请先在「尺码组管理」中为该尺码组添加尺码`,
+      );
+    }
+
+    // 4) 预检：查出该款已存在的 (colorId, sizeId) 组合
+    const existing = await this.db
+      .select({ colorId: sku.colorId, sizeId: sku.sizeId })
+      .from(sku)
+      .where(eq(sku.styleId, styleId));
+    const existSet = new Set(
+      existing.map((r) => `${r.colorId ?? ''}|${r.sizeId ?? ''}`),
+    );
+
+    // 5) 笛卡尔积 + 批内去重
+    const rows: {
+      skuCode: string;
+      styleId: string;
+      styleNo: string;
+      color: string;
+      size: string;
+      colorId: string;
+      sizeId: string;
+    }[] = [];
+    const batchSeen = new Set<string>();
+    let skipped = 0;
+
+    for (const c of colorRows) {
+      for (const z of sizeRows) {
+        const key = `${c.id}|${z.id}`;
+        if (existSet.has(key) || batchSeen.has(key)) {
+          skipped += 1;
+          continue;
+        }
+        batchSeen.add(key);
+        rows.push({
+          skuCode: `${st.styleNo}-${c.code}-${z.code}`,
+          styleId: st.id,
+          styleNo: st.styleNo,
+          color: c.name,
+          size: z.name,
+          colorId: c.id,
+          sizeId: z.id,
+        });
+      }
+    }
+
+    const total = colorRows.length * sizeRows.length;
+
+    // 6) 批量插入（单事务）。ON CONFLICT DO NOTHING 兜住并发写入。
+    let inserted = 0;
+    if (rows.length > 0) {
+      try {
+        await this.db.transaction(async (tx) => {
+          await tx
+            .insert(sku)
+            .values(
+              rows.map((r) => ({
+                skuCode: r.skuCode,
+                styleId: r.styleId,
+                styleNo: r.styleNo,
+                color: r.color,
+                size: r.size,
+                colorId: r.colorId,
+                sizeId: r.sizeId,
+                costPrice: '0',
+                tagPrice: '0',
+                supplyPrice: '0',
+                safetyStockMin: '0',
+                safetyStockMax: '0',
+                status: 'active',
+              })),
+            )
+            .onConflictDoNothing();
+        });
+        inserted = rows.length;
+      } catch (e: any) {
+        this.logger.error(
+          `生成 SKU 矩阵失败 styleId=${styleId} styleNo=${st.styleNo}: ${e?.message ?? e}`,
+        );
+        throw new BadRequestException(`生成 SKU 矩阵失败: ${e?.message ?? e}`);
+      }
+    }
+
+    this.logger.log(
+      `生成 SKU 矩阵 styleNo=${st.styleNo} 色${colorRows.length}×码${sizeRows.length}=${total} ` +
+        `新增 ${inserted} 跳过 ${skipped}`,
+    );
+
+    return {
+      styleNo: st.styleNo,
+      total,
+      inserted,
+      skipped,
+      colors: colorRows.length,
+      sizes: sizeRows.length,
+    };
   }
 }

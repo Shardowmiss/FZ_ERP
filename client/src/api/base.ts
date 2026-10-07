@@ -81,6 +81,16 @@ export const baseApi = {
     update: (id: string, data: Partial<Sku>) =>
       request<Sku>(`/api/base/sku/${id}`, 'PUT', data),
     byStyle: (styleId: string) => request<Sku[]>(`/api/base/sku/by-style/${styleId}`),
+    /** 按款号的「色组 × 尺码组」笛卡尔积批量生成 SKU 矩阵（幂等，重复调用不产生重复 SKU） */
+    generateMatrix: (styleId: string) =>
+      request<{
+        styleNo: string;
+        total: number;
+        inserted: number;
+        skipped: number;
+        colors: number;
+        sizes: number;
+      }>('/api/base/sku/generate-matrix', 'POST', { styleId }),
   },
   material: {
     list: (params: PaginationParams & { keyword?: string; category?: string; status?: string }) =>

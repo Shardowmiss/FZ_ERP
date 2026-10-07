@@ -28,6 +28,21 @@ export class SkuController {
     return this.skuService.list(p, ps, styleId, keyword, color, size);
   }
 
+  // 注意：本路由必须声明在 @Get(':id') 之前，否则会被 :id 通配吞掉。
+  // 按款号的「色组 × 尺码组」笛卡尔积批量生成 SKU 矩阵（幂等，重复调用不产生重复 SKU）。
+  @CheckPermission('base:sku')
+  @Post('generate-matrix')
+  async generateMatrix(@Body() body: { styleId: string }): Promise<{
+    styleNo: string;
+    total: number;
+    inserted: number;
+    skipped: number;
+    colors: number;
+    sizes: number;
+  }> {
+    return this.skuService.generateMatrix(body.styleId);
+  }
+
   @Get(':id')
   async detail(@Param('id') id: string): Promise<Sku> {
     return this.skuService.detail(id);
