@@ -19,7 +19,15 @@ import type {
 } from '@shared/api.interface';
 import { CheckPermission } from '../../common/decorators/check-permission.decorator';
 
+/**
+ * 零售单 / 零售退货单 共用本控制器，但属两个可分别授权的资源：
+ *   · 类级守卫 sales:retail        → 覆盖零售单全部端点（含此前无守卫的 GET）
+ *   · 方法级守卫 sales:retail_return → 覆盖退货单端点（getAllAndOverride：方法级优先）
+ * 此前两者均误用 retail:view（会员运营的码），导致「持 sales:order 者页面能开、接口 403」，
+ * 反向持 retail:view 者却能操作零售单——已按真实调用链对齐。
+ */
 @NeedLogin()
+@CheckPermission('sales:retail')
 @Controller('api/retail')
 export class RetailController {
   constructor(private readonly retailService: RetailService) {}
@@ -77,6 +85,7 @@ export class RetailController {
 
   /* ========== Retail Return ========== */
 
+  @CheckPermission('sales:retail_return')
   @Get('return')
   async getReturnList(
     @Req() req: Request,
@@ -104,6 +113,7 @@ export class RetailController {
     });
   }
 
+  @CheckPermission('sales:retail_return')
   @Get('return/:id')
   async getReturnDetail(
     @Param('id') id: string,
@@ -111,7 +121,7 @@ export class RetailController {
     return this.retailService.getReturnDetail(id);
   }
 
-  @CheckPermission('retail:view')
+  @CheckPermission('sales:retail_return')
   @Post('return')
   async createReturn(
     @Req() req: Request,
@@ -126,7 +136,7 @@ export class RetailController {
     return this.retailService.createReturn(body, userId);
   }
 
-  @CheckPermission('retail:view')
+  @CheckPermission('sales:retail_return')
   @Post('return/:id/refund')
   async refundReturn(
     @Req() req: Request,
@@ -145,7 +155,7 @@ export class RetailController {
     return this.retailService.getRetailOrderDetail(id);
   }
 
-  @CheckPermission('retail:view')
+  @CheckPermission('sales:retail')
   @Post()
   async createDraftRetail(
     @Req() req: Request,
@@ -169,7 +179,7 @@ export class RetailController {
     return this.retailService.createDraftRetail(body, userId);
   }
 
-  @CheckPermission('retail:view')
+  @CheckPermission('sales:retail')
   @Put(':id')
   async updateRetailItems(
     @Req() req: Request,
@@ -189,7 +199,7 @@ export class RetailController {
     return this.retailService.updateRetailItems(id, body, userId);
   }
 
-  @CheckPermission('retail:view')
+  @CheckPermission('sales:retail')
   @Post(':id/settle')
   async settleRetailOrder(
     @Req() req: Request,
@@ -205,12 +215,12 @@ export class RetailController {
     return this.retailService.settleRetailOrder(id, body, userId);
   }
 
-  @CheckPermission('retail:view')
+  @CheckPermission('sales:retail')
   @Post(':id/void')
   async voidOrder(@Param('id') id: string): Promise<void> {
     return this.retailService.voidOrder(id);
   }
-  @CheckPermission('retail:view')
+  @CheckPermission('sales:retail_return')
   @Post('return/:id/void')
   async voidReturn(@Param('id') id: string): Promise<void> {
     return this.retailService.voidReturn(id);

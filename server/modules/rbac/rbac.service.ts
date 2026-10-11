@@ -37,7 +37,10 @@ import type {
   CurrentUserResponse,
   PaginationResult,
 } from '@shared/api.interface';
-import { buildPermissionCatalog } from '@shared/menu-permission';
+import {
+  buildPermissionCatalog,
+  PERMISSION_CODE_MIGRATION,
+} from '@shared/menu-permission';
 import { canDo, canAccess } from '@shared/permission-match';
 
 type RbacUserInsert = typeof rbacUser.$inferInsert;
@@ -405,6 +408,50 @@ export class RbacService {
       .where(notInArray(rbacPermission.code, catalogCodes));
     if (stale.length > 0) {
       const staleIds = stale.map((s) => s.id);
+
+      // 3a) 授权平移：旧码若有映射目标，先把「持有旧码的角色」授权到新码，再删除旧码。
+      //     动作子码走父码回退（distribution:portal:view → ..._po:view 等）。
+      const resolveTargets = (code: string): string[] => {
+        const direct = PERMISSION_CODE_MIGRATION[code];
+        if (direct) return direct;
+        const i = code.lastIndexOf(':');
+        if (i > 0) {
+          const parentTargets = PERMISSION_CODE_MIGRATION[code.slice(0, i)];
+          if (parentTargets) return parentTargets.map((t) => t + code.slice(i));
+        }
+        return [];
+      };
+      let migrated = 0;
+      for (const s of stale) {
+        const targets = resolveTargets(s.code);
+        if (!targets.length) continue;
+        const targetRows = await this.db
+          .select({ id: rbacPermission.id })
+          .from(rbacPermission)
+          .where(inArray(rbacPermission.code, targets));
+        if (!targetRows.length) continue;
+        const holders = await this.db
+          .select({ roleId: rbacRolePermission.roleId })
+          .from(rbacRolePermission)
+          .where(eq(rbacRolePermission.permissionId, s.id));
+        if (!holders.length) continue;
+        for (const t of targetRows) {
+          for (const h of holders) {
+            const ins = await this.db
+              .insert(rbacRolePermission)
+              .values({ roleId: h.roleId, permissionId: t.id })
+              .onConflictDoNothing()
+              .returning({ id: rbacRolePermission.id });
+            migrated += ins.length;
+          }
+        }
+      }
+      if (migrated > 0) {
+        this.logger.log(
+          `ensureRbacCatalog: migrated ${migrated} role grant(s) from pruned codes to their replacements`,
+        );
+      }
+
       await this.db
         .delete(rbacRolePermission)
         .where(inArray(rbacRolePermission.permissionId, staleIds));

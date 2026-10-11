@@ -101,10 +101,16 @@ const resourceCodes = buildPermissionCatalog()
 // 后端「按动作子码」鉴权（如 purchase:inbound:approve）时，粗码本身不出现在守卫里，
 // 需把 code:* 形态一并视为「已守卫」。
 const guardedCoarse = new Set([...guardCodes.keys()].map((c) => c.replace(/:[^:]+$/, '')));
+// 「有菜单+路由但后端无守卫」的例外：页面走的是**公开端点**（设计上免鉴权）。
+// 例：唯一码溯源 → /api/trace-public（消费者扫码查真伪，不能要求登录态）。
+const KNOWN_NO_BACKEND = new Map([
+  ['inventory:unique_code', '溯源页走公开端点 /api/trace-public（trace-public.controller，设计上免鉴权）'],
+]);
 for (const code of resourceCodes) {
   const inMenu = menuPerm.has(code);
   const inRoute = [...routePerm.values()].includes(code);
   const inGuard = guardCodes.has(code) || guardedCoarse.has(code);
+  if (inMenu && inRoute && !inGuard && KNOWN_NO_BACKEND.has(code)) continue;
   if (!inMenu && !inRoute && !inGuard) {
     warnings.push(`权限码 ${code} 无菜单、无路由、无后端守卫 → 疑孤儿，确认后应从目录删除`);
   } else if (inMenu && inRoute && !inGuard) {
@@ -113,7 +119,17 @@ for (const code of resourceCodes) {
 }
 
 // ---- 告警 5：一码多菜单复用（权限树只显示一条，用户会「看不到」其他功能）
+//
+// 白名单：确属「同一资源、多个入口页」，且共享的是同一个后端端点 —— 拆码反而会造成
+// 「页面能开、接口 403」。这些是有意设计，不告警；新增复用必须在此登记并说明理由。
+const ALLOWED_REUSE = new Map([
+  ['base:size-group', '尺码组 与 尺码组与尺码关系：同一尺码组业务域，共用一个控制器'],
+  ['report:purchase', '成衣采购查询 与 面辅料采购查询：共用同一端点 GET /api/report/purchase'],
+  ['tradeshow:preorder', '预订单 与 预订汇总：共用 pre-order.controller'],
+  ['member:manage', '会员运营 与 会员管理：同一会员主数据，共用 member.controller'],
+]);
 for (const [code, labels] of menuPerm) {
+  if (ALLOWED_REUSE.has(code)) continue;
   if (labels.length > 1) {
     const msg = `一码多菜单复用 ${code} → ${labels.join(' | ')}：权限树只会显示其中一条（label 被覆盖），其余功能在权限管理中「看不到」且无法独立授权`;
     if (STRICT) errors.push(msg);

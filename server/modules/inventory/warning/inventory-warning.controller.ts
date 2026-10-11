@@ -1,5 +1,6 @@
 import { BadRequestException, Controller, Get, Query } from '@nestjs/common';
 import { NeedLogin } from '@lark-apaas/fullstack-nestjs-core';
+import { CheckPermission } from '../../../common/decorators/check-permission.decorator';
 import { InventoryWarningService } from './inventory-warning.service';
 import type {
   InventoryWarningItem,
@@ -7,6 +8,7 @@ import type {
 } from '@shared/api.interface';
 
 @NeedLogin()
+@CheckPermission('inventory:warning')
 @Controller('api/inventory/warning')
 export class InventoryWarningController {
   constructor(

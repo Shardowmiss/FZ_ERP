@@ -9,6 +9,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { RbacService } from '../rbac/rbac.service';
+import { CheckPermission } from '../../common/decorators/check-permission.decorator';
 import {
   DistributionPortalService,
   PortalQuery,
@@ -18,6 +19,9 @@ import {
  * 分销门户控制器。
  * 所有端点均通过 x-auth-token 解析当前登录用户，并按其绑定的分销节点子树
  * 过滤数据，确保“一级/二级分销商只能看到自己节点（及下级）的采购单”。
+ *
+ * 2026-10-11：此前 7 个端点**完全没有权限守卫**——任何登录用户都能确认采购单、
+ * 绑定分销节点（越权写）。现已按门户 5 个子页拆分为 5 个权限码逐端点守卫。
  */
 @Controller('api/distribution/portal')
 export class DistributionPortalController {
@@ -39,6 +43,7 @@ export class DistributionPortalController {
   }
 
   /** 当前用户绑定的分销节点列表（含层级、角色）。 */
+  @CheckPermission('distribution:portal_partners')
   @Get('my-partners')
   async myPartners(@Headers('x-auth-token') token: string) {
     const uid = await this.resolveUserId(token);
@@ -46,6 +51,7 @@ export class DistributionPortalController {
   }
 
   /** 我的采购单（下游成衣采购单 = 总部/上级卖给本节点的销售单镜像）。 */
+  @CheckPermission('distribution:portal_po')
   @Get('purchase-orders')
   async purchaseOrders(
     @Headers('x-auth-token') token: string,
@@ -56,6 +62,7 @@ export class DistributionPortalController {
   }
 
   /** 我的采购退货单（下游成衣采购退货单 = 上级对本节点的销售退货镜像）。 */
+  @CheckPermission('distribution:portal_pr')
   @Get('purchase-returns')
   async purchaseReturns(
     @Headers('x-auth-token') token: string,
@@ -66,6 +73,7 @@ export class DistributionPortalController {
   }
 
   /** 门户概览：采购单 / 退货单 数量与金额汇总。 */
+  @CheckPermission('distribution:portal_overview')
   @Get('summary')
   async summary(@Headers('x-auth-token') token: string) {
     const uid = await this.resolveUserId(token);
@@ -76,6 +84,7 @@ export class DistributionPortalController {
    * 分配用户到分销节点（仅超级管理员）。
    * body: { userId: string, partnerIds: string[] }
    */
+  @CheckPermission('distribution:portal_partners')
   @Post('assign-partners')
   async assignPartners(
     @Headers('x-auth-token') token: string,
@@ -95,6 +104,7 @@ export class DistributionPortalController {
    * 仅能确认属于当前用户可见子树的采购单。
    * body: { orderId: string }
    */
+  @CheckPermission('distribution:portal_po')
   @Post('purchase-orders/confirm')
   async confirmPurchaseOrder(
     @Headers('x-auth-token') token: string,
@@ -109,6 +119,7 @@ export class DistributionPortalController {
   }
 
   /** 上下游应收应付对账视图。 */
+  @CheckPermission('distribution:portal_recon')
   @Get('reconciliation')
   async reconciliation(@Headers('x-auth-token') token: string) {
     const uid = await this.resolveUserId(token);

@@ -4,6 +4,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { NeedLogin } from '@lark-apaas/fullstack-nestjs-core';
+import { CheckPermission } from '../../common/decorators/check-permission.decorator';
 import { DashboardService } from './dashboard.service';
 import type {
   DashboardStats,
@@ -12,7 +13,12 @@ import type {
   InventoryWarningItem,
 } from '@shared/api.interface';
 
+/**
+ * 数据看板：此前 4 个端点完全无守卫（任何登录用户都能看全公司经营概览）。
+ * 补 dashboard:view 守卫；因历史上人人可看，同步脚本会把该码补授给全部既有角色（零回归）。
+ */
 @NeedLogin()
+@CheckPermission('dashboard:view')
 @Controller('api/dashboard')
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}

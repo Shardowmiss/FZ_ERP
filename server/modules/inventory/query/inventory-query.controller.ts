@@ -1,5 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { NeedLogin } from '@lark-apaas/fullstack-nestjs-core';
+import { CheckPermission } from '../../../common/decorators/check-permission.decorator';
 import { InventoryQueryService } from './inventory-query.service';
 import type {
   InventoryStock,
@@ -8,6 +9,7 @@ import type {
 } from '@shared/api.interface';
 
 @NeedLogin()
+@CheckPermission('inventory:query')
 @Controller('api/inventory/query')
 export class InventoryQueryController {
   constructor(

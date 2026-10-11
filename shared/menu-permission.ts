@@ -21,6 +21,21 @@
  * 父子继承（见 permission.guard / rbac.service.checkPermission）保证「持有粗码即拥有全部动作」零回归；
  * 后续要把某资源细化到动作级鉴权，只需把对应控制器的 @CheckPermission 从粗码改为 `:动作` 子码，
  * 结构层无需任何改动。
+ *
+ * ── 2026-10-11 第二轮：权限码 ↔ 后端守卫 全面对齐 ──────────────────────────────
+ * 背景（用户报障）：「权限配置与登录后的实际功能不一致」，且「有些功能模块没进权限配置」。
+ * 逐条实读源码后确认根因分三类：
+ *   A) 菜单声明码 ≠ 后端真实守卫码。例：零售单菜单写 sales:order，实际接口
+ *      /api/retail 的守卫却是 retail:view（会员运营的码）→ 持 sales:order 者页面能开、接口 403；
+ *      反向持 retail:view 者却能操作零售单。同类还有 补货建议（菜单 inventory:warning /
+ *      接口守卫 inventory:inbound）、订货会主单（菜单 tradeshow:preorder / 接口 tradeshow:manage）、
+ *      移动盘点+条码（菜单 inventory:query / 接口 inventory:stocktake）。
+ *   B) 一码多菜单复用 → 权限树吞并，其余功能「看不到」（款号属性维护即此因）。
+ *   C) 有菜单+有路由但后端完全无守卫 → 任何登录用户都能调（报表 7 个查询端点等）。
+ * 处置：本轮把「菜单 permission」严格对齐到「该页面实际调用接口的 @CheckPermission 码」，
+ *      并为无守卫端点补守卫；拆码带来的授权变化由 scripts/sync-permission-split.cjs 幂等补授。
+ * 少数「同一资源多个入口页」场景（尺码组/尺码组与尺码关系、成衣/面辅料采购查询共用一个端点）
+ * 保留复用，属有意设计，已在 scripts/check-permission-sync.cjs 的 ALLOWED_REUSE 中白名单声明。
  */
 
 /**
@@ -182,8 +197,11 @@ export const MENU_STRUCTURE: MenuModuleDef[] = [
       { key: 'sales-outbound', label: '销售出库', path: '/sales/outbound', permission: 'sales:outbound', group: true, actions: ['view', 'create', 'edit', 'approve', 'delete', 'void', 'print'] },
       { key: 'sales-return', label: '销售退货', path: '/sales/return', permission: 'sales:return', group: true, actions: ['view', 'create', 'edit', 'approve', 'delete', 'void', 'print'] },
       { key: 'sales-reconciliation', label: '销售对账', path: '/sales/reconciliation', permission: 'sales:reconciliation', readOnly: true },
-      { key: 'retail-order', label: '零售单', path: '/retail/order', permission: 'sales:order' },
-      { key: 'retail-return', label: '零售退货单', path: '/retail/return', permission: 'sales:return' },
+      // 零售单 / 零售退货单：此前菜单错挂 sales:order / sales:return，但它们实际调用的
+      // /api/retail、/api/retail/return 守卫是 retail:view（会员运营的码）→ 双向不一致。
+      // 独立成码后与后端守卫（retail.controller）严格对齐。
+      { key: 'retail-order', label: '零售单', path: '/retail/order', permission: 'sales:retail' },
+      { key: 'retail-return', label: '零售退货单', path: '/retail/return', permission: 'sales:retail_return' },
       { key: 'omni-main', label: '全渠道订单', path: '/omni', permission: 'omni:manage' },
     ],
   },
@@ -199,12 +217,16 @@ export const MENU_STRUCTURE: MenuModuleDef[] = [
       { key: 'inv-transfer', label: '调拨单', path: '/inventory/transfer', permission: 'inventory:transfer' },
       { key: 'inv-stocktake', label: '盘点单', path: '/inventory/stocktake', permission: 'inventory:stocktake' },
       { key: 'inv-warning', label: '库存预警', path: '/inventory/warning', permission: 'inventory:warning' },
-      { key: 'inv-barcode', label: '条码/批次', path: '/inventory/barcode', permission: 'inventory:query' },
-      { key: 'inv-mobile-stocktake', label: '移动盘点', path: '/inventory/mobile-stocktake', permission: 'inventory:stocktake' },
+      // 条码/批次：此前挂 inventory:query，但其接口（GET /api/inventory/batch、
+      // POST /api/inventory/barcode/generate）在 inventory-mobile.controller 下守卫为
+      // inventory:stocktake → 三方不一致。独立成码 inventory:barcode 并与后端对齐。
+      { key: 'inv-barcode', label: '条码/批次', path: '/inventory/barcode', permission: 'inventory:barcode' },
+      { key: 'inv-mobile-stocktake', label: '移动盘点', path: '/inventory/mobile-stocktake', permission: 'inventory:stocktake_mobile' },
       // 吊牌打印：独立成码。此前挂 inventory:query，导致任何持「库存查询」者都能改
       // 唯一码参数、增删模板（后端起见，hangtag.controller 已改为 class 级 inventory:hangtag 守卫）。
       { key: 'inv-hangtag-print', label: '吊牌打印', path: '/inventory/hangtag-print', permission: 'inventory:hangtag' },
-      { key: 'inv-unique-code-trace', label: '唯一码溯源', path: '/inventory/unique-code-trace', permission: 'inventory:query', readOnly: true },
+      // 唯一码溯源页为纯前端展示（无后端调用），独立成码以便在权限树中可见、可单独授权。
+      { key: 'inv-unique-code-trace', label: '唯一码溯源', path: '/inventory/unique-code-trace', permission: 'inventory:unique_code', readOnly: true },
     ],
   },
   {
@@ -212,7 +234,9 @@ export const MENU_STRUCTURE: MenuModuleDef[] = [
     label: '补货管理',
     sortOrder: 7,
     children: [
-      { key: 'inv-replenish', label: '补货建议（采购向）', path: '/inventory/replenish', permission: 'inventory:warning' },
+      // 补货建议（采购向）：此前菜单 inventory:warning，但其接口 /api/inventory/replenish
+      // 的守卫却是 inventory:inbound → 持 inventory:warning 者页面能开、接口 403。独立成码。
+      { key: 'inv-replenish', label: '补货建议（采购向）', path: '/inventory/replenish', permission: 'inventory:replenish' },
       { key: 'replenish-plan', label: '补货计划（门店向）', path: '/inventory/replenish-plan', permission: 'inventory:replenish-plan' },
       { key: 'replenish-template', label: '补货模板（门店向）', path: '/inventory/replenish-template', permission: 'inventory:replenish-template' },
     ],
@@ -227,7 +251,9 @@ export const MENU_STRUCTURE: MenuModuleDef[] = [
       { key: 'receipt', label: '收款单', path: '/finance/receipt', permission: 'finance:receipt' },
       { key: 'payment', label: '付款单', path: '/finance/payment', permission: 'finance:payment' },
       { key: 'profit', label: '毛利分析', path: '/finance/profit', permission: 'finance:profit' },
-      { key: 'month-close', label: '月结管理', path: '/finance/month-close', permission: 'finance:profit' },
+      // 月结管理：此前与毛利分析共用 finance:profit（权限树只显示一条），且后端
+      // month-close.controller 用的也是 finance:profit → 毛利/月结无法分别授权。独立成码。
+      { key: 'month-close', label: '月结管理', path: '/finance/month-close', permission: 'finance:month_close' },
     ],
   },
   {
@@ -235,19 +261,27 @@ export const MENU_STRUCTURE: MenuModuleDef[] = [
     label: '报表中心',
     sortOrder: 9,
     children: [
-      { key: 'report-garment-purchase', label: '成衣采购查询', path: '/report/garment-purchase', permission: 'report:garment_purchase', readOnly: true },
-      { key: 'report-material-purchase', label: '面辅料采购查询', path: '/report/material-purchase', permission: 'report:material_purchase', readOnly: true },
+      // 成衣/面辅料采购查询：两者共用同一个后端端点 GET /api/report/purchase，
+      // 属「同一资源两个入口页」，有意复用同一码（见 ALLOWED_REUSE）。
+      { key: 'report-garment-purchase', label: '成衣采购查询', path: '/report/garment-purchase', permission: 'report:purchase', readOnly: true },
+      { key: 'report-material-purchase', label: '面辅料采购查询', path: '/report/material-purchase', permission: 'report:purchase', readOnly: true },
       { key: 'report-sales', label: '销售查询', path: '/report/sales', permission: 'report:sales', readOnly: true },
       { key: 'report-retail', label: '零售查询', path: '/report/retail', permission: 'report:retail', readOnly: true },
-      { key: 'retail-report', label: '零售报表', path: '/retail/report', permission: 'sales:order' },
+      // 零售报表：此前挂 sales:order（与销售订单复用），实际接口是
+      // GET /api/retail/report/summary（retail-report.controller）。独立成码。
+      { key: 'retail-report', label: '零售报表', path: '/retail/report', permission: 'report:retail_report' },
       { key: 'report-inventory', label: '库存查询', path: '/report/inventory', permission: 'report:inventory', readOnly: true },
       { key: 'report-transfer', label: '调拨查询', path: '/report/transfer', permission: 'report:transfer', readOnly: true },
       { key: 'report-stock-movement', label: '进销存查询', path: '/report/stock-movement', permission: 'report:stockmovement', readOnly: true },
       { key: 'report-pivot', label: '透视分析', path: '/report/pivot', permission: 'report:pivot', readOnly: true },
-      { key: 'report-pivot-semantics', label: '透视字段配置', path: '/report/pivot/semantics', permission: 'system:config' },
-      { key: 'analytics-forecast', label: 'AI销量预测', path: '/analytics/forecast', permission: 'dashboard:view', readOnly: true },
-      { key: 'analytics-lifecycle', label: '商品生命周期', path: '/analytics/lifecycle', permission: 'dashboard:view', readOnly: true },
-      { key: 'analytics-bi', label: '自助BI钻取', path: '/analytics/bi', permission: 'dashboard:view', readOnly: true },
+      // 透视字段配置：此前挂 system:config（与系统配置复用，权限树看不到），
+      // 其接口为 /api/report/pivot/semantic-admin（4 个端点）。独立成码并与后端对齐。
+      { key: 'report-pivot-semantics', label: '透视字段配置', path: '/report/pivot/semantics', permission: 'report:semantic' },
+      // AI销量预测 / 商品生命周期 / 自助BI钻取：此前三者共用 dashboard:view，
+      // 权限树只显示一条。各自接口为 /api/analytics/{forecast,lifecycle,bi}，独立成码。
+      { key: 'analytics-forecast', label: 'AI销量预测', path: '/analytics/forecast', permission: 'analytics:forecast', readOnly: true },
+      { key: 'analytics-lifecycle', label: '商品生命周期', path: '/analytics/lifecycle', permission: 'analytics:lifecycle', readOnly: true },
+      { key: 'analytics-bi', label: '自助BI钻取', path: '/analytics/bi', permission: 'analytics:bi', readOnly: true },
     ],
   },
   {
@@ -256,7 +290,9 @@ export const MENU_STRUCTURE: MenuModuleDef[] = [
     sortOrder: 10,
     children: [
       { key: 'trade-show-theme', label: '订货会主题', path: '/trade-show/theme', permission: 'tradeshow:theme' },
-      { key: 'trade-show-list', label: '订货会主单', path: '/trade-show/list', permission: 'tradeshow:preorder' },
+      // 订货会主单：此前挂 tradeshow:preorder（与预订单复用），但其接口
+      // /api/trade-show（trade-show.controller）守卫为 tradeshow:manage → 不一致。对齐后端。
+      { key: 'trade-show-list', label: '订货会主单', path: '/trade-show/list', permission: 'tradeshow:manage' },
       { key: 'pre-order', label: '预订单', path: '/trade-show/pre-order', permission: 'tradeshow:preorder' },
       { key: 'pre-order-summary', label: '预订汇总', path: '/trade-show/summary', permission: 'tradeshow:preorder' },
       { key: 'allocation', label: '配货管理', path: '/trade-show/allocation', permission: 'tradeshow:allocation' },
@@ -267,7 +303,20 @@ export const MENU_STRUCTURE: MenuModuleDef[] = [
     label: '会员私域',
     sortOrder: 11,
     children: [
-      { key: 'member-main', label: '会员运营', path: '/member', permission: 'retail:view', readOnly: true },
+      // 会员运营：此前挂 retail:view，但其接口走 /api/member（member.controller 守卫
+      // member:manage）与 member:merge → 页面能开、接口 403。对齐后端 member:manage。
+      //
+      // 注意：本项与「会员管理」共用 member:manage，而 buildPermissionCatalog 的 Pass 1
+      // 以**首个**出现者决定该码的动作集合。会员运营页本身有新增/编辑会员能力，
+      // 故必须显式声明完整 CRUD；若标 readOnly 会把共享码压成仅 :view，
+      // 导致 member:manage:create/edit/delete 被 prune 掉（真实回归，已踩过一次）。
+      {
+        key: 'member-main',
+        label: '会员运营',
+        path: '/member',
+        permission: 'member:manage',
+        actions: ['view', 'create', 'edit', 'delete'],
+      },
       { key: 'member-manage', label: '会员管理', path: '/member/manage', permission: 'member:manage' },
       { key: 'member-level', label: '会员等级', path: '/member/level', permission: 'member:level' },
     ],
@@ -307,11 +356,14 @@ export const MENU_STRUCTURE: MenuModuleDef[] = [
     label: '分销门户',
     sortOrder: 15,
     children: [
-      { key: 'portal-overview', label: '门户概览', path: '/distribution/portal', permission: 'distribution:portal', readOnly: true },
-      { key: 'portal-po', label: '我的采购单', path: '/distribution/portal/purchase-orders', permission: 'distribution:portal', readOnly: true },
-      { key: 'portal-pr', label: '我的采购退货单', path: '/distribution/portal/purchase-returns', permission: 'distribution:portal', readOnly: true },
-      { key: 'portal-recon', label: '应收应付对账', path: '/distribution/portal/reconciliation', permission: 'distribution:portal', readOnly: true },
-      { key: 'portal-partners', label: '我的分销节点', path: '/distribution/portal/partners', permission: 'distribution:portal', readOnly: true },
+      // 分销门户 5 个子页此前全部共用 distribution:portal（权限树只显示一条），
+      // 且后端 distribution-portal.controller 7 个端点完全无守卫 → 任何登录用户
+      // 都能确认采购单 / 绑定分销节点。按端点拆分并与后端守卫对齐。
+      { key: 'portal-overview', label: '门户概览', path: '/distribution/portal', permission: 'distribution:portal_overview', readOnly: true },
+      { key: 'portal-po', label: '我的采购单', path: '/distribution/portal/purchase-orders', permission: 'distribution:portal_po' },
+      { key: 'portal-pr', label: '我的采购退货单', path: '/distribution/portal/purchase-returns', permission: 'distribution:portal_pr', readOnly: true },
+      { key: 'portal-recon', label: '应收应付对账', path: '/distribution/portal/reconciliation', permission: 'distribution:portal_recon', readOnly: true },
+      { key: 'portal-partners', label: '我的分销节点', path: '/distribution/portal/partners', permission: 'distribution:portal_partners' },
     ],
   },
 ];
@@ -326,13 +378,30 @@ const CANONICAL_MODULE: Record<string, string> = {
   'inventory:query': 'inventory',
   'inventory:warning': 'inventory',
   'inventory:stocktake': 'inventory',
+  'inventory:barcode': 'inventory',
+  'inventory:unique_code': 'inventory',
+  'inventory:stocktake_mobile': 'inventory',
+  'inventory:replenish': 'channel-replenish',
   'sales:order': 'sales',
   'sales:return': 'sales',
+  'sales:retail': 'sales',
+  'sales:retail_return': 'sales',
   'system:config': 'system',
-  'dashboard:view': 'report',
-  'finance:profit': 'finance',
+  'finance:month_close': 'finance',
+  'report:purchase': 'report',
+  'report:retail_report': 'report',
+  'report:semantic': 'report',
+  'analytics:forecast': 'report',
+  'analytics:lifecycle': 'report',
+  'analytics:bi': 'report',
   'tradeshow:preorder': 'trade-show',
-  'retail:view': 'member',
+  'tradeshow:manage': 'trade-show',
+  'distribution:portal_overview': 'distribution-portal',
+  'distribution:portal_po': 'distribution-portal',
+  'distribution:portal_pr': 'distribution-portal',
+  'distribution:portal_recon': 'distribution-portal',
+  'distribution:portal_partners': 'distribution-portal',
+  'member:manage': 'member',
 };
 
 /**
@@ -343,14 +412,49 @@ const CANONICAL_MODULE: Record<string, string> = {
  * 已移除 base:warehouse（仓库管理）、sales:view（销售-查看）、product:barcode（商品-条形码管理）
  * —— 这三者对应的功能模块在系统中已不存在（或已被店仓管理取代）。删除由
  * rbac.service.ensureRbacCatalog 的 prune 步骤同步到 rbac_permission 表及角色授权。
+ *
+ * 第二轮补充：retail:view 已从菜单移除（会员运营改挂 member:manage、零售单改挂 sales:retail），
+ * 且后端 retail.controller 守卫同步改为 sales:retail / sales:retail_return，
+ * 故 retail:view 不再需要保留（prune 会自动清理）。
  */
 const EXTRA_PERMISSIONS: { code: string; name: string; module: string }[] = [
   { code: 'dashboard', name: '仪表盘(根)', module: 'dashboard' },
+  // 数据看板 / 指标层：analytics.controller 与 metrics.controller 仍以 dashboard:view 守卫，
+  // 但拆分后菜单已不再声明此码（三个分析页改为 analytics:*），故在此保留，避免被 prune 掉导致接口 403。
+  { code: 'dashboard:view', name: '数据看板-查看', module: 'dashboard' },
   { code: 'pos:receiver:manage', name: 'POS接收-补偿管理', module: 'pos-pricing' },
-  // 委外管理（subcontract:manage）已提升为菜单项（见 MENU_STRUCTURE 生产管理），故不在此声明。
-  // 订货会主单：trade-show.controller 7 处守卫用此码（与 theme/preorder/allocation 并列）。
-  { code: 'tradeshow:manage', name: '订货会主单管理', module: 'trade-show' },
 ];
+
+/**
+ * 权限码「重命名 / 拆分」映射：旧码 → 承接它的新码列表。
+ *
+ * 用于 ensureRbacCatalog 的 prune 步骤——删除旧码**之前**先把持有旧码的角色平移授权到新码。
+ * 为什么必须：prune 会连 rbac_role_permission 一起删，若无迁移，拆码就等于静默剥夺授权。
+ * 真实事故（2026-10-11）：把 distribution:portal 拆成 5 个子码后，dealer 角色
+ * 因旧码授权被连带删除而丢失整个分销门户访问，且事后无法追溯谁曾持有。
+ *
+ * 动作子码无需逐一登记：迁移时会先查自身，未命中则回退到父码映射并追加相同后缀
+ * （如 `distribution:portal:view` → 父 `distribution:portal` → `...:view`）。
+ */
+export const PERMISSION_CODE_MIGRATION: Record<string, string[]> = {
+  // 分销门户：1 个粗码 → 5 个子页独立码
+  'distribution:portal': [
+    'distribution:portal_overview',
+    'distribution:portal_po',
+    'distribution:portal_pr',
+    'distribution:portal_recon',
+    'distribution:portal_partners',
+  ],
+  // 采购查询：成衣 / 面辅料 两个码 → 合并为 report:purchase（共用同一端点）
+  'report:garment_purchase': ['report:purchase'],
+  'report:material_purchase': ['report:purchase'],
+  // 零售：retail:view（会员运营的旧码）→ 零售单 / 零售退货单 真实守卫码
+  'retail:view': ['sales:retail', 'sales:retail_return'],
+  // 商品资料拆码（第一轮治理）
+  'base:style': ['base:color-group', 'base:style-attribute', 'base:code-rule'],
+  'base:sku': ['base:size-group'],
+  'base:size': ['base:size-group'],
+};
 
 export interface CatalogEntry {
   code: string;

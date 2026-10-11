@@ -12,7 +12,7 @@ export class AnalyticsController {
   constructor(private readonly analyticsService: AnalyticsService) {}
 
   // P1-1 销量预测
-  @CheckPermission('dashboard:view')
+  @CheckPermission('analytics:forecast')
   @Get('forecast')
   async forecast(
     @Query('skuId') skuId: string,
@@ -23,12 +23,13 @@ export class AnalyticsController {
   }
 
   // P1-2 生命周期列表
-  @CheckPermission('dashboard:view')
+  @CheckPermission('analytics:lifecycle')
   @Get('lifecycle')
   async lifecycle(@Query('days') days = '90') {
     return this.analyticsService.lifecycleList(parseInt(days, 10) || 90);
   }
 
+  @CheckPermission('analytics:lifecycle')
   @Post('lifecycle/set')
   async setLifecycle(
     @Body() body: { styleNo: string; status: string },
@@ -39,7 +40,7 @@ export class AnalyticsController {
   }
 
   // P1-5 自助 BI 钻取
-  @CheckPermission('dashboard:view')
+  @CheckPermission('analytics:bi')
   @Get('bi')
   async bi(
     @Query('dim') dim: string,

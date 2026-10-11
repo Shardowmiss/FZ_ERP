@@ -4,10 +4,12 @@ import {
   Query,
 } from '@nestjs/common';
 import { NeedLogin } from '@lark-apaas/fullstack-nestjs-core';
+import { CheckPermission } from '../../../common/decorators/check-permission.decorator';
 import { OperationLogService } from './operation-log.service';
 import type { OperationLog, PaginationResult } from '@shared/api.interface';
 
 @NeedLogin()
+@CheckPermission('system:operation_log')
 @Controller('api/system/operation-log')
 export class OperationLogController {
   constructor(private readonly operationLogService: OperationLogService) {}

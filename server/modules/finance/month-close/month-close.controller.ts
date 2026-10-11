@@ -35,7 +35,7 @@ export class MonthCloseController {
   }
 
   @NeedLogin()
-  @CheckPermission('finance:profit')
+  @CheckPermission('finance:month_close')
   @Post('/:id/close')
   async close(
     @Param('id') id: string,
@@ -46,7 +46,7 @@ export class MonthCloseController {
   }
 
   @NeedLogin()
-  @CheckPermission('finance:profit')
+  @CheckPermission('finance:month_close')
   @Post('/:id/reopen')
   async reopen(
     @Param('id') id: string,
