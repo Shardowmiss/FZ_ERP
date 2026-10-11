@@ -43,13 +43,13 @@ function findAncestorMenus(
     return false;
   };
   dfs(tree);
-  // 模块节点（code 以 mod: 前缀）与带子节点的资源节点均作为祖先参与自动勾选，
-  // 确保勾选动作子码时父资源码、父模块码一并勾上。
-  return path.filter(
-    (n: PermissionTreeNode) =>
-      (!!n.code && n.code.startsWith('mod:')) ||
-      (n.children?.length ?? 0) > 0,
-  );
+  // ⚠️ 关键修复：仅模块节点（code 以 mod: 前缀）作为祖先参与自动勾选，用于权限树分组展示。
+  // 不再连带勾选「带子节点的资源节点」（如 base:color）。
+  // 旧逻辑会在勾选动作子码（如 base:color:view）时，把父资源粗码 base:color 一并写入角色；
+  // 而粗码在权限继承下会隐式放行其全部动作（create/edit/delete），正是「仅配查看却能新增」越权的根因。
+  // 资源菜单的可见性改由 AuthContext.hasMenu 的子→父继承保证（持有任一动作子码即可见父资源菜单），
+  // 因此无需、也不应再把资源粗码写进角色权限集合。
+  return path.filter((n: PermissionTreeNode) => !!n.code && n.code.startsWith('mod:'));
 }
 
 /**

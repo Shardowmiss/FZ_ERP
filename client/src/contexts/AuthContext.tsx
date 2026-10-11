@@ -108,12 +108,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const hasPermission = (code: string) => {
     if (!user) return false;
     if (user.roleCodes?.includes('admin')) return true;
-    return permissions.includes(code);
+    // 父子继承：持有粗码（资源/模块）即隐式放行其全部 `:` 子码（动作）。
+    // 例：持有 base:color ⇒ 通过 base:color:create 校验。反向不成立（子码不推父码），
+    // 故"仅查看"角色持 base:color:view 时无法通过 base:color:create，杜绝越权新增。
+    return (
+      permissions.includes(code) ||
+      permissions.some((p) => code.startsWith(p + ':'))
+    );
   };
 
   const hasMenu = (code: string) => {
     if (!user) return false;
-    return permissions.includes(code);
+    // 菜单可见性：持有本资源码，或持有其下任意动作子码（如仅持 base:color:view 也应看到颜色菜单）。
+    // 反向继承，确保"查看"角色仍能进入菜单、但无法执行新增/编辑/删除。
+    return (
+      permissions.includes(code) ||
+      permissions.some((p) => p.startsWith(code + ':'))
+    );
   };
 
   return (

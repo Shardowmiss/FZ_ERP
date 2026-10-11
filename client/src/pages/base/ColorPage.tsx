@@ -1,5 +1,6 @@
 import { StatusBadge } from '@client/src/components/ui/status-badge';
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '@client/src/contexts/AuthContext';
 import { baseApi } from '@client/src/api';
 import type { Color, PaginationResult } from '@shared/api.interface';
 import { toast } from 'sonner';
@@ -79,6 +80,12 @@ const ColorPage: React.FC = () => {
 
   const [submitting, setSubmitting] = useState(false);
 
+  // 动作级权限门禁：仅当角色持有对应动作子码时，才渲染操作入口（与后端 @CheckPermission 双重保险）。
+  const { hasPermission: canDo } = useAuth();
+  const canCreate = canDo('base:color:create');
+  const canEdit = canDo('base:color:edit');
+  const canDelete = canDo('base:color:delete');
+
   const handleSave = async () => {
     if (submitting) return;
     if (!form.code.trim()) { toast('请输入编码'); return; }
@@ -120,12 +127,14 @@ const ColorPage: React.FC = () => {
     <div className="bg-white rounded-lg shadow-sm p-5">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold">颜色管理</h2>
-        <button
-          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors"
-          onClick={openAdd}
-        >
-          + 新增颜色
-        </button>
+        {canCreate && (
+          <button
+            className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors"
+            onClick={openAdd}
+          >
+            + 新增颜色
+          </button>
+        )}
       </div>
 
       <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-200">
@@ -188,8 +197,8 @@ const ColorPage: React.FC = () => {
                   <td className="px-4 py-3 text-gray-600">{item.remark || '-'}</td>
                   <td className="px-4 py-3 text-gray-500">{item.createdAt?.replace('T', ' ').slice(0, 19) || '-'}</td>
                   <td className="px-4 py-3">
-                    <button className="text-primary hover:text-primary/90 mr-3" onClick={() => openEdit(item)}>编辑</button>
-                    <button className="text-red-500 hover:text-red-700" onClick={() => handleDelete(item.id)}>删除</button>
+                    {canEdit && <button className="text-primary hover:text-primary/90 mr-3" onClick={() => openEdit(item)}>编辑</button>}
+                    {canDelete && <button className="text-red-500 hover:text-red-700" onClick={() => handleDelete(item.id)}>删除</button>}
                   </td>
                 </tr>
               ))

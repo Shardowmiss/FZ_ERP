@@ -9,6 +9,7 @@ import { CheckPermission } from '../../../common/decorators/check-permission.dec
 export class ColorController {
   constructor(private readonly colorService: ColorService) {}
 
+  @CheckPermission('base:color:view')
   @Get()
   async list(
     @Query('page') page?: string,
@@ -20,12 +21,13 @@ export class ColorController {
     return this.colorService.list(p, ps, keyword);
   }
 
+  @CheckPermission('base:color:view')
   @Get(':id')
   async detail(@Param('id') id: string): Promise<Color> {
     return this.colorService.detail(id);
   }
 
-  @CheckPermission('base:color')
+  @CheckPermission('base:color:create')
   @Post()
   async create(
     @Body() body: { code: string; name: string; hex: string; sortOrder?: number; status?: string; remark?: string },
@@ -33,7 +35,7 @@ export class ColorController {
     return this.colorService.create(body);
   }
 
-  @CheckPermission('base:color')
+  @CheckPermission('base:color:edit')
   @Put(':id')
   async update(
     @Param('id') id: string,
@@ -42,7 +44,7 @@ export class ColorController {
     return this.colorService.update(id, body);
   }
 
-  @CheckPermission('base:color')
+  @CheckPermission('base:color:delete')
   @Delete(':id')
   async remove(@Param('id') id: string): Promise<{ success: boolean }> {
     await this.colorService.remove(id);
