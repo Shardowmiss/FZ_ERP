@@ -6,6 +6,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { voidDraftDocument } from '@server/common/document-void';
 import { DRIZZLE_DATABASE, type PostgresJsDatabase } from '@lark-apaas/fullstack-nestjs-core';
 import { eq, and, desc, count, gte, lt, sql, inArray } from 'drizzle-orm';
@@ -55,6 +56,12 @@ export class GarmentPurchaseOrderService {
   constructor(
     @Inject(DRIZZLE_DATABASE) private readonly db: PostgresJsDatabase,
     private readonly numberGenerator: NumberGeneratorService,
+    // 反向镜像所需的 DistributionMirrorService 既不能在构造参数注入、也不能在顶层静态 import：
+    // swc 会为构造参数生成 design:paramtypes 元数据，它在类装饰期就对被引用的类求值；
+    // 而分销模块与本模块的采购服务互为引用，此刻对方正处于循环 require 的暂时性死区，
+    // 会直接抛 ReferenceError 令进程无法启动（forwardRef 只能解 DI 构造期的环，解不开 JS 加载期的环）。
+    // 因此改为：运行时 require 取类 + ModuleRef 取容器实例（二者都发生在方法执行期，模块早已加载完毕）。
+    private readonly moduleRef?: ModuleRef,
   ) {}
 
   private async generateOrderNo(
@@ -463,6 +470,30 @@ async delete(id: string): Promise<void> {
       .update(garmentPurchaseOrder)
       .set({ status: 'pending', updatedAt: new Date() })
       .where(eq(garmentPurchaseOrder.id, id));
+
+    // 反向镜像：经销商提交采购单后，自动为其上级生成对应的销售单。
+    // 仅对「分销场景」生效（采购单归属某分销节点、且上家恰为其上级），
+    // 普通向外部供应商的采购会在镜像内部被判定为不适用而静默跳过。
+    // 这里用 ModuleRef 惰性获取依赖，避开双向依赖的加载期死区（详见构造函数注释）。
+    await this.triggerReverseMirror(id);
+  }
+
+  /**
+   * 惰性获取分销镜像服务并触发反向镜像（下级采购单 → 上级销售单）。
+   * 失败只记录日志：镜像属于派生单据，绝不能反向拖垮采购单提交这一主流程。
+   */
+  private async triggerReverseMirror(orderId: string): Promise<void> {
+    if (!this.moduleRef) return; // 脚本直连场景未提供 ModuleRef
+    try {
+      // 运行时 require 取类（而非顶层静态 import），规避双向依赖的加载期死区；
+      // 再由 ModuleRef 从容器取实例。此二者均发生在方法执行期，模块早已加载完毕。
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { DistributionMirrorService } = require('../../distribution/distribution-mirror.service');
+      const mirror = this.moduleRef.get(DistributionMirrorService, { strict: false });
+      await mirror.mirrorFromPurchaseOrder(orderId);
+    } catch (err: any) {
+      this.logger.error(`反向镜像失败(采购单 ${orderId})：${err?.message ?? String(err)}`);
+    }
   }
 
   async approve(id: string): Promise<void> {

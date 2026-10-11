@@ -2782,6 +2782,10 @@ export const salesOrder = pgTable("sales_order", {
   mirrorStatus: varchar("mirror_status", { length: 10 }),
   mirrorError: text("mirror_error"),
   mirrorOrderId: uuid("mirror_order_id"),
+  // 反向镜像追溯：本单若由下游采购单反向生成，则指向该采购单；用于闭环去重，防止二次镜像。
+  // 注意与 sourceType 区分：后者表示来源场景(manual/trade_show/replenish_plan)，无关。
+  sourceDocId: uuid("source_doc_id"),
+  sourceDocType: varchar("source_doc_type", { length: 30 }),
   // System field: Creation time (auto-filled, do not modify)
   createdAt: customTimestamptz("_created_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
   // System field: Creator (auto-filled, do not modify)

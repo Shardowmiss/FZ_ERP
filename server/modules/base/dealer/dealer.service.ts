@@ -16,10 +16,12 @@ import {
   ilike,
   like,
   inArray,
+  sql,
+  isNull,
 } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 import { escapeLike } from '@server/common/utils/escape-like';
-import { dealer, store, preOrder, allocationItem, warehouse } from '@server/database/schema';
+import { dealer, store, preOrder, allocationItem, warehouse, supplier } from '@server/database/schema';
 import { encryptField, hmacField, decryptField } from '@server/common/crypto/field-encryption';
 import type { Dealer } from '@shared/api.interface';
 import { RequestContext, ALL_SCOPE } from '@server/common/context/request-context';
@@ -173,9 +175,17 @@ export class DealerService {
     }
 
     // 自生成主键，便于在写入前即可拼出 tree_path（前缀一致性约束）
+    // 注意：无上级时 parent 为 undefined，原写法 `parent?.treePath || `/${parent!.id}``
+    // 会对 undefined 取属性导致 TypeError（新建总部/根经销商必然踩中），此处改为显式分支。
     const newId = randomUUID();
-    const parentTreePath = parent?.treePath || `/${parent!.id}`;
-    const treePath = parentId ? `${parentTreePath}/${newId}` : `/${newId}`;
+    const treePath =
+      parent ? `${parent.treePath || `/${parent.id}`}/${newId}` : `/${newId}`;
+
+    // 该节点挂到了某个上级之下 ⇒ 上级从此需要对下级开销售单，需具备「供应商身份」。
+    // 在此自动补齐，避免再次出现 0006 迁移后那种"中间节点缺供应商身份导致镜像静默跳过"的漂移。
+    if (parent) {
+      await this.ensureSupplierIdentity(parent.id);
+    }
 
     const values: DealerInsert = {
       id: newId,
@@ -359,6 +369,62 @@ export class DealerService {
   }
 
   /**
+   * 确保指定经销商具备「供应商身份」（supplier.partner_id = dealer.id）。
+   *
+   * 为什么必须有：多级分销镜像引擎 DistributionMirrorService.resolveMirrorContext 是
+   * 「下级 → parent_id → 上级的 supplier 主数据」三级跳转来定位上家的。任何拥有下级的节点
+   * 若缺少该身份，引擎会 return null 并把销售单静默标记为 mirror_status='skipped'，
+   * 下游采购单一张都不会生成 —— 这正是本次修复前 39 个节点踩中的坑。
+   *
+   * 幂等：已存在（且未软删）则直接返回，不重复创建。
+   */
+  private async ensureSupplierIdentity(dealerId: string): Promise<void> {
+    const existing = await this.db
+      .select({ id: supplier.id })
+      .from(supplier)
+      .where(and(eq(supplier.partnerId, dealerId), isNull(supplier.deletedAt)))
+      .limit(1);
+    if (existing.length > 0) return;
+
+    const dealerRows = await this.db
+      .select({
+        name: dealer.name,
+        contactPerson: dealer.contactPerson,
+        phone: dealer.phone,
+        phoneHmac: dealer.phoneHmac,
+        address: dealer.address,
+      })
+      .from(dealer)
+      .where(eq(dealer.id, dealerId))
+      .limit(1);
+    if (dealerRows.length === 0) return;
+    const d = dealerRows[0];
+
+    // 沿用现有 GYS#### 编号体系：取当前最大序号 +1，规避 code 唯一键冲突
+    const maxNoRows = await this.db
+      .select({
+        maxNo: sql<number>`coalesce(max(substring(${supplier.code} from 4)::int), 0)`,
+      })
+      .from(supplier)
+      .where(sql`${supplier.code} ~ '^GYS[0-9]+$'`);
+    const code = `GYS${String(Number(maxNoRows[0]?.maxNo ?? 0) + 1).padStart(4, '0')}`;
+
+    await this.db.insert(supplier).values({
+      code,
+      name: d.name,
+      contactPerson: d.contactPerson ?? null,
+      phone: d.phone ?? null,
+      phoneHmac: d.phoneHmac ?? null,
+      address: d.address ?? null,
+      supplyCategory: '分销供货',
+      remark: '多级分销：作为发货方自动生成的供应商身份',
+      status: 'active',
+      partnerId: dealerId,
+    });
+    this.logger.log(`已为「${d.name}」自动生成供应商身份 ${code}`);
+  }
+
+  /**
    * 将节点挂到新上级，并级联重建自身与全部后代的 tree_path / level / partner_type。
    * 采用「前缀替换」策略：后代新路径 = 新自身路径 + 旧自身路径后缀，层级整体平移 levelDelta。
    * 调用前需保证 newParentId 已通过环检测。
@@ -391,6 +457,12 @@ export class DealerService {
       newLevel = (parent.level ?? 0) + 1;
       newTreePath = `${parentTreePath}/${id}`;
       newPartnerType = `level${newLevel}`;
+    }
+
+    // 变更到某个上级之下 ⇒ 该上级从此需要对本节点开销售单，需具备「供应商身份」。
+    // 放在环检测通过之后、写库之前：既避免为非法上级脏写身份，也保证自节点落库前上级已就绪。
+    if (newParentId) {
+      await this.ensureSupplierIdentity(newParentId);
     }
 
     const levelDelta = newLevel - oldLevel;
