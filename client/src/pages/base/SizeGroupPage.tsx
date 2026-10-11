@@ -4,9 +4,17 @@ import type { SizeGroup, PaginationResult } from '@shared/api.interface';
 import { toast } from 'sonner';
 import { TableContainer, DataPagination } from '@client/src/components/ui';
 import { showConfirm } from '@lark-apaas/client-toolkit';
+import { useAuth } from '@client/src/contexts/AuthContext';
 import { errMsg } from '@/utils/errMsg';
 
 const SizeGroupPage: React.FC = () => {
+  // 动作级门控：仅授「尺码组·查看」的角色不得看到/使用新增、编辑、删除。
+  // 此前本页无任何权限门控 ⇒ 只读角色也能看到「+ 新增尺码组」（报障现象）。
+  // 注意用 hasPermission（严格动作级），不能用 hasMenu（访问级，会连只读角色一起放行）。
+  const { hasPermission } = useAuth();
+  const canCreate = hasPermission('base:size-group:create');
+  const canEdit = hasPermission('base:size-group:edit');
+  const canDelete = hasPermission('base:size-group:delete');
   const [list, setList] = useState<SizeGroup[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -111,12 +119,14 @@ const SizeGroupPage: React.FC = () => {
     <div className="bg-white rounded-lg shadow-sm p-5">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold">尺码组管理</h2>
-        <button
-          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors"
-          onClick={openAdd}
-        >
-          + 新增尺码组
-        </button>
+        {canCreate && (
+          <button
+            className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors"
+            onClick={openAdd}
+          >
+            + 新增尺码组
+          </button>
+        )}
       </div>
 
       <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-200">
@@ -163,8 +173,13 @@ const SizeGroupPage: React.FC = () => {
                   <td className="px-4 py-3">{item.name}</td>
                   <td className="px-4 py-3 text-gray-500">{item.createdAt?.replace('T', ' ').slice(0, 19) || '-'}</td>
                   <td className="px-4 py-3">
-                    <button className="text-primary hover:text-primary/90 mr-3" onClick={() => openEdit(item)}>编辑</button>
-                    <button className="text-red-500 hover:text-red-700" onClick={() => handleDelete(item.id)}>删除</button>
+                    {canEdit && (
+                      <button className="text-primary hover:text-primary/90 mr-3" onClick={() => openEdit(item)}>编辑</button>
+                    )}
+                    {canDelete && (
+                      <button className="text-red-500 hover:text-red-700" onClick={() => handleDelete(item.id)}>删除</button>
+                    )}
+                    {!canEdit && !canDelete && <span className="text-gray-400">-</span>}
                   </td>
                 </tr>
               ))

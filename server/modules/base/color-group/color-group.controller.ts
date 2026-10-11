@@ -25,19 +25,19 @@ export class ColorGroupController {
     return this.colorGroupService.detail(id);
   }
 
-  @CheckPermission('base:style')
+  @CheckPermission('base:color-group')
   @Post()
   async create(@Body() body: { code: string; name: string; colors: { name: string; value: string }[] }): Promise<ColorGroup> {
     return this.colorGroupService.create(body);
   }
 
-  @CheckPermission('base:style')
+  @CheckPermission('base:color-group')
   @Put(':id')
   async update(@Param('id') id: string, @Body() body: { code?: string; name?: string; colors?: { name: string; value: string }[] }): Promise<ColorGroup> {
     return this.colorGroupService.update(id, body);
   }
 
-  @CheckPermission('base:style')
+  @CheckPermission('base:color-group')
   @Delete(':id')
   async remove(@Param('id') id: string): Promise<{ success: boolean }> {
     await this.colorGroupService.remove(id);

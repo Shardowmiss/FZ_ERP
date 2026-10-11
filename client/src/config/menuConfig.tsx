@@ -138,7 +138,6 @@ const SizeGroupPage = React.lazy(() => import('@client/src/pages/base/SizeGroupP
 const MaterialPage = React.lazy(() => import('@client/src/pages/base/MaterialPage'));
 const MergeAuditPage = React.lazy(() => import('@client/src/pages/base/MergeAuditPage'));
 const SupplierPage = React.lazy(() => import('@client/src/pages/base/SupplierPage'));
-const WarehousePage = React.lazy(() => import('@client/src/pages/base/WarehousePage'));
 const ProductImportPage = React.lazy(() => import('@client/src/pages/base/ProductImportPage'));
 const StyleAttrDefPage = React.lazy(() => import('@client/src/pages/base/StyleAttrDefPage'));
 const DealerPage = React.lazy(() => import('@client/src/pages/base/DealerPage'));
@@ -278,20 +277,22 @@ export const routeComponents: Record<string, RouteEntry> = {
   '/dashboard': { component: DashboardPage },
   '/base/style': { component: StylePage, permission: 'base:style' },
   '/base/sku': { component: SkuPage, permission: 'base:sku' },
-  '/base/color-group': { component: ColorGroupPage, permission: 'base:style' },
-  '/base/size-group': { component: SizeGroupPage, permission: 'base:sku' },
+  '/base/color-group': { component: ColorGroupPage, permission: 'base:color-group' },
+  '/base/size-group': { component: SizeGroupPage, permission: 'base:size-group' },
   '/base/material': { component: MaterialPage, permission: 'base:material' },
   '/base/supplier': { component: SupplierPage, permission: 'base:supplier' },
-  '/base/warehouse': { component: WarehousePage, permission: 'base:warehouse' },
+  // /base/warehouse 已下线：仓库管理模块不存在（无菜单入口），仓库维护随「店仓合一」
+  // 归入 /base/store（base:store）。仓库实体仍被入库/出库/调拨页面作为下拉使用
+  // （GET /api/base/warehouse/options），不依赖权限码，故下线路由不影响这些页面。
   '/base/product-import': { component: ProductImportPage, permission: 'base:import' },
-  '/base/style-attribute': { component: StyleAttrDefPage, permission: 'base:style' },
+  '/base/style-attribute': { component: StyleAttrDefPage, permission: 'base:style-attribute' },
   '/base/dealer': { component: DealerPage, permission: 'base:dealer' },
   '/base/store': { component: StorePage, permission: 'base:store' },
   '/base/merge-audit': { component: MergeAuditPage, permission: 'md:merge' },
-  '/product/code-rule': { component: CodeRulePage, permission: 'base:style' },
+  '/product/code-rule': { component: CodeRulePage, permission: 'base:code-rule' },
   '/product/color': { component: ColorPage, permission: 'base:color' },
   '/product/size': { component: SizePage, permission: 'base:size' },
-  '/product/size-group-relation': { component: SizeGroupRelationPage, permission: 'base:size' },
+  '/product/size-group-relation': { component: SizeGroupRelationPage, permission: 'base:size-group' },
   // orphan：legacy BOM 页（与 /production/bom 不同组件），仅深链可达
   '/bom': { component: BomPage, permission: 'base:material' },
   '/purchase/garment-order': { component: GarmentPurchaseOrderPage, permission: 'purchase:order', edit: () => import('@client/src/pages/purchase/GarmentPurchaseOrderEditPage') },
@@ -329,10 +330,11 @@ export const routeComponents: Record<string, RouteEntry> = {
   '/inventory/replenish-template': { component: ReplenishTemplatePage, permission: 'inventory:replenish-template' },
   '/inventory/barcode': { component: BarcodePage, permission: 'inventory:query' },
   '/inventory/mobile-stocktake': { component: MobileStocktakePage, permission: 'inventory:stocktake' },
-  // orphan：吊牌打印 / 唯一码溯源，仅深链可达
-  '/inventory/hangtag-print': { component: HangtagPrintPage, permission: 'inventory:query' },
+  // orphan：吊牌打印 / 唯一码溯源，仅深链可达（吊牌打印使用独立码 inventory:hangtag）
+  '/inventory/hangtag-print': { component: HangtagPrintPage, permission: 'inventory:hangtag' },
   '/inventory/unique-code-trace': { component: UniqueCodeTracePage, permission: 'inventory:query' },
-  '/subcontract': { component: SubcontractPage, permission: 'inventory:query' },
+  // 委外管理：后端守卫为 subcontract:manage，此前路由错挂 inventory:query（页面能进、接口 403）
+  '/subcontract': { component: SubcontractPage, permission: 'subcontract:manage' },
   '/analytics/forecast': { component: ForecastPage, permission: 'dashboard:view' },
   '/analytics/lifecycle': { component: LifecyclePage, permission: 'dashboard:view' },
   '/analytics/bi': { component: BIPage, permission: 'dashboard:view' },
@@ -405,8 +407,7 @@ export const routePermissions: Record<string, string> = Object.fromEntries(
  * path -> 页签标题（替代 TabsContext 内第四套硬编码标签，迭代A 收口）。
  * 单一真相源：优先取 menuItems（与菜单、路由同源，杜绝漂移）；
  * 再补 routeComponents 有但菜单无的 orphan 路由标签（routeComponents 无 label 概念，需显式声明）。
- * 副作用：/base/warehouse 由此自动归一为菜单权威值「仓库管理」（消旧硬编码「仓库档案」漂移）；
- * 另自动补上旧 map 漏接的 /base/product-import、/inventory/hangtag-print、/inventory/unique-code-trace。
+ * 说明：/base/warehouse 已随仓库管理模块下线移除。
  */
 export const menuLabelMap: Record<string, string> = (() => {
   const m: Record<string, string> = {};

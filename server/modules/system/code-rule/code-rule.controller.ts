@@ -26,7 +26,7 @@ export class CodeRuleController {
     return this.codeRuleService.listRules();
   }
 
-  @CheckPermission('system:config')
+  @CheckPermission('base:code-rule')
   @Post()
   async saveRule(@Body() body: {
     id?: string;
@@ -42,19 +42,19 @@ export class CodeRuleController {
     return this.codeRuleService.getMappingConfig();
   }
 
-  @CheckPermission('system:config')
+  @CheckPermission('base:code-rule')
   @Post('mapping')
   async saveMappingConfig(@Body() body: CodeMappingConfig): Promise<CodeMappingConfig> {
     return this.codeRuleService.saveMappingConfig(body);
   }
 
-  @CheckPermission('system:config')
+  @CheckPermission('base:code-rule')
   @Post('preview')
   async previewStyleCode(@Body() body: StyleCodePreviewRequest): Promise<StyleCodePreviewResult> {
     return this.codeRuleService.previewStyleCode(body);
   }
 
-  @CheckPermission('system:config')
+  @CheckPermission('base:code-rule')
   @Post('next-serial')
   async getNextSerial(@Body() body: { year?: string; category?: string; ruleId?: string }): Promise<{ serialNo: string }> {
     const serialNo = await this.codeRuleService.getNextSerialNo(body);

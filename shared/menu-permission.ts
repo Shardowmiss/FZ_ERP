@@ -105,11 +105,17 @@ export const MENU_STRUCTURE: MenuModuleDef[] = [
       { key: 'style', label: '款号管理', path: '/base/style', permission: 'base:style' },
       { key: 'sku', label: 'SKU管理', path: '/base/sku', permission: 'base:sku' },
       { key: 'color', label: '颜色', path: '/product/color', permission: 'base:color' },
-      { key: 'size-group', label: '尺码组', path: '/base/size-group', permission: 'base:sku' },
+      { key: 'color-group', label: '颜色组', path: '/base/color-group', permission: 'base:color-group' },
+      // 尺码组 / 尺码组与尺码关系：同一业务域（尺码组维护），合并到一个独立资源码。
+      // 此前尺码组错挂 base:sku、关系页错挂 base:size，导致权限树里「看不到尺码组」，
+      // 且后端守卫（base:style / base:size）与菜单声明（base:sku）三方不一致。
+      { key: 'size-group', label: '尺码组', path: '/base/size-group', permission: 'base:size-group' },
       { key: 'size', label: '尺码', path: '/product/size', permission: 'base:size' },
-      { key: 'size-group-relation', label: '尺码组与尺码关系', path: '/product/size-group-relation', permission: 'base:size' },
-      { key: 'style-attribute', label: '款号属性维护', path: '/base/style-attribute', permission: 'base:style' },
-      { key: 'code-rule', label: '款号编码规则', path: '/product/code-rule', permission: 'base:style' },
+      { key: 'size-group-relation', label: '尺码组与尺码关系', path: '/product/size-group-relation', permission: 'base:size-group' },
+      // 款号属性维护 / 款号编码规则：此前均复用 base:style，权限树被归并到同一条目：
+      // 「款号属性维护」在权限管理里根本看不到。独立成码后各自可单独授权。
+      { key: 'style-attribute', label: '款号属性维护', path: '/base/style-attribute', permission: 'base:style-attribute' },
+      { key: 'code-rule', label: '款号编码规则', path: '/product/code-rule', permission: 'base:code-rule' },
       { key: 'product-import', label: '批量导入', path: '/base/product-import', permission: 'base:import' },
     ],
   },
@@ -155,7 +161,9 @@ export const MENU_STRUCTURE: MenuModuleDef[] = [
       { key: 'work-order', label: '生产工单', path: '/production/work-order', permission: 'production:work_order' },
       { key: 'material-issue', label: '领料单', path: '/production/material-issue', permission: 'production:material_issue' },
       { key: 'finish-receipt', label: '完工入库单', path: '/production/finish-receipt', permission: 'production:finish_receipt' },
-      { key: 'subcontract-main', label: '委外管理', path: '/subcontract', permission: 'inventory:query' },
+      // 委外管理：控制器守卫为 subcontract:manage（12 处），此前菜单错挂 inventory:query
+      // → 页面可达但每个写接口都 403。此处与后端对齐。
+      { key: 'subcontract-main', label: '委外管理', path: '/subcontract', permission: 'subcontract:manage' },
     ],
   },
   {
@@ -193,8 +201,10 @@ export const MENU_STRUCTURE: MenuModuleDef[] = [
       { key: 'inv-warning', label: '库存预警', path: '/inventory/warning', permission: 'inventory:warning' },
       { key: 'inv-barcode', label: '条码/批次', path: '/inventory/barcode', permission: 'inventory:query' },
       { key: 'inv-mobile-stocktake', label: '移动盘点', path: '/inventory/mobile-stocktake', permission: 'inventory:stocktake' },
-      { key: 'inv-hangtag-print', label: '吊牌打印', path: '/inventory/hangtag-print', permission: 'inventory:query' },
-      { key: 'inv-unique-code-trace', label: '唯一码溯源', path: '/inventory/unique-code-trace', permission: 'inventory:query' },
+      // 吊牌打印：独立成码。此前挂 inventory:query，导致任何持「库存查询」者都能改
+      // 唯一码参数、增删模板（后端起见，hangtag.controller 已改为 class 级 inventory:hangtag 守卫）。
+      { key: 'inv-hangtag-print', label: '吊牌打印', path: '/inventory/hangtag-print', permission: 'inventory:hangtag' },
+      { key: 'inv-unique-code-trace', label: '唯一码溯源', path: '/inventory/unique-code-trace', permission: 'inventory:query', readOnly: true },
     ],
   },
   {
@@ -319,9 +329,6 @@ const CANONICAL_MODULE: Record<string, string> = {
   'sales:order': 'sales',
   'sales:return': 'sales',
   'system:config': 'system',
-  'base:style': 'product',
-  'base:sku': 'product',
-  'base:size': 'product',
   'dashboard:view': 'report',
   'finance:profit': 'finance',
   'tradeshow:preorder': 'trade-show',
@@ -331,15 +338,18 @@ const CANONICAL_MODULE: Record<string, string> = {
 /**
  * 目录中「菜单未覆盖、但控制器仍校验」的额外权限码（保留以避免既有授权/门禁失效）。
  * 这些码不参与菜单自动同步，集中声明于此；作为叶子节点保留（不生成动作子码）。
+ *
+ * 清理原则（2026-10-11）：凡「无菜单 + 无路由 + 后端无守卫」三项全无的码一律删除，
+ * 已移除 base:warehouse（仓库管理）、sales:view（销售-查看）、product:barcode（商品-条形码管理）
+ * —— 这三者对应的功能模块在系统中已不存在（或已被店仓管理取代）。删除由
+ * rbac.service.ensureRbacCatalog 的 prune 步骤同步到 rbac_permission 表及角色授权。
  */
 const EXTRA_PERMISSIONS: { code: string; name: string; module: string }[] = [
   { code: 'dashboard', name: '仪表盘(根)', module: 'dashboard' },
-  { code: 'base:warehouse', name: '仓库管理', module: 'product' },
   { code: 'pos:receiver:manage', name: 'POS接收-补偿管理', module: 'pos-pricing' },
-  { code: 'sales:view', name: '销售-查看', module: 'sales' },
-  { code: 'tradeshow:manage', name: '展会-管理', module: 'trade-show' },
-  { code: 'subcontract:manage', name: '委外-管理', module: 'production' },
-  { code: 'product:barcode', name: '商品-条形码管理', module: 'product' },
+  // 委外管理（subcontract:manage）已提升为菜单项（见 MENU_STRUCTURE 生产管理），故不在此声明。
+  // 订货会主单：trade-show.controller 7 处守卫用此码（与 theme/preorder/allocation 并列）。
+  { code: 'tradeshow:manage', name: '订货会主单管理', module: 'trade-show' },
 ];
 
 export interface CatalogEntry {

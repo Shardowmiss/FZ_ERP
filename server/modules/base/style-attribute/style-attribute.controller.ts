@@ -53,7 +53,7 @@ export class StyleAttributeController {
     return this.styleAttributeService.detail(id);
   }
 
-  @CheckPermission('base:style')
+  @CheckPermission('base:style-attribute')
   @Post()
   async create(
     @Body()
@@ -70,7 +70,7 @@ export class StyleAttributeController {
     return this.styleAttributeService.create(body);
   }
 
-  @CheckPermission('base:style')
+  @CheckPermission('base:style-attribute')
   @Put(':id')
   async update(
     @Param('id') id: string,
@@ -87,7 +87,7 @@ export class StyleAttributeController {
     return this.styleAttributeService.update(id, body);
   }
 
-  @CheckPermission('base:style')
+  @CheckPermission('base:style-attribute')
   @Delete(':id')
   async remove(
     @Param('id') id: string,
@@ -95,7 +95,7 @@ export class StyleAttributeController {
     return this.styleAttributeService.remove(id);
   }
 
-  @CheckPermission('base:style')
+  @CheckPermission('base:style-attribute')
   @Post('batch-status')
   async batchUpdateStatus(
     @Body() body: { ids: string[]; status: string },

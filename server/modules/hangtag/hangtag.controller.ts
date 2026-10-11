@@ -11,6 +11,7 @@ import {
   Res,
 } from '@nestjs/common';
 import type { Response } from 'express';
+import { CheckPermission } from '@server/common/decorators/check-permission.decorator';
 import { HangtagService } from './hangtag.service';
 
 /**
@@ -32,7 +33,10 @@ import { HangtagService } from './hangtag.service';
  *  - POST   /hangtag/logs/download             导出打印日志 CSV
  *
  * 注：受全局 AuthGuard 保护，需携带有效 x-auth-token。
+ * 权限：类级 @CheckPermission('inventory:hangtag') —— 此前本控制器 9 个写端点全部无权限校验，
+ * 任何登录用户都能改唯一码参数、增删模板。现按读/写分流（GET→checkAccess，写→checkPermission）。
  */
+@CheckPermission('inventory:hangtag')
 @Controller('api/hangtag')
 export class HangtagController {
   constructor(private readonly svc: HangtagService) {}

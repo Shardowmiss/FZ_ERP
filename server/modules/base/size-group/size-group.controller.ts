@@ -25,19 +25,19 @@ export class SizeGroupController {
     return this.sizeGroupService.detail(id);
   }
 
-  @CheckPermission('base:style')
+  @CheckPermission('base:size-group')
   @Post()
   async create(@Body() body: { code: string; name: string; sizes?: string[] }): Promise<SizeGroup> {
     return this.sizeGroupService.create(body);
   }
 
-  @CheckPermission('base:style')
+  @CheckPermission('base:size-group')
   @Put(':id')
   async update(@Param('id') id: string, @Body() body: { code?: string; name?: string; sizes?: string[] }): Promise<SizeGroup> {
     return this.sizeGroupService.update(id, body);
   }
 
-  @CheckPermission('base:style')
+  @CheckPermission('base:size-group')
   @Delete(':id')
   async remove(@Param('id') id: string): Promise<{ success: boolean }> {
     await this.sizeGroupService.remove(id);
@@ -51,13 +51,13 @@ export class SizeGroupController {
     return this.sizeGroupService.listMembers(id);
   }
 
-  @CheckPermission('base:size')
+  @CheckPermission('base:size-group')
   @Post(':id/sizes')
   async addMember(@Param('id') id: string, @Body() body: { sizeId: string }) {
     return this.sizeGroupService.addMember(id, body.sizeId);
   }
 
-  @CheckPermission('base:size')
+  @CheckPermission('base:size-group')
   @Delete(':id/sizes/:sizeId')
   async removeMember(@Param('id') id: string, @Param('sizeId') sizeId: string) {
     return this.sizeGroupService.removeMember(id, sizeId);

@@ -20,7 +20,7 @@ import {
   store,
   dealer,
 } from '@server/database/schema';
-import { eq, and, count, desc, or, ilike, inArray, asc, isNull, lt, sql } from 'drizzle-orm';
+import { eq, and, count, desc, or, ilike, inArray, notInArray, asc, isNull, lt, sql } from 'drizzle-orm';
 import type { SQL } from 'drizzle-orm';
 import type { PgColumn } from 'drizzle-orm/pg-core';
 import { escapeLike } from '@server/common/utils/escape-like';
@@ -391,6 +391,33 @@ export class RbacService {
         .where(eq(rbacPermission.code, p.code));
     }
 
+    // 第 3 遍：裁剪（prune）——删除目录中已不存在的权限码及其角色授权。
+    //
+    // 为什么必须有：本方法历史上只 upsert 不删除，功能下线后权限行会永久残留
+    // （真实案例：客户模块已整体删除，base:customer 仍留在权限管理界面；
+    //  product:barcode / base:warehouse 对应的功能已不存在）。
+    // 不裁剪 ⇒ 「权限配置」与「系统真实功能」必然持续漂移，用户会在权限树里看到幽灵模块。
+    // 先删关联表（rbac_role_permission）再删主表，避免外键冲突；幂等可重跑。
+    const catalogCodes = RbacService.PERMISSION_CATALOG.map((p) => p.code);
+    const stale = await this.db
+      .select({ id: rbacPermission.id, code: rbacPermission.code })
+      .from(rbacPermission)
+      .where(notInArray(rbacPermission.code, catalogCodes));
+    if (stale.length > 0) {
+      const staleIds = stale.map((s) => s.id);
+      await this.db
+        .delete(rbacRolePermission)
+        .where(inArray(rbacRolePermission.permissionId, staleIds));
+      await this.db
+        .delete(rbacPermission)
+        .where(inArray(rbacPermission.id, staleIds));
+      this.logger.warn(
+        `ensureRbacCatalog: pruned ${stale.length} stale permission(s) not in catalog: ${stale
+          .map((s) => s.code)
+          .join(', ')}`,
+      );
+    }
+
     await this.db
       .insert(rbacRole)
       .values({
@@ -487,6 +514,11 @@ export class RbacService {
         'base:sku',
         'base:color',
         'base:size',
+        // 权限码拆分后补齐（原由 base:style/base:sku 覆盖）：颜色组/尺码组/款号属性维护/款号编码规则
+        'base:color-group',
+        'base:size-group',
+        'base:style-attribute',
+        'base:code-rule',
         'base:import',
         'report:pivot',
         'dashboard:view',
@@ -499,7 +531,6 @@ export class RbacService {
       permissions: [
         'base:store',
         'retail:view',
-        'sales:view',
         'pos:cashier',
         'member:manage',
         'member:merge',
@@ -570,7 +601,9 @@ export class RbacService {
         'inventory:replenish-plan',
         'inventory:replenish-template',
         'inventory:warning',
-        'base:warehouse',
+        // base:warehouse（仓库管理）权限码已随模块下线清理：仓库实体仍被入库/出库/调拨等
+        // 页面作为下拉使用（GET /api/base/warehouse/options 无需权限），但已无独立管理入口，
+        // 其增删改写入改由店仓管理（base:store）承载。
         'sales:outbound',
         'sales:order',
         'purchase:inbound',
