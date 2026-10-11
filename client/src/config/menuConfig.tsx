@@ -232,6 +232,18 @@ export const menuItems: MenuItem[] = [
       { key: 'pricing', label: '价格管理', path: '/pricing', permission: 'pricing:manage' },
     ],
   },
+  {
+    key: 'distribution-portal',
+    label: '分销门户',
+    icon: <ArrowLeftRight size={18} />,
+    children: [
+      { key: 'portal-overview', label: '门户概览', path: '/distribution/portal', permission: 'distribution:portal' },
+      { key: 'portal-po', label: '我的采购单', path: '/distribution/portal/purchase-orders', permission: 'distribution:portal' },
+      { key: 'portal-pr', label: '我的采购退货单', path: '/distribution/portal/purchase-returns', permission: 'distribution:portal' },
+      { key: 'portal-recon', label: '应收应付对账', path: '/distribution/portal/reconciliation', permission: 'distribution:portal' },
+      { key: 'portal-partners', label: '我的分销节点', path: '/distribution/portal/partners', permission: 'distribution:portal' },
+    ],
+  },
 ];
 
 /** 一级菜单（含 path，无 children）的 path -> icon */
@@ -353,6 +365,11 @@ const BIPage = React.lazy(() => import('@client/src/pages/analytics/BIPage'));
 const OmniPage = React.lazy(() => import('@client/src/pages/omni/OmniPage'));
 const PosCashierPage = React.lazy(() => import('@client/src/pages/pos/CashierPage'));
 const PricingPage = React.lazy(() => import('@client/src/pages/pricing/PriceListPage'));
+const DistributionPortalPage = React.lazy(() => import('@client/src/pages/distribution/DistributionPortalPage'));
+const MyPurchaseOrdersPage = React.lazy(() => import('@client/src/pages/distribution/MyPurchaseOrdersPage'));
+const MyPurchaseReturnsPage = React.lazy(() => import('@client/src/pages/distribution/MyPurchaseReturnsPage'));
+const PortalReconciliationPage = React.lazy(() => import('@client/src/pages/distribution/PortalReconciliationPage'));
+const MyPartnersPage = React.lazy(() => import('@client/src/pages/distribution/MyPartnersPage'));
 
 const MemberPage = React.lazy(() => import('@client/src/pages/member/MemberPage'));
 const MemberManagePage = React.lazy(() => import('@client/src/pages/member/MemberManagePage'));
@@ -492,6 +509,12 @@ export const routeComponents: Record<string, RouteEntry> = {
   '/pos/cashier': { component: PosCashierPage, permission: 'pos:cashier' },
   // H3：价格管理 —— 门禁 pricing:manage
   '/pricing': { component: PricingPage, permission: 'pricing:manage' },
+  // —— 分销门户（经销商视角：我的采购单/退货单/对账/节点，数据按 rbac_user_partner 子树隔离）——
+  '/distribution/portal': { component: DistributionPortalPage, permission: 'distribution:portal' },
+  '/distribution/portal/purchase-orders': { component: MyPurchaseOrdersPage, permission: 'distribution:portal' },
+  '/distribution/portal/purchase-returns': { component: MyPurchaseReturnsPage, permission: 'distribution:portal' },
+  '/distribution/portal/reconciliation': { component: PortalReconciliationPage, permission: 'distribution:portal' },
+  '/distribution/portal/partners': { component: MyPartnersPage, permission: 'distribution:portal' },
   '/member': { component: MemberPage, permission: 'retail:view' },
   '/member/manage': { component: MemberManagePage, permission: 'member:manage' },
   '/member/level': { component: MemberLevelPage, permission: 'member:level' },

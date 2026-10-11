@@ -205,7 +205,7 @@ export class DistributionPortalService {
           salesOrder,
           and(
             eq(salesOrder.id, garmentPurchaseOrder.sourceDocId),
-            eq(garmentPurchaseOrder.sourceDocType, 'sales_order'),
+            eq(garmentPurchaseOrder.sourceDocType, 'SALES_ORDER'),
           ),
         )
         .where(where)
@@ -268,7 +268,7 @@ export class DistributionPortalService {
           salesReturn,
           and(
             eq(salesReturn.id, garmentPurchaseReturn.sourceDocId),
-            eq(garmentPurchaseReturn.sourceDocType, 'sales_return'),
+            eq(garmentPurchaseReturn.sourceDocType, 'SALES_RETURN'),
           ),
         )
         .where(where)

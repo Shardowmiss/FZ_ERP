@@ -405,6 +405,7 @@ export class RbacService {
     { code: 'retail:view', name: '零售-查看' },
     { code: 'pos:cashier', name: 'POS-收银' },
     { code: 'pricing:manage', name: '价格-管理' },
+    { code: 'distribution:portal', name: '分销-门户' },
     { code: 'member:manage', name: '会员-管理' },
     { code: 'member:merge', name: '会员-合并（主数据去重，资金敏感）' },
     { code: 'member:level', name: '会员-等级主数据' },
@@ -645,6 +646,14 @@ export class RbacService {
         'report:inventory',
         'report:transfer',
         'report:stockmovement',
+      ],
+    },
+    {
+      code: 'dealer',
+      name: '经销商',
+      description: '分销节点（经销商）登录门户，查看本节点及其下级子树的采购单/采购退货单/应收应付对账',
+      permissions: [
+        'distribution:portal',
       ],
     },
   ];
