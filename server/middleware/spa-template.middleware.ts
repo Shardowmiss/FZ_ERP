@@ -46,7 +46,7 @@ export interface SpaTemplateOptions {
 const SUD_CSRF_COOKIE = 'suda-csrf-token';
 
 export function spaTemplateMiddleware(opts: SpaTemplateOptions) {
-  return function (_req: Request, res: Response, next: NextFunction) {
+  return function (req: Request, res: Response, next: NextFunction) {
     const originalEnd = res.end.bind(res);
     (res as unknown as { end: (chunk?: unknown, ...args: unknown[]) => unknown }).end = function (
       chunk?: unknown,
@@ -63,7 +63,7 @@ export function spaTemplateMiddleware(opts: SpaTemplateOptions) {
         // 入口的 Cache-Control: no-cache 已在 main.ts 请求初期统一设置（早于任何响应写出），
         // 此处仅做占位符替换。
         const html = Buffer.isBuffer(chunk) ? chunk.toString('utf8') : (chunk as string);
-        const out = transformHtml(html, res, opts);
+        const out = transformHtml(html, req, res, opts);
         chunk = out;
         // 重写后字节数变化，刷新 Content-Length 防止客户端按旧长度截断
         res.set('Content-Length', String(Buffer.byteLength(out, 'utf8')));
@@ -74,9 +74,9 @@ export function spaTemplateMiddleware(opts: SpaTemplateOptions) {
   };
 }
 
-function transformHtml(html: string, res: Response, opts: SpaTemplateOptions): string {
+function transformHtml(html: string, req: Request, res: Response, opts: SpaTemplateOptions): string {
   // 1) 解析/生成 csrf token，保证与前端「头/cookie 双提交」一致
-  const token = resolveCsrfToken(res);
+  const token = resolveCsrfToken(req, res);
 
   // 2) 平台上下文 JSON（覆盖 __platform__ 中的 appId/appName/basename/csrfToken）
   const platform = {
@@ -182,10 +182,20 @@ function escapeHtml(s: string): string {
 }
 
 /**
- * 从响应已下发的 `Set-Cookie: suda-csrf-token` 取令牌；若平台未下发（极少见），
- * 本地生成一个并随响应下发，确保 HTML 中的 window.csrfToken 与 cookie 完全一致。
+ * 解析要注入 HTML 的 `csrfToken`（= 前端出向 `x-suda-csrf-token` 的值）。
+ *
+ * 平台 CsrfMiddleware 做 double-submit：要求 `suda-csrf-token`（cookie）=== `x-suda-csrf-token`
+ * （header）。前端 header 取自本函数注入的 `window.__platform__.csrfToken`。因此本值**必须等于
+ * 浏览器实际携带的 cookie**，否则判 "csrf token not match" → 全站 403。
+ *
+ * 取值优先级（关键修复）：
+ *  1) 响应本次已下发的 `Set-Cookie: suda-csrf-token`（最新令牌，浏览器随后会持有）；
+ *  2) **请求已携带的 `suda-csrf-token` cookie** —— 平台不轮换该令牌（值稳定），
+ *     这是最可靠的来源；此前仅在 (1) 缺失时兜底为随机 `local-csrf-*`，与真实 cookie
+ *     不一致 → 偶发 403（登录失败/页面不跳转的真实根因之一）。
+ *  3) 两者都没有（极冷启动）才生成并随响应下发，保证至少自洽。
  */
-function resolveCsrfToken(res: Response): string {
+function resolveCsrfToken(req: Request, res: Response): string {
   const setCookie = res.getHeader('Set-Cookie');
   const cookies = Array.isArray(setCookie) ? setCookie : setCookie ? [setCookie] : [];
   for (const c of cookies) {
@@ -194,6 +204,11 @@ function resolveCsrfToken(res: Response): string {
       if (m) return decodeURIComponent(m[1]);
     }
   }
+  // 回退到「请求已携带的 cookie」——与浏览器即将回放的值一致，避免占位值导致的 403。
+  const reqCookie = req?.headers?.cookie || '';
+  const rm = reqCookie.match(new RegExp('(?:^|;\\s*)' + SUD_CSRF_COOKIE + '=([^;]+)'));
+  if (rm) return decodeURIComponent(rm[1]);
+
   const token = 'local-csrf-' + randomBytes(12).toString('hex');
   const newCookie = `${SUD_CSRF_COOKIE}=${token}; Path=/; HttpOnly; SameSite=Lax`;
   res.setHeader('Set-Cookie', cookies.length ? [...cookies, newCookie] : newCookie);

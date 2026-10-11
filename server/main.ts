@@ -91,7 +91,16 @@ async function bootstrap() {
     const forceNoCache = () => {
       const ct = res.getHeader('Content-Type');
       if (typeof ct === 'string' && ct.toLowerCase().includes('text/html')) {
-        res.setHeader('Cache-Control', 'no-cache');
+        // SPA 入口是「按请求个性化」的：spaTemplateMiddleware 会把当次解析到的 CSRF token
+        // 注入 window.csrfToken/__platform__.csrfToken。而 Express 的 ETag 只反映模板内容、
+        // 不随注入的 token 变化 —— 浏览器带 If-None-Match 命中 304 后复用「旧 HTML」，
+        // 其内嵌 token 与当前 cookie 不一致 → 平台 CsrfMiddleware 判 "csrf token not match"
+        // → 全站 API 偶发 403（登录失败/点击不跳转的真实根因）。
+        // 故对 text/html 必须 no-store（禁止任何缓存复用），并摘掉 ETag/Last-Modified 等
+        // 条件校验器，杜绝 304 复用旧页面。
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+        res.removeHeader('ETag');
+        res.removeHeader('Last-Modified');
       }
     };
     res.writeHead = function (...args: unknown[]) {
@@ -148,6 +157,11 @@ async function bootstrap() {
   app.setBaseViewsDir(viewsDir);
   app.setViewEngine('html');
   app.engine('html', hbsExpressEngine);
+  // 关键：关闭 SPA 入口(index.html)的视图模板缓存。默认 production 下 Express/HBS 会把
+  // index.html 模板编译缓存进内存；若「重建前端但 node 进程未重启」，旧模板（引用已被清除的
+  // 旧 hash 资源）持续被提供 → 资源落到 catch-all 兜底成 text/html → module 解析失败 → 白屏。
+  // 入口 HTML 体积很小且浏览器侧已设 no-cache，关闭服务端缓存几乎无性能损耗，却可根除该白屏复发。
+  app.set('view cache', false);
 
   await app.listen(port, host);
   logger.log(`Server running on ${host}:${port}`);

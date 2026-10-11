@@ -42,7 +42,6 @@ export const menuItems: MenuItem[] = [
     label: '数据看板',
     icon: <LayoutDashboard size={18} />,
     path: '/dashboard',
-    permission: 'dashboard',
   },
   {
     key: 'product',
@@ -443,7 +442,7 @@ export interface RouteEntry {
 }
 
 export const routeComponents: Record<string, RouteEntry> = {
-  '/dashboard': { component: DashboardPage, permission: 'dashboard' },
+  '/dashboard': { component: DashboardPage },
   '/base/style': { component: StylePage, permission: 'base:style' },
   '/base/sku': { component: SkuPage, permission: 'base:sku' },
   '/base/color-group': { component: ColorGroupPage, permission: 'base:style' },

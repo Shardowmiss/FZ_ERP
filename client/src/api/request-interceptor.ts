@@ -39,6 +39,11 @@ function getCookie(name: string): string {
 const ERP_CSRF_COOKIE_NAME = 'erp-csrf';
 const ERP_CSRF_HEADER_NAME = 'x-erp-csrf';
 
+// 平台 CSRF（double-submit）：cookie `suda-csrf-token` ↔ header `x-suda-csrf-token`，
+// 由平台 CsrfMiddleware 校验「cookie === header」，不一致即 403。
+const SUD_CSRF_COOKIE_NAME = 'suda-csrf-token';
+const SUD_CSRF_HEADER_NAME = 'x-suda-csrf-token';
+
 export function isOnLoginPage(): boolean {
   const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
   const base = getBasePath().replace(/\/$/, '');
@@ -63,6 +68,16 @@ function installInterceptor(): void {
     if (csrf) {
       config.headers = config.headers || {};
       config.headers[ERP_CSRF_HEADER_NAME] = csrf;
+    }
+    // 平台 CSRF（double-submit）：必须回放「浏览器实际持有的 cookie 值」。
+    // 绝不能依赖页面上的 window.__platform__.csrfToken —— 本地裸连 node 时该值由 SPA 中间件
+    // 在 res.end 阶段从响应头推断，读不到平台 Set-Cookie 时会兜底成 `local-csrf-*` 占位值，
+    // 与浏览器真实 cookie 不一致 → 平台 CsrfMiddleware 判 "csrf token not match" → 全站偶发 403
+    // （登录也随之失败）。此处 per-request 直读 cookie，保证 header 与 cookie 恒等。
+    const sudaCsrf = getCookie(SUD_CSRF_COOKIE_NAME);
+    if (sudaCsrf) {
+      config.headers = config.headers || {};
+      config.headers[SUD_CSRF_HEADER_NAME] = sudaCsrf;
     }
     return config;
   });

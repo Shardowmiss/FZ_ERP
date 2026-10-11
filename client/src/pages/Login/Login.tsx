@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useLocation, Navigate } from 'react-router-dom';
+import { useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '@client/src/contexts/AuthContext';
 import { toast } from 'sonner';
 import { User, Lock, ShieldCheck, Building2, ScanFace } from 'lucide-react';
@@ -26,7 +26,6 @@ const Login = () => {
   const [remember, setRemember] = useState(() => localStorage.getItem('erp_remember_user') !== null);
   const [loading, setLoading] = useState(false);
   const { login, isLoggedIn } = useAuth();
-  const navigate = useNavigate();
   const location = useLocation();
 
   if (isLoggedIn) {
@@ -49,10 +48,11 @@ const Login = () => {
       if (remember) localStorage.setItem('erp_remember_user', username);
       else localStorage.removeItem('erp_remember_user');
       toast.success('登录成功');
-      const from = (location.state as { from?: { pathname?: string } })?.from
-        ?.pathname;
-      const target = from && from !== '/' && from !== '/login' ? from : '/dashboard';
-      navigate(target, { replace: true });
+      // 关键：登录成功后「不要」在此命令式 navigate。login() 内部已 setUser，
+      // 但 React 尚未把 isLoggedIn 提交到下一次渲染；若此刻 navigate('/dashboard')，
+      // /dashboard 的 ProtectedRoute 仍会读到 !isLoggedIn 而回弹 /login（登录成功却不跳转的竞态）。
+      // 重定向交由组件顶部 `if (isLoggedIn) return <Navigate to={target} replace />` 守卫完成——
+      // 它在本渲染已确认 isLoggedIn 为真时才导航，使用已提交的登录态，天然无竞态。
     } catch (err: unknown) {
       const message =
         err && typeof err === 'object' && 'message' in err
