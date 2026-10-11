@@ -37,6 +37,7 @@ import type {
   CurrentUserResponse,
   PaginationResult,
 } from '@shared/api.interface';
+import { buildPermissionCatalog } from '@shared/menu-permission';
 
 type RbacUserInsert = typeof rbacUser.$inferInsert;
 type RbacRoleInsert = typeof rbacRole.$inferInsert;
@@ -299,121 +300,27 @@ export class RbacService {
     const userId = await this.getTokenUserId(token);
     if (!userId) return false;
     const { permissions } = await this.getUserPermissions(userId);
-    return permissions.includes(permissionCode);
+    // 父子继承：持有粗码（资源/模块）即隐式放行其全部 `:` 子码（动作）。
+    // 例：持有 `base:style` ⇒ 通过 `base:style:create` 校验；持有 `purchase:inbound` ⇒ 通过
+    // `purchase:inbound:approve`。反向不成立（持有子码不反推父码），故既有整码授权全部零回归，
+    // 且 purchase/sales 两组已有的真实按动作鉴权（控制器查 `:动作` 子码）天然兼容运营角色持有的分组码。
+    // 精确匹配仍保留（permissionCode 自身在集合内时直接通过）。
+    return permissions.some(
+      (p) => p === permissionCode || permissionCode.startsWith(p + ':'),
+    );
   }
 
   /**
-   * 权限目录（权威清单）。
+   * 权限目录（权威清单）已迁至 shared/menu-permission.ts 的 buildPermissionCatalog()。
    *
-   * 支持「资源树 + 动作子节点」模型：
-   * - `type: 'group'` 表示资源/模块分组（如 `purchase:inbound`），
-   *   其下挂的 `parent: 'purchase:inbound'` 子码即为可独立授权的动作
-   *   （view/create/edit/approve/accept/void/delete）。
-   * - `type: 'api'` 为普通写入口权限码；`type: 'menu'` 为菜单门控码。
-   * - `parent` 指向上级分组的 code；`sortOrder` 控制同组内子节点排序。
-   *
-   * 任何新增的“写入口权限码”都应在本清单登记……
+   * 三层模型：catalog（功能模块容器，DB type='catalog'，code 以 `mod:` 前缀）→ menu（子菜单/资源，code = 控制器校验的权限码）
+   * → action（菜单中的功能，code = `${资源码}:${动作}`）。菜单增删自动同步权限结构，
+   * 不要再在本文件手写平铺清单（避免与菜单漂移）。本服务仅消费 buildPermissionCatalog() 的输出。
    */
-  private static readonly PERMISSION_CATALOG: {
-    code: string;
-    name: string;
-    type?: 'api' | 'group' | 'menu';
-    parent?: string;
-    sortOrder?: number;
-  }[] = [
-    { code: 'dashboard', name: '仪表盘' },
-    { code: 'dashboard:view', name: '仪表盘-查看' },
-    { code: 'base:style', name: '基础-款式' },
-    { code: 'base:sku', name: '基础-SKU' },
-    { code: 'base:import', name: '基础-批量导入' },
-    { code: 'base:material', name: '基础-物料' },
-    { code: 'base:color', name: '基础-颜色' },
-    { code: 'base:size', name: '基础-尺码' },
-    { code: 'base:supplier', name: '基础-供应商' },
-    { code: 'base:warehouse', name: '基础-仓库' },
-    { code: 'base:dealer', name: '基础-经销商' },
-    { code: 'base:store', name: '基础-门店' },
-    { code: 'purchase:order', name: '采购-订单' },
-    // 采购-入库：资源分组（type=group），下挂 7 个可独立授权的动作子节点。
-    // 既有的 purchasing / warehouse 角色仍只持有分组码 `purchase:inbound`，
-    // 由 ensureOperationalRoles 自动展开授予全部子码，保证零改造兼容。
-    { code: 'purchase:inbound', name: '采购-入库', type: 'group' },
-    { code: 'purchase:inbound:view', name: '查看', parent: 'purchase:inbound', sortOrder: 1 },
-    { code: 'purchase:inbound:create', name: '新增', parent: 'purchase:inbound', sortOrder: 2 },
-    { code: 'purchase:inbound:edit', name: '编辑', parent: 'purchase:inbound', sortOrder: 3 },
-    { code: 'purchase:inbound:approve', name: '审核', parent: 'purchase:inbound', sortOrder: 4 },
-    { code: 'purchase:inbound:accept', name: '验收', parent: 'purchase:inbound', sortOrder: 5 },
-    { code: 'purchase:inbound:void', name: '作废', parent: 'purchase:inbound', sortOrder: 6 },
-    { code: 'purchase:inbound:delete', name: '删除', parent: 'purchase:inbound', sortOrder: 7 },
-    { code: 'purchase:return', name: '采购-退货' },
-    { code: 'purchase:reconciliation', name: '采购-对账' },
-    { code: 'production:bom', name: '生产-BOM' },
-    { code: 'production:material_order', name: '生产-物料订单' },
-    { code: 'production:material_inbound', name: '生产-物料入库' },
-    { code: 'production:mrp', name: '生产-MRP' },
-    { code: 'production:cost', name: '生产-成本' },
-    { code: 'production:work_order', name: '生产-工单' },
-    { code: 'production:material_issue', name: '生产-发料' },
-    { code: 'production:finish_receipt', name: '生产-成品入库' },
-    // 销售-订单：资源分组（type=group），下挂 7 个可独立授权的动作子节点。
-    // 既有的 warehouse 角色仍只持有分组码 `sales:order`，
-    // 由 ensureOperationalRoles 自动展开授予全部子码，保证零改造兼容。
-    { code: 'sales:order', name: '销售-订单', type: 'group' },
-    { code: 'sales:order:view', name: '查看', parent: 'sales:order', sortOrder: 1 },
-    { code: 'sales:order:create', name: '新增', parent: 'sales:order', sortOrder: 2 },
-    { code: 'sales:order:edit', name: '编辑', parent: 'sales:order', sortOrder: 3 },
-    { code: 'sales:order:approve', name: '审核', parent: 'sales:order', sortOrder: 4 },
-    { code: 'sales:order:delete', name: '删除', parent: 'sales:order', sortOrder: 5 },
-    { code: 'sales:order:void', name: '作废', parent: 'sales:order', sortOrder: 6 },
-    { code: 'sales:order:print', name: '打印', parent: 'sales:order', sortOrder: 7 },
-    { code: 'sales:outbound', name: '销售-出库' },
-    { code: 'sales:return', name: '销售-退货' },
-    { code: 'sales:reconciliation', name: '销售-对账' },
-    { code: 'sales:view', name: '销售-查看' },
-    { code: 'inventory:flow', name: '库存-流水' },
-    { code: 'inventory:query', name: '库存-查询' },
-    { code: 'inventory:inbound', name: '库存-入库' },
-    { code: 'inventory:outbound', name: '库存-出库' },
-    { code: 'inventory:transfer', name: '库存-调拨' },
-    { code: 'inventory:stocktake', name: '库存-盘点' },
-    { code: 'inventory:replenish-plan', name: '库存-补货计划' },
-    { code: 'inventory:replenish-template', name: '库存-补货模板' },
-    { code: 'inventory:warning', name: '库存-预警' },
-    { code: 'pos:receiver:manage', name: 'POS接收-补偿管理' },
-    { code: 'finance:receivable', name: '财务-应收' },
-    { code: 'finance:payable', name: '财务-应付' },
-    { code: 'finance:receipt', name: '财务-收款' },
-    { code: 'finance:payment', name: '财务-付款' },
-    { code: 'finance:profit', name: '财务-利润' },
-    { code: 'system:permission', name: '系统-权限' },
-    { code: 'system:user', name: '系统-用户' },
-    { code: 'system:role', name: '系统-角色' },
-    { code: 'system:operation_log', name: '系统-操作日志' },
-    { code: 'system:config', name: '系统-配置' },
-    { code: 'tradeshow:preorder', name: '展会-预购' },
-    { code: 'tradeshow:allocation', name: '展会-配货' },
-    { code: 'tradeshow:manage', name: '展会-管理' },
-    { code: 'tradeshow:theme', name: '展会-主题主数据' },
-    { code: 'report:garment_purchase', name: '报表-成衣采购' },
-    { code: 'report:material_purchase', name: '报表-物料采购' },
-    { code: 'report:sales', name: '报表-销售' },
-    { code: 'report:retail', name: '报表-零售' },
-    { code: 'report:inventory', name: '报表-库存' },
-    { code: 'report:transfer', name: '报表-调拨' },
-    { code: 'report:stockmovement', name: '报表-库存变动' },
-    { code: 'report:pivot', name: '报表-透视分析' },
-    { code: 'retail:view', name: '零售-查看' },
-    { code: 'pos:cashier', name: 'POS-收银' },
-    { code: 'pricing:manage', name: '价格-管理' },
-    { code: 'distribution:portal', name: '分销-门户' },
-    { code: 'member:manage', name: '会员-管理' },
-    { code: 'member:merge', name: '会员-合并（主数据去重，资金敏感）' },
-    { code: 'member:level', name: '会员-等级主数据' },
-    { code: 'md:merge', name: '主数据-合并（商品/客户去重，泛化）' },
-    { code: 'omni:manage', name: '全渠道-管理' },
-    { code: 'subcontract:manage', name: '委外-管理' },
-    { code: 'product:barcode', name: '商品-条形码管理' },
-  ];
+
+  /** 权限目录：由共享模块生成（见 shared/menu-permission.ts） */
+  private static readonly PERMISSION_CATALOG = buildPermissionCatalog();
+
 
   /** 超级管理员角色固定 UUID（与迁移 0005 保持一致） */
   private static readonly SUPER_ADMIN_ROLE_ID = '11111111-1111-1111-1111-111111111111';

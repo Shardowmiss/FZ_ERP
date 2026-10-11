@@ -43,9 +43,12 @@ function findAncestorMenus(
     return false;
   };
   dfs(tree);
-  // 分组节点（type='group'）同样作为祖先参与自动勾选，确保勾选动作子码时父分组码一并勾上
+  // 模块节点（code 以 mod: 前缀）与带子节点的资源节点均作为祖先参与自动勾选，
+  // 确保勾选动作子码时父资源码、父模块码一并勾上。
   return path.filter(
-    (n: PermissionTreeNode) => n.type === 'menu' || n.type === 'group',
+    (n: PermissionTreeNode) =>
+      (!!n.code && n.code.startsWith('mod:')) ||
+      (n.children?.length ?? 0) > 0,
   );
 }
 
@@ -65,9 +68,14 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
   checkedIds,
   onToggle,
 }) => {
-  const isMenu = node.type === 'menu';
-  // 分组节点（type='group'，如采购-入库）与菜单一样可展开、可折叠、加粗显示
-  const isExpandable = isMenu || node.type === 'group';
+  // 分组判定：模块节点（code 以 `mod:` 前缀，对应一级菜单，DB 存 type='catalog'）
+  // 或任何带子节点的资源节点（如「款号管理」下挂 查看/新增/编辑/删除）都作为可展开分组、
+  // 加粗、不显示 code 后缀。仅叶子动作节点（type='api' 且无子节点）显示 code 后缀（如 view/create）。
+  // 注意：模块身份用 code 前缀识别，与 DB 的 type 字符串解耦（避免 ck_rbac_permission_type 约束耦合）。
+  const isModule = !!node.code && node.code.startsWith('mod:');
+  const isGroup =
+    isModule || node.type === 'group' || (node.children?.length ?? 0) > 0;
+  const isExpandable = isGroup;
   const hasChildren = isExpandable && node.children && node.children.length > 0;
   const [expanded, setExpanded] = useState<boolean>(true);
 
@@ -136,12 +144,12 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
         />
         <span
           className={`text-sm ${
-            isExpandable ? 'font-medium text-gray-800' : 'text-gray-600'
+            isGroup ? 'font-medium text-gray-800' : 'text-gray-600'
           }`}
         >
           {node.name}
         </span>
-        {!isMenu && (
+        {!isGroup && (
           <span className="text-xs text-gray-400">
             ({node.code.split(':').pop()})
           </span>
