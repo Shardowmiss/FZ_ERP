@@ -38,6 +38,7 @@ import type {
   PaginationResult,
 } from '@shared/api.interface';
 import { buildPermissionCatalog } from '@shared/menu-permission';
+import { canDo, canAccess } from '@shared/permission-match';
 
 type RbacUserInsert = typeof rbacUser.$inferInsert;
 type RbacRoleInsert = typeof rbacRole.$inferInsert;
@@ -296,18 +297,41 @@ export class RbacService {
     await this.removeToken(token);
   }
 
+  /**
+   * 动作级鉴权：是否持有 permissionCode 本身或其任一祖先（前缀）码。
+   *
+   * 继承语义与前端 AuthContext.hasPermission 完全一致（同源于 shared/permission-match.canDo）。
+   * 例：持有 `base:style` ⇒ 通过 `base:style:create`；
+   *     持有 `purchase:inbound` ⇒ 通过 `purchase:inbound:approve`。
+   * 反向不成立（持有子码不反推父码），故"仅查看"角色持 `base:color:view`
+   * 无法通过 `base:color:create`，杜绝越权新增。
+   */
   async checkPermission(token: string, permissionCode: string): Promise<boolean> {
+    const held = await this.getTokenPermissionCodes(token);
+    if (!held) return false;
+    return canDo(permissionCode, held);
+  }
+
+  /**
+   * 访问级鉴权：是否可访问该资源（持有码本身 / 祖先 / **其下任一动作子码**）。
+   *
+   * 供 PermissionGuard 在 GET/HEAD 读路径上使用：控制器仍以资源粗码声明守卫时
+   * （如 `@CheckPermission('sales:outbound')`），仅持 `sales:outbound:view` 的
+   * 只读角色也应能读列表（否则前端页面可进、列表却 403）。
+   * 写路径（POST/PUT/PATCH/DELETE）**不得**走本方法。
+   */
+  async checkAccess(token: string, permissionCode: string): Promise<boolean> {
+    const held = await this.getTokenPermissionCodes(token);
+    if (!held) return false;
+    return canAccess(permissionCode, held);
+  }
+
+  /** 取 token 对应用户的显式权限码集合；token 无效/无角色时返回 null。 */
+  private async getTokenPermissionCodes(token: string): Promise<string[] | null> {
     const userId = await this.getTokenUserId(token);
-    if (!userId) return false;
+    if (!userId) return null;
     const { permissions } = await this.getUserPermissions(userId);
-    // 父子继承：持有粗码（资源/模块）即隐式放行其全部 `:` 子码（动作）。
-    // 例：持有 `base:style` ⇒ 通过 `base:style:create` 校验；持有 `purchase:inbound` ⇒ 通过
-    // `purchase:inbound:approve`。反向不成立（持有子码不反推父码），故既有整码授权全部零回归，
-    // 且 purchase/sales 两组已有的真实按动作鉴权（控制器查 `:动作` 子码）天然兼容运营角色持有的分组码。
-    // 精确匹配仍保留（permissionCode 自身在集合内时直接通过）。
-    return permissions.some(
-      (p) => p === permissionCode || permissionCode.startsWith(p + ':'),
-    );
+    return permissions;
   }
 
   /**

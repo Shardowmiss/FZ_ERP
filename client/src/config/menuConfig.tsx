@@ -1,5 +1,5 @@
 import React from 'react';
-import { MENU_STRUCTURE } from '@shared/menu-permission';
+import { MENU_STRUCTURE, buildPermissionCatalog } from '@shared/menu-permission';
 import {
   LayoutDashboard, ShoppingCart, ShoppingBag, Package, DollarSign,
   Settings, Users, Factory, NotebookPen, ArrowLeftRight,
@@ -430,6 +430,8 @@ export const menuLabelMap: Record<string, string> = (() => {
 /**
  * 路由-菜单一致性自检（仅开发期执行）。
  * - 错误：菜单 path 在 routeComponents 缺失组件 → 点击将渲染 <NotFound/>（回归阻断级）
+ * - 错误：routeComponents 声明的权限码不在权威权限目录中 → 权限树无法授权该码，
+ *         门禁将永久拒绝（页面对任何人都不可达）。这类漂移只能靠此自检兜住。
  * - 告警：routeComponents 有但菜单无 → 孤儿路由（仅深链可达，保留但提示漂移）
  */
 export function validateRouteMenuConsistency(): { errors: string[]; warnings: string[] } {
@@ -456,6 +458,23 @@ export function validateRouteMenuConsistency(): { errors: string[]; warnings: st
       warnings.push(`路由 ${p} 无对应菜单项（孤儿路由，不影响可达性）`);
     }
   }
+
+  // 权限码一致性：路由声明的资源码必须存在于 buildPermissionCatalog() 的输出，
+  // 否则权限树里根本没有这个节点、角色无从勾选 → 页面永远打不开。
+  const catalogCodes = new Set(buildPermissionCatalog().map((e) => e.code));
+  const seen = new Set<string>();
+  for (const [p, entry] of Object.entries(routeComponents)) {
+    const perm = entry.permission;
+    if (!perm || seen.has(perm)) continue;
+    seen.add(perm);
+    if (!catalogCodes.has(perm)) {
+      errors.push(
+        `路由 ${p} 声明的权限码 ${perm} 不在权限目录（MENU_STRUCTURE/EXTRA_PERMISSIONS）中，` +
+          `权限树无法授权该码 → 门禁永久拒绝`,
+      );
+    }
+  }
+
   return { errors, warnings };
 }
 

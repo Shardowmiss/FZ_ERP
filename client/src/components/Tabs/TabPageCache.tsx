@@ -39,7 +39,7 @@ function getRouteComponent(pathname: string): React.ComponentType | null {
 const TabPageCache: React.FC = () => {
   const { tabs, activeKey } = useTabs();
   const location = useLocation();
-  const { hasPermission } = useAuth();
+  const { hasMenu } = useAuth();
   const [mountedKeys, setMountedKeys] = useState<Set<string>>(new Set(['dashboard']));
   // C.2：记录 tab 激活先后顺序（索引 0 = 最近），供 LRU 淘汰使用
   const recencyRef = useRef<string[]>(['dashboard']);
@@ -79,7 +79,12 @@ const TabPageCache: React.FC = () => {
 
   const renderPage = (tabKey: string, tabPath: string) => {
     const perm = getPermissionForPath(tabPath);
-    if (perm && !hasPermission(perm)) {
+    // 页面可达性必须用「访问级」判定（hasMenu = canAccess，含子→父继承），与
+    // ProtectedRoute / Layout 保持同一谓词；用动作级 hasPermission 会把
+    // 「仅授 :view 的只读角色」误判为无权限 —— 表现为菜单可见、点进去却提示
+    // 「无权限访问」、内容为空（真实报障：经销商仅配颜色·查看）。
+    // 动作级门控仍由页面内的 CanButton / hasPermission(code:action) 与后端守卫负责。
+    if (perm && !hasMenu(perm)) {
       return <div className="p-10 text-center text-gray-400">无权限访问</div>;
     }
 

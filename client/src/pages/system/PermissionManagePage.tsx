@@ -53,6 +53,34 @@ function findAncestorMenus(
 }
 
 /**
+ * 动作子码识别：形如 `资源码:动作`（两段及以上的冒号）。
+ * `base:color:view` / `sales:order:approve` → true；`base:color`（资源）/`mod:sales`（模块）→ false。
+ */
+function isActionCode(code: string | null | undefined): boolean {
+  return !!code && /^[a-z0-9_]+(:[a-z0-9_]+){2,}$/i.test(code);
+}
+
+/** 由动作子码取所属资源码：`base:color:view` → `base:color`。 */
+function resourceCodeOf(actionCode: string): string {
+  return actionCode.slice(0, actionCode.lastIndexOf(':'));
+}
+
+/** 在权限树中按 code 精确查找节点。 */
+function findNodeByCode(
+  tree: PermissionTreeNode[],
+  code: string,
+): PermissionTreeNode | null {
+  for (const n of tree) {
+    if (n.code === code) return n;
+    if (n.children) {
+      const hit = findNodeByCode(n.children, code);
+      if (hit) return hit;
+    }
+  }
+  return null;
+}
+
+/**
  * 权限树节点组件
  */
 interface TreeNodeItemProps {
@@ -310,6 +338,8 @@ const PermissionManagePage: React.FC = () => {
    * - 取消菜单：自动取消所有子菜单和按钮
    * - 勾选按钮：自动勾选其父菜单（及所有祖先）
    * - 取消按钮：仅取消自身（父菜单可能变为 indeterminate）
+   * - 勾选「写动作」：自动连带勾选同资源的「查看」动作（防「有写无读」空页配置）
+   * - 取消「查看」：自动连带取消同资源其余动作（同上，两个方向都堵住）
    */
   const handleToggle = (
     node: PermissionTreeNode,
@@ -327,10 +357,43 @@ const PermissionManagePage: React.FC = () => {
       for (const anc of ancestors) {
         checkedIdsRef.current.add(anc.id);
       }
+      // 防病态配置：勾选任一非 view 动作（新增/编辑/删除/审核…）时，
+      // 自动连带勾选同资源的「查看」。否则角色会「有写无读」——
+      // 页面能进（canAccess 由该动作子码满足）但列表读接口无 view、
+      // 数据加载不出，表现为空白页。
+      if (isActionCode(node.code)) {
+        const viewCode = `${resourceCodeOf(node.code)}:view`;
+        if (node.code !== viewCode) {
+          const viewNode = findNodeByCode(permissionTree, viewCode);
+          if (viewNode) {
+            for (const id of collectDescendantIds(viewNode)) {
+              checkedIdsRef.current.add(id);
+            }
+            for (const anc of findAncestorMenus(permissionTree, viewNode.id)) {
+              checkedIdsRef.current.add(anc.id);
+            }
+          }
+        }
+      }
     } else {
       // 取消：移除自身和所有后代
       for (const id of descendantIds) {
         checkedIdsRef.current.delete(id);
+      }
+      // 对称防护：取消「查看」时，连带取消同资源的其余动作。
+      // 留下「有写无读」的配置没有意义（写动作无法单独构成可用授权）。
+      if (isActionCode(node.code)) {
+        const resource = resourceCodeOf(node.code);
+        if (node.code === `${resource}:view`) {
+          const resNode = findNodeByCode(permissionTree, resource);
+          for (const sib of resNode?.children ?? []) {
+            if (sib.code !== node.code) {
+              for (const id of collectDescendantIds(sib)) {
+                checkedIdsRef.current.delete(id);
+              }
+            }
+          }
+        }
       }
     }
 

@@ -237,7 +237,9 @@ export class ReportController {
   async pivot(@Req() req: Request, @Body() body: PivotConfig): Promise<PivotResponse> {
     // 毛利/成本字段做字段级权限控制：无 finance:profit 则直接剥离，
     // 返回体中不含任何毛利数据（而非仅前端隐藏），杜绝越权取数。
-    const canSeeProfit = await this.rbacService.checkPermission(
+    // 用 checkAccess（访问级）而非 checkPermission：权限树可只授 finance:profit:view
+    // 动作子码，若按严格动作级判定会导致「页面/菜单都放行、毛利字段却被剥离」的割裂。
+    const canSeeProfit = await this.rbacService.checkAccess(
       ReportController.extractToken(req),
       'finance:profit',
     );
@@ -264,7 +266,7 @@ export class ReportController {
   async pivotSemantics(@Req() req: Request) {
     const [fields, canSeeProfit] = await Promise.all([
       this.semanticService.listEnabled(),
-      this.rbacService.checkPermission(
+      this.rbacService.checkAccess(
         ReportController.extractToken(req),
         'finance:profit',
       ),
@@ -293,7 +295,7 @@ export class ReportController {
   @CheckPermission('report:pivot')
   @Get('pivot/capabilities')
   async pivotCapabilities(@Req() req: Request): Promise<{ canSeeProfit: boolean }> {
-    const canSeeProfit = await this.rbacService.checkPermission(
+    const canSeeProfit = await this.rbacService.checkAccess(
       ReportController.extractToken(req),
       'finance:profit',
     );

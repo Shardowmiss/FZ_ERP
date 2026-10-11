@@ -26,8 +26,12 @@ const toYuan = (cents: string | number): string => (Number(cents) / 100).toFixed
 const fmtInt = (n: string | number): string => Number(n).toLocaleString('zh-CN');
 
 const MemberMergeAuditPage: React.FC = () => {
-  const { hasPermission } = useAuth();
-  const canMerge = hasPermission('member:merge');
+  const { hasPermission, hasMenu } = useAuth();
+  // 页面读门禁与回滚写门禁分离（同 MergeAuditPage）：
+  //  · canAccessPage：审计只读列表 → 访问级（持有 member:merge 或其动作子码即可进）。
+  //  · canReverse：整批回滚 → 动作级（严格）。
+  const canAccessPage = hasMenu('member:merge');
+  const canReverse = hasPermission('member:merge');
 
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [loading, setLoading] = useState(false);
@@ -35,7 +39,7 @@ const MemberMergeAuditPage: React.FC = () => {
   const [reversingRun, setReversingRun] = useState<string | null>(null);
 
   const fetchLogs = async () => {
-    if (!canMerge) return;
+    if (!canAccessPage) return;
     setLoading(true);
     try {
       const revOpt = statusFilter === 'all' ? undefined : statusFilter === 'reversed';
@@ -51,7 +55,7 @@ const MemberMergeAuditPage: React.FC = () => {
   useEffect(() => {
     fetchLogs();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter, canMerge]);
+  }, [statusFilter, canAccessPage]);
 
   const groups = useMemo<MergeRunGroup[]>(() => {
     const map = new Map<string, MergeRunGroup>();
@@ -96,7 +100,7 @@ const MemberMergeAuditPage: React.FC = () => {
     }
   };
 
-  if (!canMerge) {
+  if (!canAccessPage) {
     return (
       <div className="p-10 text-center text-gray-400">
         无权限访问（需要 <code>member:merge</code> 权限）
@@ -178,13 +182,15 @@ const MemberMergeAuditPage: React.FC = () => {
                     <span>时间：{g.createdAt ? g.createdAt.replace('T', ' ').slice(0, 19) : '-'}</span>
                     <span className="text-gray-400">批次 {g.runId}</span>
                   </div>
-                  <button
-                    className="border border-red-300 text-red-600 rounded px-3 py-1 text-sm hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed"
-                    disabled={g.reversed || reversingRun === g.runId}
-                    onClick={() => handleReverse(g)}
-                  >
-                    {g.reversed ? '已回滚' : reversingRun === g.runId ? '回滚中...' : '整批回滚'}
-                  </button>
+                  {canReverse && (
+                    <button
+                      className="border border-red-300 text-red-600 rounded px-3 py-1 text-sm hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                      disabled={g.reversed || reversingRun === g.runId}
+                      onClick={() => handleReverse(g)}
+                    >
+                      {g.reversed ? '已回滚' : reversingRun === g.runId ? '回滚中...' : '整批回滚'}
+                    </button>
+                  )}
                 </div>
                 <TableContainer>
                   <table className="w-full text-sm border-collapse">
