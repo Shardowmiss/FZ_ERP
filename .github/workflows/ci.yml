@@ -33,6 +33,28 @@ jobs:
       - name: Unit tests
         run: npm run test
 
+  # ---- #811 权限一致性门禁：播种配置/后端守卫/前端路由/菜单 ↔ 权限目录 五方对账 ----
+  # 纯静态（TypeScript 即时转译 shared/menu-permission.ts，无需数据库、无需构建）。
+  # 独立成 job：不依赖 type:check/单测，信号可靠、可独立判读（防止「配置声明了目录中
+  # 不存在的废弃码 → 新部署该角色静默缺权限 / 接口对所有人 403」类缺陷复发）。
+  permission-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Permission consistency gate
+        run: npm run perm:check
+
   # ---- P0-4 安全门禁①：依赖漏洞扫描 ----
   # 生产运行时依赖：硬性门禁（当前 0 high+，必须保持绿色）。
   # 全部依赖（含 dev 工具链）：仅告警不阻断，当前 1 critical + 20 high 均为 dev 依赖，

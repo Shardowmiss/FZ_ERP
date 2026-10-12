@@ -581,7 +581,8 @@ export class RbacService {
       permissions: [
         // —— 写资源：保留粗码（待 #815）——
         'base:store',
-        'retail:view',
+        // 'retail:view' 已移除（#811 种子卫生）：该码已不在目录，声明即死码（授 0）；
+        // store_manager 当前无零售单访问权，如需请显式授 'sales:retail:view'（属新增授权，另行决策）。
         'pos:cashier',
         'member:manage',
         'inventory:query',
@@ -618,8 +619,9 @@ export class RbacService {
         'purchase:reconciliation',
         // —— 只读/叶子：收敛为 :view（去除粗码隐式放大写动作）——
         'dashboard:view',
-        'report:garment_purchase',
-        'report:material_purchase',
+        // 'report:garment_purchase'/'report:material_purchase' 已移除（#811 种子卫生）：
+        // 均为废弃码（不在目录，授 0）。采购报表的真实码是 'report:purchase:view'，
+        // 当前仅超管持有；是否授予财务属新增授权，另行决策。
         'analytics:bi:view',
         'analytics:forecast:view',
         'analytics:lifecycle:view',
@@ -650,8 +652,8 @@ export class RbacService {
         'base:supplier',
         'inventory:query',
         // —— 只读/叶子：收敛为 :view（去除粗码隐式放大写动作）——
-        'report:material_purchase',
-        'report:garment_purchase',
+        // 'report:material_purchase'/'report:garment_purchase' 已移除（#811 种子卫生，废弃码授 0；
+        // 真实码 'report:purchase:view' 当前仅超管持有，授予采购属新增授权，另行决策。）
         'inventory:barcode:view',
         'inventory:hangtag:view',
         'inventory:unique_code:view',

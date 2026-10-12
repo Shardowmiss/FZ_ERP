@@ -30,6 +30,7 @@
     "type:check:server": "tsc --noEmit --project tsconfig.node.json",
     "type:check:test": "tsc --noEmit --project tsconfig.test.json",
     "lint": "node ./scripts/lint.js",
+    "perm:check": "node scripts/check-permission-sync.cjs",
     "precommit": "node scripts/hooks/run-precommit.js",
     "prepare": "chmod +x .githooks/pre-commit 2>/dev/null; git config core.hooksPath .githooks 2>/dev/null || true",
     "postinstall": "fullstack-cli action-plugin init || true"
