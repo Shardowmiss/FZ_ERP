@@ -10,10 +10,6 @@ import { withIsolatedTransaction } from './utils/db';
 describe('品牌主数据改名被引用校验', () => {
   it('品牌被款号引用时改名应被拒绝，并给出具体原因', async () => {
     await withIsolatedTransaction(async ({ db }) => {
-      const cg = await db
-        .insert(colorGroup)
-        .values({ code: `CG_${Date.now()}_${Math.random()}`, name: '测试色组' })
-        .returning();
       const sg = await db
         .insert(sizeGroup)
         .values({ code: `SG_${Date.now()}_${Math.random()}`, name: '测试尺组' })
@@ -25,7 +21,6 @@ describe('品牌主数据改名被引用校验', () => {
       await db.insert(style).values({
         styleNo: `S_${Date.now()}_${Math.random()}`,
         name: '款A',
-        colorGroupId: cg[0].id,
         sizeGroupId: sg[0].id,
         brand: '耐克',
       });
@@ -48,10 +43,6 @@ describe('品牌主数据改名被引用校验', () => {
 
   it('品牌未被任何款号引用时改名应成功', async () => {
     await withIsolatedTransaction(async ({ db }) => {
-      const cg = await db
-        .insert(colorGroup)
-        .values({ code: `CG2_${Date.now()}_${Math.random()}`, name: '测试色组' })
-        .returning();
       const sg = await db
         .insert(sizeGroup)
         .values({ code: `SG2_${Date.now()}_${Math.random()}`, name: '测试尺组' })

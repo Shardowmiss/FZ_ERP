@@ -62,16 +62,13 @@ describe('W2-2 MetricsService（指标物化视图层，真库 erp_test）', () 
   it('2) mv_inventory_by_store 聚合门店库存（仓→店→库存 FK 链）', async () => {
     const rows = await withIsolatedTransaction(async ({ db: tx }) => {
       await tx.execute(
-        sql`INSERT INTO color_group (id, code, name) VALUES ('11111111-1111-1111-1111-111111111111','CG1','色组1')`,
-
-      );
-      await tx.execute(
         sql`INSERT INTO size_group (id, code, name) VALUES ('22222222-2222-2222-2222-222222222222','SG1','尺组1')`,
       );
+      // 颜色组已于 2026-10-12 随迁移 0066 下线（颜色改在 SKU 层选择），style 不再有 color_group_id
       await tx.execute(
-        sql`INSERT INTO style (id, style_no, name, color_group_id, size_group_id)
+        sql`INSERT INTO style (id, style_no, name, size_group_id)
             VALUES ('33333333-3333-3333-3333-333333333333','ST1','款1',
-                    '11111111-1111-1111-1111-111111111111','22222222-2222-2222-2222-222222222222')`,
+                    '22222222-2222-2222-2222-222222222222')`,
       );
       await tx.execute(
         sql`INSERT INTO sku (id, sku_code, style_id, style_no, color, size)

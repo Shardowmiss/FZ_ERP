@@ -16,7 +16,6 @@ import {
 } from './utils/erp-db';
 import { SkuService } from '@server/modules/base/sku/sku.service';
 
-const COLOR_GROUP = '477db48e-9a3c-4d63-b9d2-7246762bc44a';
 const SIZE_GROUP = 'f0745a6f-f5b6-47fb-aa8e-a7829fddf20c';
 
 async function firstRow(db: ErpDb, query: ReturnType<typeof sql>) {
@@ -32,12 +31,13 @@ describe('P1-3 M4 sku.bulkImport 写入 color_id/size_id', () => {
       const svc: any = new SkuService();
       svc.db = db;
 
-      // 事务内新建一个全新 style（NOT NULL 列：id/style_no/name/color_group_id/size_group_id；
+      // 事务内新建一个全新 style（NOT NULL 列：id/style_no/name/size_group_id；
       // attributes/status/lifecycle_status/_created_at/_updated_at 均有默认值）
+      // 颜色组已于 2026-10-12 下线：style 不再有 color_group_id 列（颜色只在 SKU 层选择）
       const styleNo = `P13STYLE-${Date.now()}`;
       await db.execute(sql`
-        INSERT INTO style (id, style_no, name, color_group_id, size_group_id)
-        VALUES (gen_random_uuid(), ${styleNo}, ${styleNo}, ${COLOR_GROUP}, ${SIZE_GROUP})
+        INSERT INTO style (id, style_no, name, size_group_id)
+        VALUES (gen_random_uuid(), ${styleNo}, ${styleNo}, ${SIZE_GROUP})
       `);
       const styleRow = await firstRow(db, sql`select id from style where style_no=${styleNo}`);
       const styleId = styleRow?.id;

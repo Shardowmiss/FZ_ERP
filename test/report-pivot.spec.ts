@@ -58,8 +58,8 @@ const U = {
 /**
  * 种子数据：覆盖 4 个透视数据源 + 5 张报表的单据事实。
  *
- * 会临时停用外键触发器：这些表的 uuid 列多数是 NOT NULL，且父表（color_group /
- * sales_order / warehouse …）离报表逻辑很远。为种两行数据去铺一整条父表链不值当。
+ * 会临时停用外键触发器：这些表的 uuid 列多数是 NOT NULL，且父表（sales_order /
+ * warehouse …）离报表逻辑很远。为种两行数据去铺一整条父表链不值当。
  * 停用是 DDL，在事务内执行，ROLLBACK 自动还原；CHECK 约束不受影响，因此测到的
  * 仍然是真实库约束下的行为。
  *
@@ -80,10 +80,10 @@ async function seed(tx: TestDb): Promise<void> {
 
   // 款式：两个品牌，透视维度的主要来源
   await tx.execute(raw`
-    INSERT INTO style (id, style_no, name, brand, category, sub_category, color_group_id, size_group_id, status, lifecycle_status, attributes, _created_at, _updated_at)
+    INSERT INTO style (id, style_no, name, brand, category, sub_category, size_group_id, status, lifecycle_status, attributes, _created_at, _updated_at)
     VALUES
-      (${U.s1}, 'ST001', ${'衬衫'}, ${'B1'}, ${'C1'}, ${'SC1'}, ${U.s1}, ${U.s1}, 'active', 'active', ${'{}'}::jsonb, now(), now()),
-      (${U.s2}, 'ST002', ${'外套'}, ${'B2'}, ${'C1'}, ${'SC1'}, ${U.s2}, ${U.s2}, 'active', 'active', ${'{}'}::jsonb, now(), now())` as never);
+      (${U.s1}, 'ST001', ${'衬衫'}, ${'B1'}, ${'C1'}, ${'SC1'}, ${U.s1}, 'active', 'active', ${'{}'}::jsonb, now(), now()),
+      (${U.s2}, 'ST002', ${'外套'}, ${'B2'}, ${'C1'}, ${'SC1'}, ${U.s2}, 'active', 'active', ${'{}'}::jsonb, now(), now())` as never);
 
   await tx.execute(raw`
     INSERT INTO sku (id, sku_code, style_id, style_no, color, size, tag_price, status, _created_at, _updated_at)

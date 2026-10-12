@@ -5,7 +5,7 @@ import { Download } from 'lucide-react';
 import { baseApi } from '@client/src/api';
 import type { MergeResult, MergeCandidateGroup } from '@client/src/api';
 import { useAuth } from '@client/src/contexts/AuthContext';
-import type { Style, ColorGroup, SizeGroup, PaginationResult, StyleCreateAutoRequest, StyleAttribute } from '@shared/api.interface';
+import type { Style, SizeGroup, PaginationResult, StyleCreateAutoRequest, StyleAttribute } from '@shared/api.interface';
 import { toast } from 'sonner';
 import { showConfirm } from '@lark-apaas/client-toolkit';
 import { TableContainer, DataPagination } from '@client/src/components/ui';
@@ -26,7 +26,6 @@ const StylePage: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAutoMode, setIsAutoMode] = useState(false);
   const [addDropdownOpen, setAddDropdownOpen] = useState(false);
-  const [colorGroups, setColorGroups] = useState<ColorGroup[]>([]);
   const [sizeGroups, setSizeGroups] = useState<SizeGroup[]>([]);
   const [brandOptions, setBrandOptions] = useState<StyleAttribute[]>([]);
   const [brandFilter, setBrandFilter] = useState('');
@@ -34,7 +33,7 @@ const StylePage: React.FC = () => {
   const [form, setForm] = useState<Partial<Style>>({
     styleNo: '', name: '', category: '', season: '', wave: '',
     tagPrice: 0, costPrice: 0, supplyPrice: 0,
-    colorGroupId: '', sizeGroupId: '', status: 'active', remark: '',
+    sizeGroupId: '', status: 'active', remark: '',
   });
   const [autoFormKey, setAutoFormKey] = useState(0);
   const autoFormRef = useRef<AutoCreateFormHandle>(null);
@@ -73,12 +72,10 @@ const StylePage: React.FC = () => {
 
   const fetchOptions = async () => {
     try {
-      const [cgRes, sgRes, brandRes] = await Promise.all([
-        baseApi.colorGroup.list({ page: 1, pageSize: 1000 }),
+      const [sgRes, brandRes] = await Promise.all([
         baseApi.sizeGroup.list({ page: 1, pageSize: 1000 }),
         baseApi.styleAttribute.getAll('brand', true),
       ]);
-      setColorGroups(cgRes.items);
       setSizeGroups(sgRes.items);
       setBrandOptions(brandRes);
     } catch {
@@ -106,7 +103,7 @@ const StylePage: React.FC = () => {
     setForm({
       styleNo: '', name: '', category: '', season: '', brand: '', wave: '',
       tagPrice: 0, costPrice: 0, supplyPrice: 0,
-      colorGroupId: '', sizeGroupId: '', status: 'active', remark: '',
+      sizeGroupId: '', status: 'active', remark: '',
     });
     fetchOptions();
     setAddDropdownOpen(false);
@@ -139,7 +136,6 @@ const StylePage: React.FC = () => {
     if (submitting) return;
     if (!form.styleNo?.trim()) { toast('请输入款号'); return; }
     if (!form.name?.trim()) { toast('请输入款名'); return; }
-    if (!form.colorGroupId) { toast('请选择颜色组'); return; }
     if (!form.sizeGroupId) { toast('请选择尺码组'); return; }
     setSubmitting(true);
     try {
@@ -410,7 +406,6 @@ const StylePage: React.FC = () => {
                 <AutoCreateForm
                   key={autoFormKey}
                   ref={autoFormRef}
-                  colorGroups={colorGroups}
                   sizeGroups={sizeGroups}
                   brandOptions={brandOptions}
                   onSave={handleSaveAuto}
@@ -419,7 +414,6 @@ const StylePage: React.FC = () => {
                 <ManualForm
                   form={form}
                   editing={!!editingId}
-                  colorGroups={colorGroups}
                   sizeGroups={sizeGroups}
                   brandOptions={brandOptions}
                   onChange={patch => setForm({ ...form, ...patch })}

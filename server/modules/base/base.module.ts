@@ -1,7 +1,5 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { BaseController } from './base.controller';
-import { ColorGroupController } from './color-group/color-group.controller';
-import { ColorGroupService } from './color-group/color-group.service';
 import { SizeGroupController } from './size-group/size-group.controller';
 import { SizeGroupService } from './size-group/size-group.service';
 import { StyleController } from './style/style.controller';
@@ -32,7 +30,6 @@ import { SystemModule } from '../system/system.module';
   imports: [forwardRef(() => SystemModule)],
   controllers: [
     BaseController,
-    ColorGroupController,
     SizeGroupController,
     StyleController,
     SkuController,
@@ -47,7 +44,6 @@ import { SystemModule } from '../system/system.module';
     StoreController,
   ],
   providers: [
-    ColorGroupService,
     SizeGroupService,
     StyleService,
     SkuService,
@@ -62,7 +58,6 @@ import { SystemModule } from '../system/system.module';
     StoreService,
   ],
   exports: [
-    ColorGroupService,
     SizeGroupService,
     StyleService,
     SkuService,

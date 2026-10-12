@@ -29,10 +29,11 @@ export class SkuController {
   }
 
   // 注意：本路由必须声明在 @Get(':id') 之前，否则会被 :id 通配吞掉。
-  // 按款号的「色组 × 尺码组」笛卡尔积批量生成 SKU 矩阵（幂等，重复调用不产生重复 SKU）。
+  // 按「选中的颜色 × 款号尺码组」笛卡尔积批量生成 SKU 矩阵（幂等，重复调用不产生重复 SKU）。
+  // 颜色由请求显式给出（2026-10-12 起颜色只在 SKU 层选择，款号不再绑定颜色组）。
   @CheckPermission('base:sku')
   @Post('generate-matrix')
-  async generateMatrix(@Body() body: { styleId: string }): Promise<{
+  async generateMatrix(@Body() body: { styleId: string; colorIds: string[] }): Promise<{
     styleNo: string;
     total: number;
     inserted: number;
@@ -40,7 +41,7 @@ export class SkuController {
     colors: number;
     sizes: number;
   }> {
-    return this.skuService.generateMatrix(body.styleId);
+    return this.skuService.generateMatrix(body.styleId, body.colorIds);
   }
 
   @Get(':id')

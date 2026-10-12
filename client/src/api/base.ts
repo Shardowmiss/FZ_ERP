@@ -1,7 +1,7 @@
 import { request } from './request';
 import type {
   PaginationParams, PaginationResult,
-  Style, Sku, Color, ColorGroup, SizeGroup, Size, SizeGroupSize,
+  Style, Sku, Color, SizeGroup, Size, SizeGroupSize,
   Material, Supplier, Warehouse,
   Dealer, Store,
   StyleCreateAutoRequest,
@@ -31,16 +31,6 @@ export const baseApi = {
 
     options: () =>
       request<{ id: string; code: string; name: string }[]>('/api/base/size/options/list'),
-  },
-  colorGroup: {
-    list: (params: PaginationParams & { keyword?: string }) =>
-      request<PaginationResult<ColorGroup>>('/api/base/color-group', 'GET', null, params),
-    get: (id: string) => request<ColorGroup>(`/api/base/color-group/${id}`),
-    create: (data: Partial<ColorGroup>) => request<ColorGroup>('/api/base/color-group', 'POST', data),
-    update: (id: string, data: Partial<ColorGroup>) =>
-      request<ColorGroup>(`/api/base/color-group/${id}`, 'PUT', data),
-    remove: (id: string) => request<void>(`/api/base/color-group/${id}`, 'DELETE'),
-
   },
   sizeGroup: {
     list: (params: PaginationParams & { keyword?: string }) =>
@@ -81,8 +71,8 @@ export const baseApi = {
     update: (id: string, data: Partial<Sku>) =>
       request<Sku>(`/api/base/sku/${id}`, 'PUT', data),
     byStyle: (styleId: string) => request<Sku[]>(`/api/base/sku/by-style/${styleId}`),
-    /** 按款号的「色组 × 尺码组」笛卡尔积批量生成 SKU 矩阵（幂等，重复调用不产生重复 SKU） */
-    generateMatrix: (styleId: string) =>
+    /** 按「选中的颜色 × 款号尺码组」笛卡尔积批量生成 SKU 矩阵（幂等，重复调用不产生重复 SKU） */
+    generateMatrix: (styleId: string, colorIds: string[]) =>
       request<{
         styleNo: string;
         total: number;
@@ -90,7 +80,7 @@ export const baseApi = {
         skipped: number;
         colors: number;
         sizes: number;
-      }>('/api/base/sku/generate-matrix', 'POST', { styleId }),
+      }>('/api/base/sku/generate-matrix', 'POST', { styleId, colorIds }),
   },
   material: {
     list: (params: PaginationParams & { keyword?: string; category?: string; status?: string }) =>

@@ -133,7 +133,6 @@ export function getMenuIconByPath(path: string): React.ReactNode {
 const DashboardPage = React.lazy(() => import('@client/src/pages/Dashboard/DashboardPage'));
 const StylePage = React.lazy(() => import('@client/src/pages/base/StylePage'));
 const SkuPage = React.lazy(() => import('@client/src/pages/base/SkuPage'));
-const ColorGroupPage = React.lazy(() => import('@client/src/pages/base/ColorGroupPage'));
 const SizeGroupPage = React.lazy(() => import('@client/src/pages/base/SizeGroupPage'));
 const MaterialPage = React.lazy(() => import('@client/src/pages/base/MaterialPage'));
 const MergeAuditPage = React.lazy(() => import('@client/src/pages/base/MergeAuditPage'));
@@ -277,7 +276,6 @@ export const routeComponents: Record<string, RouteEntry> = {
   '/dashboard': { component: DashboardPage, permission: 'dashboard:view' },
   '/base/style': { component: StylePage, permission: 'base:style' },
   '/base/sku': { component: SkuPage, permission: 'base:sku' },
-  '/base/color-group': { component: ColorGroupPage, permission: 'base:color-group' },
   '/base/size-group': { component: SizeGroupPage, permission: 'base:size-group' },
   '/base/material': { component: MaterialPage, permission: 'base:material' },
   '/base/supplier': { component: SupplierPage, permission: 'base:supplier' },

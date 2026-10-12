@@ -10,7 +10,6 @@ import {
   productImportTask,
   style,
   sku,
-  colorGroup,
   sizeGroup,
   color,
   size,
@@ -111,17 +110,11 @@ export class ProductImportService {
   }
 
   private async validateStyle(rows: Record<string, any>[], result: ValidateResult): Promise<void> {
-    const cgCodes = [...new Set(rows.map((r) => toStrTrim(r.colorGroupCode)).filter(Boolean))];
+    // 颜色组已于 2026-10-12 下线：导入模板不再需要「色组编码」列，只校验尺码组。
     const sgCodes = [...new Set(rows.map((r) => toStrTrim(r.sizeGroupCode)).filter(Boolean))];
-    const [cgRows, sgRows] = await Promise.all([
-      cgCodes.length
-        ? this.db.select({ code: colorGroup.code }).from(colorGroup).where(inArray(colorGroup.code, cgCodes))
-        : Promise.resolve([]),
-      sgCodes.length
-        ? this.db.select({ code: sizeGroup.code }).from(sizeGroup).where(inArray(sizeGroup.code, sgCodes))
-        : Promise.resolve([]),
-    ]);
-    const cgSet = new Set(cgRows.map((r) => r.code));
+    const sgRows = sgCodes.length
+      ? await this.db.select({ code: sizeGroup.code }).from(sizeGroup).where(inArray(sizeGroup.code, sgCodes))
+      : [];
     const sgSet = new Set(sgRows.map((r) => r.code));
 
     const styleNos = [...new Set(rows.map((r) => toStrTrim(r.styleNo)).filter(Boolean))];
@@ -133,16 +126,10 @@ export class ProductImportService {
     rows.forEach((raw, i) => {
       const styleNo = toStrTrim(raw.styleNo);
       const name = toStrTrim(raw.name);
-      const cgCode = toStrTrim(raw.colorGroupCode);
       const sgCode = toStrTrim(raw.sizeGroupCode);
-      if (!styleNo || !name || !cgCode || !sgCode) {
+      if (!styleNo || !name || !sgCode) {
         result.unsupported += 1;
-        result.rows.push({ rowIndex: i, raw, status: 'unsupported', reason: '必填项缺失(款号/名称/色组编码/尺码组编码)' });
-        return;
-      }
-      if (!cgSet.has(cgCode)) {
-        result.unsupported += 1;
-        result.rows.push({ rowIndex: i, raw, status: 'unsupported', reason: `色组编码不存在: ${cgCode}` });
+        result.rows.push({ rowIndex: i, raw, status: 'unsupported', reason: '必填项缺失(款号/名称/尺码组编码)' });
         return;
       }
       if (!sgSet.has(sgCode)) {
@@ -325,7 +312,6 @@ export class ProductImportService {
     return {
       styleNo: toStrTrim(raw.styleNo),
       name: toStrTrim(raw.name),
-      colorGroupCode: toStrTrim(raw.colorGroupCode),
       sizeGroupCode: toStrTrim(raw.sizeGroupCode),
       category: toStr(raw.category),
       season: toStr(raw.season),

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, useImperativeHandle, f
 import { systemApi } from '@client/src/api';
 import { baseApi } from '@client/src/api/base';
 import type {
-  Style, ColorGroup, SizeGroup, CodeRule,
+  Style, SizeGroup, CodeRule,
   StyleCodePreviewResult, StyleCreateAutoRequest,
   StyleAttribute, StyleAttrDef,
 } from '@shared/api.interface';
@@ -21,7 +21,6 @@ interface AutoFormState {
   tagPrice: number | '';
   costPrice: number | '';
   supplyPrice: number | '';
-  colorGroupId: string;
   sizeGroupId: string;
   status: string;
   remark: string;
@@ -31,7 +30,7 @@ interface AutoFormState {
 
 const defaultAutoForm: AutoFormState = {
   name: '', wave: '', tagPrice: '', costPrice: '', supplyPrice: '',
-  colorGroupId: '', sizeGroupId: '', status: 'active', remark: '',
+  sizeGroupId: '', status: 'active', remark: '',
   attributes: {}, codeRuleId: '',
 };
 
@@ -40,14 +39,13 @@ export interface AutoCreateFormHandle {
 }
 
 interface AutoCreateFormProps {
-  colorGroups: ColorGroup[];
   sizeGroups: SizeGroup[];
   brandOptions: StyleAttribute[];
   onSave: (data: StyleCreateAutoRequest) => Promise<void>;
 }
 
 export const AutoCreateForm = forwardRef<AutoCreateFormHandle, AutoCreateFormProps>(
-  ({ colorGroups, sizeGroups, onSave }, ref) => {
+  ({ sizeGroups, onSave }, ref) => {
     const [form, setForm] = useState<AutoFormState>({ ...defaultAutoForm });
     const [preview, setPreview] = useState<StyleCodePreviewResult | null>(null);
     const [loading, setLoading] = useState(false);
@@ -150,7 +148,6 @@ export const AutoCreateForm = forwardRef<AutoCreateFormHandle, AutoCreateFormPro
         (def: StyleAttrDef) => form.attributes[def.attrCode.toLowerCase()]
       );
       if (!allFilled) { toast('请完善属性后再保存'); return; }
-      if (!form.colorGroupId) { toast('请选择颜色组'); return; }
       if (!form.sizeGroupId) { toast('请选择尺码组'); return; }
       await onSave({
         name: form.name,
@@ -164,7 +161,7 @@ export const AutoCreateForm = forwardRef<AutoCreateFormHandle, AutoCreateFormPro
         tagPrice: Number(form.tagPrice) || 0,
         costPrice: Number(form.costPrice) || 0,
         supplyPrice: Number(form.supplyPrice) || 0,
-        colorGroupId: form.colorGroupId, sizeGroupId: form.sizeGroupId,
+        sizeGroupId: form.sizeGroupId,
         remark: form.remark || undefined, skus: [],
         attributes: form.attributes,
         codeRuleId: form.codeRuleId || undefined,
@@ -243,13 +240,6 @@ export const AutoCreateForm = forwardRef<AutoCreateFormHandle, AutoCreateFormPro
                 onChange={e => update('supplyPrice', e.target.value === '' ? '' : Number(e.target.value))} />
             </div>
             <div>
-              <label className={labelCls}>颜色组<span className={reqCls}>*</span></label>
-              <select className={inputCls} value={form.colorGroupId} onChange={e => update('colorGroupId', e.target.value)}>
-                <option value="">请选择</option>
-                {colorGroups.map(cg => <option key={cg.id} value={cg.id}>{cg.name} ({cg.code})</option>)}
-              </select>
-            </div>
-            <div>
               <label className={labelCls}>尺码组<span className={reqCls}>*</span></label>
               <select className={inputCls} value={form.sizeGroupId} onChange={e => update('sizeGroupId', e.target.value)}>
                 <option value="">请选择</option>
@@ -323,13 +313,12 @@ AutoCreateForm.displayName = 'AutoCreateForm';
 interface ManualFormProps {
   form: Partial<Style>;
   editing: boolean;
-  colorGroups: ColorGroup[];
   sizeGroups: SizeGroup[];
   brandOptions: StyleAttribute[];
   onChange: (patch: Partial<Style>) => void;
 }
 
-export const ManualForm: React.FC<ManualFormProps> = ({ form, editing, colorGroups, sizeGroups, brandOptions, onChange }) => {
+export const ManualForm: React.FC<ManualFormProps> = ({ form, editing, sizeGroups, brandOptions, onChange }) => {
   const [attrDefs, setAttrDefs] = useState<StyleAttrDef[]>([]);
   const [codeRules, setCodeRules] = useState<CodeRule[]>([]);
 
@@ -415,14 +404,6 @@ export const ManualForm: React.FC<ManualFormProps> = ({ form, editing, colorGrou
          <label className={labelCls}>供货价</label>
          <input type="number" step="0.01" className={inputCls} value={form.supplyPrice ?? ''}
            onChange={e => onChange({ supplyPrice: Number(e.target.value) })} />
-       </div>
-       <div>
-         <label className={labelCls}>颜色组<span className={reqCls}>*</span></label>
-         <select className={inputCls} value={form.colorGroupId || ''} disabled={editing}
-           onChange={e => onChange({ colorGroupId: e.target.value })}>
-           <option value="">请选择</option>
-           {colorGroups.map(cg => <option key={cg.id} value={cg.id}>{cg.name} ({cg.code})</option>)}
-         </select>
        </div>
        <div>
          <label className={labelCls}>尺码组<span className={reqCls}>*</span></label>

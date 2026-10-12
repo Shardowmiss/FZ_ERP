@@ -21,7 +21,6 @@ const PAGES = path.join(__dirname, '..', 'client', 'src', 'pages');
 
 /** 目标页 → 资源码（来源: scripts/map-page-permission.cjs 由 menuConfig.routeComponents 派生） */
 const TARGETS = {
-  'base/ColorGroupPage.tsx': 'base:color-group',
   'base/DealerPage.tsx': 'base:dealer',
   'base/MaterialPage.tsx': 'base:material',
   'base/ProductImportPage.tsx': 'base:import',

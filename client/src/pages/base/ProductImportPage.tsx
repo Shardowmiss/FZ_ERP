@@ -27,7 +27,6 @@ interface ColumnDef {
 const STYLE_COLUMNS: ColumnDef[] = [
   { header: '款号', field: 'styleNo', required: true },
   { header: '款号名称', field: 'name', required: true },
-  { header: '颜色组编码', field: 'colorGroupCode', required: true, note: '须为系统中已存在的颜色组编码' },
   { header: '尺码组编码', field: 'sizeGroupCode', required: true, note: '须为系统中已存在的尺码组编码' },
   { header: '品类', field: 'category' },
   { header: '季节', field: 'season' },

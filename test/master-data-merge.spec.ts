@@ -18,6 +18,8 @@ import { MasterDataMergeService } from '@server/modules/master-data-merge/master
 import {
   style,
   customer,
+  color,
+  size,
   sku,
   bom,
   preOrder,
@@ -25,10 +27,7 @@ import {
   salesReconciliation,
   receivable,
   salesOrder,
-  colorGroup,
   sizeGroup,
-  color,
-  size,
   allocationItem,
 } from '@server/database/schema';
 
@@ -44,13 +43,6 @@ let seq = 0;
 /** 生成全局唯一业务编码，避免跨用例撞唯一约束 */
 const uniq = (p: string) => `${p}-${Date.now()}-${++seq}-${randomUUID().slice(0, 6)}`;
 
-async function makeColorGroup(): Promise<string> {
-  const [r] = await db
-    .insert(colorGroup)
-    .values({ code: uniq('cg'), name: 'CG', colors: '[]' })
-    .returning({ id: colorGroup.id });
-  return r.id;
-}
 async function makeSizeGroup(): Promise<string> {
   const [r] = await db
     .insert(sizeGroup)
@@ -64,7 +56,6 @@ async function makeStyle(styleNo: string) {
     .values({
       styleNo,
       name: `款${styleNo}`,
-      colorGroupId: await makeColorGroup(),
       sizeGroupId: await makeSizeGroup(),
     })
     .returning({ id: style.id, styleNo: style.styleNo });

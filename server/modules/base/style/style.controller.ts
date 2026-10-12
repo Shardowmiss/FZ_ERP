@@ -45,7 +45,6 @@ export class StyleController {
     tagPrice?: number;
     costPrice?: number;
     supplyPrice?: number;
-    colorGroupId: string;
     sizeGroupId: string;
     status?: string;
     remark?: string;
@@ -72,7 +71,6 @@ export class StyleController {
     tagPrice?: number;
     costPrice?: number;
     supplyPrice?: number;
-    colorGroupId?: string;
     sizeGroupId?: string;
     status?: string;
     remark?: string | null;

@@ -1,6 +1,6 @@
 import { Injectable, Inject, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { DRIZZLE_DATABASE, type PostgresJsDatabase } from '@lark-apaas/fullstack-nestjs-core';
-import { sku, style, color, size, colorGroupColor, sizeGroupSize } from '@server/database/schema';
+import { sku, style, color, size, sizeGroupSize } from '@server/database/schema';
 import { eq, and, count, desc, or, ilike, inArray } from 'drizzle-orm';
 import type { Sku } from '@shared/api.interface';
 import { escapeLike } from '@server/common/utils/escape-like';
@@ -328,6 +328,7 @@ export class SkuService {
    */
   async generateMatrix(
     styleId: string,
+    colorIds: string[],
   ): Promise<{
     styleNo: string;
     total: number;      // 应收矩阵数（色数 × 码数）
@@ -341,7 +342,6 @@ export class SkuService {
       .select({
         id: style.id,
         styleNo: style.styleNo,
-        colorGroupId: style.colorGroupId,
         sizeGroupId: style.sizeGroupId,
       })
       .from(style)
@@ -351,13 +351,18 @@ export class SkuService {
       throw new NotFoundException(`款式不存在: ${styleId}`);
     }
 
-    // 2) 取色组成员（按 sortOrder 稳定排序，保证生成顺序可预期）
+    // 2) 取本次选中的颜色（2026-10-12 起颜色只在 SKU 层选择，款号不再绑定颜色组）
+    if (!Array.isArray(colorIds) || colorIds.length === 0) {
+      throw new BadRequestException('请至少选择一个颜色');
+    }
     const colorRows = await this.db
       .select({ id: color.id, code: color.code, name: color.name })
-      .from(colorGroupColor)
-      .innerJoin(color, eq(color.id, colorGroupColor.colorId))
-      .where(eq(colorGroupColor.colorGroupId, st.colorGroupId))
-      .orderBy(colorGroupColor.sortOrder, color.code);
+      .from(color)
+      .where(inArray(color.id, colorIds))
+      .orderBy(color.code);
+    if (colorRows.length !== new Set(colorIds).size) {
+      throw new BadRequestException('存在无效的颜色 id');
+    }
 
     // 3) 取尺码组成员
     const sizeRows = await this.db
@@ -369,7 +374,7 @@ export class SkuService {
 
     if (colorRows.length === 0) {
       throw new BadRequestException(
-        `款号 ${st.styleNo} 的色组没有成员，请先在「色组管理」中为该色组添加颜色`,
+        `款号 ${st.styleNo} 未选中任何颜色，请先在「颜色」中维护颜色`,
       );
     }
     if (sizeRows.length === 0) {

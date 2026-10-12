@@ -3241,7 +3241,6 @@ export const style = pgTable("style", {
   tagPrice: numeric("tag_price").default('0'),
   costPrice: numeric("cost_price").default('0'),
   supplyPrice: numeric("supply_price").default('0'),
-  colorGroupId: uuid("color_group_id").notNull(),
   sizeGroupId: uuid("size_group_id").notNull(),
   // 四大改造 C：款号关联的编码规则（可为空，删除规则时 SET NULL）
   codeRuleId: uuid("code_rule_id"),
@@ -3277,11 +3276,6 @@ export const style = pgTable("style", {
   // 上市日期索引（迁移 0050）：新品/老品筛选与季末清货扫描
   index("idx_style_launch_date").on(table.launchDate),
   index("idx_style_season_launch").on(table.season, table.launchDate),
-  foreignKey({
-    columns: [table.colorGroupId],
-    foreignColumns: [colorGroup.id],
-    name: "style_color_group_id_fkey",
-  }),
   foreignKey({
     columns: [table.sizeGroupId],
     foreignColumns: [sizeGroup.id],
@@ -3323,30 +3317,6 @@ export const sizeGroup = pgTable("size_group", {
   uniqueIndex("size_group_code_key").on(table.code),
 ]);
 
-export const colorGroup = pgTable("color_group", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  code: varchar("code", { length: 50 }).notNull().unique(),
-  name: varchar("name", { length: 100 }).notNull(),
-  /**
-   * @type { name: string; value: string }[]
-   */
-  colors: jsonb("colors").notNull().default('[]'),
-  // System field: Creation time (auto-filled, do not modify)
-  createdAt: customTimestamptz("_created_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
-  // System field: Creator (auto-filled, do not modify)
-  createdBy: userProfile("_created_by"),
-  // System field: Update time (auto-filled, do not modify)
-  updatedAt: customTimestamptz("_updated_at", { precision: 3 }).notNull().default(sql`CURRENT_TIMESTAMP`),
-  // System field: Updater (auto-filled, do not modify)
-  updatedBy: userProfile("_updated_by"),
-  // 软删除标记：非空表示已删除（BaseCrudService 软删逻辑据此过滤/置位）
-  deletedAt: customTimestamptz("_deleted_at", { precision: 3 }),
-}, (table) => [
-  uniqueIndex("color_group_code_key").on(table.code),
-]);
-
-
-
 // table aliases
 export const allocationItemTable = allocationItem;
 export const allocationOrderTable = allocationOrder;
@@ -3354,7 +3324,6 @@ export const bomTable = bom;
 export const bomItemTable = bomItem;
 export const codeMappingConfigTable = codeMappingConfig;
 export const codeRuleTable = codeRule;
-export const colorGroupTable = colorGroup;
 export const dealerTable = dealer;
 export const financePaymentTable = financePayment;
 export const financePaymentWriteoffTable = financePaymentWriteoff;
@@ -4233,19 +4202,6 @@ export const sizeGroupSize = pgTable("size_group_size", {
 }, (table) => [
   primaryKey({ columns: [table.sizeGroupId, table.sizeId] }),
   index("idx_size_group_size_size").on(table.sizeId),
-]);
-
-// ---------------------------------------------------------------------------
-// 颜色组与颜色关系（P1-1：颜色组关系化，对齐已有的 size_group_size）
-// 组关系（哪些颜色属于某颜色组）以关联表为单一真相；color_group.colors jsonb 作为派生镜像。
-// ---------------------------------------------------------------------------
-export const colorGroupColor = pgTable("color_group_color", {
-  colorGroupId: uuid("color_group_id").notNull().references(() => colorGroup.id, { onDelete: 'cascade' }),
-  colorId: uuid("color_id").notNull().references(() => color.id, { onDelete: 'cascade' }),
-  sortOrder: integer("sort_order").notNull().default(0),
-}, (table) => [
-  primaryKey({ columns: [table.colorGroupId, table.colorId] }),
-  index("idx_color_group_color_color").on(table.colorId),
 ]);
 
 // ---------------------------------------------------------------------------

@@ -3,7 +3,6 @@ import { DRIZZLE_DATABASE, type PostgresJsDatabase } from '@lark-apaas/fullstack
 import {
   sku,
   style,
-  colorGroup,
   sizeGroup,
   bom,
   garmentPurchaseOrderSku,
@@ -23,13 +22,11 @@ import { CodeRuleService } from '../../system/code-rule/code-rule.service';
 import { escapeLike } from '@server/common/utils/escape-like';
 
 type StyleInsert = typeof style.$inferInsert;
-type SkuInsert = typeof sku.$inferInsert;
 
 /** 款号批量导入单行（来自 Excel 解析），用于「商品资料-批量导入」审核入库 */
 export interface StyleImportItem {
   styleNo: string;
   name: string;
-  colorGroupCode: string;
   sizeGroupCode: string;
   category?: string | null;
   season?: string | null;
@@ -87,7 +84,6 @@ function styleRowToDto(row: typeof style.$inferSelect): Style {
     tagPrice: Number(row.tagPrice ?? 0),
     costPrice: Number(row.costPrice ?? 0),
     supplyPrice: Number(row.supplyPrice ?? 0),
-    colorGroupId: row.colorGroupId,
     sizeGroupId: row.sizeGroupId,
     codeRuleId: row.codeRuleId ?? undefined,
     status: row.status,
@@ -158,7 +154,6 @@ export class StyleService {
     if (!dto.category) throw new BadRequestException('商品大类不能为空');
     if (!dto.subCategory) throw new BadRequestException('商品小类不能为空');
     if (!dto.fit) throw new BadRequestException('版型不能为空');
-    if (!dto.colorGroupId) throw new BadRequestException('颜色组不能为空');
     if (!dto.sizeGroupId) throw new BadRequestException('尺码组不能为空');
 
     // 生成款号
@@ -177,23 +172,10 @@ export class StyleService {
     const existingStyle = await this.db.select().from(style).where(eq(style.styleNo, styleNo));
     if (existingStyle.length > 0) throw new ConflictException('款号已存在');
 
-    // Fetch color group and size group
-    const cgRows = await this.db.select().from(colorGroup).where(eq(colorGroup.id, dto.colorGroupId));
-    if (cgRows.length === 0) throw new BadRequestException('颜色组不存在');
-    const colors = cgRows[0].colors as { name: string; value: string }[];
-    if (colors.length === 0) throw new BadRequestException('颜色组为空，无法生成SKU');
-
+    // 颜色不再挂在款号上（2026-10-12 决策：颜色只在 SKU 层选择）⇒ 建档时不再自动生成
+    // SKU 矩阵。颜色与 SKU 改由「SKU 管理」页选色后生成（POST /api/base/sku/generate-matrix）。
     const sgRows = await this.db.select().from(sizeGroup).where(eq(sizeGroup.id, dto.sizeGroupId));
     if (sgRows.length === 0) throw new BadRequestException('尺码组不存在');
-    const sizes = sgRows[0].sizes as string[];
-    if (sizes.length === 0) throw new BadRequestException('尺码组为空，无法生成SKU');
-
-    // 获取颜色和尺码编码映射
-    const mapping = await this.codeRuleService.getMappingConfig();
-    const colorCodeMap = new Map(mapping.colors.map((c) => [c.name, c.code]));
-    const sizeCodeMap = new Map(mapping.sizes.map((s) => [s.name, s.code]));
-
-    const skuPrices = dto.skus || [];
 
     const createdStyle = await this.db.transaction(async (tx) => {
        const styleValues: StyleInsert = {
@@ -213,7 +195,6 @@ export class StyleService {
          tagPrice: dto.tagPrice !== undefined ? String(dto.tagPrice) : '0',
          costPrice: dto.costPrice !== undefined ? String(dto.costPrice) : '0',
          supplyPrice: dto.supplyPrice !== undefined ? String(dto.supplyPrice) : '0',
-         colorGroupId: dto.colorGroupId,
          sizeGroupId: dto.sizeGroupId,
          codeRuleId: dto.codeRuleId ?? null,
           status: 'active',
@@ -223,45 +204,6 @@ export class StyleService {
 
       const inserted = await tx.insert(style).values(styleValues).returning();
       const newStyle = inserted[0];
-
-      // 自动生成 SKU: 款号 + 颜色码 + 尺码码
-      const skuCodes: string[] = [];
-      const skuInserts: SkuInsert[] = [];
-      let priceIndex = 0;
-
-      for (const color of colors) {
-        const colorCode = colorCodeMap.get(color.name) || color.name.toUpperCase().slice(0, 3);
-        for (const size of sizes) {
-          const sizeCode = sizeCodeMap.get(size) || size;
-          const skuCode = `${styleNo}-${colorCode}-${sizeCode}`;
-          if (skuCodes.includes(skuCode)) {
-            throw new ConflictException(`SKU编码重复: ${skuCode}`);
-          }
-          skuCodes.push(skuCode);
-
-          const price = skuPrices[priceIndex];
-          priceIndex += 1;
-
-          skuInserts.push({
-            skuCode,
-            styleId: newStyle.id,
-            styleNo: newStyle.styleNo,
-            color: color.name,
-            size,
-            barcode: skuCode,
-            costPrice: price?.costPrice !== undefined ? String(price.costPrice) : newStyle.costPrice,
-            tagPrice: price?.tagPrice !== undefined ? String(price.tagPrice) : newStyle.tagPrice,
-            supplyPrice: price?.supplyPrice !== undefined ? String(price.supplyPrice) : newStyle.supplyPrice,
-            safetyStockMin: '0',
-            safetyStockMax: '0',
-            status: 'active',
-          });
-        }
-      }
-
-      if (skuInserts.length > 0) {
-        await tx.insert(sku).values(skuInserts);
-      }
 
       return newStyle;
     });
@@ -283,7 +225,6 @@ export class StyleService {
     tagPrice?: number;
     costPrice?: number;
     supplyPrice?: number;
-    colorGroupId: string;
     sizeGroupId: string;
     status?: string;
     remark?: string;
@@ -292,23 +233,16 @@ export class StyleService {
   }): Promise<Style & { skus: Sku[] }> {
     if (!dto.styleNo?.trim()) throw new BadRequestException('款号不能为空');
     if (!dto.name?.trim()) throw new BadRequestException('名称不能为空');
-    if (!dto.colorGroupId) throw new BadRequestException('颜色组不能为空');
     if (!dto.sizeGroupId) throw new BadRequestException('尺码组不能为空');
 
     // Check unique styleNo
     const existingStyle = await this.db.select().from(style).where(eq(style.styleNo, dto.styleNo));
     if (existingStyle.length > 0) throw new ConflictException('款号已存在');
 
-    // Fetch color group and size group
-    const cgRows = await this.db.select().from(colorGroup).where(eq(colorGroup.id, dto.colorGroupId));
-    if (cgRows.length === 0) throw new BadRequestException('颜色组不存在');
-    const colors = cgRows[0].colors as { name: string; value: string }[];
-    if (colors.length === 0) throw new BadRequestException('颜色组为空，无法生成SKU');
-
+    // 颜色不再挂在款号上（2026-10-12 决策：颜色只在 SKU 层选择）⇒ 建档时不再自动生成
+    // SKU 矩阵。颜色与 SKU 改由「SKU 管理」页选色后生成（POST /api/base/sku/generate-matrix）。
     const sgRows = await this.db.select().from(sizeGroup).where(eq(sizeGroup.id, dto.sizeGroupId));
     if (sgRows.length === 0) throw new BadRequestException('尺码组不存在');
-    const sizes = sgRows[0].sizes as string[];
-    if (sizes.length === 0) throw new BadRequestException('尺码组为空，无法生成SKU');
 
     const createdStyle = await this.db.transaction(async (tx) => {
        const styleValues: StyleInsert = {
@@ -321,7 +255,6 @@ export class StyleService {
          tagPrice: dto.tagPrice !== undefined ? String(dto.tagPrice) : '0',
          costPrice: dto.costPrice !== undefined ? String(dto.costPrice) : '0',
          supplyPrice: dto.supplyPrice !== undefined ? String(dto.supplyPrice) : '0',
-         colorGroupId: dto.colorGroupId,
          sizeGroupId: dto.sizeGroupId,
          codeRuleId: dto.codeRuleId ?? null,
           status: dto.status ?? 'active',
@@ -331,43 +264,6 @@ export class StyleService {
 
       const inserted = await tx.insert(style).values(styleValues).returning();
       const newStyle = inserted[0];
-
-      // Generate SKU matrix
-      const skuCodes: string[] = [];
-      const skuInserts: SkuInsert[] = [];
-      for (const color of colors) {
-        for (const size of sizes) {
-          const skuCode = `${dto.styleNo}-${color.value}-${size}`;
-          if (skuCodes.includes(skuCode)) {
-            throw new ConflictException(`SKU编码重复: ${skuCode}`);
-          }
-          skuCodes.push(skuCode);
-          skuInserts.push({
-            skuCode,
-            styleId: newStyle.id,
-            styleNo: newStyle.styleNo,
-            color: color.name,
-            size,
-            costPrice: newStyle.costPrice,
-            tagPrice: newStyle.tagPrice,
-            supplyPrice: newStyle.supplyPrice,
-            safetyStockMin: '0',
-            safetyStockMax: '0',
-            status: dto.status ?? 'active',
-          });
-        }
-      }
-
-      // Pre-check global SKU uniqueness
-      if (skuInserts.length > 0) {
-        const existingSku = await tx.select({ skuCode: sku.skuCode })
-          .from(sku)
-          .where(eq(sku.styleId, newStyle.id));
-        if (existingSku.length > 0) {
-          throw new ConflictException('款号下已存在SKU');
-        }
-        await tx.insert(sku).values(skuInserts);
-      }
 
       return newStyle;
     });
@@ -392,18 +288,11 @@ export class StyleService {
       return { total: 0, inserted: 0, skipped: 0, errors: [] };
     }
 
-    // 批量解析色组 / 尺码组编码 → id
-    const cgCodes = [...new Set(items.map((i) => i.colorGroupCode).filter(Boolean))] as string[];
+    // 批量解析尺码组编码 → id（颜色组已于 2026-10-12 下线，导入模板不再需要「色组编码」列）
     const sgCodes = [...new Set(items.map((i) => i.sizeGroupCode).filter(Boolean))] as string[];
-    const [cgRows, sgRows] = await Promise.all([
-      cgCodes.length
-        ? this.db.select({ id: colorGroup.id, code: colorGroup.code }).from(colorGroup).where(inArray(colorGroup.code, cgCodes))
-        : Promise.resolve([]),
-      sgCodes.length
-        ? this.db.select({ id: sizeGroup.id, code: sizeGroup.code }).from(sizeGroup).where(inArray(sizeGroup.code, sgCodes))
-        : Promise.resolve([]),
-    ]);
-    const cgMap = new Map(cgRows.map((r) => [r.code, r.id]));
+    const sgRows = sgCodes.length
+      ? await this.db.select({ id: sizeGroup.id, code: sizeGroup.code }).from(sizeGroup).where(inArray(sizeGroup.code, sgCodes))
+      : [];
     const sgMap = new Map(sgRows.map((r) => [r.code, r.id]));
 
     // 已存在的款号（按 styleNo）
@@ -425,11 +314,6 @@ export class StyleService {
         errors.push({ index: i, styleNo: it.styleNo, reason: '批内款号重复' });
         continue;
       }
-      const colorGroupId = cgMap.get(it.colorGroupCode);
-      if (!colorGroupId) {
-        errors.push({ index: i, styleNo: it.styleNo, reason: `色组编码不存在: ${it.colorGroupCode}` });
-        continue;
-      }
       const sizeGroupId = sgMap.get(it.sizeGroupCode);
       if (!sizeGroupId) {
         errors.push({ index: i, styleNo: it.styleNo, reason: `尺码组编码不存在: ${it.sizeGroupCode}` });
@@ -439,7 +323,6 @@ export class StyleService {
       toInsert.push({
         styleNo: it.styleNo,
         name: it.name,
-        colorGroupId,
         sizeGroupId,
         category: it.category ?? null,
         season: it.season ?? null,
@@ -481,7 +364,6 @@ export class StyleService {
       tagPrice?: number;
       costPrice?: number;
       supplyPrice?: number;
-      colorGroupId?: string;
       sizeGroupId?: string;
       status?: string;
       remark?: string | null;
@@ -505,7 +387,6 @@ export class StyleService {
     if (dto.tagPrice !== undefined) patch.tagPrice = String(dto.tagPrice);
     if (dto.costPrice !== undefined) patch.costPrice = String(dto.costPrice);
     if (dto.supplyPrice !== undefined) patch.supplyPrice = String(dto.supplyPrice);
-    if (dto.colorGroupId !== undefined) patch.colorGroupId = dto.colorGroupId;
     if (dto.sizeGroupId !== undefined) patch.sizeGroupId = dto.sizeGroupId;
     if (dto.codeRuleId !== undefined) patch.codeRuleId = dto.codeRuleId ?? null;
     if (dto.status !== undefined) patch.status = dto.status;

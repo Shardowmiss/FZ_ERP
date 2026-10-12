@@ -135,7 +135,6 @@ export const MENU_STRUCTURE: MenuModuleDef[] = [
       { key: 'style', label: '款号管理', path: '/base/style', permission: 'base:style' },
       { key: 'sku', label: 'SKU管理', path: '/base/sku', permission: 'base:sku' },
       { key: 'color', label: '颜色', path: '/product/color', permission: 'base:color' },
-      { key: 'color-group', label: '颜色组', path: '/base/color-group', permission: 'base:color-group' },
       // 尺码组 / 尺码组与尺码关系：同一业务域（尺码组维护），合并到一个独立资源码。
       // 此前尺码组错挂 base:sku、关系页错挂 base:size，导致权限树里「看不到尺码组」，
       // 且后端守卫（base:style / base:size）与菜单声明（base:sku）三方不一致。
@@ -466,9 +465,12 @@ export const PERMISSION_CODE_MIGRATION: Record<string, string[]> = {
   // 零售：retail:view（会员运营的旧码）→ 零售单 / 零售退货单 真实守卫码
   'retail:view': ['sales:retail', 'sales:retail_return'],
   // 商品资料拆码（第一轮治理）
-  'base:style': ['base:color-group', 'base:style-attribute', 'base:code-rule'],
+  'base:style': ['base:style-attribute', 'base:code-rule'],
   'base:sku': ['base:size-group'],
   'base:size': ['base:size-group'],
+  // 颜色组下线（2026-10-12）：该模块整体移除，颜色改为「只在 SKU 层选择」。
+  // 无后继码 ⇒ 登记为空数组，使持有者的旧授权在 prune 前被显式平移掉并留审计日志。
+  'base:color-group': [],
 };
 
 export interface CatalogEntry {

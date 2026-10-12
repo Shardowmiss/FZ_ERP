@@ -52,7 +52,8 @@ describe('P1-5 合并重复颜色 黑/黑色', () => {
       expect(blackLeft, '黑色 主数据应被删除').toBe(0);
       expect(heiLeft, '权威行 黑 应保留').toBe(1);
 
-      // 断言 3：被删 id 在 26 张业务表 + 关联表零悬挂引用
+      // 断言 3：被删 id 在业务表零悬挂引用
+      // （原还统计 color_group_color 关联表；该表已于 2026-10-12 随颜色组一起下线，见迁移 0066）
       if (dupId) {
         let dangling = 0;
         for (const t of BUSINESS_TABLES) {
@@ -61,10 +62,6 @@ describe('P1-5 合并重复颜色 黑/黑色', () => {
           );
           dangling += toNum(r);
         }
-        const cgc = await db.execute(
-          sql`SELECT count(*)::int AS n FROM color_group_color WHERE color_id = ${dupId}`,
-        );
-        dangling += toNum(cgc);
         expect(dangling, '被删 id 不应有悬挂引用').toBe(0);
       }
 

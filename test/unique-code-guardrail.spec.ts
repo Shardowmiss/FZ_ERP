@@ -66,8 +66,8 @@ async function seed(tx: TestDb): Promise<void> {
   }
 
   await tx.execute(raw`
-    INSERT INTO style (id, style_no, name, brand, category, sub_category, color_group_id, size_group_id, status, lifecycle_status, attributes, _created_at, _updated_at)
-    VALUES (${U.style1}, 'ST001', ${'衬衫'}, ${'B1'}, ${'C1'}, ${'SC1'}, ${U.style1}, ${U.style1}, 'active', 'active', ${'{}'}::jsonb, now(), now())` as never);
+    INSERT INTO style (id, style_no, name, brand, category, sub_category, size_group_id, status, lifecycle_status, attributes, _created_at, _updated_at)
+    VALUES (${U.style1}, 'ST001', ${'衬衫'}, ${'B1'}, ${'C1'}, ${'SC1'}, ${U.style1}, 'active', 'active', ${'{}'}::jsonb, now(), now())` as never);
 
   await tx.execute(raw`
     INSERT INTO sku (id, sku_code, style_id, style_no, color, size, tag_price, status, _created_at, _updated_at)

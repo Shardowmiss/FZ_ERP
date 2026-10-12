@@ -134,8 +134,10 @@ const SkuPage: React.FC = () => {
     toast('导出功能开发中');
   };
 
-  // 按款号的「色组 × 尺码组」笛卡尔积批量生成 SKU 矩阵（幂等：重复点击不会产生重复 SKU）
+  // 按「款号尺码组 × 所选颜色」的笛卡尔积批量生成 SKU 矩阵（幂等：重复点击不会产生重复 SKU）
+  // 颜色只在 SKU 层选择（2026-10-12 起款号不再绑定颜色组），故必须在此显式选色。
   const [matrixStyleId, setMatrixStyleId] = useState('');
+  const [matrixColorIds, setMatrixColorIds] = useState<string[]>([]);
   const [generating, setGenerating] = useState(false);
 
   const handleGenerateMatrix = async () => {
@@ -143,10 +145,14 @@ const SkuPage: React.FC = () => {
       toast('请先选择要生成矩阵的款号');
       return;
     }
+    if (matrixColorIds.length === 0) {
+      toast('请至少选择一个颜色');
+      return;
+    }
     if (generating) return;
     setGenerating(true);
     try {
-      const res = await baseApi.sku.generateMatrix(matrixStyleId);
+      const res = await baseApi.sku.generateMatrix(matrixStyleId, matrixColorIds);
       if (res.inserted > 0) {
         toast.success(
           `款号 ${res.styleNo}：${res.colors} 色 × ${res.sizes} 码 = ${res.total} 个 SKU，已新增 ${res.inserted} 个` +
@@ -180,8 +186,21 @@ const SkuPage: React.FC = () => {
     <div className="bg-white rounded-lg shadow-sm p-5">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold">SKU管理</h2>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-500">SKU由款号的色组×尺码组批量生成，生成后可编辑</span>
+        <button
+          className="px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded hover:bg-gray-50 transition-colors flex items-center gap-1"
+          onClick={handleExport}
+        >
+          <Download size={16} /> 导出
+        </button>
+      </div>
+
+      {/* 生成矩阵：款号（决定尺码组）× 所选颜色 的笛卡尔积 */}
+      <div className="flex items-end gap-3 mb-4 pb-4 border-b border-gray-200 flex-wrap">
+        <span className="text-sm text-gray-500 pb-2">
+          SKU 由款号的尺码组 × 所选颜色批量生成（幂等），生成后可编辑
+        </span>
+        <div className="flex flex-col gap-1">
+          <span className="text-xs text-gray-500">选择款号</span>
           <select
             value={matrixStyleId}
             onChange={(e) => setMatrixStyleId(e.target.value)}
@@ -192,22 +211,34 @@ const SkuPage: React.FC = () => {
               <option key={s.id} value={s.id}>{s.styleNo} - {s.name}</option>
             ))}
           </select>
-          <CanButton menu="base:sku" action="create">
-            <button
-              className="px-4 py-2 bg-primary text-white text-sm rounded hover:opacity-90 transition-opacity disabled:opacity-50"
-              onClick={handleGenerateMatrix}
-              disabled={generating}
-            >
-              {generating ? '生成中…' : '生成矩阵'}
-            </button>
-          </CanButton>
-          <button
-            className="px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded hover:bg-gray-50 transition-colors flex items-center gap-1"
-            onClick={handleExport}
-          >
-            <Download size={16} /> 导出
-          </button>
         </div>
+        <div className="flex flex-col gap-1">
+          <span className="text-xs text-gray-500">
+            选择颜色（可多选，已选 {matrixColorIds.length} 个）
+          </span>
+          <select
+            multiple
+            size={4}
+            value={matrixColorIds}
+            onChange={(e) =>
+              setMatrixColorIds([...e.target.selectedOptions].map((o) => o.value))
+            }
+            className="px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary min-w-[180px]"
+          >
+            {colorOptions.map((c) => (
+              <option key={c.id} value={c.id}>{c.code} {c.name}</option>
+            ))}
+          </select>
+        </div>
+        <CanButton menu="base:sku" action="create">
+          <button
+            className="px-4 py-2 bg-primary text-white text-sm rounded hover:opacity-90 transition-opacity disabled:opacity-50"
+            onClick={handleGenerateMatrix}
+            disabled={generating}
+          >
+            {generating ? '生成中…' : '生成矩阵'}
+          </button>
+        </CanButton>
       </div>
 
       <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-200 flex-wrap">

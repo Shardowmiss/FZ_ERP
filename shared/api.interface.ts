@@ -12,14 +12,6 @@ export interface PaginationResult<T> {
   nextCursor?: string;
 }
 
-export interface ColorGroup {
-  id: string;
-  code: string;
-  name: string;
-  colors: { name: string; value: string }[];
-  createdAt: string;
-}
-
 /** 颜色主数据（独立实体，对应 color 表；弃用 color_group 内嵌 colors 后改用此表） */
 export interface Color {
   id: string;
@@ -100,7 +92,6 @@ export interface Style {
   tagPrice: number;
   costPrice: number;
   supplyPrice: number;
-  colorGroupId: string;
   sizeGroupId: string;
   codeRuleId?: string;
   status: string;
@@ -994,7 +985,6 @@ export interface StyleCreateAutoRequest {
   tagPrice: number;
   costPrice: number;
   supplyPrice: number;
-  colorGroupId: string;
   sizeGroupId: string;
   remark?: string;
   attributes?: Record<string, string>; // 动态属性值

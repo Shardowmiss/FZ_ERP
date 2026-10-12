@@ -22,7 +22,6 @@ import {
   garmentPurchaseOrderSku,
   style,
   sku,
-  colorGroup,
   sizeGroup,
 } from '@server/database/schema';
 import { buildUniqueCode } from '../unique-code/unique-code.service';
@@ -535,18 +534,7 @@ export class HangtagService {
 
     let colors: string[] = [];
     let sizes: string[] = [];
-    if (st.colorGroupId) {
-      const cg = await this.db
-        .select()
-        .from(colorGroup)
-        .where(eq(colorGroup.id, st.colorGroupId))
-        .limit(1);
-      if (cg.length && Array.isArray(cg[0].colors)) {
-        colors = cg[0].colors.map((c: any) =>
-          c && c.value != null ? c.value : c && c.name != null ? c.name : String(c),
-        );
-      }
-    }
+    // 颜色不再来自款号色组（2026-10-12 起颜色只在 SKU 层选择）⇒ 统一从已建 SKU 取实际颜色
     if (st.sizeGroupId) {
       const sg = await this.db
         .select()

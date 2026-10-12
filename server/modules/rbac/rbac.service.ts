@@ -561,8 +561,8 @@ export class RbacService {
         'base:sku',
         'base:color',
         'base:size',
-        // 权限码拆分后补齐（原由 base:style/base:sku 覆盖）：颜色组/尺码组/款号属性维护/款号编码规则
-        'base:color-group',
+        // 权限码拆分后补齐（原由 base:style/base:sku 覆盖）：尺码组/款号属性维护/款号编码规则
+        // （颜色组已于 2026-10-12 整体下线：颜色改为只在 SKU 层选择）
         'base:size-group',
         'base:style-attribute',
         'base:code-rule',
