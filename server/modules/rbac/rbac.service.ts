@@ -554,21 +554,24 @@ export class RbacService {
       name: '数据治理员',
       description: '主数据去重合并（会员/商品），资金敏感操作需培训',
       permissions: [
-        'md:merge',
-        'member:merge',
+        // —— 写资源：保留粗码（分组码，重启展开全部子码；写守卫尚未拆，需粗码放行，待 #815）——
         'member:manage',
         'base:style',
         'base:sku',
         'base:color',
         'base:size',
-        // 权限码拆分后补齐（原由 base:style/base:sku 覆盖）：尺码组/款号属性维护/款号编码规则
-        // （颜色组已于 2026-10-12 整体下线：颜色改为只在 SKU 层选择）
         'base:size-group',
         'base:style-attribute',
         'base:code-rule',
         'base:import',
-        'report:pivot',
+        // —— 只读/叶子：收敛为 :view（去除粗码隐式放大写动作）——
         'dashboard:view',
+        'md:merge:view',
+        'member:merge:view',
+        'report:pivot:view',
+        'analytics:bi:view',
+        'analytics:forecast:view',
+        'analytics:lifecycle:view',
       ],
     },
     {
@@ -576,19 +579,28 @@ export class RbacService {
       name: '店长',
       description: '门店日常运营：零售/销售/收银/会员/库存查询与预警',
       permissions: [
+        // —— 写资源：保留粗码（待 #815）——
         'base:store',
         'retail:view',
         'pos:cashier',
         'member:manage',
-        'member:merge',
         'inventory:query',
-        'inventory:flow',
         'inventory:warning',
         'pricing:manage',
+        // —— 只读/叶子：收敛为 :view（去除粗码隐式放大写动作）——
         'dashboard:view',
-        'report:retail',
-        'report:sales',
-        'report:stockmovement',
+        'analytics:bi:view',
+        'analytics:forecast:view',
+        'analytics:lifecycle:view',
+        'inventory:barcode:view',
+        'inventory:flow:view',
+        'inventory:hangtag:view',
+        'inventory:replenish:view',
+        'inventory:unique_code:view',
+        'member:merge:view',
+        'report:retail:view',
+        'report:sales:view',
+        'report:stockmovement:view',
       ],
     },
     {
@@ -596,6 +608,7 @@ export class RbacService {
       name: '财务',
       description: '应收应付/收款付款/利润与对账',
       permissions: [
+        // —— 写资源：保留粗码（待 #815）——
         'finance:receivable',
         'finance:payable',
         'finance:receipt',
@@ -603,11 +616,16 @@ export class RbacService {
         'finance:profit',
         'sales:reconciliation',
         'purchase:reconciliation',
+        // —— 只读/叶子：收敛为 :view（去除粗码隐式放大写动作）——
         'dashboard:view',
         'report:garment_purchase',
         'report:material_purchase',
-        'report:sales',
-        'report:inventory',
+        'analytics:bi:view',
+        'analytics:forecast:view',
+        'analytics:lifecycle:view',
+        'finance:month_close:view',
+        'report:sales:view',
+        'report:inventory:view',
       ],
     },
     {
@@ -615,6 +633,7 @@ export class RbacService {
       name: '采购',
       description: '采购订单/入库/退货与生产关系、物料与供应商主数据',
       permissions: [
+        // —— 写资源：保留粗码（待 #815）——
         'purchase:order',
         'purchase:inbound',
         'purchase:return',
@@ -630,8 +649,12 @@ export class RbacService {
         'base:material',
         'base:supplier',
         'inventory:query',
+        // —— 只读/叶子：收敛为 :view（去除粗码隐式放大写动作）——
         'report:material_purchase',
         'report:garment_purchase',
+        'inventory:barcode:view',
+        'inventory:hangtag:view',
+        'inventory:unique_code:view',
       ],
     },
     {
@@ -639,24 +662,31 @@ export class RbacService {
       name: '仓储',
       description: '库存流水/入库/出库/调拨/盘点/补货与预警',
       permissions: [
-        'inventory:flow',
-        'inventory:query',
+        // —— 写资源：保留粗码（分组码，重启展开全部子码；写守卫尚未拆，需粗码放行，待 #815）——
         'inventory:inbound',
         'inventory:outbound',
+        'inventory:query',
         'inventory:transfer',
         'inventory:stocktake',
         'inventory:replenish-plan',
         'inventory:replenish-template',
         'inventory:warning',
-        // base:warehouse（仓库管理）权限码已随模块下线清理：仓库实体仍被入库/出库/调拨等
-        // 页面作为下拉使用（GET /api/base/warehouse/options 无需权限），但已无独立管理入口，
-        // 其增删改写入改由店仓管理（base:store）承载。
         'sales:outbound',
         'sales:order',
         'purchase:inbound',
-        'report:inventory',
-        'report:transfer',
-        'report:stockmovement',
+        // —— 只读资源：收敛为 :view（去除粗码隐式放大写动作）——
+        'dashboard:view',
+        'inventory:barcode:view',
+        'inventory:flow:view',
+        'inventory:hangtag:view',
+        'inventory:replenish:view',
+        'inventory:stocktake_mobile:view',
+        'inventory:unique_code:view',
+        'report:inventory:view',
+        'report:retail_report:view',
+        'report:stockmovement:view',
+        'report:transfer:view',
+        'sales:retail:view',
       ],
     },
     {
