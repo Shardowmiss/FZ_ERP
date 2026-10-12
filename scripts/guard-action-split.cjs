@@ -30,17 +30,20 @@ const MODULES_DIR = path.resolve(__dirname, '../server/modules');
 const HTTP_DECORATORS = ['@Get', '@Post', '@Put', '@Patch', '@Delete'];
 
 // 自定义路由映射：语义明确可自动落码 vs 需人工核对
+// 注意：SAFE_CUSTOM 仅在「目标 res:action 已存在于目录」时才改写（actionFor 第55行闸门），
+//       故 res:approve 已存在（19 个资源）的 :id/approve 路由会被安全改写；
+//       subcontract:manage 等缺码的 approve 会因目录无码而自动回落到标记人工。
 const SAFE_CUSTOM = {
   void: 'void',
   print: 'print',
   submit: 'submit',
   accept: 'accept',
+  approve: 'approve',
   export: 'view',
   download: 'view',
   restore: 'edit',
 };
 const FLAG_CUSTOM = {
-  approve: 'approve',
   reject: 'approve',
   audit: 'approve',
   review: 'approve',

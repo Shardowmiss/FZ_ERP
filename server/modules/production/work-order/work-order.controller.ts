@@ -116,7 +116,7 @@ export class WorkOrderController {
     });
   }
 
-  @CheckPermission('production:work_order')
+  @CheckPermission('production:work_order:approve')
   @Post(':id/approve')
   async approve(@Param('id') id: string, @Req() req: Request): Promise<void> {
     const { userId, userName } = req.userContext;

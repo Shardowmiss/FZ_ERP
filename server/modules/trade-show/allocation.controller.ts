@@ -125,7 +125,7 @@ export class AllocationController {
   }
 
   @NeedLogin()
-  @CheckPermission('tradeshow:allocation')
+  @CheckPermission('tradeshow:allocation:approve')
   @Post('allocation/:id/approve')
   async approveAllocation(
     @Req() req: Request,

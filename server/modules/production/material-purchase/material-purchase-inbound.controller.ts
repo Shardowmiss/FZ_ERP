@@ -69,7 +69,7 @@ export class MaterialPurchaseInboundController {
     return this.materialPurchaseInboundService.create(body);
   }
 
-  @CheckPermission('production:material_inbound')
+  @CheckPermission('production:material_inbound:approve')
   @Post(':id/approve')
   async approve(@Param('id') id: string): Promise<void> {
     return this.materialPurchaseInboundService.approve(id);

@@ -90,7 +90,7 @@ export class GarmentPurchaseOrderController {
     return this.garmentPurchaseOrderService.submit(id);
   }
 
-  @CheckPermission('purchase:order')
+  @CheckPermission('purchase:order:approve')
   @Post(':id/approve')
   async approve(@Param('id') id: string): Promise<void> {
     return this.garmentPurchaseOrderService.approve(id);

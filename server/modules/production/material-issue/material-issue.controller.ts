@@ -123,7 +123,7 @@ export class MaterialIssueController {
     });
   }
 
-  @CheckPermission('production:material_issue')
+  @CheckPermission('production:material_issue:approve')
   @Post(':id/approve')
   async approve(@Param('id') id: string, @Req() req: Request): Promise<void> {
     const { userId, userName } = req.userContext;

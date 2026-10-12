@@ -168,7 +168,7 @@ export class PaymentController {
     return this.paymentService.remove(id, userId);
   }
 
-  @CheckPermission('finance:payment')
+  @CheckPermission('finance:payment:approve')
   @Post(':id/approve')
   async approve(
     @Req() req: Request,

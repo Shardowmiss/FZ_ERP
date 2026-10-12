@@ -96,7 +96,7 @@ export class MaterialPurchaseOrderController {
     return this.materialPurchaseOrderService.submit(id);
   }
 
-  @CheckPermission('production:material_order')
+  @CheckPermission('production:material_order:approve')
   @Post(':id/approve')
   async approve(@Param('id') id: string): Promise<void> {
     return this.materialPurchaseOrderService.approve(id);

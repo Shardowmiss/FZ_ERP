@@ -76,7 +76,7 @@ export class InventoryStocktakeController {
     return this.inventoryStocktakeService.createStocktake(body, userId);
   }
 
-  @CheckPermission('inventory:stocktake')
+  @CheckPermission('inventory:stocktake:approve')
   @Post(':id/approve')
   async approveStocktake(
     @Req() req: Request,

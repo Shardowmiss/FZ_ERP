@@ -168,7 +168,7 @@ export class ReceiptController {
     return this.receiptService.remove(id, userId);
   }
 
-  @CheckPermission('finance:receipt')
+  @CheckPermission('finance:receipt:approve')
   @Post(':id/approve')
   async approve(
     @Req() req: Request,

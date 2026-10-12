@@ -66,7 +66,7 @@ export class GarmentPurchaseReturnController {
     return this.garmentPurchaseReturnService.create(body);
   }
 
-  @CheckPermission('purchase:return')
+  @CheckPermission('purchase:return:approve')
   @Post(':id/approve')
   async approve(@Param('id') id: string): Promise<void> {
     return this.garmentPurchaseReturnService.approve(id);

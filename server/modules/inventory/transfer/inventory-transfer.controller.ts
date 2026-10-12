@@ -86,7 +86,7 @@ export class InventoryTransferController {
     return this.inventoryTransferService.createTransfer(body, userId);
   }
 
-  @CheckPermission('inventory:transfer')
+  @CheckPermission('inventory:transfer:approve')
   @Post(':id/approve')
   async approveTransfer(
     @Req() req: Request,
