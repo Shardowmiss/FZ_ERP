@@ -6,6 +6,8 @@ import { toast } from 'sonner';
 import { showConfirm } from '@lark-apaas/client-toolkit';
 import { CalendarCheck, CalendarX, Lock, Plus } from 'lucide-react';
 import { errMsg } from '@/utils/errMsg';
+import CanButton from '@client/src/components/CanButton';
+import { CanSave } from '@client/src/components/CanButton';
 
 const STATUS_MAP: Record<string, { label: string; tone: StatusTone }> = {
   draft: { label: '草稿', tone: 'neutral' },
@@ -191,14 +193,16 @@ const TradeShowPage: React.FC = () => {
     <div className="p-5 bg-white rounded shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold">订货会主单</h2>
-          <button
-            className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors flex items-center gap-1"
-            onClick={openAdd}
-            data-ai-section-type="button"
-          >
-            <Plus size={16} />
-            新增
-          </button>
+          <CanButton menu="tradeshow:manage" action="create">
+            <button
+              className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors flex items-center gap-1"
+              onClick={openAdd}
+              data-ai-section-type="button"
+            >
+              <Plus size={16} />
+              新增
+            </button>
+          </CanButton>
         </div>
 
         <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-200 flex-wrap">
@@ -312,12 +316,14 @@ const TradeShowPage: React.FC = () => {
                       <div className="flex items-center gap-2 flex-wrap">
                         {item.status === 'draft' && (
                           <>
-                            <button
-                              className="text-primary hover:text-primary/90 text-xs"
-                              onClick={() => openEdit(item)}
-                            >
-                              编辑
-                            </button>
+                            <CanButton menu="tradeshow:manage" action="edit">
+                              <button
+                                className="text-primary hover:text-primary/90 text-xs"
+                                onClick={() => openEdit(item)}
+                              >
+                                编辑
+                              </button>
+                            </CanButton>
                             <button
                               className="text-green-500 hover:text-green-700 text-xs flex items-center gap-0.5"
                               onClick={() => handleStart(item.id)}
@@ -325,13 +331,17 @@ const TradeShowPage: React.FC = () => {
                               <CalendarCheck size={12} />
                               开始
                             </button>
-                            <button
-                              className="text-red-500 hover:text-red-700 text-xs"
-                              onClick={() => handleDelete(item.id)}
-                            >
-                              删除
-                            </button>
-                                                    <button onClick={() => handleVoid(item.id)} className="text-red-500 hover:text-red-600">作废</button>
+                            <CanButton menu="tradeshow:manage" action="delete">
+                              <button
+                                className="text-red-500 hover:text-red-700 text-xs"
+                                onClick={() => handleDelete(item.id)}
+                              >
+                                删除
+                              </button>
+                            </CanButton>
+                                                    <CanButton menu="tradeshow:manage" action="void">
+                                                      <button onClick={() => handleVoid(item.id)} className="text-red-500 hover:text-red-600">作废</button>
+                                                    </CanButton>
 </>
                         )}
                         {item.status === 'ongoing' && (
@@ -521,12 +531,14 @@ const TradeShowPage: React.FC = () => {
                 >
                   取消
                 </button>
-                <button
-                  className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors"
-                  onClick={handleSave}
-                >
-                  保存
-                </button>
+                <CanSave menu="tradeshow:manage">
+                  <button
+                    className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors"
+                    onClick={handleSave}
+                  >
+                    保存
+                  </button>
+                </CanSave>
               </div>
             </div>
           </div>

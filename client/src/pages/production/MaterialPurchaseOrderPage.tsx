@@ -15,6 +15,7 @@ import { TableContainer, DataPagination } from '@client/src/components/ui';
 import { exportTableToCSV } from '@client/src/utils/export-csv';
 import { validateDateRange } from '@client/src/utils/date-utils';
 import { errMsg } from '@/utils/errMsg';
+import CanButton from '@client/src/components/CanButton';
 
 const statusLabel: Record<string, string> = {
   draft: '草稿',
@@ -236,12 +237,14 @@ const MaterialPurchaseOrderPage: React.FC = () => {
           >
             <Download size={16} /> 导出
           </button>
-          <button
-            onClick={openAdd}
-            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary flex items-center gap-1"
-          >
-            <Plus size={16} /> + 新增订单
-          </button>
+          <CanButton menu="production:material_order" action="create">
+            <button
+              onClick={openAdd}
+              className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary flex items-center gap-1"
+            >
+              <Plus size={16} /> + 新增订单
+            </button>
+          </CanButton>
         </div>
       </div>
 
@@ -343,18 +346,28 @@ const MaterialPurchaseOrderPage: React.FC = () => {
                   <td className="py-2 px-4 space-x-2">
                     {item.status === 'draft' && (
                       <>
-                        <button onClick={() => openEdit(item.id)} className="text-primary hover:text-primary">编辑</button>
-                        <button onClick={() => handleDelete(item.id)} className="text-red-500 hover:text-red-600">删除</button>
-                        <button onClick={() => handleStatusAction(item.id, 'submit')} className="text-orange-500 hover:text-orange-600">提交审核</button>
+                        <CanButton menu="production:material_order" action="edit">
+                          <button onClick={() => openEdit(item.id)} className="text-primary hover:text-primary">编辑</button>
+                        </CanButton>
+                        <CanButton menu="production:material_order" action="delete">
+                          <button onClick={() => handleDelete(item.id)} className="text-red-500 hover:text-red-600">删除</button>
+                        </CanButton>
+                        <CanButton menu="production:material_order" action="submit">
+                          <button onClick={() => handleStatusAction(item.id, 'submit')} className="text-orange-500 hover:text-orange-600">提交审核</button>
+                        </CanButton>
                         <button onClick={() => handleListPrint(item.id)} className="text-gray-500 hover:text-gray-600 inline-flex align-middle" title="打印">
                           <Printer size={14} />
                         </button>
-                                            <button onClick={() => handleVoid(item.id)} className="text-red-500 hover:text-red-600">作废</button>
+                                            <CanButton menu="production:material_order" action="void">
+                                              <button onClick={() => handleVoid(item.id)} className="text-red-500 hover:text-red-600">作废</button>
+                                            </CanButton>
 </>
                     )}
                     {item.status === 'pending' && (
                       <>
-                        <button onClick={() => handleStatusAction(item.id, 'approve')} className="text-green-500 hover:text-green-600">审核通过</button>
+                        <CanButton menu="production:material_order" action="approve">
+                          <button onClick={() => handleStatusAction(item.id, 'approve')} className="text-green-500 hover:text-green-600">审核通过</button>
+                        </CanButton>
                         <button onClick={() => handleListPrint(item.id)} className="text-gray-500 hover:text-gray-600 inline-flex align-middle" title="打印">
                           <Printer size={14} />
                         </button>
@@ -366,7 +379,9 @@ const MaterialPurchaseOrderPage: React.FC = () => {
                         <button onClick={() => handleListPrint(item.id)} className="text-gray-500 hover:text-gray-600 inline-flex align-middle" title="打印">
                           <Printer size={14} />
                         </button>
-                        <button onClick={() => handleStatusAction(item.id, 'unapprove')} className="text-orange-500 hover:text-orange-600">弃审</button>
+                        <CanButton menu="production:material_order" action="void">
+                          <button onClick={() => handleStatusAction(item.id, 'unapprove')} className="text-orange-500 hover:text-orange-600">弃审</button>
+                        </CanButton>
                       </>
                     )}
                     {item.status === 'completed' && (

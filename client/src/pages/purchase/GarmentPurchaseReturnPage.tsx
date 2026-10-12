@@ -12,6 +12,7 @@ import { DataPagination } from '@client/src/components/ui/pagination';
 import { exportTableToCSV } from '@client/src/utils/export-csv';
 import { errMsg } from '@/utils/errMsg';
 import { useDefaultDocDate } from '@client/src/hooks/useDefaultDocDate';
+import CanButton from '@client/src/components/CanButton';
 
 const statusLabel: Record<string, string> = {
   draft: '草稿',
@@ -179,12 +180,14 @@ const GarmentPurchaseReturnPage: React.FC = () => {
       <div className="bg-white rounded-lg p-4 shadow-sm">
         <div className="flex items-center justify-between mb-3">
           <h1 className="text-xl font-semibold text-gray-800">采购退货</h1>
-          <button
-            onClick={openAdd}
-            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary flex items-center gap-1"
-          >
-             <Plus size={16} /> 新增采购退货
-          </button>
+          <CanButton menu="purchase:return" action="create">
+            <button
+              onClick={openAdd}
+              className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary flex items-center gap-1"
+            >
+               <Plus size={16} /> 新增采购退货
+            </button>
+          </CanButton>
         </div>
         <PurchaseFilterBar
           onSearch={() => { setPage(1); fetchList(); }}
@@ -288,15 +291,21 @@ const GarmentPurchaseReturnPage: React.FC = () => {
                   <td className="py-2 px-4 space-x-2">
                     {item.status === 'draft' && (
                       <>
-                        <button
-                          onClick={() => { void handleApprove(item.id); }}
-                          className="text-green-500 hover:text-green-600"
-                        >审核</button>
-                        <button
-                          onClick={() => { void handleDelete(item.id); }}
-                          className="text-red-500 hover:text-red-600"
-                        >删除</button>
-                                            <button onClick={() => handleVoid(item.id)} className="text-red-500 hover:text-red-600">作废</button>
+                        <CanButton menu="purchase:return" action="approve">
+                          <button
+                            onClick={() => { void handleApprove(item.id); }}
+                            className="text-green-500 hover:text-green-600"
+                          >审核</button>
+                        </CanButton>
+                        <CanButton menu="purchase:return" action="delete">
+                          <button
+                            onClick={() => { void handleDelete(item.id); }}
+                            className="text-red-500 hover:text-red-600"
+                          >删除</button>
+                        </CanButton>
+                                            <CanButton menu="purchase:return" action="void">
+                                              <button onClick={() => handleVoid(item.id)} className="text-red-500 hover:text-red-600">作废</button>
+                                            </CanButton>
 </>
                     )}
                     {(item.status === 'approved' || item.status === 'completed') && (

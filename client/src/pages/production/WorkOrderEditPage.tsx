@@ -5,10 +5,12 @@ import { productionApi } from '@client/src/api/production';
 import { baseApi } from '@client/src/api/base';
 import DocPage from '@client/src/components/DocPage/DocPage';
 import { errMsg } from '@/utils/errMsg';
+import { usePageActions } from '@client/src/hooks/usePageActions';
 
 const BACK_PATH = '/production/work-order';
 
 const WorkOrderEditPage: React.FC = () => {
+  const { canSave } = usePageActions('production:work_order');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -234,7 +236,7 @@ const WorkOrderEditPage: React.FC = () => {
       status={status}
       backPath={BACK_PATH}
       viewOnly={viewOnly}
-      onSave={handleSave}
+      onSave={canSave ? handleSave : undefined}
       onSubmit={!viewOnly && !isNew && status === 'draft' ? handleSubmit : undefined}
       saving={saving}
       submitting={submitting}

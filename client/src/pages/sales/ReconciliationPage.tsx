@@ -9,6 +9,7 @@ import { baseApi } from '@client/src/api/base';
 import type { SalesReconciliation, SalesReconPreview, PaginationResult } from '@shared/api.interface';
 import { TableContainer } from '@client/src/components/ui/table-container';
 import { DataPagination } from '@client/src/components/ui/pagination';
+import CanButton from '@client/src/components/CanButton';
 
 const statusLabel: Record<string, string> = {
   draft: '草稿',
@@ -185,12 +186,14 @@ const SalesReconciliationPage: React.FC = () => {
       <div className="bg-white rounded-lg p-4 shadow-sm">
         <div className="flex items-center justify-between mb-3">
           <h1 className="text-xl font-semibold text-gray-800">销售对账</h1>
-          <button
-            onClick={openAdd}
-            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary flex items-center gap-1"
-          >
-            <Plus size={16} /> 新建对账
-          </button>
+          <CanButton menu="sales:reconciliation" action="create">
+            <button
+              onClick={openAdd}
+              className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary flex items-center gap-1"
+            >
+              <Plus size={16} /> 新建对账
+            </button>
+          </CanButton>
         </div>
         <SalesFilterBar
           onSearch={handleSearch}

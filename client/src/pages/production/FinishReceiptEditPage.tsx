@@ -10,6 +10,8 @@ import type {
 } from '@shared/api.interface';
 import DocPage from '@client/src/components/DocPage/DocPage';
 import { errMsg } from '@/utils/errMsg';
+import { usePageActions } from '@client/src/hooks/usePageActions';
+import CanButton from '@client/src/components/CanButton';
 
 const BACK_PATH = '/production/finish-receipt';
 
@@ -23,6 +25,7 @@ interface ReceiptItemForm {
 }
 
 const FinishReceiptEditPage: React.FC = () => {
+  const { canSave } = usePageActions('production:finish_receipt');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -285,7 +288,9 @@ const FinishReceiptEditPage: React.FC = () => {
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-medium text-gray-700">SKU 明细</h2>
         {!viewOnly && (
-          <button onClick={addItem} className="text-sm text-primary hover:text-primary">+ 添加行</button>
+          <CanButton menu="production:finish_receipt" action="create">
+            <button onClick={addItem} className="text-sm text-primary hover:text-primary">+ 添加行</button>
+          </CanButton>
         )}
       </div>
       <div className="border border-gray-200 rounded overflow-hidden">
@@ -339,7 +344,9 @@ const FinishReceiptEditPage: React.FC = () => {
                 </td>
                 {!viewOnly && (
                   <td className="px-3 py-2 text-center">
-                    <button onClick={() => removeItem(i)} className="text-red-500 text-xs hover:underline">删除</button>
+                    <CanButton menu="production:finish_receipt" action="delete">
+                      <button onClick={() => removeItem(i)} className="text-red-500 text-xs hover:underline">删除</button>
+                    </CanButton>
                   </td>
                 )}
               </tr>
@@ -357,7 +364,7 @@ const FinishReceiptEditPage: React.FC = () => {
       status={status}
       backPath={BACK_PATH}
       viewOnly={viewOnly}
-      onSave={handleSave}
+      onSave={canSave ? handleSave : undefined}
       onSubmit={!viewOnly && !isNew && status === 'draft' ? handleSubmit : undefined}
       saving={saving}
       submitting={submitting}

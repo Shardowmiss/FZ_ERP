@@ -9,6 +9,7 @@ import { PrintDialog } from '@client/src/components/print/PrintDialog';
 import { MaterialDocPrintContent } from '@client/src/components/print/DocPrintContent';
 import type { MaterialListItem } from '@client/src/components/print/MaterialListTable';
 import { errMsg } from '@/utils/errMsg';
+import { usePageActions } from '@client/src/hooks/usePageActions';
 
 interface InboundFormItem {
   orderItemId: string;
@@ -26,6 +27,7 @@ interface InboundFormItem {
 const BACK_PATH = '/purchase/inbound';
 
 const PurchaseInboundEditPage: React.FC = () => {
+  const { canSave } = usePageActions('purchase:inbound');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -357,7 +359,7 @@ const PurchaseInboundEditPage: React.FC = () => {
         status={status || undefined}
         backPath={BACK_PATH}
         viewOnly={viewOnly}
-        onSave={!viewOnly ? handleSave : undefined}
+        onSave={!viewOnly && canSave ? handleSave : undefined}
         onPrint={inboundNo ? handlePrint : undefined}
         saving={saving}
         header={headerContent}

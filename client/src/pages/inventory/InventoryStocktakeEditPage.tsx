@@ -13,6 +13,8 @@ import type { SkuMatrixItem } from '@client/src/components/print/SkuMatrixTable'
 import type { MaterialListItem } from '@client/src/components/print/MaterialListTable';
 import DocPage from '@/components/DocPage/DocPage';
 import { errMsg } from '@/utils/errMsg';
+import { usePageActions } from '@client/src/hooks/usePageActions';
+import CanButton from '@client/src/components/CanButton';
 
 interface StocktakeItemForm {
   skuId?: string;
@@ -27,6 +29,7 @@ interface StocktakeItemForm {
 }
 
 export default function InventoryStocktakeEditPage() {
+  const { canSave } = usePageActions('inventory:stocktake');
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
@@ -361,7 +364,9 @@ export default function InventoryStocktakeEditPage() {
       <div className="mb-2 flex items-center justify-between">
         <span className="text-sm font-medium">明细</span>
         {!viewOnly && (
-          <button onClick={addItem} className="text-primary text-sm hover:underline">+ 添加行</button>
+          <CanButton menu="inventory:stocktake" action="create">
+            <button onClick={addItem} className="text-primary text-sm hover:underline">+ 添加行</button>
+          </CanButton>
         )}
       </div>
       <div className="border border-gray-200 rounded overflow-hidden">
@@ -432,7 +437,9 @@ export default function InventoryStocktakeEditPage() {
                 </td>
                 {!viewOnly && (
                   <td className="px-3 py-2 text-center">
-                    <button onClick={() => removeItem(i)} className="text-red-500 text-xs hover:underline">删除</button>
+                    <CanButton menu="inventory:stocktake" action="delete">
+                      <button onClick={() => removeItem(i)} className="text-red-500 text-xs hover:underline">删除</button>
+                    </CanButton>
                   </td>
                 )}
               </tr>
@@ -495,7 +502,7 @@ export default function InventoryStocktakeEditPage() {
       status={statusText}
       backPath={backPath}
       viewOnly={viewOnly}
-      onSave={viewOnly ? undefined : handleSave}
+      onSave={!viewOnly && canSave ? handleSave : undefined}
       onSubmit={viewOnly ? undefined : handleSave}
       saving={submitting}
       submitting={submitting}

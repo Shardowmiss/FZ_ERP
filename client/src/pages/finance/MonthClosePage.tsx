@@ -9,6 +9,7 @@ import type {
   MonthCloseDetailResponse,
   MonthCloseDetail,
 } from '@shared/api.interface';
+import CanButton from '@client/src/components/CanButton';
 
 const MonthClosePage: React.FC = () => {
   const [list, setList] = useState<MonthCloseRecord[]>([]);
@@ -230,12 +231,14 @@ const MonthClosePage: React.FC = () => {
                     </td>
                     <td className="px-4 py-3 text-center">
                       {item.status === 'open' ? (
-                        <button
-                          onClick={() => handleClose(item)}
-                          className="px-3 py-1 bg-primary text-white rounded text-xs hover:bg-primary"
-                        >
-                          月结
-                        </button>
+                        <CanButton menu="finance:month_close" action="approve">
+                          <button
+                            onClick={() => handleClose(item)}
+                            className="px-3 py-1 bg-primary text-white rounded text-xs hover:bg-primary"
+                          >
+                            月结
+                          </button>
+                        </CanButton>
                       ) : (
                         <div className="flex items-center justify-center gap-2">
                           <button
@@ -245,12 +248,14 @@ const MonthClosePage: React.FC = () => {
                             查看详情
                           </button>
                           <span className="text-gray-300">|</span>
-                          <button
-                            onClick={() => handleReopen(item)}
-                            className="text-red-500 hover:text-red-600 text-xs"
-                          >
-                            反月结
-                          </button>
+                          <CanButton menu="finance:month_close" action="void">
+                            <button
+                              onClick={() => handleReopen(item)}
+                              className="text-red-500 hover:text-red-600 text-xs"
+                            >
+                              反月结
+                            </button>
+                          </CanButton>
                         </div>
                       )}
                     </td>
@@ -388,21 +393,23 @@ const MonthClosePage: React.FC = () => {
               >
                 取消
               </button>
-              <button
-                onClick={handleConfirm}
-                disabled={actionLoading}
-                className={`px-4 py-2 text-white rounded text-sm disabled:opacity-50 ${
-                  confirmType === 'close'
-                    ? 'bg-primary hover:bg-primary'
-                    : 'bg-red-500 hover:bg-red-600'
-                }`}
-              >
-                {actionLoading
-                  ? '处理中...'
-                  : confirmType === 'close'
-                  ? '确认月结'
-                  : '确认反月结'}
-              </button>
+              <CanButton menu="finance:month_close" action="void">
+                <button
+                  onClick={handleConfirm}
+                  disabled={actionLoading}
+                  className={`px-4 py-2 text-white rounded text-sm disabled:opacity-50 ${
+                    confirmType === 'close'
+                      ? 'bg-primary hover:bg-primary'
+                      : 'bg-red-500 hover:bg-red-600'
+                  }`}
+                >
+                  {actionLoading
+                    ? '处理中...'
+                    : confirmType === 'close'
+                    ? '确认月结'
+                    : '确认反月结'}
+                </button>
+              </CanButton>
             </div>
           </div>
         </div>

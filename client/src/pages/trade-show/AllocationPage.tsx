@@ -10,6 +10,7 @@ import { SkuDocPrintContent } from '@client/src/components/print/DocPrintContent
 import type { SkuMatrixItem } from '@client/src/components/print/SkuMatrixTable';
 import AllocationDetailDialog from './AllocationDetailDialog';
 import { errMsg } from '@/utils/errMsg';
+import CanButton from '@client/src/components/CanButton';
 
 const STATUS_MAP: Record<string, { label: string; tone: StatusTone }> = {
   draft: { label: '草稿', tone: 'neutral' },
@@ -267,14 +268,16 @@ const AllocationPage: React.FC = () => {
     <div className="p-5 bg-white rounded shadow-sm">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold">配货管理</h2>
-        <button
-          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors flex items-center gap-1"
-          onClick={openCreate}
-          data-ai-section-type="button"
-        >
-          <Plus size={16} />
-          新建配货单
-        </button>
+        <CanButton menu="tradeshow:allocation" action="create">
+          <button
+            className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors flex items-center gap-1"
+            onClick={openCreate}
+            data-ai-section-type="button"
+          >
+            <Plus size={16} />
+            新建配货单
+          </button>
+        </CanButton>
       </div>
 
       <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-200 flex-wrap">
@@ -427,14 +430,18 @@ const AllocationPage: React.FC = () => {
                         </button>
                         {item.status === 'draft' && (
                           <>
-                            <button
-                              className="text-green-500 hover:text-green-700 text-xs flex items-center gap-0.5"
-                              onClick={() => handleApprove(item.id)}
-                            >
-                              <Check size={12} />
-                              审核
-                            </button>
-                            <button onClick={() => handleVoid(item.id)} className="text-red-500 hover:text-red-600">作废</button>
+                            <CanButton menu="tradeshow:allocation" action="approve">
+                              <button
+                                className="text-green-500 hover:text-green-700 text-xs flex items-center gap-0.5"
+                                onClick={() => handleApprove(item.id)}
+                              >
+                                <Check size={12} />
+                                审核
+                              </button>
+                            </CanButton>
+                            <CanButton menu="tradeshow:allocation" action="void">
+                              <button onClick={() => handleVoid(item.id)} className="text-red-500 hover:text-red-600">作废</button>
+                            </CanButton>
                           </>
                         )}
                       </div>
@@ -557,12 +564,14 @@ const AllocationPage: React.FC = () => {
               >
                 取消
               </button>
-              <button
-                className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors"
-                onClick={handleCreate}
-              >
-                创建
-              </button>
+              <CanButton menu="tradeshow:allocation" action="create">
+                <button
+                  className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors"
+                  onClick={handleCreate}
+                >
+                  创建
+                </button>
+              </CanButton>
             </div>
           </div>
         </div>

@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { TableContainer } from '@client/src/components/ui';
 import { showConfirm } from '@lark-apaas/client-toolkit';
 import { errMsg } from '@/utils/errMsg';
+import CanButton from '@client/src/components/CanButton';
 
 interface SizeOption {
   id: string;
@@ -103,13 +104,15 @@ const SizeGroupRelationPage: React.FC = () => {
     <div className="bg-white rounded-lg shadow-sm p-5">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold">尺码组与尺码关系</h2>
-        <button
-          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          onClick={() => setAddOpen(true)}
-          disabled={!selectedGroupId}
-        >
-          + 添加尺码
-        </button>
+        <CanButton menu="base:size-group" action="create">
+          <button
+            className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={() => setAddOpen(true)}
+            disabled={!selectedGroupId}
+          >
+            + 添加尺码
+          </button>
+        </CanButton>
       </div>
 
       <div className="flex gap-4">
@@ -167,7 +170,9 @@ const SizeGroupRelationPage: React.FC = () => {
                         <td className="px-4 py-3">{m.sizeName}</td>
                         <td className="px-4 py-3 text-gray-600">{m.sortOrder ?? 0}</td>
                         <td className="px-4 py-3">
-                          <button className="text-red-500 hover:text-red-700" onClick={() => handleRemove(m.sizeId)}>移除</button>
+                          <CanButton menu="base:size-group" action="delete">
+                            <button className="text-red-500 hover:text-red-700" onClick={() => handleRemove(m.sizeId)}>移除</button>
+                          </CanButton>
                         </td>
                       </tr>
                     ))

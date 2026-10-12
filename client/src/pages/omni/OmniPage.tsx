@@ -10,6 +10,7 @@ import type {
   OmniAllocateResult,
 } from '@shared/api.interface';
 import { errMsg } from '@/utils/errMsg';
+import CanButton from '@client/src/components/CanButton';
 
 interface ItemRow {
   skuCode: string;
@@ -125,20 +126,28 @@ const OmniPage: React.FC = () => {
                   <input placeholder="数量" type="number" value={it.quantity} onChange={(e) => updateItem(idx, { quantity: Number(e.target.value) })} className="px-2 py-1 border border-gray-300 rounded text-xs w-16" />
                   <input placeholder="单价" type="number" value={it.price} onChange={(e) => updateItem(idx, { price: Number(e.target.value) })} className="px-2 py-1 border border-gray-300 rounded text-xs w-20" />
                   {cForm.items.length > 1 && (
-                    <button onClick={() => setCForm((f) => ({ ...f, items: f.items.filter((_, i) => i !== idx) }))} className="text-red-500 text-xs">删除</button>
+                    <CanButton menu="omni:manage" action="delete">
+                      <button onClick={() => setCForm((f) => ({ ...f, items: f.items.filter((_, i) => i !== idx) }))} className="text-red-500 text-xs">删除</button>
+                    </CanButton>
                   )}
                 </div>
               ))}
-              <button onClick={() => setCForm((f) => ({ ...f, items: [...f.items, { skuCode: '', styleNo: '', color: '', size: '', quantity: 1, price: 0 }] }))} className="text-primary text-xs">+ 添加商品</button>
+              <CanButton menu="omni:manage" action="create">
+                <button onClick={() => setCForm((f) => ({ ...f, items: [...f.items, { skuCode: '', styleNo: '', color: '', size: '', quantity: 1, price: 0 }] }))} className="text-primary text-xs">+ 添加商品</button>
+              </CanButton>
             </div>
-            <button onClick={createOrder} className="px-4 py-2 bg-emerald-500 text-white rounded text-sm hover:bg-emerald-600">提交订单</button>
+            <CanButton menu="omni:manage" action="submit">
+              <button onClick={createOrder} className="px-4 py-2 bg-emerald-500 text-white rounded text-sm hover:bg-emerald-600">提交订单</button>
+            </CanButton>
           </div>
         )}
 
         <div className="flex gap-3 flex-wrap items-end mb-3">
           <input placeholder="渠道编码" value={newChannelCode} onChange={(e) => setNewChannelCode(e.target.value)} className="px-3 py-2 border border-gray-300 rounded text-sm w-32" />
           <input placeholder="渠道名称" value={newChannelName} onChange={(e) => setNewChannelName(e.target.value)} className="px-3 py-2 border border-gray-300 rounded text-sm w-40" />
-          <button onClick={addChannel} className="px-4 py-2 bg-gray-700 text-white rounded text-sm hover:bg-gray-800">添加渠道</button>
+          <CanButton menu="omni:manage" action="create">
+            <button onClick={addChannel} className="px-4 py-2 bg-gray-700 text-white rounded text-sm hover:bg-gray-800">添加渠道</button>
+          </CanButton>
         </div>
 
         <div className="flex gap-3 flex-wrap items-end mb-3">

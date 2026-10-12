@@ -26,6 +26,7 @@ import {
 } from '@client/src/components/styleMatrixUtils';
 import DocPage from '@client/src/components/DocPage/DocPage';
 import { errMsg } from '@/utils/errMsg';
+import CanButton from '@client/src/components/CanButton';
 
 const STATUS_MAP: Record<string, { label: string; tone: StatusTone }> = {
   draft: { label: '草稿', tone: 'neutral' },
@@ -505,12 +506,14 @@ export default function RetailOrderEditPage() {
                     </option>
                   ))}
                 </select>
-                <button
-                  onClick={addStyleBlock}
-                  className="bg-primary text-white px-3 py-1.5 rounded text-sm hover:bg-primary inline-flex items-center gap-1"
-                >
-                  <Plus size={14} /> 添加
-                </button>
+                <CanButton menu="sales:retail" action="create">
+                  <button
+                    onClick={addStyleBlock}
+                    className="bg-primary text-white px-3 py-1.5 rounded text-sm hover:bg-primary inline-flex items-center gap-1"
+                  >
+                    <Plus size={14} /> 添加
+                  </button>
+                </CanButton>
               </>
             )}
           </div>

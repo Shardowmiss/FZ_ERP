@@ -10,6 +10,8 @@ import { SkuDocPrintContent } from '@client/src/components/print/DocPrintContent
 import type { SkuMatrixItem } from '@client/src/components/print/SkuMatrixTable';
 import PreOrderDialog from './PreOrderDialog';
 import { errMsg } from '@/utils/errMsg';
+import { usePageActions } from '@client/src/hooks/usePageActions';
+import CanButton from '@client/src/components/CanButton';
 
 const STATUS_MAP: Record<string, { label: string; tone: StatusTone }> = {
   draft: { label: '草稿', tone: 'neutral' },
@@ -24,6 +26,7 @@ const SUBMITTER_TYPE_MAP: Record<string, { label: string; tone: StatusTone }> = 
 };
 
 const PreOrderPage: React.FC = () => {
+  const { canSave } = usePageActions('tradeshow:preorder');
   const [list, setList] = useState<PreOrder[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -319,13 +322,15 @@ const PreOrderPage: React.FC = () => {
     <div className="p-5 bg-white rounded shadow-sm">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold">预订单</h2>
-        <button
-          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors"
-          onClick={openAdd}
-          data-ai-section-type="button"
-        >
-          新增
-        </button>
+        <CanButton menu="tradeshow:preorder" action="create">
+          <button
+            className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors"
+            onClick={openAdd}
+            data-ai-section-type="button"
+          >
+            新增
+          </button>
+        </CanButton>
       </div>
 
       <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-200 flex-wrap">
@@ -488,20 +493,26 @@ const PreOrderPage: React.FC = () => {
                       </button>
                       {item.status === 'draft' && (
                         <>
-                          <button
-                            className="text-primary hover:text-primary/90 text-xs"
-                            onClick={() => openEdit(item)}
-                          >
-                            编辑
-                          </button>
-                          <button
-                            className="text-green-500 hover:text-green-700 text-xs flex items-center gap-0.5"
-                            onClick={() => handleSubmit(item.id)}
-                          >
-                            <Send size={12} />
-                            提交
-                          </button>
-                          <button onClick={() => handleVoid(item.id)} className="text-red-500 hover:text-red-600">作废</button>
+                          <CanButton menu="tradeshow:preorder" action="edit">
+                            <button
+                              className="text-primary hover:text-primary/90 text-xs"
+                              onClick={() => openEdit(item)}
+                            >
+                              编辑
+                            </button>
+                          </CanButton>
+                          <CanButton menu="tradeshow:preorder" action="submit">
+                            <button
+                              className="text-green-500 hover:text-green-700 text-xs flex items-center gap-0.5"
+                              onClick={() => handleSubmit(item.id)}
+                            >
+                              <Send size={12} />
+                              提交
+                            </button>
+                          </CanButton>
+                          <CanButton menu="tradeshow:preorder" action="void">
+                            <button onClick={() => handleVoid(item.id)} className="text-red-500 hover:text-red-600">作废</button>
+                          </CanButton>
                         </>
                       )}
                       {item.status === 'submitted' && (
@@ -513,13 +524,15 @@ const PreOrderPage: React.FC = () => {
                             <Check size={12} />
                             确认
                           </button>
-                          <button
-                            className="text-red-500 hover:text-red-700 text-xs flex items-center gap-0.5"
-                            onClick={() => handleReject(item.id)}
-                          >
-                            <XCircle size={12} />
-                            驳回
-                          </button>
+                          <CanButton menu="tradeshow:preorder" action="void">
+                            <button
+                              className="text-red-500 hover:text-red-700 text-xs flex items-center gap-0.5"
+                              onClick={() => handleReject(item.id)}
+                            >
+                              <XCircle size={12} />
+                              驳回
+                            </button>
+                          </CanButton>
                         </>
                       )}
                     </div>
@@ -575,7 +588,7 @@ const PreOrderPage: React.FC = () => {
         styleOptions={styleOptions}
         initialData={currentItem}
         onClose={() => setDialogOpen(false)}
-        onSave={handleSave}
+        onSave={canSave ? handleSave : undefined}
         onPrint={() => currentItem && openPrint(currentItem)}
       />
 

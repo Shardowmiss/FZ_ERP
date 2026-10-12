@@ -19,6 +19,7 @@ import { exportTableToCSV } from '@client/src/utils/export-csv';
 import { validateDateRange } from '@client/src/utils/date-utils';
 import { errMsg } from '@/utils/errMsg';
 import { useDefaultDocDate } from '@client/src/hooks/useDefaultDocDate';
+import CanButton from '@client/src/components/CanButton';
 
 const STATUS_MAP: Record<string, { label: string; tone: StatusTone }> = {
   draft: { label: '草稿', tone: 'neutral' },
@@ -195,12 +196,14 @@ export default function MaterialIssuePage() {
       <div className="bg-white rounded-lg shadow-sm p-5">
         <div className="mb-4 flex items-center justify-between">
           <h1 className="text-xl font-semibold">领料单</h1>
-          <button
-            onClick={openCreate}
-            className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-primary flex items-center gap-1"
-          >
-            <Plus size={16} /> 新增领料单
-          </button>
+          <CanButton menu="production:material_issue" action="create">
+            <button
+              onClick={openCreate}
+              className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-primary flex items-center gap-1"
+            >
+              <Plus size={16} /> 新增领料单
+            </button>
+          </CanButton>
         </div>
 
         <div className="bg-white rounded p-4 mb-4 border border-gray-100 flex flex-wrap gap-3 items-end">
@@ -300,10 +303,18 @@ export default function MaterialIssuePage() {
                       <button onClick={() => openView(item.id)} className="text-primary hover:underline">查看</button>
                       {item.status === 'draft' && (
                         <>
-                          <button onClick={() => openEdit(item.id)} className="text-primary hover:underline">编辑</button>
-                          <button onClick={() => handleApprove(item.id)} className="text-green-500 hover:underline">审核</button>
-                          <button onClick={() => handleDelete(item.id)} className="text-red-500 hover:underline">删除</button>
-                                                <button onClick={() => handleVoid(item.id)} className="text-red-500 hover:text-red-600">作废</button>
+                          <CanButton menu="production:material_issue" action="edit">
+                            <button onClick={() => openEdit(item.id)} className="text-primary hover:underline">编辑</button>
+                          </CanButton>
+                          <CanButton menu="production:material_issue" action="approve">
+                            <button onClick={() => handleApprove(item.id)} className="text-green-500 hover:underline">审核</button>
+                          </CanButton>
+                          <CanButton menu="production:material_issue" action="delete">
+                            <button onClick={() => handleDelete(item.id)} className="text-red-500 hover:underline">删除</button>
+                          </CanButton>
+                                                <CanButton menu="production:material_issue" action="void">
+                                                  <button onClick={() => handleVoid(item.id)} className="text-red-500 hover:text-red-600">作废</button>
+                                                </CanButton>
 </>
                       )}
                     </td>

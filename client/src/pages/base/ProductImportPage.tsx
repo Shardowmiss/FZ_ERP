@@ -14,6 +14,8 @@ import { uploadFile } from '@client/src/components/business-ui/api/files/service
 import { toast } from 'sonner';
 import { showConfirm } from '@lark-apaas/client-toolkit';
 import { errMsg } from '@/utils/errMsg';
+import CanButton from '@client/src/components/CanButton';
+import { CanSave } from '@client/src/components/CanButton';
 
 interface ColumnDef {
   header: string;
@@ -278,26 +280,30 @@ const ProductImportPage: React.FC = () => {
             商品资料批量导入：下载 Excel 模板 → 填写并上传 → 校验 → 审核入库。后一次导入可覆盖前一次草稿。
           </p>
         </div>
-        <button
-          className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-          onClick={openWizard}
-        >
-          <Upload size={16} /> 新建导入
-        </button>
+        <CanButton menu="base:import" action="create">
+          <button
+            className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            onClick={openWizard}
+          >
+            <Upload size={16} /> 新建导入
+          </button>
+        </CanButton>
       </div>
 
       {/* 类型过滤 */}
       <div className="mb-3 flex gap-2">
         {(['all', 'style', 'sku'] as const).map((t) => (
-          <button
-            key={t}
-            onClick={() => setFilter(t)}
-            className={`rounded-md px-3 py-1.5 text-sm font-medium ${
-              filter === t ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 ring-1 ring-gray-200 hover:bg-gray-50'
-            }`}
-          >
-            {t === 'all' ? '全部' : t === 'style' ? '款号导入' : 'SKU导入'}
-          </button>
+          <CanButton menu="base:import" action="create">
+            <button
+              key={t}
+              onClick={() => setFilter(t)}
+              className={`rounded-md px-3 py-1.5 text-sm font-medium ${
+                filter === t ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 ring-1 ring-gray-200 hover:bg-gray-50'
+              }`}
+            >
+              {t === 'all' ? '全部' : t === 'style' ? '款号导入' : 'SKU导入'}
+            </button>
+          </CanButton>
         ))}
       </div>
 
@@ -363,9 +369,11 @@ const ProductImportPage: React.FC = () => {
                       <Eye size={14} /> 查看
                     </button>
                     {task.status === 'draft' && (
-                      <button className="inline-flex items-center gap-1 text-green-600 hover:underline" onClick={() => handleApprove(task)}>
-                        <ShieldCheck size={14} /> 审核
-                      </button>
+                      <CanButton menu="base:import" action="approve">
+                        <button className="inline-flex items-center gap-1 text-green-600 hover:underline" onClick={() => handleApprove(task)}>
+                          <ShieldCheck size={14} /> 审核
+                        </button>
+                      </CanButton>
                     )}
                   </td>
                 </tr>
@@ -387,13 +395,15 @@ const ProductImportPage: React.FC = () => {
               >
                 取消
               </button>
-              <button
-                className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-                disabled={!parsedRows.length || submitting || parsing}
-                onClick={handleSaveDraft}
-              >
-                <FileSpreadsheet size={16} /> {submitting ? '保存中…' : '保存为草稿'}
-              </button>
+              <CanSave menu="base:import">
+                <button
+                  className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                  disabled={!parsedRows.length || submitting || parsing}
+                  onClick={handleSaveDraft}
+                >
+                  <FileSpreadsheet size={16} /> {submitting ? '保存中…' : '保存为草稿'}
+                </button>
+              </CanSave>
             </>
           }
         >
@@ -401,21 +411,23 @@ const ProductImportPage: React.FC = () => {
           <div className="mb-4 flex items-center gap-3">
             <span className="text-sm text-gray-600">导入类型：</span>
             {(['style', 'sku'] as const).map((t) => (
-              <button
-                key={t}
-                onClick={() => {
-                  setWizardType(t);
-                  setValidateResult(null);
-                  setParsedRows([]);
-                  setFileName('');
-                  if (fileRef.current) fileRef.current.value = '';
-                }}
-                className={`rounded-md px-3 py-1.5 text-sm font-medium ${
-                  wizardType === t ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                {t === 'style' ? '款号批量导入' : 'SKU批量导入'}
-              </button>
+              <CanButton menu="base:import" action="create">
+                <button
+                  key={t}
+                  onClick={() => {
+                    setWizardType(t);
+                    setValidateResult(null);
+                    setParsedRows([]);
+                    setFileName('');
+                    if (fileRef.current) fileRef.current.value = '';
+                  }}
+                  className={`rounded-md px-3 py-1.5 text-sm font-medium ${
+                    wizardType === t ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {t === 'style' ? '款号批量导入' : 'SKU批量导入'}
+                </button>
+              </CanButton>
             ))}
             <button
               className="ml-auto inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-sm font-medium text-blue-600 ring-1 ring-blue-200 hover:bg-blue-50"

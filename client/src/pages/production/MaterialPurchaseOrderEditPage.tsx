@@ -9,6 +9,8 @@ import { PrintDialog } from '@client/src/components/print/PrintDialog';
 import { MaterialDocPrintContent } from '@client/src/components/print/DocPrintContent';
 import type { MaterialListItem } from '@client/src/components/print/MaterialListTable';
 import { errMsg } from '@/utils/errMsg';
+import { usePageActions } from '@client/src/hooks/usePageActions';
+import CanButton from '@client/src/components/CanButton';
 
 const BACK_PATH = '/production/material-purchase-order';
 
@@ -23,6 +25,7 @@ interface FormItem {
 }
 
 const MaterialPurchaseOrderEditPage: React.FC = () => {
+  const { canSave } = usePageActions('production:material_order');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -284,7 +287,9 @@ const MaterialPurchaseOrderEditPage: React.FC = () => {
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-medium text-gray-700">明细</h2>
         {!viewOnly && (
-          <button onClick={handleAddRow} className="text-sm text-primary hover:text-primary">+ 添加行</button>
+          <CanButton menu="production:material_order" action="create">
+            <button onClick={handleAddRow} className="text-sm text-primary hover:text-primary">+ 添加行</button>
+          </CanButton>
         )}
       </div>
       <table className="w-full text-sm border border-gray-200">
@@ -355,7 +360,9 @@ const MaterialPurchaseOrderEditPage: React.FC = () => {
                 </td>
                 {!viewOnly && (
                   <td className="py-1.5 px-2 text-center">
-                    <button onClick={() => handleRemoveRow(idx)} className="text-red-500 text-xs">删除</button>
+                    <CanButton menu="production:material_order" action="delete">
+                      <button onClick={() => handleRemoveRow(idx)} className="text-red-500 text-xs">删除</button>
+                    </CanButton>
                   </td>
                 )}
               </tr>
@@ -377,7 +384,7 @@ const MaterialPurchaseOrderEditPage: React.FC = () => {
         status={status}
         backPath={BACK_PATH}
         viewOnly={viewOnly}
-        onSave={handleSave}
+        onSave={canSave ? handleSave : undefined}
         onSubmit={!viewOnly && status === 'draft' ? handleSubmit : undefined}
         onPrint={!isNew ? handlePrint : undefined}
         saving={saving}

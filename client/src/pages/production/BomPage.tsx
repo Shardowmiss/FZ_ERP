@@ -8,6 +8,8 @@ import { showConfirm } from '@lark-apaas/client-toolkit';
 import { TableContainer, DataPagination } from '@client/src/components/ui';
 import { exportTableToCSV } from '@client/src/utils/export-csv';
 import { errMsg } from '@/utils/errMsg';
+import CanButton from '@client/src/components/CanButton';
+import { CanSave } from '@client/src/components/CanButton';
 
 interface FormItem {
   id: string;
@@ -247,12 +249,14 @@ const BomPage: React.FC = () => {
           >
             <Download size={16} /> 导出
           </button>
-          <button
-            onClick={openAdd}
-            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary flex items-center gap-1"
-          >
-            <Plus size={16} /> + 新增BOM
-          </button>
+          <CanButton menu="production:bom" action="create">
+            <button
+              onClick={openAdd}
+              className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary flex items-center gap-1"
+            >
+              <Plus size={16} /> + 新增BOM
+            </button>
+          </CanButton>
         </div>
       </div>
 
@@ -301,8 +305,12 @@ const BomPage: React.FC = () => {
                   </td>
                   <td className="py-2 px-4 text-gray-500">{item.createdAt || '-'}</td>
                   <td className="py-2 px-4">
-                    <button onClick={() => openEdit(item.id)} className="text-primary hover:text-primary mr-3">编辑</button>
-                    <button onClick={() => handleDelete(item.id)} className="text-red-500 hover:text-red-600 mr-3">删除</button>
+                    <CanButton menu="production:bom" action="edit">
+                      <button onClick={() => openEdit(item.id)} className="text-primary hover:text-primary mr-3">编辑</button>
+                    </CanButton>
+                    <CanButton menu="production:bom" action="delete">
+                      <button onClick={() => handleDelete(item.id)} className="text-red-500 hover:text-red-600 mr-3">删除</button>
+                    </CanButton>
                     <button
                       onClick={async () => {
                         try {
@@ -375,7 +383,9 @@ const BomPage: React.FC = () => {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-sm text-gray-600 font-medium">BOM明细</label>
-                  <button onClick={handleAddRow} className="text-sm text-primary hover:text-primary">+ 添加行</button>
+                  <CanButton menu="production:bom" action="create">
+                    <button onClick={handleAddRow} className="text-sm text-primary hover:text-primary">+ 添加行</button>
+                  </CanButton>
                 </div>
                 <table className="w-full text-sm border border-gray-200">
                   <thead>
@@ -434,7 +444,9 @@ const BomPage: React.FC = () => {
                             </select>
                           </td>
                           <td className="py-1.5 px-2 text-center">
-                            <button onClick={() => handleRemoveRow(idx)} className="text-red-500 text-xs">删除</button>
+                            <CanButton menu="production:bom" action="delete">
+                              <button onClick={() => handleRemoveRow(idx)} className="text-red-500 text-xs">删除</button>
+                            </CanButton>
                           </td>
                         </tr>
                       ))
@@ -445,7 +457,9 @@ const BomPage: React.FC = () => {
             </div>
             <div className="px-5 py-3 border-t border-gray-200 flex justify-end gap-2">
               <button onClick={() => setShowModal(false)} className="px-4 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50">取消</button>
-              <button onClick={handleSubmit} className="px-4 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary">保存</button>
+              <CanSave menu="production:bom">
+                <button onClick={handleSubmit} className="px-4 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary">保存</button>
+              </CanSave>
             </div>
           </div>
         </div>

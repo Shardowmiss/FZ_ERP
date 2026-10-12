@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { showConfirm } from '@lark-apaas/client-toolkit';
 import { TableContainer, DataPagination } from '@client/src/components/ui';
 import { errMsg } from '@/utils/errMsg';
+import CanButton from '@client/src/components/CanButton';
 
 type AttrType = 'year' | 'season' | 'category' | 'sub_category' | 'fit' | 'brand';
 
@@ -225,12 +226,14 @@ const StyleAttributePage: React.FC = () => {
           查询
         </button>
         <div className="flex-1" />
-        <button
-          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors"
-          onClick={openAdd}
-        >
-          + 新增属性
-        </button>
+        <CanButton menu="base:style-attribute" action="create">
+          <button
+            className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors"
+            onClick={openAdd}
+          >
+            + 新增属性
+          </button>
+        </CanButton>
       </div>
 
       {/* 表格 */}
@@ -274,18 +277,22 @@ const StyleAttributePage: React.FC = () => {
                   <td className="px-4 py-3">{item.sortOrder}</td>
                   <td className="px-4 py-3">{renderStatus(item.status)}</td>
                   <td className="px-4 py-3">
-                    <button
-                      className="text-primary hover:text-primary/90 mr-3"
-                      onClick={() => openEdit(item)}
-                    >
-                      编辑
-                    </button>
-                    <button
-                      className="text-red-500 hover:text-red-700"
-                      onClick={() => handleDelete(item.id)}
-                    >
-                      删除
-                    </button>
+                    <CanButton menu="base:style-attribute" action="edit">
+                      <button
+                        className="text-primary hover:text-primary/90 mr-3"
+                        onClick={() => openEdit(item)}
+                      >
+                        编辑
+                      </button>
+                    </CanButton>
+                    <CanButton menu="base:style-attribute" action="delete">
+                      <button
+                        className="text-red-500 hover:text-red-700"
+                        onClick={() => handleDelete(item.id)}
+                      >
+                        删除
+                      </button>
+                    </CanButton>
                   </td>
                 </tr>
               ))

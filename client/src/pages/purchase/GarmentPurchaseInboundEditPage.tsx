@@ -7,6 +7,8 @@ import DocPage from '@client/src/components/DocPage/DocPage';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { errMsg } from '@/utils/errMsg';
+import { usePageActions } from '@client/src/hooks/usePageActions';
+import CanButton from '@client/src/components/CanButton';
 
 interface StyleBlock {
   styleId: string;
@@ -22,6 +24,7 @@ const BACK_PATH = '/purchase/garment-inbound';
 type PageMode = 'new' | 'edit' | 'accept' | 'view';
 
 const GarmentPurchaseInboundEditPage: React.FC = () => {
+  const { canSave } = usePageActions('purchase:inbound');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -647,12 +650,16 @@ const GarmentPurchaseInboundEditPage: React.FC = () => {
   const acceptActions =
     pageMode === 'accept' ? (
       <>
-        <Button size="sm" variant="outline" onClick={() => void handleSaveAcceptance()} disabled={saving}>
-          保存验收进度
-        </Button>
-        <Button size="sm" onClick={() => void handleCompleteAcceptance()} disabled={saving}>
-          完成验收
-        </Button>
+        <CanButton menu="purchase:inbound" action="approve">
+          <Button size="sm" variant="outline" onClick={() => void handleSaveAcceptance()} disabled={saving}>
+            保存验收进度
+          </Button>
+        </CanButton>
+        <CanButton menu="purchase:inbound" action="approve">
+          <Button size="sm" onClick={() => void handleCompleteAcceptance()} disabled={saving}>
+            完成验收
+          </Button>
+        </CanButton>
       </>
     ) : null;
 
@@ -663,7 +670,7 @@ const GarmentPurchaseInboundEditPage: React.FC = () => {
       status={status}
       backPath={BACK_PATH}
       viewOnly={viewOnly}
-      onSave={showSave ? handleSave : undefined}
+      onSave={showSave && canSave ? handleSave : undefined}
       saving={saving}
       extraActions={acceptActions}
       header={loading || isLoading ? <div className="text-center py-8 text-gray-400">加载中...</div> : headerForm}

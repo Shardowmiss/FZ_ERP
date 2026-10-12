@@ -11,6 +11,7 @@ import { TableContainer } from '@client/src/components/ui/table-container';
 import { DataPagination } from '@client/src/components/ui/pagination';
 import { errMsg } from '@/utils/errMsg';
 import { StatusBadge, type StatusTone } from '@client/src/components/ui/status-badge';
+import CanButton from '@client/src/components/CanButton';
 
 const statusLabel: Record<string, string> = {
   draft: '草稿',
@@ -162,12 +163,14 @@ const PaymentPage: React.FC = () => {
       <div className="bg-white rounded-lg p-4 shadow-sm">
         <div className="flex items-center justify-between mb-3">
           <h1 className="text-xl font-semibold text-gray-800">付款单</h1>
-          <button
-            onClick={openAdd}
-            className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary flex items-center gap-1"
-          >
-            <Plus size={16} /> 新增付款单
-          </button>
+          <CanButton menu="finance:payment" action="create">
+            <button
+              onClick={openAdd}
+              className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary flex items-center gap-1"
+            >
+              <Plus size={16} /> 新增付款单
+            </button>
+          </CanButton>
         </div>
         <div className="flex flex-wrap items-center gap-3 text-sm">
           <div className="flex items-center gap-1">
@@ -274,10 +277,18 @@ const PaymentPage: React.FC = () => {
                     <td className="py-2 px-4 space-x-2">
                       {item.status === 'draft' && (
                         <>
-                          <button onClick={() => navigate(`/finance/payment/${item.id}/edit`)} className="text-primary hover:text-primary">编辑</button>
-                          <button onClick={() => handleApprove(item.id)} className="text-green-500 hover:text-green-600">审核</button>
-                          <button onClick={() => handleDelete(item.id)} className="text-red-500 hover:text-red-600">删除</button>
-                                                <button onClick={() => handleVoid(item.id)} className="text-red-500 hover:text-red-600">作废</button>
+                          <CanButton menu="finance:payment" action="edit">
+                            <button onClick={() => navigate(`/finance/payment/${item.id}/edit`)} className="text-primary hover:text-primary">编辑</button>
+                          </CanButton>
+                          <CanButton menu="finance:payment" action="approve">
+                            <button onClick={() => handleApprove(item.id)} className="text-green-500 hover:text-green-600">审核</button>
+                          </CanButton>
+                          <CanButton menu="finance:payment" action="delete">
+                            <button onClick={() => handleDelete(item.id)} className="text-red-500 hover:text-red-600">删除</button>
+                          </CanButton>
+                                                <CanButton menu="finance:payment" action="void">
+                                                  <button onClick={() => handleVoid(item.id)} className="text-red-500 hover:text-red-600">作废</button>
+                                                </CanButton>
 </>
                       )}
                       {item.status === 'approved' && (

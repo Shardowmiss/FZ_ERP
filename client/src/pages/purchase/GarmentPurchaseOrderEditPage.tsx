@@ -7,6 +7,8 @@ import GarmentSkuMatrixTable, { type SkuQtyPriceMatrix } from './GarmentSkuMatri
 import DocPage from '@client/src/components/DocPage/DocPage';
 import { toast } from 'sonner';
 import { errMsg } from '@/utils/errMsg';
+import { usePageActions } from '@client/src/hooks/usePageActions';
+import CanButton from '@client/src/components/CanButton';
 
 interface StyleBlock {
   styleId: string;
@@ -19,6 +21,7 @@ interface StyleBlock {
 const BACK_PATH = '/purchase/garment-order';
 
 const GarmentPurchaseOrderEditPage: React.FC = () => {
+  const { canSave } = usePageActions('purchase:order');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -450,13 +453,15 @@ const GarmentPurchaseOrderEditPage: React.FC = () => {
               ))}
             </select>
           </div>
-          <button
-            onClick={handleAddStyle}
-            disabled={loadingStyleId !== ''}
-            className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-primary disabled:opacity-50 flex items-center gap-1"
-          >
-            <Plus size={16} /> 添加
-          </button>
+          <CanButton menu="purchase:order" action="create">
+            <button
+              onClick={handleAddStyle}
+              disabled={loadingStyleId !== ''}
+              className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-primary disabled:opacity-50 flex items-center gap-1"
+            >
+              <Plus size={16} /> 添加
+            </button>
+          </CanButton>
         </div>
       )}
 
@@ -479,12 +484,14 @@ const GarmentPurchaseOrderEditPage: React.FC = () => {
               <span className="text-gray-500 text-sm">{block.styleName}</span>
             </div>
             {!viewOnly && (
-              <button
-                onClick={() => handleRemoveStyle(block.styleId)}
-                className="text-red-500 hover:text-red-600 text-sm flex items-center gap-1"
-              >
-                <Trash2 size={14} /> 移除
-              </button>
+              <CanButton menu="purchase:order" action="delete">
+                <button
+                  onClick={() => handleRemoveStyle(block.styleId)}
+                  className="text-red-500 hover:text-red-600 text-sm flex items-center gap-1"
+                >
+                  <Trash2 size={14} /> 移除
+                </button>
+              </CanButton>
             )}
           </div>
           <div className="p-3">
@@ -526,7 +533,7 @@ const GarmentPurchaseOrderEditPage: React.FC = () => {
       status={status}
       backPath={BACK_PATH}
       viewOnly={viewOnly}
-      onSave={!viewOnly ? handleSave : undefined}
+      onSave={!viewOnly && canSave ? handleSave : undefined}
       onSubmit={!viewOnly ? handleSubmit : undefined}
       saving={saving}
       submitting={submitting}

@@ -20,6 +20,7 @@ import { PrintDialog } from '@client/src/components/print/PrintDialog';
 import { SkuDocPrintContent } from '@client/src/components/print/DocPrintContent';
 import type { SkuMatrixItem } from '@client/src/components/print/SkuMatrixTable';
 import { errMsg } from '@/utils/errMsg';
+import CanButton from '@client/src/components/CanButton';
 
 const STATUS_MAP: Record<string, { label: string; tone: StatusTone }> = {
   draft: { label: '草稿', tone: 'neutral' },
@@ -219,13 +220,15 @@ export default function RetailOrderPage() {
     <div className="p-5">
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-xl font-semibold">零售单</h1>
-        <button
-          onClick={openCreate}
-          className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-primary flex items-center gap-2"
-        >
-          <Plus size={16} />
-          新增零售单
-        </button>
+        <CanButton menu="sales:retail" action="create">
+          <button
+            onClick={openCreate}
+            className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-primary flex items-center gap-2"
+          >
+            <Plus size={16} />
+            新增零售单
+          </button>
+        </CanButton>
       </div>
 
       <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
@@ -291,10 +294,14 @@ export default function RetailOrderPage() {
                       <Printer size={12} />打印
                     </button>
                     {item.status === 'draft' && (
-                      <button onClick={() => openSettle(item.id)} className="text-green-500 hover:underline">结算</button>
+                      <CanButton menu="sales:retail" action="approve">
+                        <button onClick={() => openSettle(item.id)} className="text-green-500 hover:underline">结算</button>
+                      </CanButton>
                     )}
                     {item.status === 'draft' && (
-                      <button onClick={() => handleVoid(item.id)} className="text-red-500 hover:underline">作废</button>
+                      <CanButton menu="sales:retail" action="void">
+                        <button onClick={() => handleVoid(item.id)} className="text-red-500 hover:underline">作废</button>
+                      </CanButton>
                     )}
                     {item.status === 'settled' && (
                       <button onClick={() => openReturn(item.id)} className="text-amber-600 hover:underline">退货</button>

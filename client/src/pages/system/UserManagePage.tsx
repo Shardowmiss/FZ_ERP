@@ -4,6 +4,8 @@ import { rbacApi } from '@client/src/api';
 import type { RbacUser, RbacRole, PaginationResult } from '@shared/api.interface';
 import { toast } from 'sonner';
 import { showConfirm } from '@lark-apaas/client-toolkit';
+import CanButton from '@client/src/components/CanButton';
+import { CanSave } from '@client/src/components/CanButton';
 
 interface UserFormData {
   username: string;
@@ -215,12 +217,14 @@ const UserManagePage: React.FC = () => {
     <div className="p-5 bg-white rounded shadow-sm">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold">用户管理</h2>
-        <button
-          className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors"
-          onClick={openAdd}
-        >
-          新增用户
-        </button>
+        <CanButton menu="system:user" action="create">
+          <button
+            className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors"
+            onClick={openAdd}
+          >
+            新增用户
+          </button>
+        </CanButton>
       </div>
 
       <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-200 flex-wrap">
@@ -292,12 +296,14 @@ const UserManagePage: React.FC = () => {
                     {item.createdAt ? item.createdAt.substring(0, 10) : '-'}
                   </td>
                   <td className="px-4 py-3">
-                    <button
-                      className="text-primary hover:text-primary/90 mr-3"
-                      onClick={() => openEdit(item)}
-                    >
-                      编辑
-                    </button>
+                    <CanButton menu="system:user" action="edit">
+                      <button
+                        className="text-primary hover:text-primary/90 mr-3"
+                        onClick={() => openEdit(item)}
+                      >
+                        编辑
+                      </button>
+                    </CanButton>
                     <button
                       className={
                         item.status === 'active'
@@ -494,13 +500,15 @@ const UserManagePage: React.FC = () => {
               >
                 取消
               </button>
-              <button
-                className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                onClick={handleSave}
-                disabled={submitting}
-              >
-                {submitting ? '保存中...' : '保存'}
-              </button>
+              <CanSave menu="system:user">
+                <button
+                  className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={handleSave}
+                  disabled={submitting}
+                >
+                  {submitting ? '保存中...' : '保存'}
+                </button>
+              </CanSave>
             </div>
           </div>
         </div>

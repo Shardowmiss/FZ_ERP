@@ -14,6 +14,7 @@ import { systemApi } from '@client/src/api/system';
 import { uniqueCodeApi } from '@client/src/api/uniqueCode';
 import type { SystemConfig } from '@shared/api.interface';
 import { errMsg } from '@/utils/errMsg';
+import { CanSave } from '@client/src/components/CanButton';
 
 interface ConfigRowProps {
   label: string;
@@ -160,10 +161,12 @@ const SystemConfigPage: React.FC = () => {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold text-gray-800">系统配置</h1>
-        <Button onClick={handleSave} disabled={saving}>
-          <Save size={16} className="mr-2" />
-          保存配置
-        </Button>
+        <CanSave menu="system:config">
+          <Button onClick={handleSave} disabled={saving}>
+            <Save size={16} className="mr-2" />
+            保存配置
+          </Button>
+        </CanSave>
       </div>
 
       <div className="bg-white rounded-lg border border-gray-200 p-5">

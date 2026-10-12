@@ -14,6 +14,7 @@ import { DataPagination } from '@client/src/components/ui/pagination';
 import { exportTableToCSV } from '@client/src/utils/export-csv';
 import { errMsg } from '@/utils/errMsg';
 import { useDefaultDocDate } from '@client/src/hooks/useDefaultDocDate';
+import CanButton from '@client/src/components/CanButton';
 
 export default function InventoryStocktakePage() {
   const navigate = useNavigate();
@@ -158,9 +159,11 @@ export default function InventoryStocktakePage() {
       <div className="bg-white rounded-lg shadow-sm p-5">
         <div className="mb-4 flex items-center justify-between">
           <h1 className="text-xl font-semibold">盘点单</h1>
-          <button onClick={openCreate} className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-primary">
-            + 新增盘点单
-          </button>
+          <CanButton menu="inventory:stocktake" action="create">
+            <button onClick={openCreate} className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-primary">
+              + 新增盘点单
+            </button>
+          </CanButton>
         </div>
 
       <div className="bg-white rounded p-4 mb-4 flex flex-wrap gap-3 items-end">
@@ -230,13 +233,21 @@ export default function InventoryStocktakePage() {
                     <button onClick={() => openView(item.id)} className="text-primary hover:underline">查看</button>
                     {item.status === 'draft' && (
                       <>
-                        <button onClick={() => handleApprove(item.id)} className="text-green-500 hover:underline">审核</button>
-                        <button onClick={() => handleDelete(item.id)} className="text-red-500 hover:underline">删除</button>
-                                            <button onClick={() => handleVoid(item.id)} className="text-red-500 hover:text-red-600">作废</button>
+                        <CanButton menu="inventory:stocktake" action="approve">
+                          <button onClick={() => handleApprove(item.id)} className="text-green-500 hover:underline">审核</button>
+                        </CanButton>
+                        <CanButton menu="inventory:stocktake" action="delete">
+                          <button onClick={() => handleDelete(item.id)} className="text-red-500 hover:underline">删除</button>
+                        </CanButton>
+                                            <CanButton menu="inventory:stocktake" action="void">
+                                              <button onClick={() => handleVoid(item.id)} className="text-red-500 hover:text-red-600">作废</button>
+                                            </CanButton>
 </>
                     )}
                     {item.status === 'approved' && (
-                      <button onClick={() => handlePost(item.id)} className="text-blue-500 hover:underline">记账</button>
+                      <CanButton menu="inventory:stocktake" action="approve">
+                        <button onClick={() => handlePost(item.id)} className="text-blue-500 hover:underline">记账</button>
+                      </CanButton>
                     )}
                   </td>
                 </tr>

@@ -7,6 +7,8 @@ import SkuMatrixTable, { type SkuMatrix } from '../trade-show/SkuMatrixTable';
 import DocPage from '@client/src/components/DocPage/DocPage';
 import { toast } from 'sonner';
 import { errMsg } from '@/utils/errMsg';
+import { usePageActions } from '@client/src/hooks/usePageActions';
+import CanButton from '@client/src/components/CanButton';
 
 interface StyleOption {
   id: string;
@@ -33,6 +35,7 @@ interface OptionItem {
 const BACK_PATH = '/purchase/garment-return';
 
 const GarmentPurchaseReturnEditPage: React.FC = () => {
+  const { canCreate } = usePageActions('purchase:return');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -430,13 +433,15 @@ const GarmentPurchaseReturnEditPage: React.FC = () => {
                 <option key={s.id} value={s.id}>{s.styleNo} - {s.name}</option>
               ))}
             </select>
-            <button
-              type="button"
-              onClick={() => void addStyle(addedStyleId)}
-              className="px-3 py-1.5 text-sm border border-primary text-primary rounded hover:bg-primary/5"
-            >
-              + 添加款号
-            </button>
+            <CanButton menu="purchase:return" action="create">
+              <button
+                type="button"
+                onClick={() => void addStyle(addedStyleId)}
+                className="px-3 py-1.5 text-sm border border-primary text-primary rounded hover:bg-primary/5"
+              >
+                + 添加款号
+              </button>
+            </CanButton>
           </div>
         )}
       </div>
@@ -454,13 +459,15 @@ const GarmentPurchaseReturnEditPage: React.FC = () => {
               <span className="font-medium text-gray-800">{block.styleNo}</span>
               <span className="text-gray-500 text-sm">{block.styleName}</span>
               {!viewOnly && (
-                <button
-                  type="button"
-                  onClick={() => removeStyle(block.styleId)}
-                  className="ml-auto text-red-500 hover:underline text-xs"
-                >
-                  移除款号
-                </button>
+                <CanButton menu="purchase:return" action="delete">
+                  <button
+                    type="button"
+                    onClick={() => removeStyle(block.styleId)}
+                    className="ml-auto text-red-500 hover:underline text-xs"
+                  >
+                    移除款号
+                  </button>
+                </CanButton>
               )}
             </div>
           </div>
@@ -507,7 +514,7 @@ const GarmentPurchaseReturnEditPage: React.FC = () => {
       status={status}
       backPath={BACK_PATH}
       viewOnly={viewOnly}
-      onSave={!viewOnly && isNew ? handleSave : undefined}
+      onSave={!viewOnly && isNew && canCreate ? handleSave : undefined}
       saving={saving}
       header={loading ? <div className="text-center py-8 text-gray-400">加载中...</div> : headerContent}
     >

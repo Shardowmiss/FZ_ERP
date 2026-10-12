@@ -16,6 +16,7 @@ import { TableContainer } from '@client/src/components/ui/table-container';
 import { DataPagination } from '@client/src/components/ui/pagination';
 import { exportTableToCSV } from '@client/src/utils/export-csv';
 import { errMsg } from '@/utils/errMsg';
+import CanButton from '@client/src/components/CanButton';
 
 const statusLabel: Record<string, string> = {
   draft: '新增',
@@ -211,12 +212,14 @@ const PurchaseOrderPage: React.FC = () => {
       <div className="bg-white rounded-lg p-4 shadow-sm">
         <div className="flex items-center justify-between mb-3">
           <h1 className="text-xl font-semibold text-gray-800">采购订单</h1>
-           <button
-             onClick={openAdd}
-             className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary flex items-center gap-1"
-           >
-             <Plus size={16} /> 新增采购订单
-           </button>
+           <CanButton menu="purchase:order" action="create">
+             <button
+               onClick={openAdd}
+               className="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary flex items-center gap-1"
+             >
+               <Plus size={16} /> 新增采购订单
+             </button>
+           </CanButton>
         </div>
         <PurchaseFilterBar
           onSearch={() => { setPage(1); fetchList(); }}
@@ -298,20 +301,32 @@ const PurchaseOrderPage: React.FC = () => {
                     <span key={`actions-${item.status}`} className="space-x-2 inline-flex items-center">
                       {item.status === 'draft' && (
                         <>
-                          <button onClick={() => openEdit(item.id)} className="text-primary hover:text-primary">编辑</button>
-                          <button onClick={() => handleDelete(item.id)} className="text-red-500 hover:text-red-600">删除</button>
-                          <button onClick={() => handleStatusAction(item.id, 'audit')} className="text-orange-500 hover:text-orange-600">审核</button>
+                          <CanButton menu="purchase:order" action="edit">
+                            <button onClick={() => openEdit(item.id)} className="text-primary hover:text-primary">编辑</button>
+                          </CanButton>
+                          <CanButton menu="purchase:order" action="delete">
+                            <button onClick={() => handleDelete(item.id)} className="text-red-500 hover:text-red-600">删除</button>
+                          </CanButton>
+                          <CanButton menu="purchase:order" action="approve">
+                            <button onClick={() => handleStatusAction(item.id, 'audit')} className="text-orange-500 hover:text-orange-600">审核</button>
+                          </CanButton>
                           <button onClick={() => handleListPrint(item.id)} className="text-gray-500 hover:text-gray-600 inline-flex align-middle" title="打印">
                             <Printer size={14} />
                           </button>
-                                                <button onClick={() => handleVoid(item.id)} className="text-red-500 hover:text-red-600">作废</button>
+                                                <CanButton menu="purchase:order" action="void">
+                                                  <button onClick={() => handleVoid(item.id)} className="text-red-500 hover:text-red-600">作废</button>
+                                                </CanButton>
 </>
                       )}
                       {item.status === 'audited' && (
                         <>
                           <button onClick={() => openView(item.id)} className="text-primary hover:text-primary">查看</button>
-                          <button onClick={() => handleStatusAction(item.id, 'cancelAudit')} className="text-orange-500 hover:text-orange-600">取消审核</button>
-                          <button onClick={() => handleStatusAction(item.id, 'book')} className="text-primary hover:text-primary">记账</button>
+                          <CanButton menu="purchase:order" action="approve">
+                            <button onClick={() => handleStatusAction(item.id, 'cancelAudit')} className="text-orange-500 hover:text-orange-600">取消审核</button>
+                          </CanButton>
+                          <CanButton menu="purchase:order" action="approve">
+                            <button onClick={() => handleStatusAction(item.id, 'book')} className="text-primary hover:text-primary">记账</button>
+                          </CanButton>
                           <button onClick={() => handleListPrint(item.id)} className="text-gray-500 hover:text-gray-600 inline-flex align-middle" title="打印">
                             <Printer size={14} />
                           </button>
@@ -320,7 +335,9 @@ const PurchaseOrderPage: React.FC = () => {
                       {item.status === 'booked' && (
                         <>
                           <button onClick={() => openView(item.id)} className="text-primary hover:text-primary">查看</button>
-                          <button onClick={() => handleStatusAction(item.id, 'accept')} className="text-green-500 hover:text-green-600">验收</button>
+                          <CanButton menu="purchase:order" action="approve">
+                            <button onClick={() => handleStatusAction(item.id, 'accept')} className="text-green-500 hover:text-green-600">验收</button>
+                          </CanButton>
                           <button onClick={() => handleListPrint(item.id)} className="text-gray-500 hover:text-gray-600 inline-flex align-middle" title="打印">
                             <Printer size={14} />
                           </button>

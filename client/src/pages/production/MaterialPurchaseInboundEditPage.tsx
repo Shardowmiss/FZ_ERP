@@ -13,6 +13,7 @@ import { PrintDialog } from '@client/src/components/print/PrintDialog';
 import { MaterialDocPrintContent } from '@client/src/components/print/DocPrintContent';
 import type { MaterialListItem } from '@client/src/components/print/MaterialListTable';
 import { errMsg } from '@/utils/errMsg';
+import { usePageActions } from '@client/src/hooks/usePageActions';
 
 const BACK_PATH = '/production/material-purchase-inbound';
 
@@ -30,6 +31,7 @@ interface InboundFormItem {
 }
 
 const MaterialPurchaseInboundEditPage: React.FC = () => {
+  const { canCreate } = usePageActions('production:material_inbound');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -393,7 +395,7 @@ const MaterialPurchaseInboundEditPage: React.FC = () => {
         status={status}
         backPath={BACK_PATH}
         viewOnly={viewOnly}
-        onSave={!viewOnly && isNew ? handleSave : undefined}
+        onSave={!viewOnly && isNew && canCreate ? handleSave : undefined}
         onSubmit={!viewOnly && isNew ? undefined : undefined}
         onPrint={!isNew ? handlePrint : undefined}
         saving={saving}

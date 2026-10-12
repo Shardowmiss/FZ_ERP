@@ -7,6 +7,8 @@ import { toast } from 'sonner';
 import { showConfirm } from '@lark-apaas/client-toolkit';
 import { TableContainer, DataPagination } from '@client/src/components/ui';
 import { errMsg } from '@/utils/errMsg';
+import CanButton from '@client/src/components/CanButton';
+import { CanSave } from '@client/src/components/CanButton';
 
 const DealerPage: React.FC = () => {
   const [list, setList] = useState<Dealer[]>([]);
@@ -149,12 +151,14 @@ const DealerPage: React.FC = () => {
           >
             <Download size={16} /> 导出
           </button>
-          <button
-            className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors"
-            onClick={openAdd}
-          >
-            + 新增经销商
-          </button>
+          <CanButton menu="base:dealer" action="create">
+            <button
+              className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors"
+              onClick={openAdd}
+            >
+              + 新增经销商
+            </button>
+          </CanButton>
         </div>
       </div>
 
@@ -219,8 +223,12 @@ const DealerPage: React.FC = () => {
                   <td className="px-4 py-3 text-gray-600">{item.address || '-'}</td>
                   <td className="px-4 py-3">{renderStatus(item.status)}</td>
                   <td className="px-4 py-3">
-                    <button className="text-primary hover:text-primary/90 mr-3" onClick={() => openEdit(item)}>编辑</button>
-                    <button className="text-red-500 hover:text-red-700" onClick={() => handleDelete(item.id)}>删除</button>
+                    <CanButton menu="base:dealer" action="edit">
+                      <button className="text-primary hover:text-primary/90 mr-3" onClick={() => openEdit(item)}>编辑</button>
+                    </CanButton>
+                    <CanButton menu="base:dealer" action="delete">
+                      <button className="text-red-500 hover:text-red-700" onClick={() => handleDelete(item.id)}>删除</button>
+                    </CanButton>
                   </td>
                 </tr>
               ))
@@ -333,12 +341,14 @@ const DealerPage: React.FC = () => {
               >
                 取消
               </button>
-              <button
-                className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors"
-                onClick={handleSave}
-              >
-                保存
-              </button>
+              <CanSave menu="base:dealer">
+                <button
+                  className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors"
+                  onClick={handleSave}
+                >
+                  保存
+                </button>
+              </CanSave>
             </div>
           </div>
         </div>

@@ -6,6 +6,8 @@ import type { Sku, PaginationResult } from '@shared/api.interface';
 import { toast } from 'sonner';
 import { TableContainer, DataPagination } from '@client/src/components/ui';
 import { errMsg } from '@/utils/errMsg';
+import CanButton from '@client/src/components/CanButton';
+import { CanSave } from '@client/src/components/CanButton';
 
 const SkuPage: React.FC = () => {
   const [list, setList] = useState<Sku[]>([]);
@@ -190,13 +192,15 @@ const SkuPage: React.FC = () => {
               <option key={s.id} value={s.id}>{s.styleNo} - {s.name}</option>
             ))}
           </select>
-          <button
-            className="px-4 py-2 bg-primary text-white text-sm rounded hover:opacity-90 transition-opacity disabled:opacity-50"
-            onClick={handleGenerateMatrix}
-            disabled={generating}
-          >
-            {generating ? '生成中…' : '生成矩阵'}
-          </button>
+          <CanButton menu="base:sku" action="create">
+            <button
+              className="px-4 py-2 bg-primary text-white text-sm rounded hover:opacity-90 transition-opacity disabled:opacity-50"
+              onClick={handleGenerateMatrix}
+              disabled={generating}
+            >
+              {generating ? '生成中…' : '生成矩阵'}
+            </button>
+          </CanButton>
           <button
             className="px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded hover:bg-gray-50 transition-colors flex items-center gap-1"
             onClick={handleExport}
@@ -296,7 +300,9 @@ const SkuPage: React.FC = () => {
                   <td className="px-4 py-3">{item.safetyStockMax?.toFixed(3)}</td>
                   <td className="px-4 py-3">{renderStatus(item.status)}</td>
                   <td className="px-4 py-3">
-                    <button className="text-primary hover:text-primary/90" onClick={() => openEdit(item)}>编辑</button>
+                    <CanButton menu="base:sku" action="edit">
+                      <button className="text-primary hover:text-primary/90" onClick={() => openEdit(item)}>编辑</button>
+                    </CanButton>
                   </td>
                 </tr>
               ))
@@ -428,13 +434,15 @@ const SkuPage: React.FC = () => {
               >
                 取消
               </button>
-              <button
-                className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                onClick={handleSave}
-                disabled={submitting}
-              >
-                {submitting ? '保存中...' : '保存'}
-              </button>
+              <CanSave menu="base:sku">
+                <button
+                  className="px-4 py-2 bg-primary text-white text-sm rounded hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={handleSave}
+                  disabled={submitting}
+                >
+                  {submitting ? '保存中...' : '保存'}
+                </button>
+              </CanSave>
             </div>
           </div>
         </div>

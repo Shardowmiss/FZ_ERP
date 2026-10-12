@@ -23,6 +23,8 @@ import {
 import { rbacApi } from '@client/src/api';
 import type { RbacRole } from '@shared/api.interface';
 import { errMsg } from '@/utils/errMsg';
+import CanButton from '@client/src/components/CanButton';
+import { CanSave } from '@client/src/components/CanButton';
 
 const statusLabel: Record<string, string> = { active: '启用', inactive: '禁用' };
 
@@ -169,9 +171,11 @@ const RoleManagePage: React.FC = () => {
       <div className="bg-white rounded-lg p-5 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-xl font-semibold text-gray-800">角色管理</h1>
-          <Button onClick={openAdd} className="flex items-center gap-1">
-            <Plus size={16} /> 新增角色
-          </Button>
+          <CanButton menu="system:role" action="create">
+            <Button onClick={openAdd} className="flex items-center gap-1">
+              <Plus size={16} /> 新增角色
+            </Button>
+          </CanButton>
         </div>
         <div className="flex flex-wrap items-center gap-3 text-sm">
           <div className="flex items-center gap-2">
@@ -244,24 +248,28 @@ const RoleManagePage: React.FC = () => {
                   </td>
                   <td className="py-2 px-4">
                     <div className="flex items-center gap-3">
-                      <button
-                        onClick={() => openEdit(item.id)}
-                        className="text-primary hover:text-primary"
-                      >
-                        编辑
-                      </button>
+                      <CanButton menu="system:role" action="edit">
+                        <button
+                          onClick={() => openEdit(item.id)}
+                          className="text-primary hover:text-primary"
+                        >
+                          编辑
+                        </button>
+                      </CanButton>
                       <button
                         onClick={() => handleToggleStatus(item)}
                         className="text-orange-500 hover:text-orange-600"
                       >
                         {item.status === 'active' ? '禁用' : '启用'}
                       </button>
-                      <button
-                        onClick={() => handleDelete(item.id)}
-                        className="text-red-500 hover:text-red-600"
-                      >
-                        删除
-                      </button>
+                      <CanButton menu="system:role" action="delete">
+                        <button
+                          onClick={() => handleDelete(item.id)}
+                          className="text-red-500 hover:text-red-600"
+                        >
+                          删除
+                        </button>
+                      </CanButton>
                     </div>
                   </td>
                 </tr>
@@ -349,7 +357,9 @@ const RoleManagePage: React.FC = () => {
             <Button variant="outline" onClick={() => setShowModal(false)}>
               取消
             </Button>
-            <Button onClick={handleSave}>保存</Button>
+            <CanSave menu="system:role">
+              <Button onClick={handleSave}>保存</Button>
+            </CanSave>
           </DialogFooter>
         </DialogContent>
       </Dialog>

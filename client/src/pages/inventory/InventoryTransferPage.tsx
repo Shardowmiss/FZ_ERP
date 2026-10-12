@@ -16,6 +16,7 @@ import { DataPagination } from '@client/src/components/ui/pagination';
 import { exportTableToCSV } from '@client/src/utils/export-csv';
 import { errMsg } from '@/utils/errMsg';
 import { useDefaultDocDate } from '@client/src/hooks/useDefaultDocDate';
+import CanButton from '@client/src/components/CanButton';
 
 const STATUS_MAP: Record<string, { label: string; tone: StatusTone }> = {
   draft: { label: '草稿', tone: 'neutral' },
@@ -252,9 +253,11 @@ export default function InventoryTransferPage() {
       <div className="bg-white rounded-lg shadow-sm p-5">
         <div className="mb-4 flex items-center justify-between">
           <h1 className="text-xl font-semibold">调拨单</h1>
-          <button onClick={openCreate} className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-primary">
-            + 新增调拨单
-          </button>
+          <CanButton menu="inventory:transfer" action="create">
+            <button onClick={openCreate} className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-primary">
+              + 新增调拨单
+            </button>
+          </CanButton>
         </div>
 
       <div className="bg-white rounded p-4 mb-4 flex flex-wrap gap-3 items-end">
@@ -348,13 +351,21 @@ export default function InventoryTransferPage() {
                     <button onClick={() => openView(item.id)} className="text-primary hover:underline">查看</button>
                     {item.status === 'draft' && (
                       <>
-                        <button onClick={() => handleBook(item.id)} className="text-green-500 hover:underline">记账</button>
-                        <button onClick={() => handleDelete(item.id)} className="text-red-500 hover:underline">删除</button>
-                        <button onClick={() => handleVoid(item.id)} className="text-gray-500 hover:underline">作废</button>
+                        <CanButton menu="inventory:transfer" action="approve">
+                          <button onClick={() => handleBook(item.id)} className="text-green-500 hover:underline">记账</button>
+                        </CanButton>
+                        <CanButton menu="inventory:transfer" action="delete">
+                          <button onClick={() => handleDelete(item.id)} className="text-red-500 hover:underline">删除</button>
+                        </CanButton>
+                        <CanButton menu="inventory:transfer" action="void">
+                          <button onClick={() => handleVoid(item.id)} className="text-gray-500 hover:underline">作废</button>
+                        </CanButton>
                       </>
                     )}
                     {item.status === 'completed' && (
-                      <button onClick={() => handleAccept(item.id)} className="text-teal-500 hover:underline">验收</button>
+                      <CanButton menu="inventory:transfer" action="approve">
+                        <button onClick={() => handleAccept(item.id)} className="text-teal-500 hover:underline">验收</button>
+                      </CanButton>
                     )}
                   </td>
                 </tr>

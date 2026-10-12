@@ -7,6 +7,8 @@ import type { FinanceReceipt, Receivable } from '@shared/api.interface';
 import DocPage from '@/components/DocPage/DocPage';
 import { showConfirm } from '@lark-apaas/client-toolkit';
 import { errMsg } from '@/utils/errMsg';
+import { usePageActions } from '@client/src/hooks/usePageActions';
+import CanButton from '@client/src/components/CanButton';
 
 interface WriteoffFormItem {
   receivableId: string;
@@ -25,6 +27,7 @@ const paymentMethodLabel: Record<string, string> = {
 };
 
 const ReceiptEditPage: React.FC = () => {
+  const { canSave } = usePageActions('finance:receipt');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -322,12 +325,14 @@ const ReceiptEditPage: React.FC = () => {
         <div className="flex items-center justify-between mb-2">
           <label className="block text-gray-700 font-medium">核销明细</label>
           {!viewOnly && (
-            <button
-              onClick={loadDealerReceivables}
-              className="text-sm text-primary hover:text-primary"
-            >
-              + 添加核销单
-            </button>
+            <CanButton menu="finance:receipt" action="create">
+              <button
+                onClick={loadDealerReceivables}
+                className="text-sm text-primary hover:text-primary"
+              >
+                + 添加核销单
+              </button>
+            </CanButton>
           )}
         </div>
         <div className="border border-gray-200 rounded overflow-hidden">
@@ -374,12 +379,14 @@ const ReceiptEditPage: React.FC = () => {
                     </td>
                     {!viewOnly && (
                       <td className="px-3 py-2 text-center">
-                        <button
-                          onClick={() => removeWriteoff(idx)}
-                          className="text-red-500 hover:text-red-600 text-sm"
-                        >
-                          删除
-                        </button>
+                        <CanButton menu="finance:receipt" action="delete">
+                          <button
+                            onClick={() => removeWriteoff(idx)}
+                            className="text-red-500 hover:text-red-600 text-sm"
+                          >
+                            删除
+                          </button>
+                        </CanButton>
                       </td>
                     )}
                   </tr>
@@ -479,7 +486,7 @@ const ReceiptEditPage: React.FC = () => {
       status={docData?.status}
       backPath="/finance/receipt"
       viewOnly={viewOnly}
-      onSave={viewOnly ? undefined : handleSave}
+      onSave={!viewOnly && canSave ? handleSave : undefined}
       onSubmit={!isNew && docData?.status === 'draft' ? handleSubmit : undefined}
       saving={saving}
       submitting={submitting}
