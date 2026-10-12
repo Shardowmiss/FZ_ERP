@@ -297,7 +297,13 @@ export const MENU_STRUCTURE: MenuModuleDef[] = [
       { key: 'report-inventory', label: '库存查询', path: '/report/inventory', permission: 'report:inventory', readOnly: true },
       { key: 'report-transfer', label: '调拨查询', path: '/report/transfer', permission: 'report:transfer', readOnly: true },
       { key: 'report-stock-movement', label: '进销存查询', path: '/report/stock-movement', permission: 'report:stockmovement', readOnly: true },
-      { key: 'report-pivot', label: '透视分析', path: '/report/pivot', permission: 'report:pivot', readOnly: true },
+      // 透视分析：#811 迭代E 收口目录缺口。此前标 readOnly ⇒ 只派生 report:pivot:view，
+      // 导致 report.controller 的「执行透视(POST /pivot)」「存/删模板(POST/DELETE
+      // /pivot/templates)」写端点无对应动作码可守卫，只能挂资源粗码。
+      // 显式声明后动作码可守卫（create=执行/存模板，delete=删模板）；注意 POST /pivot
+      // 语义上是「分析查询」而非创建，此处沿用 POST→create 的 CRUD 约定以保持零行为变化，
+      // 语义精化（拆 report:pivot:query）留作独立评估。
+      { key: 'report-pivot', label: '透视分析', path: '/report/pivot', permission: 'report:pivot', actions: ['view', 'create', 'delete'] },
       // 透视字段配置：此前挂 system:config（与系统配置复用，权限树看不到），
       // 其接口为 /api/report/pivot/semantic-admin（4 个端点）。独立成码并与后端对齐。
       { key: 'report-pivot-semantics', label: '透视字段配置', path: '/report/pivot/semantics', permission: 'report:semantic' },
@@ -350,8 +356,11 @@ export const MENU_STRUCTURE: MenuModuleDef[] = [
     label: '数据治理',
     sortOrder: 12,
     children: [
-      { key: 'merge-audit', label: '合并审计', path: '/base/merge-audit', permission: 'md:merge', readOnly: true },
-      { key: 'member-merge-audit', label: '会员合并审计', path: '/base/member-merge-audit', permission: 'member:merge', readOnly: true },
+      // 合并审计：#811 迭代E 收口目录缺口。此前标 readOnly ⇒ 只派生 md:merge:view，
+      // 而 master-data-merge.controller 的「执行合并 / 回滚合并」两个 POST 写端点
+      // 只能挂资源粗码 md:merge。显式声明后可用 md:merge:create 守卫（POST→create）。
+      { key: 'merge-audit', label: '合并审计', path: '/base/merge-audit', permission: 'md:merge', actions: ['view', 'create'] },
+      { key: 'member-merge-audit', label: '会员合并审计', path: '/base/member-merge-audit', permission: 'member:merge', actions: ['view', 'create'] },
     ],
   },
   {

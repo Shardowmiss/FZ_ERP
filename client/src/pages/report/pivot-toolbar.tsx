@@ -32,12 +32,12 @@ interface ToolbarProps {
   onExport?: () => void;
   dataSourceOptions: { value: PivotDataSource; label: string }[];
   templateOptions: { name: string }[];
-  /** 保存为我的模板（迁移 0060） */
-  onSaveMyTemplate: () => void;
+  /** 保存为我的模板（迁移 0060）；无 report:pivot:create 时不传 → 按钮不渲染 */
+  onSaveMyTemplate?: () => void;
   /** 恢复我最后一次查询 */
   onRestoreLastQuery: () => void;
-  /** 删除当前选中的我的模板（系统预置模板不可删，故需该集合判断） */
-  onDeleteMyTemplate: () => void;
+  /** 删除当前选中的我的模板（系统预置模板不可删，故需该集合判断）；无 report:pivot:delete 时不传 */
+  onDeleteMyTemplate?: () => void;
   /** 我的模板名集合——用于决定「删除」按钮是否可用 */
   myTemplateNames: string[];
 }
@@ -129,14 +129,16 @@ export function Toolbar({
               </option>
             ))}
           </select>
-          {/* 保存为我的模板：把当前行列/指标/筛选/时间窗存成个人模板，仅自己可见 */}
-          <button
-            onClick={onSaveMyTemplate}
-            title="保存为我的模板"
-            className="px-2 py-1 border border-gray-300 text-gray-700 text-xs rounded hover:bg-gray-50 transition-colors flex items-center gap-1 h-7 ml-1"
-          >
-            <Save size={13} /> 保存
-          </button>
+          {/* 保存为我的模板（写操作 report:pivot:create）：无权限则不渲染，避免「可见但 403」 */}
+          {onSaveMyTemplate && (
+            <button
+              onClick={onSaveMyTemplate}
+              title="保存为我的模板"
+              className="px-2 py-1 border border-gray-300 text-gray-700 text-xs rounded hover:bg-gray-50 transition-colors flex items-center gap-1 h-7 ml-1"
+            >
+              <Save size={13} /> 保存
+            </button>
+          )}
           {/* 恢复我最后一次查询（自动记录，无需手动保存） */}
           <button
             onClick={onRestoreLastQuery}
@@ -145,8 +147,8 @@ export function Toolbar({
           >
             <History size={13} /> 上次
           </button>
-          {/* 仅当选中的是「我的模板」时才可删，系统预置模板不提供删除 */}
-          {myTemplateNames.includes(templateName) && (
+          {/* 仅当选中的是「我的模板」且持有 report:pivot:delete 时才可删，系统预置模板不提供删除 */}
+          {myTemplateNames.includes(templateName) && onDeleteMyTemplate && (
             <button
               onClick={onDeleteMyTemplate}
               title="删除我的模板"

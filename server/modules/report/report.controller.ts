@@ -240,7 +240,7 @@ export class ReportController {
     });
   }
 
-  @CheckPermission('report:pivot')
+  @CheckPermission('report:pivot:create')
   @Post('pivot')
   async pivot(@Req() req: Request, @Body() body: PivotConfig): Promise<PivotResponse> {
     // 毛利/成本字段做字段级权限控制：无 finance:profit 则直接剥离，
@@ -323,7 +323,7 @@ export class ReportController {
   }
 
   /** 保存为我的模板（同名则覆盖，便于「调好参数存回原模板」） */
-  @CheckPermission('report:pivot')
+  @CheckPermission('report:pivot:create')
   @Post('pivot/templates')
   async savePivotTemplate(
     @Req() req: Request,
@@ -333,7 +333,7 @@ export class ReportController {
   }
 
   /** 记住我最后一次查询（每次查询后调用，自动覆盖旧的） */
-  @CheckPermission('report:pivot')
+  @CheckPermission('report:pivot:create')
   @Post('pivot/templates/last')
   async rememberPivotLastQuery(
     @Req() req: Request,
@@ -353,7 +353,7 @@ export class ReportController {
   }
 
   /** 删除我的模板（owner 条件在 where 内，越权会得到「不存在」） */
-  @CheckPermission('report:pivot')
+  @CheckPermission('report:pivot:delete')
   @Delete('pivot/templates/:id')
   async deletePivotTemplate(
     @Req() req: Request,

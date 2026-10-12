@@ -12,6 +12,7 @@ import type {
   PivotTemplateItem,
 } from '@shared/api.interface';
 import { reportApi } from '@client/src/api/report';
+import { useAuth } from '@client/src/contexts/AuthContext';
 import {
   DIMENSION_FIELDS as FALLBACK_DIM_FIELDS,
   MEASURE_FIELDS as FALLBACK_MEASURE_LIST,
@@ -37,6 +38,12 @@ import { PivotTable } from './pivot-table';
 import { Toolbar } from './pivot-toolbar';
 
 export default function PivotAnalysisPage() {
+  const { hasPermission } = useAuth();
+  // 模板「保存/删除」是写操作，按动作级门控（与后端 report.controller 守卫一致）：
+  //   POST /pivot/templates → report:pivot:create，DELETE /pivot/templates/:id → report:pivot:delete。
+  // 无权限时不渲染按钮（避免「可见但 403」），持粗码 report:pivot 者按父→子语义仍可见。
+  const canSaveMyTemplate = hasPermission('report:pivot:create');
+  const canDeleteMyTemplate = hasPermission('report:pivot:delete');
   const [dataSource, setDataSource] = useState<PivotDataSource>('sales');
   const [templateName, setTemplateName] = useState<string>('月度销售趋势');
   /** 我的模板（迁移 0060）。系统预置 TEMPLATES 仍是全局的，个人模板只本人可见。 */
@@ -571,15 +578,23 @@ export default function PivotAnalysisPage() {
             onExport={handleExport}
             dataSourceOptions={DATA_SOURCE_OPTIONS}
             templateOptions={mergedTemplates}
-            onSaveMyTemplate={() => {
-              // 用 prompt 收集模板名：透视工具栏已有足够控件，此处不再叠加一层弹窗
-              const name = window.prompt('给这次分析起个名字（仅你可见）', templateName || '');
-              if (name) handleSaveTemplate(name);
-            }}
+            onSaveMyTemplate={
+              canSaveMyTemplate
+                ? () => {
+                    // 用 prompt 收集模板名：透视工具栏已有足够控件，此处不再叠加一层弹窗
+                    const name = window.prompt('给这次分析起个名字（仅你可见）', templateName || '');
+                    if (name) handleSaveTemplate(name);
+                  }
+                : undefined
+            }
             onRestoreLastQuery={loadLastQuery}
-            onDeleteMyTemplate={() => {
-              if (templateName) handleDeleteTemplate(templateName);
-            }}
+            onDeleteMyTemplate={
+              canDeleteMyTemplate
+                ? () => {
+                    if (templateName) handleDeleteTemplate(templateName);
+                  }
+                : undefined
+            }
             myTemplateNames={myTemplates.map((t) => t.name)}
           />
 

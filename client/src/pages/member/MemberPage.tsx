@@ -20,7 +20,8 @@ const LEVEL_LABEL: Record<string, string> = {
 
 const MemberPage: React.FC = () => {
   const { hasPermission } = useAuth();
-  const canMerge = hasPermission('member:merge');
+  // 合并入口是写操作 → 动作级（member:merge:create），与后端 POST /api/member/merge 守卫一致。
+  const canMerge = hasPermission('member:merge:create');
 
   const [list, setList] = useState<Member[]>([]);
   const [total, setTotal] = useState(0);

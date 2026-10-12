@@ -120,7 +120,7 @@ export class MemberController {
   }
 
   /** 执行合并：survivorId 吸收 mergedIds（资金安全，单事务 + 账本事件 + 可回滚日志） */
-  @CheckPermission('member:merge')
+  @CheckPermission('member:merge:create')
   @Post('merge')
   async merge(
     @Body() body: { survivorId: string; mergedIds: string[]; reason?: string },
@@ -137,7 +137,7 @@ export class MemberController {
   }
 
   /** 回滚一次合并（按日志 id）或整批（按 run_id）；资金安全反向，无双计 */
-  @CheckPermission('member:merge')
+  @CheckPermission('member:merge:create')
   @Post('merge/:id/reverse')
   async reverseMerge(
     @Param('id') id: string,

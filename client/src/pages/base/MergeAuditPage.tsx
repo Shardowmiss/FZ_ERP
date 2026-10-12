@@ -33,8 +33,10 @@ const MergeAuditPage: React.FC = () => {
   // 两个门禁语义必须分开（此前混用同一严格谓词，导致「仅授 :view 的角色」整页被判无权限）：
   //  · canAccessPage：本页是「审计只读列表」→ 访问级判定（持有 md:merge 或其任一动作子码即可进）。
   //  · canReverse：整批回滚是写操作 → 动作级判定（严格；仅授 :view 的角色没有回滚入口）。
+  //  注意：canReverse 用 `md:merge:create`（与后端 POST /merge、/reverse 的守卫一致）。
+  //  持粗码 md:merge 者按 canDo 父→子语义仍然放行，故对齐后无行为变化。
   const canAccessPage = hasMenu('md:merge');
-  const canReverse = hasPermission('md:merge');
+  const canReverse = hasPermission('md:merge:create');
 
   const [entityFilter, setEntityFilter] = useState<EntityFilter>('all');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');

@@ -29,9 +29,10 @@ const MemberMergeAuditPage: React.FC = () => {
   const { hasPermission, hasMenu } = useAuth();
   // 页面读门禁与回滚写门禁分离（同 MergeAuditPage）：
   //  · canAccessPage：审计只读列表 → 访问级（持有 member:merge 或其动作子码即可进）。
-  //  · canReverse：整批回滚 → 动作级（严格）。
+  //  · canReverse：整批回滚 → 动作级（严格）；用 `member:merge:create` 与后端守卫一致
+  //    （持粗码 member:merge 者按父→子语义仍放行，无行为变化）。
   const canAccessPage = hasMenu('member:merge');
-  const canReverse = hasPermission('member:merge');
+  const canReverse = hasPermission('member:merge:create');
 
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [loading, setLoading] = useState(false);

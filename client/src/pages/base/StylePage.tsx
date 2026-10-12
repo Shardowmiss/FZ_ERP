@@ -39,7 +39,8 @@ const StylePage: React.FC = () => {
   const autoFormRef = useRef<AutoCreateFormHandle>(null);
 
   const { hasPermission } = useAuth();
-  const canMerge = hasPermission('md:merge');
+  // 合并入口是写操作 → 动作级（md:merge:create），与后端 POST /api/md-merge/*/merge 守卫一致。
+  const canMerge = hasPermission('md:merge:create');
 
   // 合并相关状态
   const [selectedIds, setSelectedIds] = useState<string[]>([]);

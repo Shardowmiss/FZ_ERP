@@ -13,7 +13,7 @@ export class MasterDataMergeController {
   constructor(private readonly svc: MasterDataMergeService) {}
 
   /** 执行合并：entityType ∈ {style}；survivorId 吸收 mergedIds（绝不删除被合并方，仅打标+改指依赖） */
-  @CheckPermission('md:merge')
+  @CheckPermission('md:merge:create')
   @Post(':entityType/merge')
   async merge(
     @Param('entityType') entityType: string,
@@ -35,7 +35,7 @@ export class MasterDataMergeController {
   }
 
   /** 回滚一次合并（按日志 id）或整批（按 run_id）；解除打标，无双计 */
-  @CheckPermission('md:merge')
+  @CheckPermission('md:merge:create')
   @Post(':entityType/merge/:id/reverse')
   async reverse(
     @Param('entityType') entityType: string,
