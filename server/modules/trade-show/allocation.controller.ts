@@ -70,7 +70,7 @@ export class AllocationController {
   }
 
   @NeedLogin()
-  @CheckPermission('tradeshow:allocation')
+  @CheckPermission('tradeshow:allocation:create')
   @Post('allocation')
   async createAllocation(
     @Req() req: Request,
@@ -87,7 +87,7 @@ export class AllocationController {
   }
 
   @NeedLogin()
-  @CheckPermission('tradeshow:allocation')
+  @CheckPermission('tradeshow:allocation:edit')
   @Put('allocation/:id')
   async updateAllocation(
     @Req() req: Request,
@@ -108,13 +108,13 @@ export class AllocationController {
   }
 
   @NeedLogin()
-  @CheckPermission('tradeshow:allocation')
+  @CheckPermission('tradeshow:allocation:void')
   @Post('allocation/:id/void')
   async voidDoc(@Param('id') id: string): Promise<void> {
     return this.allocationService.voidDoc(id);
   }
 
-  @CheckPermission('tradeshow:allocation')
+  @CheckPermission('tradeshow:allocation:delete')
   @Delete('allocation/:id')
   async deleteAllocation(
     @Req() req: Request,

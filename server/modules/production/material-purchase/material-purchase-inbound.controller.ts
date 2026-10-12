@@ -54,7 +54,7 @@ export class MaterialPurchaseInboundController {
     return this.materialPurchaseInboundService.getDetail(id);
   }
 
-  @CheckPermission('production:material_inbound')
+  @CheckPermission('production:material_inbound:create')
   @Post()
   async create(
     @Body()
@@ -75,13 +75,13 @@ export class MaterialPurchaseInboundController {
     return this.materialPurchaseInboundService.approve(id);
   }
 
-  @CheckPermission('production:material_inbound')
+  @CheckPermission('production:material_inbound:void')
   @Post(':id/void')
   async voidDoc(@Param('id') id: string): Promise<void> {
     return this.materialPurchaseInboundService.voidDoc(id);
   }
 
-@CheckPermission('production:material_inbound')
+@CheckPermission('production:material_inbound:delete')
 @Delete(':id')
   async remove(@Param('id') id: string): Promise<void> {
     return this.materialPurchaseInboundService.delete(id);

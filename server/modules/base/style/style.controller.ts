@@ -33,7 +33,7 @@ export class StyleController {
     return this.styleService.detail(id);
   }
 
-  @CheckPermission('base:style')
+  @CheckPermission('base:style:create')
   @Post()
   async create(@Body() body: {
     styleNo: string;
@@ -53,13 +53,13 @@ export class StyleController {
     return this.styleService.create(body);
   }
 
-  @CheckPermission('base:style')
+  @CheckPermission('base:style:create')
   @Post('auto')
   async createAuto(@Body() body: StyleCreateAutoRequest): Promise<Style & { skus: Sku[] }> {
     return this.styleService.createAuto(body);
   }
 
-  @CheckPermission('base:style')
+  @CheckPermission('base:style:edit')
   @Put(':id')
   async update(@Param('id') id: string, @Body() body: {
     styleNo?: string;
@@ -79,7 +79,7 @@ export class StyleController {
     return this.styleService.update(id, body);
   }
 
-  @CheckPermission('base:style')
+  @CheckPermission('base:style:delete')
   @Delete(':id')
   async remove(@Param('id') id: string): Promise<{ success: boolean }> {
     await this.styleService.remove(id);

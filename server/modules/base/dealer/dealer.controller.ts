@@ -33,7 +33,7 @@ export class DealerController {
     return this.dealerService.detail(id);
   }
 
-  @CheckPermission('base:dealer')
+  @CheckPermission('base:dealer:create')
   @Post()
   async create(@Body() body: {
     code: string;
@@ -48,7 +48,7 @@ export class DealerController {
     return this.dealerService.create(body);
   }
 
-  @CheckPermission('base:dealer')
+  @CheckPermission('base:dealer:edit')
   @Put(':id')
   async update(@Param('id') id: string, @Body() body: {
     code?: string;
@@ -63,7 +63,7 @@ export class DealerController {
     return this.dealerService.update(id, body);
   }
 
-  @CheckPermission('base:dealer')
+  @CheckPermission('base:dealer:delete')
   @Delete(':id')
   async remove(@Param('id') id: string): Promise<{ success: boolean }> {
     await this.dealerService.remove(id);

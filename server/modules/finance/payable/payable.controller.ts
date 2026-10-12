@@ -38,7 +38,7 @@ export class PayableController {
     return this.payableService.getDetail(id) as Promise<Payable & { payments: Array<{ id: string; paymentDate: string; amount: number; paymentMethod: string; remark: string | null }> }>;
   }
 
-  @CheckPermission('finance:payable')
+  @CheckPermission('finance:payable:create')
   @Post(':id/payment')
   async addPayment(
     @Param('id') id: string,

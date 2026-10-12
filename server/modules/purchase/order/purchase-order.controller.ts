@@ -63,7 +63,7 @@ export class PurchaseOrderController {
     return this.purchaseOrderService.getDetail(id);
   }
 
-  @CheckPermission('purchase:order')
+  @CheckPermission('purchase:order:create')
   @Post()
   async create(
     @Body()
@@ -78,7 +78,7 @@ export class PurchaseOrderController {
     return this.purchaseOrderService.create(body);
   }
 
-  @CheckPermission('purchase:order')
+  @CheckPermission('purchase:order:edit')
   @Put(':id')
   async update(
     @Param('id') id: string,
@@ -94,20 +94,20 @@ export class PurchaseOrderController {
     return this.purchaseOrderService.update(id, body);
   }
 
-  @CheckPermission('purchase:order')
+  @CheckPermission('purchase:order:void')
   @Post(':id/void')
   async voidDoc(@Param('id') id: string): Promise<void> {
     return this.purchaseOrderService.voidDoc(id);
   }
 
-  @CheckPermission('purchase:order')
+  @CheckPermission('purchase:order:delete')
   @Delete(':id')
   async remove(@Param('id') id: string): Promise<void> {
     return this.purchaseOrderService.delete(id);
   }
 
   /** 还原被误删的采购订单（软删后可恢复） */
-  @CheckPermission('purchase:order')
+  @CheckPermission('purchase:order:edit')
   @Post(':id/restore')
   async restore(@Param('id') id: string): Promise<void> {
     return this.purchaseOrderService.restore(id);
@@ -119,7 +119,7 @@ export class PurchaseOrderController {
     return this.purchaseOrderService.audit(id);
   }
 
-  @CheckPermission('purchase:order')
+  @CheckPermission('purchase:order:create')
   @Post(':id/cancel-audit')
   async cancelAudit(@Param('id') id: string): Promise<void> {
     return this.purchaseOrderService.cancelAudit(id);

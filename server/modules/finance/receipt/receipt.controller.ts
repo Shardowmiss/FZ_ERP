@@ -67,7 +67,7 @@ export class ReceiptController {
     }>;
   }
 
-  @CheckPermission('finance:receipt')
+  @CheckPermission('finance:receipt:create')
   @Post()
   async create(
     @Req() req: Request,
@@ -109,7 +109,7 @@ export class ReceiptController {
     }>;
   }
 
-  @CheckPermission('finance:receipt')
+  @CheckPermission('finance:receipt:edit')
   @Patch(':id')
   async update(
     @Req() req: Request,
@@ -152,13 +152,13 @@ export class ReceiptController {
     }>;
   }
 
-  @CheckPermission('finance:receipt')
+  @CheckPermission('finance:receipt:void')
   @Post(':id/void')
   async voidDoc(@Param('id') id: string): Promise<void> {
     return this.receiptService.voidDoc(id);
   }
 
-  @CheckPermission('finance:receipt')
+  @CheckPermission('finance:receipt:delete')
   @Delete(':id')
   async remove(
     @Req() req: Request,

@@ -47,7 +47,7 @@ export class MaterialPurchaseOrderController {
     return this.materialPurchaseOrderService.getDetail(id);
   }
 
-  @CheckPermission('production:material_order')
+  @CheckPermission('production:material_order:create')
   @Post()
   async create(
     @Body()
@@ -62,7 +62,7 @@ export class MaterialPurchaseOrderController {
     return this.materialPurchaseOrderService.create(body);
   }
 
-  @CheckPermission('production:material_order')
+  @CheckPermission('production:material_order:edit')
   @Put(':id')
   async update(
     @Param('id') id: string,
@@ -78,19 +78,19 @@ export class MaterialPurchaseOrderController {
     return this.materialPurchaseOrderService.update(id, body);
   }
 
-  @CheckPermission('production:material_order')
+  @CheckPermission('production:material_order:void')
   @Post(':id/void')
   async voidDoc(@Param('id') id: string): Promise<void> {
     return this.materialPurchaseOrderService.voidDoc(id);
   }
 
-@CheckPermission('production:material_order')
+@CheckPermission('production:material_order:delete')
 @Delete(':id')
   async remove(@Param('id') id: string): Promise<void> {
     return this.materialPurchaseOrderService.delete(id);
   }
 
-  @CheckPermission('production:material_order')
+  @CheckPermission('production:material_order:submit')
   @Post(':id/submit')
   async submit(@Param('id') id: string): Promise<void> {
     return this.materialPurchaseOrderService.submit(id);
@@ -102,7 +102,7 @@ export class MaterialPurchaseOrderController {
     return this.materialPurchaseOrderService.approve(id);
   }
 
-  @CheckPermission('production:material_order')
+  @CheckPermission('production:material_order:create')
   @Post(':id/unapprove')
   async unapprove(@Param('id') id: string): Promise<void> {
     return this.materialPurchaseOrderService.unapprove(id);

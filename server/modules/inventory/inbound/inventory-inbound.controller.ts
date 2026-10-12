@@ -34,7 +34,7 @@ export class InventoryInboundController {
     });
   }
 
-  @CheckPermission('inventory:inbound')
+  @CheckPermission('inventory:inbound:create')
   @Post()
   async createProductionInbound(
     @Req() req: Request,

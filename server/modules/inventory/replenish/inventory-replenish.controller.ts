@@ -21,7 +21,7 @@ export class InventoryReplenishController {
     return this.inventoryReplenishService.suggest({ warehouseId, keyword });
   }
 
-  @CheckPermission('inventory:replenish')
+  @CheckPermission('inventory:replenish:create')
   @Post('generate')
   async generate(
     @Body()

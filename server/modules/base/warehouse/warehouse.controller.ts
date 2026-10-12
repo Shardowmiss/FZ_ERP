@@ -32,7 +32,7 @@ export class WarehouseController {
     return this.warehouseService.detail(id);
   }
 
-  @CheckPermission('base:store')
+  @CheckPermission('base:store:create')
   @Post()
   async create(@Body() body: {
     code: string;
@@ -45,7 +45,7 @@ export class WarehouseController {
     return this.warehouseService.create(body);
   }
 
-  @CheckPermission('base:store')
+  @CheckPermission('base:store:edit')
   @Put(':id')
   async update(@Param('id') id: string, @Body() body: {
     code?: string;
@@ -58,7 +58,7 @@ export class WarehouseController {
     return this.warehouseService.update(id, body);
   }
 
-  @CheckPermission('base:store')
+  @CheckPermission('base:store:delete')
   @Delete(':id')
   async remove(@Param('id') id: string): Promise<{ success: boolean }> {
     await this.warehouseService.remove(id);

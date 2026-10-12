@@ -9,7 +9,7 @@ import { CheckPermission } from '../../../common/decorators/check-permission.dec
 export class MrpController {
   constructor(private readonly mrpService: MrpService) {}
 
-  @CheckPermission('production:mrp')
+  @CheckPermission('production:mrp:create')
   @Post('calculate')
   async calculate(@Body() body: MrpRequest): Promise<MrpResult> {
     return this.mrpService.calculate(body);

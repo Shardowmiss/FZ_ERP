@@ -9,7 +9,7 @@ import { CheckPermission } from '../../../common/decorators/check-permission.dec
 export class CostController {
   constructor(private readonly costService: CostService) {}
 
-  @CheckPermission('production:cost')
+  @CheckPermission('production:cost:create')
   @Post('calculate')
   async calculate(@Body() body: MrpRequest): Promise<ProductionCostResult> {
     return this.costService.calculate(body);

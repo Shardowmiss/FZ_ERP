@@ -40,7 +40,7 @@ export class StoreController {
     return this.storeService.detail(id);
   }
 
-  @CheckPermission('base:store')
+  @CheckPermission('base:store:create')
   @Post()
   async create(@Body() body: {
     code: string;
@@ -57,7 +57,7 @@ export class StoreController {
     return this.storeService.create(body);
   }
 
-  @CheckPermission('base:store')
+  @CheckPermission('base:store:edit')
   @Put(':id')
   async update(@Param('id') id: string, @Body() body: {
     code?: string;
@@ -74,7 +74,7 @@ export class StoreController {
     return this.storeService.update(id, body);
   }
 
-  @CheckPermission('base:store')
+  @CheckPermission('base:store:delete')
   @Delete(':id')
   async remove(@Param('id') id: string): Promise<{ success: boolean }> {
     await this.storeService.remove(id);

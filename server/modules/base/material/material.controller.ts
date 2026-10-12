@@ -32,7 +32,7 @@ export class MaterialController {
     return this.materialService.detail(id);
   }
 
-  @CheckPermission('base:material')
+  @CheckPermission('base:material:create')
   @Post()
   async create(@Body() body: {
     code: string;
@@ -48,7 +48,7 @@ export class MaterialController {
     return this.materialService.create(body);
   }
 
-  @CheckPermission('base:material')
+  @CheckPermission('base:material:edit')
   @Put(':id')
   async update(@Param('id') id: string, @Body() body: {
     code?: string;
@@ -64,7 +64,7 @@ export class MaterialController {
     return this.materialService.update(id, body);
   }
 
-  @CheckPermission('base:material')
+  @CheckPermission('base:material:delete')
   @Delete(':id')
   async remove(@Param('id') id: string): Promise<{ success: boolean }> {
     await this.materialService.remove(id);

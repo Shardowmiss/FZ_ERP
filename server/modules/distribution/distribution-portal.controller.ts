@@ -43,7 +43,7 @@ export class DistributionPortalController {
   }
 
   /** 当前用户绑定的分销节点列表（含层级、角色）。 */
-  @CheckPermission('distribution:portal_partners')
+  @CheckPermission('distribution:portal_partners:view')
   @Get('my-partners')
   async myPartners(@Headers('x-auth-token') token: string) {
     const uid = await this.resolveUserId(token);
@@ -51,7 +51,7 @@ export class DistributionPortalController {
   }
 
   /** 我的采购单（下游成衣采购单 = 总部/上级卖给本节点的销售单镜像）。 */
-  @CheckPermission('distribution:portal_po')
+  @CheckPermission('distribution:portal_po:view')
   @Get('purchase-orders')
   async purchaseOrders(
     @Headers('x-auth-token') token: string,
@@ -62,7 +62,7 @@ export class DistributionPortalController {
   }
 
   /** 我的采购退货单（下游成衣采购退货单 = 上级对本节点的销售退货镜像）。 */
-  @CheckPermission('distribution:portal_pr')
+  @CheckPermission('distribution:portal_pr:view')
   @Get('purchase-returns')
   async purchaseReturns(
     @Headers('x-auth-token') token: string,
@@ -73,7 +73,7 @@ export class DistributionPortalController {
   }
 
   /** 门户概览：采购单 / 退货单 数量与金额汇总。 */
-  @CheckPermission('distribution:portal_overview')
+  @CheckPermission('distribution:portal_overview:view')
   @Get('summary')
   async summary(@Headers('x-auth-token') token: string) {
     const uid = await this.resolveUserId(token);
@@ -84,7 +84,7 @@ export class DistributionPortalController {
    * 分配用户到分销节点（仅超级管理员）。
    * body: { userId: string, partnerIds: string[] }
    */
-  @CheckPermission('distribution:portal_partners')
+  @CheckPermission('distribution:portal_partners:create')
   @Post('assign-partners')
   async assignPartners(
     @Headers('x-auth-token') token: string,
@@ -104,7 +104,7 @@ export class DistributionPortalController {
    * 仅能确认属于当前用户可见子树的采购单。
    * body: { orderId: string }
    */
-  @CheckPermission('distribution:portal_po')
+  @CheckPermission('distribution:portal_po:create')
   @Post('purchase-orders/confirm')
   async confirmPurchaseOrder(
     @Headers('x-auth-token') token: string,
@@ -119,7 +119,7 @@ export class DistributionPortalController {
   }
 
   /** 上下游应收应付对账视图。 */
-  @CheckPermission('distribution:portal_recon')
+  @CheckPermission('distribution:portal_recon:view')
   @Get('reconciliation')
   async reconciliation(@Headers('x-auth-token') token: string) {
     const uid = await this.resolveUserId(token);

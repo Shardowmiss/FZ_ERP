@@ -50,7 +50,7 @@ export class ThemeController {
   }
 
   @NeedLogin()
-  @CheckPermission('tradeshow:theme')
+  @CheckPermission('tradeshow:theme:create')
   @Post()
   async create(
     @Req() req: Request,
@@ -70,7 +70,7 @@ export class ThemeController {
   }
 
   @NeedLogin()
-  @CheckPermission('tradeshow:theme')
+  @CheckPermission('tradeshow:theme:edit')
   @Put(':id')
   async update(
     @Req() req: Request,
@@ -90,7 +90,7 @@ export class ThemeController {
   }
 
   @NeedLogin()
-  @CheckPermission('tradeshow:theme')
+  @CheckPermission('tradeshow:theme:delete')
   @Delete(':id')
   async delete(@Req() req: Request, @Param('id') id: string): Promise<void> {
     const { userId } = req.userContext;

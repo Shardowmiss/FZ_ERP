@@ -53,7 +53,7 @@ export class GarmentPurchaseOrderController {
     return this.garmentPurchaseOrderService.getDetail(id);
   }
 
-  @CheckPermission('purchase:order')
+  @CheckPermission('purchase:order:create')
   @Post()
   async create(
     @Body()
@@ -62,7 +62,7 @@ export class GarmentPurchaseOrderController {
     return this.garmentPurchaseOrderService.create(body);
   }
 
-  @CheckPermission('purchase:order')
+  @CheckPermission('purchase:order:edit')
   @Put(':id')
   async update(
     @Param('id') id: string,
@@ -72,19 +72,19 @@ export class GarmentPurchaseOrderController {
     return this.garmentPurchaseOrderService.update(id, body);
   }
 
-  @CheckPermission('purchase:order')
+  @CheckPermission('purchase:order:void')
   @Post(':id/void')
   async voidDoc(@Param('id') id: string): Promise<void> {
     return this.garmentPurchaseOrderService.voidDoc(id);
   }
 
-@CheckPermission('purchase:order')
+@CheckPermission('purchase:order:delete')
 @Delete(':id')
   async remove(@Param('id') id: string): Promise<void> {
     return this.garmentPurchaseOrderService.delete(id);
   }
 
-  @CheckPermission('purchase:order')
+  @CheckPermission('purchase:order:submit')
   @Post(':id/submit')
   async submit(@Param('id') id: string): Promise<void> {
     return this.garmentPurchaseOrderService.submit(id);
@@ -96,7 +96,7 @@ export class GarmentPurchaseOrderController {
     return this.garmentPurchaseOrderService.approve(id);
   }
 
-  @CheckPermission('purchase:order')
+  @CheckPermission('purchase:order:create')
   @Post(':id/unapprove')
   async unapprove(@Param('id') id: string): Promise<void> {
     return this.garmentPurchaseOrderService.unapprove(id);

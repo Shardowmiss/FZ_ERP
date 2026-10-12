@@ -31,7 +31,7 @@ export class SupplierController {
     return this.supplierService.detail(id);
   }
 
-  @CheckPermission('base:supplier')
+  @CheckPermission('base:supplier:create')
   @Post()
   async create(@Body() body: {
     code: string;
@@ -46,7 +46,7 @@ export class SupplierController {
     return this.supplierService.create(body);
   }
 
-  @CheckPermission('base:supplier')
+  @CheckPermission('base:supplier:edit')
   @Put(':id')
   async update(@Param('id') id: string, @Body() body: {
     code?: string;
@@ -61,7 +61,7 @@ export class SupplierController {
     return this.supplierService.update(id, body);
   }
 
-  @CheckPermission('base:supplier')
+  @CheckPermission('base:supplier:delete')
   @Delete(':id')
   async remove(@Param('id') id: string): Promise<{ success: boolean }> {
     await this.supplierService.remove(id);

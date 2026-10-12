@@ -59,7 +59,7 @@ export class PurchaseReturnController {
     return this.purchaseReturnService.getDetail(id);
   }
 
-  @CheckPermission('purchase:return')
+  @CheckPermission('purchase:return:create')
   @Post()
   async create(
     @Body()
@@ -74,13 +74,13 @@ export class PurchaseReturnController {
     return this.purchaseReturnService.approve(id);
   }
 
-  @CheckPermission('purchase:return')
+  @CheckPermission('purchase:return:void')
   @Post(':id/void')
   async voidDoc(@Param('id') id: string): Promise<void> {
     return this.purchaseReturnService.voidDoc(id);
   }
 
-@CheckPermission('purchase:return')
+@CheckPermission('purchase:return:delete')
 @Delete(':id')
   async remove(@Param('id') id: string): Promise<void> {
     return this.purchaseReturnService.delete(id);

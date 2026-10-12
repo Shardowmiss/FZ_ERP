@@ -38,7 +38,7 @@ export class ReceivableController {
     return this.receivableService.getDetail(id) as Promise<Receivable & { payments: Array<{ id: string; paymentDate: string; amount: number; paymentMethod: string; remark: string | null }> }>;
   }
 
-  @CheckPermission('finance:receivable')
+  @CheckPermission('finance:receivable:create')
   @Post(':id/payment')
   async addPayment(
     @Param('id') id: string,

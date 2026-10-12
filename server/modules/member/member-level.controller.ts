@@ -48,7 +48,7 @@ export class MemberLevelController {
   }
 
   @NeedLogin()
-  @CheckPermission('member:level')
+  @CheckPermission('member:level:create')
   @Post()
   async create(
     @Req() req: Request,
@@ -70,7 +70,7 @@ export class MemberLevelController {
   }
 
   @NeedLogin()
-  @CheckPermission('member:level')
+  @CheckPermission('member:level:edit')
   @Put(':id')
   async update(
     @Req() req: Request,
@@ -92,7 +92,7 @@ export class MemberLevelController {
   }
 
   @NeedLogin()
-  @CheckPermission('member:level')
+  @CheckPermission('member:level:delete')
   @Delete(':id')
   async delete(@Req() req: Request, @Param('id') id: string): Promise<void> {
     const { userId } = req.userContext;

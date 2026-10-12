@@ -51,7 +51,7 @@ export class SalesOutboundController {
     return this.salesOutboundService.getDetail(id);
   }
 
-  @CheckPermission('sales:outbound')
+  @CheckPermission('sales:outbound:create')
   @Post()
   async create(
     @Body()
@@ -72,7 +72,7 @@ export class SalesOutboundController {
     return this.salesOutboundService.audit(id);
   }
 
-  @CheckPermission('sales:outbound')
+  @CheckPermission('sales:outbound:create')
   @Post(':id/cancel-audit')
   async cancelAudit(@Param('id') id: string): Promise<void> {
     return this.salesOutboundService.cancelAudit(id);
@@ -90,13 +90,13 @@ export class SalesOutboundController {
     return this.salesOutboundService.accept(id);
   }
 
-  @CheckPermission('sales:outbound')
+  @CheckPermission('sales:outbound:void')
   @Post(':id/void')
   async voidDoc(@Param('id') id: string): Promise<void> {
     return this.salesOutboundService.voidDoc(id);
   }
 
-@CheckPermission('sales:outbound')
+@CheckPermission('sales:outbound:delete')
 @Delete(':id')
   async remove(@Param('id') id: string): Promise<void> {
     return this.salesOutboundService.delete(id);

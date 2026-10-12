@@ -16,7 +16,7 @@ import { CheckPermission } from '../../common/decorators/check-permission.decora
 export class SubcontractController {
   constructor(private readonly subcontractService: SubcontractService) {}
 
-  @CheckPermission('subcontract:manage')
+  @CheckPermission('subcontract:manage:create')
   @Post('order')
   createOrder(@Body() body: any) {
     return this.subcontractService.createOrder(body);
@@ -50,7 +50,7 @@ export class SubcontractController {
     return this.subcontractService.approveOrder(id);
   }
 
-  @CheckPermission('subcontract:manage')
+  @CheckPermission('subcontract:manage:create')
   @Post('issue')
   createIssue(@Body() body: any) {
     return this.subcontractService.createIssue(body);
@@ -78,7 +78,7 @@ export class SubcontractController {
     return this.subcontractService.approveIssue(id);
   }
 
-  @CheckPermission('subcontract:manage')
+  @CheckPermission('subcontract:manage:create')
   @Post('receipt')
   createReceipt(@Body() body: any) {
     return this.subcontractService.createReceipt(body);
@@ -106,7 +106,7 @@ export class SubcontractController {
     return this.subcontractService.approveReceipt(id);
   }
 
-  @CheckPermission('subcontract:manage')
+  @CheckPermission('subcontract:manage:create')
   @Post('fee')
   createFee(@Body() body: any) {
     return this.subcontractService.createFee(body);
@@ -117,7 +117,7 @@ export class SubcontractController {
     return this.subcontractService.listFees(orderId);
   }
 
-  @CheckPermission('subcontract:manage')
+  @CheckPermission('subcontract:manage:create')
   @Post('fee/:id/settle')
   settleFee(@Param('id') id: string) {
     if (!id) throw new BadRequestException('加工费ID不能为空');

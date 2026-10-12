@@ -52,7 +52,7 @@ export class PurchaseReconciliationController {
     return this.reconciliationService.get(id);
   }
 
-  @CheckPermission('purchase:reconciliation')
+  @CheckPermission('purchase:reconciliation:create')
   @Post('preview')
   async preview(
     @Body() body: {
@@ -65,7 +65,7 @@ export class PurchaseReconciliationController {
     return this.reconciliationService.preview(body);
   }
 
-  @CheckPermission('purchase:reconciliation')
+  @CheckPermission('purchase:reconciliation:create')
   @Post()
   async create(
     @Req() req: Request,
@@ -84,7 +84,7 @@ export class PurchaseReconciliationController {
     return this.reconciliationService.create(body, userId);
   }
 
-  @CheckPermission('purchase:reconciliation')
+  @CheckPermission('purchase:reconciliation:create')
   @Post(':id/confirm')
   async confirm(
     @Req() req: Request,

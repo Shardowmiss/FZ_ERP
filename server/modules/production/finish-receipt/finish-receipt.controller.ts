@@ -72,7 +72,7 @@ export class FinishReceiptController {
     return this.finishReceiptService.get(id);
   }
 
-  @CheckPermission('production:finish_receipt')
+  @CheckPermission('production:finish_receipt:create')
   @Post()
   async create(
     @Body()
@@ -89,7 +89,7 @@ export class FinishReceiptController {
     return this.finishReceiptService.create(body);
   }
 
-  @CheckPermission('production:finish_receipt')
+  @CheckPermission('production:finish_receipt:edit')
   @Patch(':id')
   async update(
     @Param('id') id: string,
@@ -107,13 +107,13 @@ export class FinishReceiptController {
     return this.finishReceiptService.update(id, body);
   }
 
-  @CheckPermission('production:finish_receipt')
+  @CheckPermission('production:finish_receipt:void')
   @Post(':id/void')
   async voidDoc(@Param('id') id: string): Promise<void> {
     return this.finishReceiptService.voidDoc(id);
   }
 
-  @CheckPermission('production:finish_receipt')
+  @CheckPermission('production:finish_receipt:delete')
   @Delete(':id')
   async remove(@Param('id') id: string, @Req() req: Request): Promise<void> {
     const { userId, userName } = req.userContext;

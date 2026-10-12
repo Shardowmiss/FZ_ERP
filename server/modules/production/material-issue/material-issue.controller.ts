@@ -73,7 +73,7 @@ export class MaterialIssueController {
     return this.materialIssueService.get(id);
   }
 
-  @CheckPermission('production:material_issue')
+  @CheckPermission('production:material_issue:create')
   @Post()
   async create(
     @Body()
@@ -89,7 +89,7 @@ export class MaterialIssueController {
     return this.materialIssueService.create(body);
   }
 
-  @CheckPermission('production:material_issue')
+  @CheckPermission('production:material_issue:edit')
   @Patch(':id')
   async update(
     @Param('id') id: string,
@@ -106,13 +106,13 @@ export class MaterialIssueController {
     return this.materialIssueService.update(id, body);
   }
 
-  @CheckPermission('production:material_issue')
+  @CheckPermission('production:material_issue:void')
   @Post(':id/void')
   async voidDoc(@Param('id') id: string): Promise<void> {
     return this.materialIssueService.voidDoc(id);
   }
 
-  @CheckPermission('production:material_issue')
+  @CheckPermission('production:material_issue:delete')
   @Delete(':id')
   async remove(@Param('id') id: string, @Req() req: Request): Promise<void> {
     const { userId, userName } = req.userContext;

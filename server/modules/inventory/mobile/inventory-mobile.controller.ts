@@ -19,13 +19,13 @@ export class InventoryMobileController {
 
   // 条码/批次：菜单页为 /inventory/barcode（inventory:barcode）。此前误挂盘点码，
   // 导致持「盘点」者能生成条码、持「条码/批次」者反而 403。
-  @CheckPermission('inventory:barcode')
+  @CheckPermission('inventory:barcode:create')
   @Post('barcode/generate')
   async generateBarcodes(): Promise<{ generated: number; skipped: number }> {
     return this.inventoryMobileService.generateBarcodes();
   }
 
-  @CheckPermission('inventory:stocktake_mobile')
+  @CheckPermission('inventory:stocktake_mobile:create')
   @Post('mobile/lookup')
   async lookup(
     @Body() body: { barcode: string; warehouseId: string },
@@ -36,7 +36,7 @@ export class InventoryMobileController {
     return this.inventoryMobileService.lookup(body);
   }
 
-  @CheckPermission('inventory:stocktake_mobile')
+  @CheckPermission('inventory:stocktake_mobile:create')
   @Post('mobile/stocktake')
   async submitStocktake(
     @Body()
@@ -53,7 +53,7 @@ export class InventoryMobileController {
   }
 
   // 条码/批次 列表：此前完全无守卫（任何登录用户都能拉全量批次数据）。
-  @CheckPermission('inventory:barcode')
+  @CheckPermission('inventory:barcode:view')
   @Get('batch')
   async listBatches(
     @Query('page') page = '1',

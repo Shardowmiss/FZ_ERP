@@ -58,7 +58,7 @@ export class InventoryTransferController {
     return this.inventoryTransferService.getTransferDetail(id);
   }
 
-  @CheckPermission('inventory:transfer')
+  @CheckPermission('inventory:transfer:create')
   @Post()
   async createTransfer(
     @Req() req: Request,
@@ -96,7 +96,7 @@ export class InventoryTransferController {
     return this.inventoryTransferService.approveTransfer(id, userId);
   }
 
-  @CheckPermission('inventory:transfer')
+  @CheckPermission('inventory:transfer:create')
   @Post(':id/receive')
   async receiveTransfer(
     @Req() req: Request,
@@ -116,7 +116,7 @@ export class InventoryTransferController {
     return this.inventoryTransferService.acceptTransfer(id, userId);
   }
 
-  @CheckPermission('inventory:transfer')
+  @CheckPermission('inventory:transfer:void')
   @Post(':id/void')
   async voidTransfer(
     @Req() req: Request,
@@ -126,7 +126,7 @@ export class InventoryTransferController {
     return this.inventoryTransferService.voidTransfer(id, userId);
   }
 
-  @CheckPermission('inventory:transfer')
+  @CheckPermission('inventory:transfer:delete')
   @Delete(':id')
   async deleteTransfer(
     @Req() req: Request,

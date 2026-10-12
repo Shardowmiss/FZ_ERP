@@ -52,7 +52,7 @@ export class TradeShowController {
   }
 
   @NeedLogin()
-  @CheckPermission('tradeshow:manage')
+  @CheckPermission('tradeshow:manage:create')
   @Post()
   async create(
     @Req() req: Request,
@@ -73,7 +73,7 @@ export class TradeShowController {
   }
 
   @NeedLogin()
-  @CheckPermission('tradeshow:manage')
+  @CheckPermission('tradeshow:manage:edit')
   @Put(':id')
   async update(
     @Req() req: Request,
@@ -94,7 +94,7 @@ export class TradeShowController {
   }
 
   @NeedLogin()
-  @CheckPermission('tradeshow:manage')
+  @CheckPermission('tradeshow:manage:delete')
   @Delete(':id')
   async delete(@Req() req: Request, @Param('id') id: string): Promise<void> {
     const { userId } = req.userContext;
@@ -102,14 +102,14 @@ export class TradeShowController {
   }
 
   @NeedLogin()
-  @CheckPermission('tradeshow:manage')
+  @CheckPermission('tradeshow:manage:void')
   @Post(':id/void')
   async voidDoc(@Param('id') id: string): Promise<void> {
     return this.tradeShowService.voidDoc(id);
   }
 
   @NeedLogin()
-  @CheckPermission('tradeshow:manage')
+  @CheckPermission('tradeshow:manage:create')
   @Post(':id/start')
   async start(
     @Req() req: Request,
@@ -120,7 +120,7 @@ export class TradeShowController {
   }
 
   @NeedLogin()
-  @CheckPermission('tradeshow:manage')
+  @CheckPermission('tradeshow:manage:create')
   @Post(':id/end')
   async end(
     @Req() req: Request,
@@ -131,7 +131,7 @@ export class TradeShowController {
   }
 
   @NeedLogin()
-  @CheckPermission('tradeshow:manage')
+  @CheckPermission('tradeshow:manage:create')
   @Post(':id/close')
   async close(
     @Req() req: Request,

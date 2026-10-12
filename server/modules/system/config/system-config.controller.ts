@@ -18,7 +18,7 @@ export class SystemConfigController {
   /** 系统配置写入：仅管理员（system:config 权限）可调，防止非授权修改归档等关键策略 */
   @NeedLogin()
   @UseGuards(PermissionGuard)
-  @CheckPermission('system:config')
+  @CheckPermission('system:config:edit')
   @Patch()
   async updateConfig(
     @Body() body: Partial<SystemConfig>,

@@ -85,7 +85,7 @@ export class RetailController {
 
   /* ========== Retail Return ========== */
 
-  @CheckPermission('sales:retail_return')
+  @CheckPermission('sales:retail_return:view')
   @Get('return')
   async getReturnList(
     @Req() req: Request,
@@ -113,7 +113,7 @@ export class RetailController {
     });
   }
 
-  @CheckPermission('sales:retail_return')
+  @CheckPermission('sales:retail_return:view')
   @Get('return/:id')
   async getReturnDetail(
     @Param('id') id: string,
@@ -121,7 +121,7 @@ export class RetailController {
     return this.retailService.getReturnDetail(id);
   }
 
-  @CheckPermission('sales:retail_return')
+  @CheckPermission('sales:retail_return:create')
   @Post('return')
   async createReturn(
     @Req() req: Request,
@@ -136,7 +136,7 @@ export class RetailController {
     return this.retailService.createReturn(body, userId);
   }
 
-  @CheckPermission('sales:retail_return')
+  @CheckPermission('sales:retail_return:create')
   @Post('return/:id/refund')
   async refundReturn(
     @Req() req: Request,
@@ -155,7 +155,7 @@ export class RetailController {
     return this.retailService.getRetailOrderDetail(id);
   }
 
-  @CheckPermission('sales:retail')
+  @CheckPermission('sales:retail:create')
   @Post()
   async createDraftRetail(
     @Req() req: Request,
@@ -179,7 +179,7 @@ export class RetailController {
     return this.retailService.createDraftRetail(body, userId);
   }
 
-  @CheckPermission('sales:retail')
+  @CheckPermission('sales:retail:edit')
   @Put(':id')
   async updateRetailItems(
     @Req() req: Request,
@@ -199,7 +199,7 @@ export class RetailController {
     return this.retailService.updateRetailItems(id, body, userId);
   }
 
-  @CheckPermission('sales:retail')
+  @CheckPermission('sales:retail:create')
   @Post(':id/settle')
   async settleRetailOrder(
     @Req() req: Request,
@@ -215,7 +215,7 @@ export class RetailController {
     return this.retailService.settleRetailOrder(id, body, userId);
   }
 
-  @CheckPermission('sales:retail')
+  @CheckPermission('sales:retail:void')
   @Post(':id/void')
   async voidOrder(@Param('id') id: string): Promise<void> {
     return this.retailService.voidOrder(id);

@@ -11,7 +11,7 @@ export class InventoryOutboundController {
     private readonly inventoryOutboundService: InventoryOutboundService,
   ) {}
 
-  @CheckPermission('inventory:outbound')
+  @CheckPermission('inventory:outbound:create')
   @Post()
   async createProductionOutbound(
     @Req() req: Request,

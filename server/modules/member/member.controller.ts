@@ -40,13 +40,13 @@ export class MemberController {
     });
   }
 
-  @CheckPermission('member:manage')
+  @CheckPermission('member:manage:create')
   @Post('create')
   async create(@Body() body: Record<string, unknown>) {
     return this.memberService.create(body as never);
   }
 
-  @CheckPermission('member:manage')
+  @CheckPermission('member:manage:create')
   @Post('update')
   async update(@Body() body: Record<string, unknown>) {
     const id = body?.id as string;
@@ -54,14 +54,14 @@ export class MemberController {
     return this.memberService.update(id, body as never);
   }
 
-  @CheckPermission('member:manage')
+  @CheckPermission('member:manage:delete')
   @Delete(':id')
   async remove(@Param('id') id: string) {
     return this.memberService.deleteMember(id);
   }
 
   /** #10 储值调整：走钱包账本（幂等 + 原子余额 + 防透支），仅对储值生效 */
-  @CheckPermission('member:manage')
+  @CheckPermission('member:manage:create')
   @Post('adjust-stored-value')
   async adjustStoredValue(
     @Body() body: { memberId: string; changeValue: number; remark?: string },
@@ -74,7 +74,7 @@ export class MemberController {
     );
   }
 
-  @CheckPermission('member:manage')
+  @CheckPermission('member:manage:create')
   @Post('points')
   async points(@Body() body: { memberId: string; changeType: string; changeValue: number; remark?: string }) {
     if (!body?.memberId) throw new BadRequestException('memberId 必填');
@@ -91,7 +91,7 @@ export class MemberController {
     return this.memberService.listTags();
   }
 
-  @CheckPermission('member:manage')
+  @CheckPermission('member:manage:create')
   @Post('tags')
   async createTag(@Body() body: { name: string; remark?: string }) {
     if (!body?.name) throw new BadRequestException('标签名必填');
@@ -103,7 +103,7 @@ export class MemberController {
     return this.memberService.profile(id);
   }
 
-  @CheckPermission('member:manage')
+  @CheckPermission('member:manage:create')
   @Post('campaign')
   async campaign(@Body() body: { tagId: string; title: string; content?: string }) {
     if (!body?.tagId || !body?.title) throw new BadRequestException('tagId 与 title 必填');
@@ -113,7 +113,7 @@ export class MemberController {
   // ---- P0-3 主数据合并（资金敏感，独立于 member:manage 授权） ----
 
   /** 合并候选预览：按手机号分组的重复会员（解密脱敏），供运营确认 */
-  @CheckPermission('member:merge')
+  @CheckPermission('member:merge:view')
   @Get('merge-candidates')
   async mergeCandidates(@Query('limit') limit = '500') {
     return this.mergeService.candidates(parseInt(limit, 10) || 500);
@@ -153,7 +153,7 @@ export class MemberController {
   }
 
   /** 会员合并审计日志列表（供运营审计与整批回滚）；reversed 可选 'true'/'false' */
-  @CheckPermission('member:merge')
+  @CheckPermission('member:merge:view')
   @Get('merge-logs')
   async mergeLogs(@Query('reversed') reversed?: string) {
     const revOpt = reversed === undefined ? undefined : reversed === 'true';

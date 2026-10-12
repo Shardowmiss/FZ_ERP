@@ -39,7 +39,7 @@ export class StyleAttrDefController {
     return this.service.detail(id);
   }
 
-  @CheckPermission('base:style-attribute')
+  @CheckPermission('base:style-attribute:create')
   @Post()
   async create(
     @Body() body: {
@@ -53,7 +53,7 @@ export class StyleAttrDefController {
     return this.service.create(body);
   }
 
-  @CheckPermission('base:style-attribute')
+  @CheckPermission('base:style-attribute:edit')
   @Put(':id')
   async update(
     @Param('id') id: string,
@@ -68,7 +68,7 @@ export class StyleAttrDefController {
     return this.service.update(id, body);
   }
 
-  @CheckPermission('base:style-attribute')
+  @CheckPermission('base:style-attribute:create')
   @Post('reorder')
   async reorder(
     @Body() body: { items: Array<{ id: string; sortOrder: number }> },
@@ -76,7 +76,7 @@ export class StyleAttrDefController {
     return this.service.reorder(body.items);
   }
 
-  @CheckPermission('base:style-attribute')
+  @CheckPermission('base:style-attribute:delete')
   @Delete(':id')
   async remove(
     @Param('id') id: string,
@@ -95,7 +95,7 @@ export class StyleAttrDefController {
     return this.service.listValues(id, active);
   }
 
-  @CheckPermission('base:style-attribute')
+  @CheckPermission('base:style-attribute:create')
   @Post(':id/values')
   async createValue(
     @Param('id') id: string,
@@ -110,7 +110,7 @@ export class StyleAttrDefController {
     return this.service.createValue(id, body);
   }
 
-  @CheckPermission('base:style-attribute')
+  @CheckPermission('base:style-attribute:edit')
   @Put('values/:valueId')
   async updateValue(
     @Param('valueId') valueId: string,
@@ -125,7 +125,7 @@ export class StyleAttrDefController {
     return this.service.updateValue(valueId, body);
   }
 
-  @CheckPermission('base:style-attribute')
+  @CheckPermission('base:style-attribute:create')
   @Post(':id/values/reorder')
   async reorderValues(
     @Param('id') _id: string,
@@ -134,7 +134,7 @@ export class StyleAttrDefController {
     return this.service.reorderValues(body.items);
   }
 
-  @CheckPermission('base:style-attribute')
+  @CheckPermission('base:style-attribute:delete')
   @Delete('values/:valueId')
   async removeValue(
     @Param('valueId') valueId: string,

@@ -50,7 +50,7 @@ export class InventoryStocktakeController {
     return this.inventoryStocktakeService.getStocktakeDetail(id);
   }
 
-  @CheckPermission('inventory:stocktake')
+  @CheckPermission('inventory:stocktake:create')
   @Post()
   async createStocktake(
     @Req() req: Request,
@@ -86,7 +86,7 @@ export class InventoryStocktakeController {
     return this.inventoryStocktakeService.approveStocktake(id, userId);
   }
 
-  @CheckPermission('inventory:stocktake')
+  @CheckPermission('inventory:stocktake:create')
   @Post(':id/post')
   async postStocktake(
     @Req() req: Request,
@@ -96,13 +96,13 @@ export class InventoryStocktakeController {
     return this.inventoryStocktakeService.postStocktake(id, userId);
   }
 
-  @CheckPermission('inventory:stocktake')
+  @CheckPermission('inventory:stocktake:void')
   @Post(':id/void')
   async voidDoc(@Param('id') id: string): Promise<void> {
     return this.inventoryStocktakeService.voidDoc(id);
   }
 
-  @CheckPermission('inventory:stocktake')
+  @CheckPermission('inventory:stocktake:delete')
   @Delete(':id')
   async deleteStocktake(
     @Req() req: Request,

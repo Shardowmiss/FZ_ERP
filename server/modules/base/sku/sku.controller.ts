@@ -31,7 +31,7 @@ export class SkuController {
   // 注意：本路由必须声明在 @Get(':id') 之前，否则会被 :id 通配吞掉。
   // 按「选中的颜色 × 款号尺码组」笛卡尔积批量生成 SKU 矩阵（幂等，重复调用不产生重复 SKU）。
   // 颜色由请求显式给出（2026-10-12 起颜色只在 SKU 层选择，款号不再绑定颜色组）。
-  @CheckPermission('base:sku')
+  @CheckPermission('base:sku:create')
   @Post('generate-matrix')
   async generateMatrix(@Body() body: { styleId: string; colorIds: string[] }): Promise<{
     styleNo: string;
@@ -49,7 +49,7 @@ export class SkuController {
     return this.skuService.detail(id);
   }
 
-  @CheckPermission('base:sku')
+  @CheckPermission('base:sku:edit')
   @Put(':id')
   async update(@Param('id') id: string, @Body() body: {
     barcode?: string | null;
@@ -63,7 +63,7 @@ export class SkuController {
     return this.skuService.update(id, body);
   }
 
-  @CheckPermission('base:sku')
+  @CheckPermission('base:sku:create')
   @Post('bulk')
   async bulkImport(@Body() body: { items: SkuImportItem[] }): Promise<{
     total: number;

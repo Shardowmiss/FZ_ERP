@@ -54,37 +54,37 @@ export class PricingController {
     return this.pricingService.getPriceList(id);
   }
 
-  @CheckPermission('pricing:manage')
+  @CheckPermission('pricing:manage:create')
   @Post('price-list')
   createPriceList(@Body() body: PriceListDto) {
     return this.pricingService.createPriceList(body);
   }
 
-  @CheckPermission('pricing:manage')
+  @CheckPermission('pricing:manage:edit')
   @Put('price-list/:id')
   updatePriceList(@Param('id') id: string, @Body() body: Partial<PriceListDto>) {
     return this.pricingService.updatePriceList(id, body);
   }
 
-  @CheckPermission('pricing:manage')
+  @CheckPermission('pricing:manage:delete')
   @Delete('price-list/:id')
   deletePriceList(@Param('id') id: string) {
     return this.pricingService.deletePriceList(id);
   }
 
-  @CheckPermission('pricing:manage')
+  @CheckPermission('pricing:manage:create')
   @Post('price-list/:id/items')
   addPriceListItems(@Param('id') id: string, @Body() body: AddPriceListItemsDto) {
     return this.pricingService.addPriceListItems(id, body.items);
   }
 
-  @CheckPermission('pricing:manage')
+  @CheckPermission('pricing:manage:edit')
   @Put('price-list/item/:itemId')
   updatePriceListItem(@Param('itemId') itemId: string, @Body() body: Partial<PriceListItemDto>) {
     return this.pricingService.updatePriceListItem(itemId, body);
   }
 
-  @CheckPermission('pricing:manage')
+  @CheckPermission('pricing:manage:delete')
   @Delete('price-list/item/:itemId')
   removePriceListItem(@Param('itemId') itemId: string) {
     return this.pricingService.removePriceListItem(itemId);
@@ -135,19 +135,19 @@ export class PricingController {
     return this.pricingService.getPromotion(id);
   }
 
-  @CheckPermission('pricing:manage')
+  @CheckPermission('pricing:manage:create')
   @Post('promotion')
   createPromotion(@Body() body: PromotionDto) {
     return this.pricingService.createPromotion(body);
   }
 
-  @CheckPermission('pricing:manage')
+  @CheckPermission('pricing:manage:edit')
   @Put('promotion/:id')
   updatePromotion(@Param('id') id: string, @Body() body: Partial<PromotionDto>) {
     return this.pricingService.updatePromotion(id, body);
   }
 
-  @CheckPermission('pricing:manage')
+  @CheckPermission('pricing:manage:delete')
   @Delete('promotion/:id')
   deletePromotion(@Param('id') id: string) {
     return this.pricingService.deletePromotion(id);
@@ -176,19 +176,19 @@ export class PricingController {
     return this.pricingService.getCoupon(id);
   }
 
-  @CheckPermission('pricing:manage')
+  @CheckPermission('pricing:manage:create')
   @Post('coupon')
   createCoupon(@Body() body: CouponDto) {
     return this.pricingService.createCoupon(body);
   }
 
-  @CheckPermission('pricing:manage')
+  @CheckPermission('pricing:manage:edit')
   @Put('coupon/:id')
   updateCoupon(@Param('id') id: string, @Body() body: Partial<CouponDto>) {
     return this.pricingService.updateCoupon(id, body);
   }
 
-  @CheckPermission('pricing:manage')
+  @CheckPermission('pricing:manage:delete')
   @Delete('coupon/:id')
   deleteCoupon(@Param('id') id: string) {
     return this.pricingService.deleteCoupon(id);

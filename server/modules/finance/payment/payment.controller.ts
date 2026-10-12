@@ -67,7 +67,7 @@ export class PaymentController {
     }>;
   }
 
-  @CheckPermission('finance:payment')
+  @CheckPermission('finance:payment:create')
   @Post()
   async create(
     @Req() req: Request,
@@ -109,7 +109,7 @@ export class PaymentController {
     }>;
   }
 
-  @CheckPermission('finance:payment')
+  @CheckPermission('finance:payment:edit')
   @Patch(':id')
   async update(
     @Req() req: Request,
@@ -152,13 +152,13 @@ export class PaymentController {
     }>;
   }
 
-  @CheckPermission('finance:payment')
+  @CheckPermission('finance:payment:void')
   @Post(':id/void')
   async voidDoc(@Param('id') id: string): Promise<void> {
     return this.paymentService.voidDoc(id);
   }
 
-  @CheckPermission('finance:payment')
+  @CheckPermission('finance:payment:delete')
   @Delete(':id')
   async remove(
     @Req() req: Request,

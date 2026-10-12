@@ -25,7 +25,7 @@ export class SizeController {
     return this.sizeService.detail(id);
   }
 
-  @CheckPermission('base:size')
+  @CheckPermission('base:size:create')
   @Post()
   async create(
     @Body() body: { code: string; name: string; sortOrder?: number; status?: string; remark?: string },
@@ -33,7 +33,7 @@ export class SizeController {
     return this.sizeService.create(body);
   }
 
-  @CheckPermission('base:size')
+  @CheckPermission('base:size:edit')
   @Put(':id')
   async update(
     @Param('id') id: string,
@@ -42,7 +42,7 @@ export class SizeController {
     return this.sizeService.update(id, body);
   }
 
-  @CheckPermission('base:size')
+  @CheckPermission('base:size:delete')
   @Delete(':id')
   async remove(@Param('id') id: string): Promise<{ success: boolean }> {
     await this.sizeService.remove(id);

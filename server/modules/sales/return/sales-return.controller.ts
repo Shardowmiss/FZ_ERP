@@ -45,7 +45,7 @@ export class SalesReturnController {
     return this.salesReturnService.getDetail(id);
   }
 
-  @CheckPermission('sales:return')
+  @CheckPermission('sales:return:create')
   @Post()
   async create(
     @Body()
@@ -65,7 +65,7 @@ export class SalesReturnController {
     return this.salesReturnService.audit(id);
   }
 
-  @CheckPermission('sales:return')
+  @CheckPermission('sales:return:create')
   @Post(':id/cancel-audit')
   async cancelAudit(@Param('id') id: string): Promise<void> {
     return this.salesReturnService.cancelAudit(id);
@@ -83,13 +83,13 @@ export class SalesReturnController {
     return this.salesReturnService.accept(id);
   }
 
-  @CheckPermission('sales:return')
+  @CheckPermission('sales:return:void')
   @Post(':id/void')
   async voidDoc(@Param('id') id: string): Promise<void> {
     return this.salesReturnService.voidDoc(id);
   }
 
-@CheckPermission('sales:return')
+@CheckPermission('sales:return:delete')
 @Delete(':id')
   async remove(@Param('id') id: string): Promise<void> {
     return this.salesReturnService.delete(id);

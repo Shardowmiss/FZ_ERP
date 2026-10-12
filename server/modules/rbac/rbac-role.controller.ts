@@ -48,7 +48,7 @@ export class RbacRoleController {
     return this.rbacService.getRole(id);
   }
 
-  @CheckPermission('system:role')
+  @CheckPermission('system:role:create')
   @Post()
   async create(
     @Body()
@@ -62,7 +62,7 @@ export class RbacRoleController {
     return this.rbacService.createRole(body);
   }
 
-  @CheckPermission('system:role')
+  @CheckPermission('system:role:edit')
   @Put(':id')
   async update(
     @Param('id') id: string,
@@ -77,7 +77,7 @@ export class RbacRoleController {
     return this.rbacService.updateRole(id, body);
   }
 
-  @CheckPermission('system:role')
+  @CheckPermission('system:role:delete')
   @Delete(':id')
   async remove(@Param('id') id: string): Promise<{ success: boolean }> {
     await this.rbacService.deleteRole(id);
@@ -89,7 +89,7 @@ export class RbacRoleController {
     return this.rbacService.getRolePermissions(id);
   }
 
-  @CheckPermission('system:role')
+  @CheckPermission('system:role:edit')
   @Put(':id/permissions')
   async assignPermissions(
     @Param('id') id: string,

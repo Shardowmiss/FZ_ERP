@@ -58,7 +58,7 @@ export class MasterDataMergeController {
    * 合并审计日志列表：按实体类型返回合并记录（含保留方/被合并方/原因/操作人/回滚状态）。
    * 供「合并审计」页展示与整批回滚；reversed=true 仅已回滚 / false 仅有效 / 不传全部。
    */
-  @CheckPermission('md:merge')
+  @CheckPermission('md:merge:view')
   @Get(':entityType/merge-logs')
   async listLogs(
     @Param('entityType') entityType: string,
@@ -79,7 +79,7 @@ export class MasterDataMergeController {
    * 非热路径：SQL 侧完成归一+分组（与 configs.ts 的归一表达式严格同构，避免静默漏组），
    * JS 侧仅做成员明细补全、关联单据计数、脱敏与推荐 survivor。
    */
-  @CheckPermission('md:merge')
+  @CheckPermission('md:merge:view')
   @Get(':entityType/candidates')
   async candidates(
     @Param('entityType') entityType: string,

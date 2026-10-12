@@ -13,7 +13,7 @@ export class OmniController {
     return this.omniService.listChannels();
   }
 
-  @CheckPermission('omni:manage')
+  @CheckPermission('omni:manage:create')
   @Post('channels')
   async createChannel(@Body() body: Record<string, unknown>) {
     if (!body?.name || !body?.channelCode)
@@ -41,7 +41,7 @@ export class OmniController {
     return this.omniService.getOrder(id);
   }
 
-  @CheckPermission('omni:manage')
+  @CheckPermission('omni:manage:create')
   @Post('orders')
   async createOrder(@Body() body: Record<string, unknown>) {
     return this.omniService.createOrder(body as never);
@@ -54,14 +54,14 @@ export class OmniController {
     return this.omniService.audit(body.orderId);
   }
 
-  @CheckPermission('omni:manage')
+  @CheckPermission('omni:manage:create')
   @Post('orders/allocate')
   async allocate(@Body() body: { orderId: string }) {
     if (!body?.orderId) throw new BadRequestException('orderId 必填');
     return this.omniService.allocate(body.orderId);
   }
 
-  @CheckPermission('omni:manage')
+  @CheckPermission('omni:manage:create')
   @Post('orders/ship')
   async ship(@Body() body: { orderId: string }) {
     if (!body?.orderId) throw new BadRequestException('orderId 必填');

@@ -75,7 +75,7 @@ export class BomController {
     });
   }
 
-  @CheckPermission('production:bom')
+  @CheckPermission('production:bom:create')
   @Post()
   async createBom(
     @Req() req: Request,
@@ -97,7 +97,7 @@ export class BomController {
     return this.bomService.createBom(body, userId);
   }
 
-  @CheckPermission('production:bom')
+  @CheckPermission('production:bom:edit')
   @Put(':id')
   async updateBom(
     @Req() req: Request,
@@ -119,7 +119,7 @@ export class BomController {
     return this.bomService.updateBom(id, body, userId);
   }
 
-  @CheckPermission('production:bom')
+  @CheckPermission('production:bom:delete')
   @Delete(':id')
   async deleteBom(
     @Req() req: Request,

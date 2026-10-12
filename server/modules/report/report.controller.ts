@@ -84,7 +84,7 @@ export class ReportController {
   }
 
   // 成衣采购查询 / 面辅料采购查询 共用此端点（同一资源两个入口页），故同用 report:purchase
-  @CheckPermission('report:purchase')
+  @CheckPermission('report:purchase:view')
   @Get('purchase')
   async purchaseReport(
     @Query('startDate') startDate: string,
@@ -108,7 +108,7 @@ export class ReportController {
     });
   }
 
-  @CheckPermission('report:sales')
+  @CheckPermission('report:sales:view')
   @Get('sales')
   async salesReport(
     @Query('startDate') startDate: string,
@@ -132,7 +132,7 @@ export class ReportController {
     });
   }
 
-  @CheckPermission('report:retail')
+  @CheckPermission('report:retail:view')
   @Get('retail/summary')
   async retailSummary(
     @Query('startDate') startDate: string,
@@ -150,7 +150,7 @@ export class ReportController {
     });
   }
 
-  @CheckPermission('report:retail')
+  @CheckPermission('report:retail:view')
   @Get('retail')
   async retailReport(
     @Query('startDate') startDate: string,
@@ -174,7 +174,7 @@ export class ReportController {
     });
   }
 
-  @CheckPermission('report:inventory')
+  @CheckPermission('report:inventory:view')
   @Get('inventory')
   async inventoryReport(
     @Query('warehouseId') warehouseId: string,
@@ -192,7 +192,7 @@ export class ReportController {
     });
   }
 
-  @CheckPermission('report:transfer')
+  @CheckPermission('report:transfer:view')
   @Get('transfer')
   async transferReport(
     @Query('startDate') startDate: string,
@@ -216,7 +216,7 @@ export class ReportController {
     });
   }
 
-  @CheckPermission('report:stockmovement')
+  @CheckPermission('report:stockmovement:view')
   @Get('stock-movement')
   async stockMovementReport(
     @Query('startDate') startDate: string,
@@ -269,7 +269,7 @@ export class ReportController {
    * 引擎白名单仍是唯一执行授权：语义层不新增可执行字段，
    * 语义表里写了引擎未实现的 key 也不会被放行（见 pivot-engine 校验）。
    */
-  @CheckPermission('report:pivot')
+  @CheckPermission('report:pivot:view')
   @Get('pivot/semantics')
   async pivotSemantics(@Req() req: Request) {
     const [fields, canSeeProfit] = await Promise.all([
@@ -300,7 +300,7 @@ export class ReportController {
    * 返回当前用户可用的透视指标清单（前端据此隐藏毛利/成本指标）。
    * 与 pivot() 的剥离逻辑共用同一权限码，保证「界面可见」与「接口可取」一致。
    */
-  @CheckPermission('report:pivot')
+  @CheckPermission('report:pivot:view')
   @Get('pivot/capabilities')
   async pivotCapabilities(@Req() req: Request): Promise<{ canSeeProfit: boolean }> {
     const canSeeProfit = await this.rbacService.checkAccess(
@@ -316,7 +316,7 @@ export class ReportController {
    */
 
   /** 我的模板列表（含「最后一次查询」标记，最近更新在前） */
-  @CheckPermission('report:pivot')
+  @CheckPermission('report:pivot:view')
   @Get('pivot/templates')
   async listPivotTemplates(@Req() req: Request) {
     return this.pivotTemplateService.listMine(req.userContext.userId);
@@ -346,7 +346,7 @@ export class ReportController {
   }
 
   /** 恢复我最后一次查询；从未记录过返回 null（前端走默认，不报错） */
-  @CheckPermission('report:pivot')
+  @CheckPermission('report:pivot:view')
   @Get('pivot/templates/last')
   async getPivotLastQuery(@Req() req: Request) {
     return this.pivotTemplateService.getLastQuery(req.userContext.userId);
@@ -379,7 +379,7 @@ export class ReportController {
   }
 
   /** 语义层全量列表（含停用）+ 引擎白名单快照，供管理页做「已实现/未实现」对照 */
-  @CheckPermission('report:semantic')
+  @CheckPermission('report:semantic:view')
   @Get('pivot/semantic-admin')
   async pivotSemanticAdmin() {
     const [rows, supported] = await Promise.all([
@@ -399,14 +399,14 @@ export class ReportController {
   }
 
   /** 新增语义（引擎未实现的 key 会被拒绝，见 service 层 assertEngineSupports） */
-  @CheckPermission('report:semantic')
+  @CheckPermission('report:semantic:create')
   @Post('pivot/semantic-admin')
   async createPivotSemantic(@Req() req: Request, @Body() body: CreateSemanticInput) {
     return this.semanticService.create(body, this.engineWhitelist(), req.userContext.userId);
   }
 
   /** 编辑语义（key 不可改） */
-  @CheckPermission('report:semantic')
+  @CheckPermission('report:semantic:edit')
   @Put('pivot/semantic-admin/:key')
   async updatePivotSemantic(
     @Req() req: Request,
@@ -419,7 +419,7 @@ export class ReportController {
   }
 
   /** 停用语义（保留 key，避免历史个人模板失效） */
-  @CheckPermission('report:semantic')
+  @CheckPermission('report:semantic:delete')
   @Delete('pivot/semantic-admin/:key')
   async disablePivotSemantic(@Param('key') key: string) {
     return this.semanticService.remove(key);

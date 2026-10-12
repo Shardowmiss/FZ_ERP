@@ -64,7 +64,7 @@ export class WorkOrderController {
     return this.workOrderService.get(id);
   }
 
-  @CheckPermission('production:work_order')
+  @CheckPermission('production:work_order:create')
   @Post()
   async create(
     @Body()
@@ -81,7 +81,7 @@ export class WorkOrderController {
     return this.workOrderService.create(body);
   }
 
-  @CheckPermission('production:work_order')
+  @CheckPermission('production:work_order:edit')
   @Patch(':id')
   async update(
     @Param('id') id: string,
@@ -99,13 +99,13 @@ export class WorkOrderController {
     return this.workOrderService.update(id, body);
   }
 
-  @CheckPermission('production:work_order')
+  @CheckPermission('production:work_order:void')
   @Post(':id/void')
   async voidDoc(@Param('id') id: string): Promise<void> {
     return this.workOrderService.voidDoc(id);
   }
 
-  @CheckPermission('production:work_order')
+  @CheckPermission('production:work_order:delete')
   @Delete(':id')
   async remove(@Param('id') id: string, @Req() req: Request): Promise<void> {
     const { userId, userName } = req.userContext;
@@ -127,7 +127,7 @@ export class WorkOrderController {
     });
   }
 
-  @CheckPermission('production:work_order')
+  @CheckPermission('production:work_order:create')
   @Post(':id/finish')
   async finish(@Param('id') id: string, @Req() req: Request): Promise<void> {
     const { userId, userName } = req.userContext;

@@ -14,7 +14,7 @@ export class PosController {
 
   /* ========== Session ========== */
 
-  @CheckPermission('pos:cashier')
+  @CheckPermission('pos:cashier:create')
   @Post('session/open')
   openSession(@Req() req: Request, @Body() body: OpenSessionDto) {
     const { userId } = req.userContext;
@@ -28,7 +28,7 @@ export class PosController {
     return this.posService.getOpenSession(storeId, userId);
   }
 
-  @CheckPermission('pos:cashier')
+  @CheckPermission('pos:cashier:create')
   @Post('session/:id/close')
   closeSession(
     @Req() req: Request,
@@ -58,14 +58,14 @@ export class PosController {
 
   /* ========== Checkout ========== */
 
-  @CheckPermission('pos:cashier')
+  @CheckPermission('pos:cashier:create')
   @Post('checkout')
   checkout(@Req() req: Request, @Body() body: PosCheckoutDto) {
     const { userId } = req.userContext;
     return this.posService.checkout(body, userId);
   }
 
-  @CheckPermission('pos:cashier')
+  @CheckPermission('pos:cashier:create')
   @Post('quote')
   quote(@Req() req: Request, @Body() body: PosQuoteDto) {
     const { userId } = req.userContext;

@@ -51,7 +51,7 @@ export class PreOrderController {
   }
 
   @NeedLogin()
-  @CheckPermission('tradeshow:preorder')
+  @CheckPermission('tradeshow:preorder:create')
   @Post()
   async create(
     @Req() req: Request,
@@ -77,7 +77,7 @@ export class PreOrderController {
   }
 
   @NeedLogin()
-  @CheckPermission('tradeshow:preorder')
+  @CheckPermission('tradeshow:preorder:edit')
   @Put(':id')
   async update(
     @Req() req: Request,
@@ -100,13 +100,13 @@ export class PreOrderController {
   }
 
   @NeedLogin()
-  @CheckPermission('tradeshow:preorder')
+  @CheckPermission('tradeshow:preorder:void')
   @Post(':id/void')
   async voidDoc(@Param('id') id: string): Promise<void> {
     return this.preOrderService.voidDoc(id);
   }
 
-  @CheckPermission('tradeshow:preorder')
+  @CheckPermission('tradeshow:preorder:delete')
   @Delete(':id')
   async delete(@Req() req: Request, @Param('id') id: string): Promise<void> {
     const { userId } = req.userContext;
@@ -114,7 +114,7 @@ export class PreOrderController {
   }
 
   @NeedLogin()
-  @CheckPermission('tradeshow:preorder')
+  @CheckPermission('tradeshow:preorder:submit')
   @Post(':id/submit')
   async submit(
     @Req() req: Request,
@@ -125,7 +125,7 @@ export class PreOrderController {
   }
 
   @NeedLogin()
-  @CheckPermission('tradeshow:preorder')
+  @CheckPermission('tradeshow:preorder:create')
   @Post(':id/confirm')
   async confirm(
     @Req() req: Request,

@@ -46,7 +46,7 @@ export class SalesOrderController {
     return this.salesOrderService.getDetail(id);
   }
 
-  @CheckPermission('sales:order')
+  @CheckPermission('sales:order:create')
   @Post()
   async create(
     @Body()
@@ -61,7 +61,7 @@ export class SalesOrderController {
     return this.salesOrderService.create(body);
   }
 
-  @CheckPermission('sales:order')
+  @CheckPermission('sales:order:edit')
   @Put(':id')
   async update(
     @Param('id') id: string,
@@ -77,20 +77,20 @@ export class SalesOrderController {
     return this.salesOrderService.update(id, body);
   }
 
-  @CheckPermission('sales:order')
+  @CheckPermission('sales:order:void')
   @Post(':id/void')
   async voidDoc(@Param('id') id: string): Promise<void> {
     return this.salesOrderService.voidDoc(id);
   }
 
-  @CheckPermission('sales:order')
+  @CheckPermission('sales:order:delete')
   @Delete(':id')
   async remove(@Param('id') id: string): Promise<void> {
     return this.salesOrderService.delete(id);
   }
 
   /** 还原被误删的销售订单（软删后可恢复） */
-  @CheckPermission('sales:order')
+  @CheckPermission('sales:order:edit')
   @Post(':id/restore')
   async restore(@Param('id') id: string): Promise<void> {
     return this.salesOrderService.restore(id);
@@ -102,7 +102,7 @@ export class SalesOrderController {
     return this.salesOrderService.audit(id);
   }
 
-  @CheckPermission('sales:order')
+  @CheckPermission('sales:order:create')
   @Post(':id/cancel-audit')
   async cancelAudit(@Param('id') id: string): Promise<void> {
     return this.salesOrderService.cancelAudit(id);
