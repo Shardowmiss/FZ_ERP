@@ -96,7 +96,7 @@ export class SalesOrderController {
     return this.salesOrderService.restore(id);
   }
 
-  @CheckPermission('sales:order')
+  @CheckPermission('sales:order:audit')
   @Post(':id/audit')
   async audit(@Param('id') id: string): Promise<void> {
     return this.salesOrderService.audit(id);
@@ -108,7 +108,7 @@ export class SalesOrderController {
     return this.salesOrderService.cancelAudit(id);
   }
 
-  @CheckPermission('sales:order')
+  @CheckPermission('sales:order:book')
   @Post(':id/book')
   async book(@Param('id') id: string): Promise<void> {
     return this.salesOrderService.book(id);

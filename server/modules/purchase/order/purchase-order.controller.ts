@@ -113,7 +113,7 @@ export class PurchaseOrderController {
     return this.purchaseOrderService.restore(id);
   }
 
-  @CheckPermission('purchase:order')
+  @CheckPermission('purchase:order:audit')
   @Post(':id/audit')
   async audit(@Param('id') id: string): Promise<void> {
     return this.purchaseOrderService.audit(id);
@@ -125,13 +125,13 @@ export class PurchaseOrderController {
     return this.purchaseOrderService.cancelAudit(id);
   }
 
-  @CheckPermission('purchase:order')
+  @CheckPermission('purchase:order:book')
   @Post(':id/book')
   async book(@Param('id') id: string): Promise<void> {
     return this.purchaseOrderService.book(id);
   }
 
-  @CheckPermission('purchase:order')
+  @CheckPermission('purchase:order:accept')
   @Post(':id/accept')
   async accept(@Param('id') id: string): Promise<void> {
     return this.purchaseOrderService.accept(id);

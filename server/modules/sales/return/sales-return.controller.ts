@@ -59,7 +59,7 @@ export class SalesReturnController {
     return this.salesReturnService.create(body);
   }
 
-  @CheckPermission('sales:return')
+  @CheckPermission('sales:return:audit')
   @Post(':id/audit')
   async audit(@Param('id') id: string): Promise<void> {
     return this.salesReturnService.audit(id);
@@ -71,13 +71,13 @@ export class SalesReturnController {
     return this.salesReturnService.cancelAudit(id);
   }
 
-  @CheckPermission('sales:return')
+  @CheckPermission('sales:return:book')
   @Post(':id/book')
   async book(@Param('id') id: string): Promise<void> {
     return this.salesReturnService.book(id);
   }
 
-  @CheckPermission('sales:return')
+  @CheckPermission('sales:return:accept')
   @Post(':id/accept')
   async accept(@Param('id') id: string): Promise<void> {
     return this.salesReturnService.accept(id);

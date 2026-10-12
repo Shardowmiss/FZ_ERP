@@ -44,7 +44,7 @@ export class SubcontractController {
     return this.subcontractService.getOrder(id);
   }
 
-  @CheckPermission('subcontract:manage')
+  @CheckPermission('subcontract:manage:approve')
   @Post('order/:id/approve')
   approveOrder(@Param('id') id: string) {
     return this.subcontractService.approveOrder(id);
@@ -71,7 +71,7 @@ export class SubcontractController {
     });
   }
 
-  @CheckPermission('subcontract:manage')
+  @CheckPermission('subcontract:manage:approve')
   @Post('issue/:id/approve')
   approveIssue(@Param('id') id: string) {
     if (!id) throw new BadRequestException('发料单ID不能为空');
@@ -99,7 +99,7 @@ export class SubcontractController {
     });
   }
 
-  @CheckPermission('subcontract:manage')
+  @CheckPermission('subcontract:manage:approve')
   @Post('receipt/:id/approve')
   approveReceipt(@Param('id') id: string) {
     if (!id) throw new BadRequestException('回收单ID不能为空');
@@ -124,22 +124,22 @@ export class SubcontractController {
     return this.subcontractService.settleFee(id);
   }
 
-  @CheckPermission('subcontract:manage')
+  @CheckPermission('subcontract:manage:void')
   @Post('order/:id/void')
   async voidOrder(@Param('id') id: string): Promise<void> {
     return this.subcontractService.voidOrder(id);
   }
-  @CheckPermission('subcontract:manage')
+  @CheckPermission('subcontract:manage:void')
   @Post('issue/:id/void')
   async voidIssue(@Param('id') id: string): Promise<void> {
     return this.subcontractService.voidIssue(id);
   }
-  @CheckPermission('subcontract:manage')
+  @CheckPermission('subcontract:manage:void')
   @Post('receipt/:id/void')
   async voidReceipt(@Param('id') id: string): Promise<void> {
     return this.subcontractService.voidReceipt(id);
   }
-  @CheckPermission('subcontract:manage')
+  @CheckPermission('subcontract:manage:void')
   @Post('fee/:id/void')
   async voidFee(@Param('id') id: string): Promise<void> {
     return this.subcontractService.voidFee(id);

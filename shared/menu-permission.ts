@@ -62,7 +62,13 @@ export type ActionKey =
   // 第三层动作的语义补全（#807）：采购订单 / 面辅料采购订单 / 全渠道订单 / 预订单
   // 页面上的「提交」是独立的业务动作（提交后进审核），既不是 create 也不是 approve，
   // 缺了它就只能把按钮挂在 create 上 → 只授了「提交」的角色反而点不到按钮。
-  | 'submit';
+  | 'submit'
+  // 第三层动作语义补全（#811 Batch B）：销售/采购单据的「复核 / 记账 / 驳回」自定义路由
+  // （/:id/audit、/:id/book、/:id/reject）此前守卫为资源粗码，补码后可将守卫细化为动作级。
+  // audit=复核（audited 态流转）、book=记账（booked 态）、reject=驳回（预订单）。
+  | 'audit'
+  | 'book'
+  | 'reject';
 
 export const ACTION_LABELS: Record<ActionKey, string> = {
   view: '查看',
@@ -74,6 +80,9 @@ export const ACTION_LABELS: Record<ActionKey, string> = {
   void: '作废',
   print: '打印',
   submit: '提交',
+  audit: '复核',
+  book: '记账',
+  reject: '驳回',
 };
 
 /**
@@ -163,7 +172,7 @@ export const MENU_STRUCTURE: MenuModuleDef[] = [
     label: '采购管理',
     sortOrder: 3,
     children: [
-      { key: 'garment-purchase-order', label: '采购订单', path: '/purchase/garment-order', permission: 'purchase:order', actions: ['view', 'create', 'edit', 'delete', 'submit', 'approve', 'void'] },
+      { key: 'garment-purchase-order', label: '采购订单', path: '/purchase/garment-order', permission: 'purchase:order', actions: ['view', 'create', 'edit', 'delete', 'submit', 'approve', 'audit', 'book', 'accept', 'void'] },
       {
         key: 'garment-purchase-inbound',
         label: '采购入库',
@@ -192,7 +201,8 @@ export const MENU_STRUCTURE: MenuModuleDef[] = [
       { key: 'finish-receipt', label: '完工入库单', path: '/production/finish-receipt', permission: 'production:finish_receipt', actions: ['view', 'create', 'edit', 'delete', 'approve', 'void'] },
       // 委外管理：控制器守卫为 subcontract:manage（12 处），此前菜单错挂 inventory:query
       // → 页面可达但每个写接口都 403。此处与后端对齐。
-      { key: 'subcontract-main', label: '委外管理', path: '/subcontract', permission: 'subcontract:manage' },
+      // #811 Batch B：显式声明动作集，使 :approve / :void 子码进目录（供守卫细化）。
+      { key: 'subcontract-main', label: '委外管理', path: '/subcontract', permission: 'subcontract:manage', actions: ['view', 'create', 'edit', 'delete', 'approve', 'void'] },
     ],
   },
   {
@@ -206,17 +216,17 @@ export const MENU_STRUCTURE: MenuModuleDef[] = [
         path: '/sales/order',
         permission: 'sales:order',
         group: true,
-        actions: ['view', 'create', 'edit', 'approve', 'delete', 'void', 'print'],
+        actions: ['view', 'create', 'edit', 'approve', 'audit', 'book', 'delete', 'void', 'print'],
       },
-      { key: 'sales-outbound', label: '销售出库', path: '/sales/outbound', permission: 'sales:outbound', group: true, actions: ['view', 'create', 'edit', 'approve', 'delete', 'void', 'print'] },
-      { key: 'sales-return', label: '销售退货', path: '/sales/return', permission: 'sales:return', group: true, actions: ['view', 'create', 'edit', 'approve', 'delete', 'void', 'print'] },
+      { key: 'sales-outbound', label: '销售出库', path: '/sales/outbound', permission: 'sales:outbound', group: true, actions: ['view', 'create', 'edit', 'approve', 'audit', 'book', 'accept', 'delete', 'void', 'print'] },
+      { key: 'sales-return', label: '销售退货', path: '/sales/return', permission: 'sales:return', group: true, actions: ['view', 'create', 'edit', 'approve', 'audit', 'book', 'accept', 'delete', 'void', 'print'] },
       { key: 'sales-reconciliation', label: '销售对账', path: '/sales/reconciliation', permission: 'sales:reconciliation', actions: ['view', 'create'] },
       // 零售单 / 零售退货单：此前菜单错挂 sales:order / sales:return，但它们实际调用的
       // /api/retail、/api/retail/return 守卫是 retail:view（会员运营的码）→ 双向不一致。
       // 独立成码后与后端守卫（retail.controller）严格对齐。
       { key: 'retail-order', label: '零售单', path: '/retail/order', permission: 'sales:retail', actions: ['view', 'create', 'edit', 'delete', 'approve', 'void'] },
-      { key: 'retail-return', label: '零售退货单', path: '/retail/return', permission: 'sales:retail_return' },
-      { key: 'omni-main', label: '全渠道订单', path: '/omni', permission: 'omni:manage', actions: ['view', 'create', 'edit', 'delete', 'submit'] },
+      { key: 'retail-return', label: '零售退货单', path: '/retail/return', permission: 'sales:retail_return', actions: ['view', 'create', 'edit', 'delete', 'void'] },
+      { key: 'omni-main', label: '全渠道订单', path: '/omni', permission: 'omni:manage', actions: ['view', 'create', 'edit', 'delete', 'submit', 'audit'] },
     ],
   },
   {
@@ -228,7 +238,7 @@ export const MENU_STRUCTURE: MenuModuleDef[] = [
       { key: 'inv-flow', label: '库存流水', path: '/inventory/flow', permission: 'inventory:flow', readOnly: true },
       { key: 'inv-inbound', label: '入库单', path: '/inventory/inbound', permission: 'inventory:inbound' },
       { key: 'inv-outbound', label: '出库单', path: '/inventory/outbound', permission: 'inventory:outbound' },
-      { key: 'inv-transfer', label: '调拨单', path: '/inventory/transfer', permission: 'inventory:transfer', actions: ['view', 'create', 'edit', 'delete', 'approve', 'void'] },
+      { key: 'inv-transfer', label: '调拨单', path: '/inventory/transfer', permission: 'inventory:transfer', actions: ['view', 'create', 'edit', 'delete', 'approve', 'accept', 'void'] },
       { key: 'inv-stocktake', label: '盘点单', path: '/inventory/stocktake', permission: 'inventory:stocktake', actions: ['view', 'create', 'edit', 'delete', 'approve', 'void'] },
       { key: 'inv-warning', label: '库存预警', path: '/inventory/warning', permission: 'inventory:warning' },
       // 条码/批次：此前挂 inventory:query，但其接口（GET /api/inventory/batch、
@@ -307,7 +317,7 @@ export const MENU_STRUCTURE: MenuModuleDef[] = [
       // 订货会主单：此前挂 tradeshow:preorder（与预订单复用），但其接口
       // /api/trade-show（trade-show.controller）守卫为 tradeshow:manage → 不一致。对齐后端。
       { key: 'trade-show-list', label: '订货会主单', path: '/trade-show/list', permission: 'tradeshow:manage', actions: ['view', 'create', 'edit', 'delete', 'void'] },
-      { key: 'pre-order', label: '预订单', path: '/trade-show/pre-order', permission: 'tradeshow:preorder', actions: ['view', 'create', 'edit', 'delete', 'submit', 'void'] },
+      { key: 'pre-order', label: '预订单', path: '/trade-show/pre-order', permission: 'tradeshow:preorder', actions: ['view', 'create', 'edit', 'delete', 'submit', 'void', 'reject'] },
       { key: 'pre-order-summary', label: '预订汇总', path: '/trade-show/summary', permission: 'tradeshow:preorder' },
       { key: 'allocation', label: '配货管理', path: '/trade-show/allocation', permission: 'tradeshow:allocation', actions: ['view', 'create', 'edit', 'delete', 'approve', 'void'] },
     ],

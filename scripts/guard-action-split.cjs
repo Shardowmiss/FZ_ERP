@@ -39,15 +39,15 @@ const SAFE_CUSTOM = {
   submit: 'submit',
   accept: 'accept',
   approve: 'approve',
+  audit: 'audit',
+  book: 'book',
+  reject: 'reject',
   export: 'view',
   download: 'view',
   restore: 'edit',
 };
 const FLAG_CUSTOM = {
-  reject: 'approve',
-  audit: 'approve',
   review: 'approve',
-  book: 'approve',
   cancel: 'edit',
 };
 

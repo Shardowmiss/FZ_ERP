@@ -136,7 +136,7 @@ export class PreOrderController {
   }
 
   @NeedLogin()
-  @CheckPermission('tradeshow:preorder')
+  @CheckPermission('tradeshow:preorder:reject')
   @Post(':id/reject')
   async reject(
     @Req() req: Request,

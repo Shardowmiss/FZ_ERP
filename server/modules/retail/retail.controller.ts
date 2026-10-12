@@ -220,7 +220,7 @@ export class RetailController {
   async voidOrder(@Param('id') id: string): Promise<void> {
     return this.retailService.voidOrder(id);
   }
-  @CheckPermission('sales:retail_return')
+  @CheckPermission('sales:retail_return:void')
   @Post('return/:id/void')
   async voidReturn(@Param('id') id: string): Promise<void> {
     return this.retailService.voidReturn(id);

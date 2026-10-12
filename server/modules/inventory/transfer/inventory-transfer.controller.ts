@@ -106,7 +106,7 @@ export class InventoryTransferController {
     return this.inventoryTransferService.receiveTransfer(id, userId);
   }
 
-  @CheckPermission('inventory:transfer')
+  @CheckPermission('inventory:transfer:accept')
   @Post(':id/accept')
   async acceptTransfer(
     @Req() req: Request,

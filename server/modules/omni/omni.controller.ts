@@ -47,7 +47,7 @@ export class OmniController {
     return this.omniService.createOrder(body as never);
   }
 
-  @CheckPermission('omni:manage')
+  @CheckPermission('omni:manage:audit')
   @Post('orders/audit')
   async audit(@Body() body: { orderId: string }) {
     if (!body?.orderId) throw new BadRequestException('orderId 必填');
