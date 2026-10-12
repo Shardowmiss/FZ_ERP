@@ -9,6 +9,10 @@ import { CheckPermission } from '../../../common/decorators/check-permission.dec
 export class SizeController {
   constructor(private readonly sizeService: SizeService) {}
 
+  // #811 ②：list/detail 补 res:view（对齐 color.controller 范式，收敛「任意登录用户可读主数据」）。
+  // 安全性依据（scripts/analyze-read-guard-safety.cjs）：GET 调用方仅 base 模块页面
+  // (SizePage/SizeGroupRelationPage/SkuPage)，其角色(data_governor/dealer/super_admin)均持 base:size ⇒ 零 403 回归。
+  @CheckPermission('base:size:view')
   @Get()
   async list(
     @Query('page') page?: string,
@@ -20,6 +24,7 @@ export class SizeController {
     return this.sizeService.list(p, ps, keyword);
   }
 
+  @CheckPermission('base:size:view')
   @Get(':id')
   async detail(@Param('id') id: string): Promise<Size> {
     return this.sizeService.detail(id);
